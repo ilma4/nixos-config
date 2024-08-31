@@ -21,7 +21,7 @@
   outputs = inputs@{ self, nixpkgs, home-manager, nixvim, ... }: {
     nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      #specialArgs = {inherit inputs;};
+      # specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
 	nixvim.nixosModules.nixvim

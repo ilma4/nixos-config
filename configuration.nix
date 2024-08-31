@@ -8,6 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./zram.nix
     ];
   
 
@@ -131,7 +132,6 @@
   programs.steam.enable = true;
   programs.gamescope.enable = true;
   programs.gnome-terminal.enable = true;
-  programs.neovim.enable = true;
 
   environment.pathsToLink = [ "/share/zsh" ];
 
@@ -174,11 +174,13 @@
      slack
    ];
 
+  /*
   zramSwap = {
     enable = true;
     memoryPercent = 100;
     algorithm = "zstd";
   };
+  */
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
