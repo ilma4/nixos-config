@@ -19,11 +19,21 @@
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixvim, ... }: {
+    nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      # specialArgs = { inherit inputs; };
+      modules = [
+        ./bkp-conf.nix
+	nixvim.nixosModules.nixvim
+	# nixvim.homeManagerModules.nixvim
+	home-manager.nixosModules.default
+      ];
+    };
     nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       # specialArgs = { inherit inputs; };
       modules = [
-        ./configuration.nix
+        ./vm-conf.nix
 	nixvim.nixosModules.nixvim
 	# nixvim.homeManagerModules.nixvim
 	home-manager.nixosModules.default

@@ -13,17 +13,10 @@
   
 
   # Use the systemd-boot EFI boot loader.
-  boot.loader = {
-    efi = {
-      canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot/efi";
-    };
-    grub = {
-     enable = true;
-     efiSupport = true;
-     # efiInstallAsRemovable = true; # in case canTouchEfiVariables doesn't work for your system
-     device = "nodev"; 
-    }; 
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/vda"; 
+    useOSProber = true;
   };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -72,17 +65,17 @@
   services.avahi.enable = true;
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+  # services.printing.enable = true;
 
   # Enable sound.
-  hardware.pulseaudio.enable = false;
-   services.pipewire = {
-     enable = true;
-     pulse.enable = true;
-   };
+  #hardware.pulseaudio.enable = false;
+  # services.pipewire = {
+  #   enable = true;
+  #   pulse.enable = true;
+  # };
 
   # Enable touchpad support (enabled default in most desktopManager).
-  services.libinput.enable = true;
+  # services.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.ilma4 = {
@@ -125,11 +118,7 @@
   programs = {
     firefox.enable = true;
   };
-  programs.chromium.enable = true;
   programs.virt-manager.enable = true;
-  programs.steam.enable = true;
-  programs.gamescope.enable = true;
-  programs.gnome-terminal.enable = true;
 
   environment.pathsToLink = [ "/share/zsh" ];
 
@@ -138,38 +127,15 @@
      vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget
      curl
-     pandoc
-     telegram-desktop
      shotwell
      htop
-     anki
-     qbittorrent
-     libreoffice-still
-     krita
-     kdenlive
      gnome.gnome-tweaks
-     google-chrome
      wl-clipboard
-     corretto21
      corretto17
-     corretto11
-     brave
-     vlc
-     prismlauncher
-     thunderbird
-     jetbrains.clion
-     jetbrains.pycharm-professional
-     jetbrains.pycharm-community-bin
-     jetbrains.idea-ultimate
      jetbrains.idea-community-bin
-     vscode
-     android-studio
      ripgrep
      fd
-     obs-studio
-     discord
      restic
-     slack
    ];
 
   /*
