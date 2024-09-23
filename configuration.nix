@@ -28,7 +28,7 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
-  programs.nix-ld.enable = true;
+  # programs.nix-ld.enable = true;
 
 
   networking.hostName = "ilma4-vm"; # Define your hostname.
