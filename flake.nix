@@ -23,7 +23,7 @@
       system = "x86_64-linux";
       # specialArgs = { inherit inputs; };
       modules = [
-        ./bkp-conf.nix
+        ./hosts/bkp/configuration.nix
 	nixvim.nixosModules.nixvim
 	# nixvim.homeManagerModules.nixvim
 	home-manager.nixosModules.default

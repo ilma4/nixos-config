@@ -7,8 +7,8 @@
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./bkp/hardware-configuration.nix
-      ./zram.nix
+      ./hardware-configuration.nix
+      ../../common/zram.nix
     ];
   
 
