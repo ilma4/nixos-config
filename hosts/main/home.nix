@@ -61,6 +61,13 @@
     enableZshIntegration = true;
   };
 
+  programs.nixvim = {
+    enable = true;
+    extraPlugins = [
+      pkgs.vimPlugins."vim-suda"
+    ];
+  };
+
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {
@@ -75,6 +82,8 @@
     #   org.gradle.daemon.idletimeout=3600000
     # '';
   };
+
+  services.darkman.enable = true;
 
   # programs.gnome-shell.enable = true;
 
