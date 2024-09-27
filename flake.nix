@@ -18,7 +18,10 @@
      };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, ... }: 
+    let 
+      system = "x86_64-linux";
+    in {
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       # specialArgs = { inherit inputs; };
@@ -39,5 +42,16 @@
 	home-manager.nixosModules.default
       ];
     };
+      homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
+	pkgs = nixpkgs.legacyPackages.${system};
+
+        # Specify your home configuration modules here, for example,
+        # the path to your home.nix.
+        #modules = [ ./home.nix ];
+        modules = [ ./hosts/main/home.nix ];
+
+        # Optionally use extraSpecialArgs
+        # to pass through arguments to home.nix
+      };
   };
 }
