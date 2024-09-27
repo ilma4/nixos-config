@@ -54,7 +54,7 @@
 	pkgs = nixpkgs.legacyPackages.${system};
 
         modules = [ 
-	  ./hosts/main/home.nix 
+	  ./hosts/apal-server/home.nix 
           nixvim.homeManagerModules.nixvim
 	];
       };

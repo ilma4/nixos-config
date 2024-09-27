@@ -23,7 +23,6 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs; [
-    restic
     screen
     # nerdfonts
     powerline-fonts
@@ -105,21 +104,6 @@
     #   org.gradle.daemon.idletimeout=3600000
     # '';
   };
-
-  # programs.gnome-shell.enable = true;
-
-#  dconf = {
-#    enable = true;
-#    settings."org/gnome/shell" = {
-#      disable-user-extensions = false;
-#      enabled-extensions = with pkgs.gnomeExtensions; [
-#        blur-my-shell.extensionUuid
-#        gsconnect.extensionUuid
-#        "dash-to-dock"
-#        "gsconnect"
-#      ];
-#    };
-#  };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
