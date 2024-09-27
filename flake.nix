@@ -45,16 +45,18 @@
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
 	pkgs = nixpkgs.legacyPackages.${system};
 
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        #modules = [ ./home.nix ];
         modules = [ 
 	  ./hosts/main/home.nix 
           nixvim.homeManagerModules.nixvim
 	];
+      };
+      homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
+	pkgs = nixpkgs.legacyPackages.${system};
 
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
+        modules = [ 
+	  ./hosts/main/home.nix 
+          nixvim.homeManagerModules.nixvim
+	];
       };
   };
 }
