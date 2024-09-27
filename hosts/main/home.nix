@@ -25,7 +25,6 @@
   home.packages = with pkgs; [
     restic
     screen
-    # nerdfonts
     powerline-fonts
     curl
     wget
@@ -36,6 +35,8 @@
     zstd
     xz
     gzip
+
+    jetbrains-mono
     # # Adds the 'hello' command to your environment. It prints a friendly
     # # "Hello, world!" when run.
     # pkgs.hello
@@ -49,12 +50,15 @@
     # # You can also create simple shell scripts directly inside your
     # # configuration. For example, this adds a command 'my-hello' to your
     # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
+    (pkgs.writeShellScriptBin "dirsize" ''
+      du -shc -- "$@" | sort --human-numeric-sort --reverse
+    '')
   ];
 
   fonts.fontconfig.enable = true;
+  fonts.fontconfig.defaultFonts.monospace = [
+    "JetBrains Mono"
+  ];
 
   programs.git = { 
     enable = true;
