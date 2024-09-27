@@ -20,7 +20,9 @@
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
-  home.packages = [
+  home.packages = with pkgs; [
+    restic
+    screen
     # # Adds the 'hello' command to your environment. It prints a friendly
     # # "Hello, world!" when run.
     # pkgs.hello
@@ -63,10 +65,17 @@
 
   programs.nixvim = {
     enable = true;
+    clipboard.providers.wl-copy.enable = true;
+    clipboard.register = "unnamedplus";
     extraPlugins = [
       pkgs.vimPlugins."vim-suda"
     ];
   };
+
+  programs.ripgrep.enable = true;
+  programs.fd.enable = true;
+  programs.bat.enable = true;
+  programs.htop.enable = true;
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
