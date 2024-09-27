@@ -23,6 +23,8 @@
   home.packages = with pkgs; [
     restic
     screen
+    # nerdfonts
+    powerline-fonts
     # # Adds the 'hello' command to your environment. It prints a friendly
     # # "Hello, world!" when run.
     # pkgs.hello
@@ -41,6 +43,7 @@
     # '')
   ];
 
+  fonts.fontconfig.enable = true;
 
   programs.git = { 
     enable = true;
