@@ -37,6 +37,8 @@
     gzip
 
     jetbrains-mono
+
+    bazelisk
     # # Adds the 'hello' command to your environment. It prints a friendly
     # # "Hello, world!" when run.
     # pkgs.hello
@@ -69,6 +71,9 @@
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    shellAliases = {
+      bazel = "bazelisk";
+    };
     oh-my-zsh = {
       enable = true;
       plugins = [ "git" "vi-mode" "extract " ];
