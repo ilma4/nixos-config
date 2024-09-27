@@ -9,6 +9,8 @@
   home.username = "ilma4";
   home.homeDirectory = "/home/ilma4";
 
+  nixpkgs.config.allowUnfree = true;
+
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
   # introduces backwards incompatible changes.
@@ -25,6 +27,15 @@
     screen
     # nerdfonts
     powerline-fonts
+    curl
+    wget
+
+    unrar
+    unzip
+    zip
+    zstd
+    xz
+    gzip
     # # Adds the 'hello' command to your environment. It prints a friendly
     # # "Hello, world!" when run.
     # pkgs.hello
