@@ -88,6 +88,7 @@
   programs.fd.enable = true;
   programs.bat.enable = true;
   programs.htop.enable = true;
+  programs.fzf.enable = true;
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
