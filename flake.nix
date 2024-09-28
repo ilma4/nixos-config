@@ -19,41 +19,41 @@
     let 
       system = "x86_64-linux";
     in {
-    nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      # specialArgs = { inherit inputs; };
-      modules = [
-        ./hosts/bkp/configuration.nix
-	nixvim.nixosModules.nixvim
-	# nixvim.homeManagerModules.nixvim
-	home-manager.nixosModules.default
-      ];
-    };
-    nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      # specialArgs = { inherit inputs; };
-      modules = [
-        ./vm-conf.nix
-	nixvim.nixosModules.nixvim
-	# nixvim.homeManagerModules.nixvim
-	home-manager.nixosModules.default
-      ];
-    };
+      nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        # specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/bkp/configuration.nix
+          nixvim.nixosModules.nixvim
+          # nixvim.homeManagerModules.nixvim
+          home-manager.nixosModules.default
+        ];
+      };
+      nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        # specialArgs = { inherit inputs; };
+        modules = [
+          ./vm-conf.nix
+          nixvim.nixosModules.nixvim
+          # nixvim.homeManagerModules.nixvim
+          home-manager.nixosModules.default
+        ];
+      };
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
-	pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = nixpkgs.legacyPackages.${system};
 
-        modules = [ 
-	  ./hosts/main/home.nix 
-          nixvim.homeManagerModules.nixvim
-	];
+          modules = [ 
+          ./hosts/main/home.nix 
+            nixvim.homeManagerModules.nixvim
+          ];
       };
       homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
-	pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = nixpkgs.legacyPackages.${system};
 
         modules = [ 
-	  ./hosts/apal-server/home.nix 
+          ./hosts/apal-server/home.nix 
           nixvim.homeManagerModules.nixvim
-	];
+        ];
       };
-  };
+    };
 }

@@ -13,9 +13,11 @@
   nixpkgs.config.allowUnfree = true;
 
   services.darkman.settings = {
+    # Berlin 
     lat = 52.5;
     lng = 13.4;
-    usegeoclue = false;
+
+    usegeoclue = true;
   };
 
   xdg.portal.extraPortals = [ pkgs.darkman ];
