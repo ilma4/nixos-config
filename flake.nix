@@ -29,16 +29,16 @@
           home-manager.nixosModules.default
         ];
       };
-      nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+#      nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
+#        system = "x86_64-linux";
         # specialArgs = { inherit inputs; };
-        modules = [
-          ./vm-conf.nix
-          nixvim.nixosModules.nixvim
+#        modules = [
+#          ./hosts/vm/configuration.nix
+#          nixvim.nixosModules.nixvim
           # nixvim.homeManagerModules.nixvim
-          home-manager.nixosModules.default
-        ];
-      };
+#          home-manager.nixosModules.default
+#        ];
+#      };
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
 
