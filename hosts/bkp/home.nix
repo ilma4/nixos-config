@@ -1,8 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
-     #<nixvim>.homeManagerModules.nixvim
+    inputs.nixvim.homeManagerModules.nixvim
   ];
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -43,6 +43,7 @@
     # '')
   ];
 
+  programs.nixvim.enable = true;
 
   programs.git = { 
     enable = true;

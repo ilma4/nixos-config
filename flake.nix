@@ -24,9 +24,10 @@
         # specialArgs = { inherit inputs; };
         modules = [
           ./hosts/bkp/configuration.nix
-          nixvim.nixosModules.nixvim
-          # nixvim.homeManagerModules.nixvim
-          home-manager.nixosModules.default
+          home-manager.nixosModules.home-manager {
+            home-manager.useGlobalPkgs = true;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+          }
         ];
       };
 #      nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
