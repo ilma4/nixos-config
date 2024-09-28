@@ -2,7 +2,7 @@
 
 {
   imports = [
-     #<nixvim>.homeManagerModules.nixvim
+    ./nixvim.nix
   ];
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -83,14 +83,6 @@
     enableZshIntegration = true;
   };
 
-  programs.nixvim = {
-    enable = true;
-    clipboard.providers.wl-copy.enable = true;
-    clipboard.register = "unnamedplus";
-    extraPlugins = [
-      pkgs.vimPlugins."vim-suda"
-    ];
-  };
 
   programs.ripgrep.enable = true;
   programs.fd.enable = true;

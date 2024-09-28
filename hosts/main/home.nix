@@ -4,7 +4,6 @@
   imports = [
     ./../../common/home/base.nix
     ./../../common/home/personal.nix
-     #<nixvim>.homeManagerModules.nixvim
   ];
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -12,6 +11,20 @@
   home.homeDirectory = "/home/ilma4";
 
   nixpkgs.config.allowUnfree = true;
+
+  services.darkman.settings = {
+    lat = 52.5;
+    lng = 13.4;
+    usegeoclue = false;
+  };
+
+  xdg.portal.extraPortals = [ pkgs.darkman ];
+  xdg.portal.enable = true;
+  xdg.portal.config = {
+    preferred = {
+      "org.freedesktop.impl.portal.Settings" = [ "darkman" ];
+    };
+  };
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
