@@ -11,6 +11,10 @@
   home.homeDirectory = "/home/ilma4";
 
   nixpkgs.config.allowUnfree = true;
+  
+  programs.zsh.initExtraBeforeCompInit = ''
+    FPATH="$/usr/share/zsh/site-funztions:/usr/share/zsh/vendor-completions:$FPATH"
+  '';
 
   services.darkman.settings = {
     # Berlin 
