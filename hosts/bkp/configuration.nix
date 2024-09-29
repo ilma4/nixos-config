@@ -91,11 +91,8 @@
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
    };
 
-   home-manager = {
-     # extraSpecialArgs = { inherit inputs; };
-     users = {
-       "ilma4" = import ./home.nix ;
-     };
+   home-manager.users = {
+     "ilma4" = import ./home.nix ;
    };
 
   virtualisation = {
@@ -103,8 +100,8 @@
       enable = true;
       storageDriver = "btrfs";
       rootless = {
-        enable = true;
-        setSocketVariable = true;
+        enable = false;
+        #setSocketVariable = true;
       };
     };
     libvirtd = {
@@ -119,9 +116,7 @@
   programs.git.enable = true;
   programs.screen.enable = true;
   programs.zsh.enable = true;
-  programs = {
-    firefox.enable = true;
-  };
+  programs.firefox.enable = true;
   programs.chromium.enable = true;
   programs.virt-manager.enable = true;
   programs.steam.enable = true;
@@ -169,13 +164,6 @@
      slack
    ];
 
-  /*
-  zramSwap = {
-    enable = true;
-    memoryPercent = 100;
-    algorithm = "zstd";
-  };
-  */
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

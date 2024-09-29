@@ -43,10 +43,10 @@
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
 
-          modules = [ 
+        modules = [ 
           ./hosts/main/home.nix 
-            nixvim.homeManagerModules.nixvim
-          ];
+          nixvim.homeManagerModules.nixvim
+        ];
       };
       homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
