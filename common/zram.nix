@@ -1,4 +1,3 @@
-# TODO: Example module, remove
 { ... }:
 { 
   imports = [] ;
