@@ -16,6 +16,11 @@
     FPATH="$/usr/share/zsh/site-funztions:/usr/share/zsh/vendor-completions:$FPATH"
   '';
 
+  home.packages = with pkgs ; [
+    # Drivers for non-nixos
+    nixgl.nixGLIntel
+  ];
+
   services.darkman.settings = {
     # Berlin 
     lat = 52.5;

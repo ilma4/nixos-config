@@ -13,9 +13,14 @@
       url = "github:nix-community/nixvim/nixos-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
      };
+
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, ... }: 
+  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, ... }: 
     let 
       system = "x86_64-linux";
     in {
@@ -30,18 +35,11 @@
           }
         ];
       };
-#      nixosConfigurations.ilma4-vm = nixpkgs.lib.nixosSystem {
-#        system = "x86_64-linux";
-        # specialArgs = { inherit inputs; };
-#        modules = [
-#          ./hosts/vm/configuration.nix
-#          nixvim.nixosModules.nixvim
-          # nixvim.homeManagerModules.nixvim
-#          home-manager.nixosModules.default
-#        ];
-#      };
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          overlays = [ nixgl.overlay ];
+        };
 
         modules = [ 
           ./hosts/main/home.nix 
