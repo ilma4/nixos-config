@@ -4,6 +4,7 @@
   imports = [
     ./../../common/home/base.nix
     ./../../common/home/personal.nix
+    ./home-gui.nix
   ];
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -19,12 +20,6 @@
   #  FPATH="$/usr/share/zsh/site-funztions:/usr/share/zsh/vendor-completions:$FPATH"
   #'';
 
-  home.packages = with pkgs ; [
-    # Drivers for non-nixos
-    nixgl.nixGLIntel
-    nixgl.nixVulkanIntel
-  ];
-
   services.darkman.settings = {
     # Berlin 
     lat = 52.5;
@@ -33,8 +28,6 @@
     usegeoclue = true;
   };
 
-  programs.firefox.enable = true;
-  programs.chromium.enable = true;
 
   xdg.portal.extraPortals = [ pkgs.darkman ];
   xdg.portal.enable = true;
