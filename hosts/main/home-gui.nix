@@ -1,12 +1,6 @@
 { config, pkgs, ... }:
 
 {
-  imports = [
-    ./../../common/home/base.nix
-    ./../../common/home/personal.nix
-  ];
-
-
   home.packages = with pkgs ; [
     # Drivers for non-nixos
     nixgl.nixGLIntel
@@ -16,7 +10,7 @@
   home.pointerCursor = {
     name = "Adwaita";
     package = pkgs.gnome.adwaita-icon-theme;
-    size = 48;
+    size = 24;
     x11 = {
       enable = true;
       defaultCursor = "Adwaita";
@@ -29,10 +23,13 @@
 
   programs.foot.enable = true;
 
+  programs.waybar = {
+    enable = true;
+  };
 
   wayland.windowManager.sway.enable = true;
-
   wayland.windowManager.sway.config = rec {
     modifier = "Mod4";
+    bars = [ { command = "\${pkgs.waybar}/bin/waybar"; } ];
   };
 }
