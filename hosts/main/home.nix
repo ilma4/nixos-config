@@ -10,15 +10,19 @@
   home.username = "ilma4";
   home.homeDirectory = "/home/ilma4";
 
+  targets.genericLinux.enable = true;
+  xdg.mime.enable = true;
+
   nixpkgs.config.allowUnfree = true;
   
-  programs.zsh.initExtraBeforeCompInit = ''
-    FPATH="$/usr/share/zsh/site-funztions:/usr/share/zsh/vendor-completions:$FPATH"
-  '';
+  #programs.zsh.initExtraBeforeCompInit = ''
+  #  FPATH="$/usr/share/zsh/site-funztions:/usr/share/zsh/vendor-completions:$FPATH"
+  #'';
 
   home.packages = with pkgs ; [
     # Drivers for non-nixos
     nixgl.nixGLIntel
+    nixgl.nixVulkanIntel
   ];
 
   services.darkman.settings = {
@@ -28,6 +32,9 @@
 
     usegeoclue = true;
   };
+
+  programs.firefox.enable = true;
+  programs.chromium.enable = true;
 
   xdg.portal.extraPortals = [ pkgs.darkman ];
   xdg.portal.enable = true;
