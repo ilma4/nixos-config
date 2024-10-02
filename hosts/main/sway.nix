@@ -7,6 +7,14 @@
 
   programs.tofi.enable = true;
 
+  services.swayidle.enable = true;
+
+  services.kdeconnect = {
+    enable = true;
+    indicator = true;
+  };
+
+
   wayland.windowManager.sway.enable = true;
   wayland.windowManager.sway.config = {
     modifier = "Mod4";

@@ -3,12 +3,15 @@
 {
   imports = [
     ./sway.nix
+    ./gui-apps.nix
   ];
 
   home.packages = with pkgs ; [
     # Drivers for non-nixos
     nixgl.nixGLIntel
     nixgl.nixVulkanIntel
+    flatpak
+    xdg-dbus-proxy
   ];
 
   home.pointerCursor = {
@@ -21,11 +24,6 @@
     };
   };
 
-  # xsession.enable = true;
-
-
-  programs.firefox.enable = true;
-  programs.chromium.enable = true;
 
   programs.foot.enable = true;
 
@@ -34,8 +32,9 @@
   };
 
   wayland.windowManager.sway.enable = true;
-  wayland.windowManager.sway.config = rec {
+  wayland.windowManager.sway.config = {
     modifier = "Mod4";
     bars = [ { command = "\${pkgs.waybar}/bin/waybar"; } ];
   };
 }
+
