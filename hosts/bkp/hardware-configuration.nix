@@ -20,6 +20,9 @@
     };
 
   boot.initrd.luks.devices."root".device = "/dev/disk/by-uuid/bf83ad9a-cbb2-448c-b4a4-bb47b03b7632";
+  boot.initrd.luks.devices."root".bypassWorkqueues = true; # improve performance on ssd
+  boot.initrd.luks.devices."root".allowDiscards = true; # allow trim
+
 
   fileSystems."/home" =
     { device = "/dev/disk/by-uuid/cedf22fb-7b4f-4ed5-9866-6df52db6a986";
