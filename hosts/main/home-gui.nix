@@ -1,6 +1,10 @@
 { config, pkgs, ... }:
 
 {
+  imports = [
+    ./sway.nix
+  ];
+
   home.packages = with pkgs ; [
     # Drivers for non-nixos
     nixgl.nixGLIntel
@@ -16,6 +20,8 @@
       defaultCursor = "Adwaita";
     };
   };
+
+  # xsession.enable = true;
 
 
   programs.firefox.enable = true;
