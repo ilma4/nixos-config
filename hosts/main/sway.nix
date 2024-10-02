@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   programs.waybar = {
@@ -15,7 +15,11 @@
   };
 
 
-  wayland.windowManager.sway.enable = true;
+  wayland.windowManager.sway = {
+    enable = true;
+    package = inputs.sway-hidpi.packages.x86_64-linux.sway-xwayland-hidpi;
+  };
+
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
