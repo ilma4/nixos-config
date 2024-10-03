@@ -18,10 +18,6 @@
       url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    sway-hidpi = {
-      url = "github:oxalica/sway-xwayland-hidpi";
-    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, ... }: 

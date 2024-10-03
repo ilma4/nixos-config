@@ -10,7 +10,6 @@
     # Drivers for non-nixos
     nixgl.nixGLIntel
     nixgl.nixVulkanIntel
-    flatpak
     xdg-dbus-proxy
   ];
 

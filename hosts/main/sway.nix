@@ -1,6 +1,12 @@
-{ config, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
+  home.packages = with pkgs ; [
+    wl-clipboard
+    grim
+    brightnessctl
+  ];
+
   programs.waybar = {
     enable = true;
   };
@@ -15,11 +21,7 @@
   };
 
 
-  wayland.windowManager.sway = {
-    enable = true;
-    package = inputs.sway-hidpi.packages.x86_64-linux.sway-xwayland-hidpi;
-  };
-
+  wayland.windowManager.sway.enable = true;
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
@@ -28,6 +30,7 @@
       eDP-1 = {
         mode = "2880x1800@120.000hz";
         scale_filter = "linear";
+        scale = "2.0";
         adaptive_sync = "on";
       };
     };
@@ -48,4 +51,17 @@
 
     menu = "tofi-drun --drun-launch=true --width 800 --height 700  --font /home/ilma4/.nix-profile/share/fonts/TTF/JetBrainsMono-Light.ttf";
   };
+
+
+  wayland.windowManager.sway.config.keybindings =  
+    let
+      modifier = config.wayland.windowManager.sway.config.modifier;
+    in lib.mkOptionDefault {
+      "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
+      "${modifier}+Shift+q" = "kill";
+      "print" = "exec ${pkgs.grim}/bin/grim - | ${pkgs.wl-clipboard}/bin/wl-copy";
+#      "Shift+print" = "exec ${pkgs.grim/bin/grim} -g - | ${pkgs.wl-clipboard}/bin/wl-copy"
+
+    };
+  
 }

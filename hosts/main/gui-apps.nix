@@ -14,6 +14,8 @@
   programs.vscode.enable = true;
   programs.mpv.enable = true;
 
+  xsession.enable = true;
+
   
   home.packages = with pkgs ; [
     brave
@@ -25,6 +27,8 @@
     qbittorrent
     libsForQt5.qt5ct
     kdePackages.qt6ct
+    xorg.xprop
+    obsidian
   ];
 
 }

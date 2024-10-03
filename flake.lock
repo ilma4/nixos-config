@@ -223,32 +223,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1727397532,
-        "narHash": "sha256-pojbL/qteElw/nIXlN8kmHn/w6PQbEHr7Iz+WOXs0EM=",
+        "lastModified": 1727672256,
+        "narHash": "sha256-9/79hjQc9+xyH+QxeMcRsA6hDyw6Z9Eo1/oxjvwirLk=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "f65141456289e81ea0d5a05af8898333cab5c53d",
+        "rev": "1719f27dd95fd4206afb9cec9f415b539978827e",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
         "ref": "nixos-24.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1702151865,
-        "narHash": "sha256-9VAt19t6yQa7pHZLDbil/QctAgVsA66DLnzdRGqDisg=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "666fc80e7b2afb570462423cb0e1cf1a3a34fedd",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -286,28 +270,7 @@
         "home-manager": "home-manager",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs",
-        "nixvim": "nixvim",
-        "sway-hidpi": "sway-hidpi"
-      }
-    },
-    "sway-hidpi": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2",
-        "wlroots-hidpi-xprop-git": "wlroots-hidpi-xprop-git",
-        "xorg-xwayland-hidpi-xprop": "xorg-xwayland-hidpi-xprop"
-      },
-      "locked": {
-        "lastModified": 1702279937,
-        "narHash": "sha256-ckztw48UsKPJkVVhrVZowQWoXW033xPmkMzW+etwZA4=",
-        "owner": "oxalica",
-        "repo": "sway-xwayland-hidpi",
-        "rev": "776d5d2dafed388140ddb294ec15f64003b21307",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "sway-xwayland-hidpi",
-        "type": "github"
+        "nixvim": "nixvim"
       }
     },
     "treefmt-nix": {
@@ -329,40 +292,6 @@
         "owner": "numtide",
         "repo": "treefmt-nix",
         "type": "github"
-      }
-    },
-    "wlroots-hidpi-xprop-git": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1698386614,
-        "narHash": "sha256-rO4hEmDG5fHRtmr5AZTUE16onqoV8myW10xCsVSAis0=",
-        "ref": "HEAD",
-        "rev": "53aa9d79188def611daffcf33d194509238e1823",
-        "revCount": 10,
-        "type": "git",
-        "url": "https://aur.archlinux.org/wlroots-hidpi-xprop-git.git"
-      },
-      "original": {
-        "ref": "HEAD",
-        "type": "git",
-        "url": "https://aur.archlinux.org/wlroots-hidpi-xprop-git.git"
-      }
-    },
-    "xorg-xwayland-hidpi-xprop": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1698218166,
-        "narHash": "sha256-jIvsjTO2goU7W6rrMDuJPWsVOC1GUd6aFyV+bRGG1tM=",
-        "ref": "HEAD",
-        "rev": "f6c6d0af4c64d520923481bbe5fc3fd6243385ab",
-        "revCount": 18,
-        "type": "git",
-        "url": "https://aur.archlinux.org/xorg-xwayland-hidpi-xprop.git"
-      },
-      "original": {
-        "ref": "HEAD",
-        "type": "git",
-        "url": "https://aur.archlinux.org/xorg-xwayland-hidpi-xprop.git"
       }
     }
   },
