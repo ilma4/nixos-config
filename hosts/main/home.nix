@@ -24,12 +24,23 @@
 
   services.easyeffects.enable = true;
 
+  home.packages = with pkgs ; [
+    xdg-desktop-portal-wlr
+    xdg-desktop-portal-gtk
+  ];
 
-  xdg.portal.extraPortals = [ pkgs.darkman ];
+
+  xdg.portal.extraPortals = [ pkgs.darkman pkgs.xdg-desktop-portal-wlr pkgs.xdg-desktop-portal-gtk ];
   xdg.portal.enable = true;
   xdg.portal.config = {
     preferred = {
       "org.freedesktop.impl.portal.Settings" = [ "darkman" ];
     };
+    common = {
+      "org.freedesktop.impl.portal.Secret" = [
+        "gnome-keyring"
+      ];
+    };
+    sway.default = [ "wlr" "gtk" ];
   };
 }

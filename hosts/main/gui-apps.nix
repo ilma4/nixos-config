@@ -29,6 +29,7 @@
     kdePackages.qt6ct
     xorg.xprop
     obsidian
+    gamescope
   ];
 
 }
