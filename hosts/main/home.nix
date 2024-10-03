@@ -24,23 +24,27 @@
 
   services.easyeffects.enable = true;
 
-  home.packages = with pkgs ; [
-    xdg-desktop-portal-wlr
-    xdg-desktop-portal-gtk
-  ];
+  services.darkman.darkModeScripts = {
+    gtk-theme = ''
+      ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+      ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'Yaru-dark'"
+    '';
+  };
 
+  services.darkman.lightModeScripts = {
+    gtk-theme = ''
+      ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
+      ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'Yaru-light'"
+    '';
+  };
 
-  xdg.portal.extraPortals = [ pkgs.darkman pkgs.xdg-desktop-portal-wlr pkgs.xdg-desktop-portal-gtk ];
-  xdg.portal.enable = true;
+  #xdg.enable = true;
+  #xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.darkman pkgs.xdg-desktop-portal-wlr ];
   xdg.portal.config = {
-    preferred = {
-      "org.freedesktop.impl.portal.Settings" = [ "darkman" ];
-    };
     common = {
-      "org.freedesktop.impl.portal.Secret" = [
-        "gnome-keyring"
-      ];
+      "org.freedesktop.impl.portal.Settings" = [ "darkman" ];
+      "org.freedesktop.portal.Settings" = [ "darkman" ];
     };
-    sway.default = [ "wlr" "gtk" ];
   };
 }

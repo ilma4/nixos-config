@@ -26,6 +26,10 @@
     modifier = "Mod4";
     bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
 
+    startup = [
+      { command = "exec nm-applet --indicator"; }
+    ];
+
     output = {
       eDP-1 = {
         mode = "2880x1800@120.000hz";
@@ -75,4 +79,5 @@
     };
 
     home.sessionVariables.NIXOS_OZONE_WL = "1";
+    home.sessionVariables.QT_QPA_PLATFORMTHEME = "gnome";
 }

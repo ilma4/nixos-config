@@ -30,6 +30,7 @@
     xorg.xprop
     obsidian
     gamescope
+    d-spy
   ];
 
 }

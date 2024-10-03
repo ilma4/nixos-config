@@ -10,7 +10,7 @@
     # Drivers for non-nixos
     nixgl.nixGLIntel
     nixgl.nixVulkanIntel
-    xdg-dbus-proxy
+    #xdg-dbus-proxy
   ];
 
   home.pointerCursor = {
