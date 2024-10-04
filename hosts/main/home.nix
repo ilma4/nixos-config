@@ -16,8 +16,15 @@
 
   services.easyeffects.enable = true;
 
+  
+  services.ssh-agent.enable = true;
+  programs.ssh.addKeysToAgent = "yes 1h";
 
-  #xdg.enable = true;
+  programs.gpg.enable = true;
+  services.gpg-agent.enable = true;
+  
+
+  xdg.enable = true;
   #xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
   xdg.portal.config = {

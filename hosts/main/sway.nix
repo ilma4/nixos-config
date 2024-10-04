@@ -20,12 +20,20 @@
     indicator = true;
   };
 
+  services.mako = {
+    enable = true;
+  };
+  
+  services.wob.enable = true;
+
 
   wayland.windowManager.sway.enable = true;
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     focus.wrapping = "yes";
     bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
+
+    window.titlebar = false;
 
     startup = [
       { command = "nm-applet --indicator"; }
