@@ -27,6 +27,10 @@
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";
+    matchBlocks = {
+      "ilma4-bkp" = { forwardAgent = true; };
+      "nvc00731.amt.labs.intellij.net" = { forwardAgent = true; };
+    };
   };
 
   programs.gpg.enable = true;
