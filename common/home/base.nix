@@ -52,7 +52,7 @@
     userName  = "Ilia Malakhov";
     userEmail = "ilya.malakhov4@gmail.com";
     signing = {
-      signByDefault = true;
+      signByDefault = false;
       key = "64ECA0776D0E99AC";
     };
   };
