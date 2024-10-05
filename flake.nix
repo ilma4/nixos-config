@@ -30,7 +30,7 @@
     in {
       nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        # specialArgs = { inherit inputs; };
+        specialArgs = { inherit inputs; };
         modules = [
           ./hosts/bkp/configuration.nix
           home-manager.nixosModules.home-manager {
