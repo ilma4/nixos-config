@@ -21,8 +21,10 @@
   programs.ssh.addKeysToAgent = "yes 1h";
 
   programs.gpg.enable = true;
-  services.gpg-agent.enable = true;
-  
+  services.gpg-agent = {
+    enable = true;
+    pinentryPackage = pkgs.pinentry-curses;
+  };
 
   xdg.enable = true;
   #xdg.portal.enable = true;
