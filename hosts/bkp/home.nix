@@ -1,11 +1,12 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, modules, dotfiles, ... }:
 
 {
   imports = [
     inputs.nixvim.homeManagerModules.nixvim
-    ../../common/home/base.nix
-    ../../common/home/personal.nix
+    "${modules}/base.nix"
+    "${modules}/personal.nix"
   ];
+
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = "ilma4";

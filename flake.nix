@@ -28,14 +28,18 @@
     let 
       system = "x86_64-linux";
     in {
+      nixos-modules = "${self}/modules";
+      home-manager-modules = "${self}/home";
+      dotfiles = "${self}/dotfiles";
+
       nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
+        specialArgs = { inherit inputs; modules = self.nixos-modules; };
         modules = [
           ./hosts/bkp/configuration.nix
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
-            home-manager.extraSpecialArgs = { inherit inputs; };
+            home-manager.extraSpecialArgs = { inherit inputs; modules = self.home-manager-modules; dotfiles = self.dotfiles; };
           }
         ];
       };
@@ -51,6 +55,8 @@
             system = "x86_64-linux";
             config.allowUnfree = true;
           };
+          modules = self.home-manager-modules;
+          dotfiles = self.dotfiles;
         };
 
         modules = [ 
