@@ -14,7 +14,7 @@
   programs.tofi.enable = true;
 
   services.swayidle = let 
-    swaylock = "swaylock" ; # swaylock from nixpkgs doesn't work on Ubuntu 
+    swaylock = "/usr/bin/swaylock" ; # swaylock from nixpkgs doesn't work on Ubuntu 
     swaymsg = "${pkgs.sway}/bin/swaymsg" ;
   in {
     enable = true;
@@ -23,7 +23,7 @@
       { 
         timeout = 600; 
         command = "${swaymsg} \"output * power off\";  systemctl suspend-then-hibernate"; 
-        resumeCommand = "swaymsg \"output * power on\"";
+        resumeCommand = "${swaymsg} \"output * power on\"";
       }
     ];
     events = [

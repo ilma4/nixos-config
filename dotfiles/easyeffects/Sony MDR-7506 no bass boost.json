@@ -1,0 +1,16 @@
+{
+    "output": {
+        "blocklist": [],
+        "convolver#1": {
+            "autogain": true,
+            "bypass": false,
+            "input-gain": 0.0,
+            "ir-width": 100,
+            "kernel-path": "/home/ilma4/.config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs",
+            "output-gain": 0.0
+        },
+        "plugins_order": [
+            "convolver#1"
+        ]
+    }
+}
