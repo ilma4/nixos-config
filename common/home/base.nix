@@ -21,6 +21,8 @@
   # environment.
   home.packages = with pkgs; [
     restic
+    rclone
+
     screen
     powerline-fonts
     curl
