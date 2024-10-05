@@ -93,6 +93,16 @@
     menu = "${pkgs.tofi}/bin/tofi-drun --drun-launch=true --width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
   };
 
+  wayland.windowManager.sway.config.window.commands = [
+    {
+      command = "inhibit_idle fullscreen";
+      criteria = {
+        class = "^.*";
+        app_id = "^.*";
+      };
+    }
+  ];
+
 
   wayland.windowManager.sway.config.keybindings = let
       modifier = config.wayland.windowManager.sway.config.modifier;
