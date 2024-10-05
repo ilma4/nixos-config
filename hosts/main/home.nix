@@ -30,8 +30,7 @@
   };
 
   xdg.enable = true;
-  #xdg.portal.enable = true;
+  xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
-  xdg.portal.config = {
-  };
+  xdg.portal.configPackages = [ pkgs.sway ];
 }
