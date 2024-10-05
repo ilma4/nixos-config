@@ -13,7 +13,23 @@
 
   programs.tofi.enable = true;
 
-  services.swayidle.enable = true;
+  services.swayidle = let 
+    swaylock = "swaylock" ; # swaylock from nixpkgs doesn't work on Ubuntu 
+    swaymsg = "${pkgs.sway}/bin/swaymsg" ;
+  in {
+    enable = true;
+    timeouts = [
+      { timeout = 300; command = "${swaylock} -f -c 000000"; }
+      { 
+        timeout = 600; 
+        command = "${swaymsg} \"output * power off\";  systemctl suspend-then-hibernate"; 
+        resumeCommand = "swaymsg \"output * power on\"";
+      }
+    ];
+    events = [
+      { event = "before-sleep"; command = "${swaylock} -f -c 000000"; }
+    ];
+  };
 
   services.kdeconnect = {
     enable = true;
@@ -28,10 +44,21 @@
 
 
   wayland.windowManager.sway.enable = true;
+
+
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     focus.wrapping = "yes";
-    bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
+    bars = [ 
+      { 
+        command = "${pkgs.waybar}/bin/waybar"; 
+        colors.urgentWorkspace = {
+            background = "#900000";
+            border = "#2f343a";
+            text = "#ffffff";
+        };
+      } 
+    ];
 
     window.titlebar = false;
 
@@ -40,6 +67,9 @@
     ];
 
     output = {
+      "*" = {
+        bg = "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_2048x1536.png fill";
+      };
       eDP-1 = {
         mode = "2880x1800@120.000hz";
         scale = "2.0";
