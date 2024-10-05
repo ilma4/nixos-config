@@ -26,7 +26,7 @@
   services.ssh-agent.enable = true;
   programs.ssh = {
     enable = true;
-    addKeysToAgent = "1h";
+    addKeysToAgent = "yes";
   };
 
   programs.gpg.enable = true;
