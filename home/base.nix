@@ -92,6 +92,10 @@
     # # symlink to the Nix store copy.
     # ".screenrc".source = dotfiles/screenrc;
 
+    ".bazelrc".text = ''
+      common --disk_cache=/home/ilma4/.cache/bazel-disk
+    '';
+
     # # You can also set the file content immediately.
     # ".gradle/gradle.properties".text = ''
     #   org.gradle.console=verbose
