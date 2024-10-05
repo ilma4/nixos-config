@@ -12,7 +12,8 @@
 
 
   targets.genericLinux.enable = true;
-  xdg.mime.enable = true;
+
+  services.playerctld.enable = true;
 
   services.easyeffects.enable = true;
 
@@ -30,7 +31,12 @@
   };
 
   xdg.enable = true;
+  xdg.mime.enable = true; # .desktop entryes for apps
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
   xdg.portal.configPackages = [ pkgs.sway ];
+
+  home.packages = with pkgs; [
+    playerctl
+  ];
 }

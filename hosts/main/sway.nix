@@ -94,16 +94,17 @@
   };
 
 
-  wayland.windowManager.sway.config.keybindings =  
-    let
+  wayland.windowManager.sway.config.keybindings = let
       modifier = config.wayland.windowManager.sway.config.modifier;
       pamixer = "${pkgs.pamixer}/bin/pamixer";
       grim = "${pkgs.grim}/bin/grim";
       wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
       brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
+      playerctl = "${pkgs.playerctl}/bin/playerctl";
+      slurp = "${pkgs.slurp}/bin/slurp";
     in lib.mkOptionDefault {
       "print" = "exec ${grim} - | ${wl-copy}";
-#      "Shift+print" = "exec ${grim} -g - | ${pkgs.wl-clipboard}/bin/wl-copy"
+      "Shift+print" = "exec ${grim} -g \"\$(${slurp})\" - | ${wl-copy}";
 
       "XF86AudioRaiseVolume" = "exec ${pamixer} -ui 1"; # TODO: wob integration
       "XF86AudioLowerVolume" = "exec ${pamixer} -ud 1"; # TODO: wob integration
@@ -113,6 +114,11 @@
 
       "XF86MonBrightnessDown" = "exec ${brightnessctl} set 5%-"; # | sed -En 's/.*\(([0-9]+)%\).*/\1/p' > $WOBSOCK
       "XF86MonBrightnessUp" = "exec ${brightnessctl} set +5%"; # | sed -En 's/.*\(([0-9]+)%\).*/\1/p' > $WOBSOCK
+
+      "XF86AudioPause" = "exec ${playerctl} play-pause";
+      "XF86AudioPlay" = "exec ${playerctl} play-pause";
+      "XF86AudioPrev" = "exec ${playerctl} previous";
+      "XF86AudioNext" = "exec ${playerctl} next";
     };
 
     home.sessionVariables.NIXOS_OZONE_WL = "1";
