@@ -42,7 +42,7 @@
     defaultTimeout = 5000;
   };
   
-  services.wob.enable = true;
+  services.swayosd.enable = true;
 
 
   wayland.windowManager.sway.enable = true;
@@ -103,18 +103,19 @@
       brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
       playerctl = "${pkgs.playerctl}/bin/playerctl";
       slurp = "${pkgs.slurp}/bin/slurp";
+      swayosd = "${pkgs.swayosd}/bin/swayosd-client";
     in lib.mkOptionDefault {
       "print" = "exec ${grim} - | ${wl-copy}";
       "Shift+print" = "exec ${grim} -g \"\$(${slurp})\" - | ${wl-copy}";
 
-      "XF86AudioRaiseVolume" = "exec ${pamixer} -ui 1"; # TODO: wob integration
-      "XF86AudioLowerVolume" = "exec ${pamixer} -ud 1"; # TODO: wob integration
-      "XF86AudioMute" = "exec ${pamixer} --toggle-mute"; # && ( pamixer --get-mute && echo 0 > $WOBSOCK ) || pamixer --get-volume > $WOBSOCK
-      "XF86AudioMicMute" = "exec pactl set-source-mute @DEFAULT_SOURCE@ toggle";
+      "XF86AudioRaiseVolume" = "exec ${swayosd} --output-volume +1";
+      "XF86AudioLowerVolume" = "exec ${swayosd} --output-volume -1";
+      "XF86AudioMute" = "exec ${swayosd} --output-volume mute-toggle";
+      "XF86AudioMicMute" = "exec ${swayosd} --input-volume mute-toggle";
 
 
-      "XF86MonBrightnessDown" = "exec ${brightnessctl} set 5%-"; # | sed -En 's/.*\(([0-9]+)%\).*/\1/p' > $WOBSOCK
-      "XF86MonBrightnessUp" = "exec ${brightnessctl} set +5%"; # | sed -En 's/.*\(([0-9]+)%\).*/\1/p' > $WOBSOCK
+      "XF86MonBrightnessDown" = "exec ${swayosd} --brightness -5";
+      "XF86MonBrightnessUp" = "exec ${swayosd} --brightness +5";
 
       "XF86AudioPause" = "exec ${playerctl} play-pause";
       "XF86AudioPlay" = "exec ${playerctl} play-pause";
