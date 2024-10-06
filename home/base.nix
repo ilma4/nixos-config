@@ -23,7 +23,6 @@
     restic
     rclone
 
-    screen
     powerline-fonts
     curl
     wget
