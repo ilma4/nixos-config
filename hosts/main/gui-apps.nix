@@ -14,7 +14,7 @@
   programs.obs-studio.enable = true;
   programs.vscode = {
     enable = true;
-    enableUpdateCheck = false;
+    #enableUpdateCheck = false;
   };
   programs.mpv.enable = true;
 

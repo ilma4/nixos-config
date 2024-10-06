@@ -26,6 +26,7 @@
     plugins.cmp.autoEnableSources = true;
     plugins.lsp.enable = true;
     plugins.auto-save.enable = true;
+    plugins.telescope.enable = true;
 
     extraPlugins = [
       pkgs.vimPlugins."vim-suda"
