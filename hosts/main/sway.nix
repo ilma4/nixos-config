@@ -5,6 +5,7 @@
     wl-clipboard
     grim
     brightnessctl
+    pavucontrol
   ];
 
   programs.waybar = {
@@ -38,6 +39,7 @@
 
   services.mako = {
     enable = true;
+    defaultTimeout = 5000;
   };
   
   services.wob.enable = true;
@@ -49,19 +51,8 @@
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     focus.wrapping = "yes";
-    bars = [ 
-      { 
-        command = "${pkgs.waybar}/bin/waybar"; 
-        colors.urgentWorkspace = {
-            background = "#900000";
-            border = "#2f343a";
-            text = "#ffffff";
-        };
-      } 
-    ];
-
+    bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
     window.titlebar = false;
-
     startup = [
       { command = "nm-applet --indicator"; }
     ];
@@ -131,6 +122,6 @@
       "XF86AudioNext" = "exec ${playerctl} next";
     };
 
-    home.sessionVariables.NIXOS_OZONE_WL = "1";
+    home.sessionVariables.NIXOS_OZONE_WL = "1"; # forces electron apps use wayland
     home.sessionVariables.QT_QPA_PLATFORMTHEME = "gnome";
 }

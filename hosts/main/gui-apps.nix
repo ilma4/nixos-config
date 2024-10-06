@@ -12,7 +12,10 @@
   };
   programs.chromium.enable = true;
   programs.obs-studio.enable = true;
-  programs.vscode.enable = true;
+  programs.vscode = {
+    enable = true;
+    enableUpdateCheck = false;
+  };
   programs.mpv.enable = true;
 
   xsession.enable = true;
