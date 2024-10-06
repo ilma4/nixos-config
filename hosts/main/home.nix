@@ -45,6 +45,11 @@
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
   xdg.portal.configPackages = [ pkgs.sway ];
 
+  home.sessionPath = let HOME=config.home.homeDirectory; in [
+    "${HOME}/.local/bin"
+    "${HOME}/.local/share/JetBrains/Toolbox/scripts"
+  ];
+
   home.packages = with pkgs; [
     playerctl
   ];

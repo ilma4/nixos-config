@@ -1,10 +1,11 @@
 { config, pkgs, ... }:
-
+let
+  HOME = config.home.homeDirectory;
+in
 {
-  imports = [ ./nixvim.nix
+  imports = [
+    ./nixvim.nix
   ];
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
   nixpkgs.config.allowUnfree = true;
 
   # This value determines the Home Manager release that your configuration is
@@ -16,8 +17,7 @@
   # release notes.
   home.stateVersion = "24.05" ; # Please read the comment before changing.
 
-  # The home.packages option allows you to install Nix packages into your
-  # environment.
+
   home.packages = with pkgs; [
     restic
     rclone
@@ -68,6 +68,14 @@
       plugins = [ "git" "vi-mode" "extract " ];
       theme = "apple";
     };
+
+    # Fix ssh agent forwarding when reattaching to screen from new ssh connection
+    profileExtra = ''
+      if [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
+          ln -sf "$SSH_AUTH_SOCK" ${HOME}/.ssh/ssh_auth_sock
+      fi
+      export SSH_AUTH_SOCK=${HOME}/.ssh/ssh_auth_sock
+    '';
   };
 
   programs.atuin = {
@@ -85,13 +93,10 @@
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
     # ".screenrc".source = dotfiles/screenrc;
 
     ".bazelrc".text = ''
-      common --disk_cache=/home/${config.home.username}/.cache/bazel-disk
+      common --disk_cache=${HOME}/.cache/bazel-disk
     '';
 
     # # You can also set the file content immediately.
@@ -101,20 +106,6 @@
     # '';
   };
 
-  # programs.gnome-shell.enable = true;
-
-#  dconf = {
-#    enable = true;
-#    settings."org/gnome/shell" = {
-#      disable-user-extensions = false;
-#      enabled-extensions = with pkgs.gnomeExtensions; [
-#        blur-my-shell.extensionUuid
-#        gsconnect.extensionUuid
-#        "dash-to-dock"
-#        "gsconnect"
-#      ];
-#    };
-#  };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
