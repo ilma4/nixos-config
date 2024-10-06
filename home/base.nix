@@ -1,8 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  imports = [
-    ./nixvim.nix
+  imports = [ ./nixvim.nix
   ];
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -92,7 +91,7 @@
     # ".screenrc".source = dotfiles/screenrc;
 
     ".bazelrc".text = ''
-      common --disk_cache=/home/ilma4/.cache/bazel-disk
+      common --disk_cache=/home/${config.home.username}/.cache/bazel-disk
     '';
 
     # # You can also set the file content immediately.

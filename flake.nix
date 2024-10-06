@@ -71,6 +71,12 @@
       homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs { inherit system; };
 
+        extraSpecialArgs = {
+          inherit inputs;
+          inherit dotfiles;
+          modules = home-manager-modules;
+        };
+
         modules = [ 
           ./hosts/apal-server/home.nix 
           nixvim.homeManagerModules.nixvim
