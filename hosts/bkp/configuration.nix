@@ -5,11 +5,10 @@
 { config, lib, pkgs, inputs, modules, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      "${modules}/zram.nix"
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    "${modules}/zram.nix"
+  ];
   
 
   # Use the systemd-boot EFI boot loader.

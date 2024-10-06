@@ -1,10 +1,11 @@
-{ config, pkgs, ... }:
+{ config, pkgs, modules, ... }:
 
 {
   imports = [
-    ./../../common/home/base.nix
-    ./../../common/home/work.nix
+    "${modules}/base.nix"
+    "${modules}/work.nix"
   ];
+
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = "malakhov";

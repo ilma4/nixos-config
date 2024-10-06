@@ -27,36 +27,39 @@
   outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, ... }: 
     let 
       system = "x86_64-linux";
-    in {
       nixos-modules = "${self}/modules";
       home-manager-modules = "${self}/home";
       dotfiles = "${self}/dotfiles";
-
+    in {
       nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit inputs; modules = self.nixos-modules; };
+        inherit system;
+        specialArgs = { inherit inputs; modules = nixos-modules; };
         modules = [
           ./hosts/bkp/configuration.nix
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
-            home-manager.extraSpecialArgs = { inherit inputs; modules = self.home-manager-modules; dotfiles = self.dotfiles; };
+            home-manager.extraSpecialArgs = {
+              inherit inputs;
+              inherit dotfiles;
+              modules = home-manager-modules;
+            };
           }
         ];
       };
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
-          system = "x86_64-linux";
+          inherit system;
           overlays = [ nixgl.overlay ];
         };
 
         extraSpecialArgs = { 
           inherit inputs;
+          inherit dotfiles;
+          modules = home-manager-modules;
           pkgs-unstable = import inputs.nixpkgs-unstable {
-            system = "x86_64-linux";
+            inherit system;
             config.allowUnfree = true;
           };
-          modules = self.home-manager-modules;
-          dotfiles = self.dotfiles;
         };
 
         modules = [ 
@@ -64,8 +67,9 @@
           nixvim.homeManagerModules.nixvim
         ];
       };
+
       homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs { inherit system; };
 
         modules = [ 
           ./hosts/apal-server/home.nix 
