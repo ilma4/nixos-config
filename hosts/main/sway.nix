@@ -53,7 +53,7 @@
     bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
     window.titlebar = false;
     startup = [
-      { command = "nm-applet --indicator"; }
+      { command = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"; }
     ];
 
     output = {

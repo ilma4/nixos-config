@@ -37,6 +37,7 @@
     discord
     gamescope
     d-spy
+    evince
   ];
 
 }
