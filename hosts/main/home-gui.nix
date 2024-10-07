@@ -24,22 +24,10 @@
   };
 
 
-  programs.foot.enable = true;
-
-  programs.waybar = {
-    enable = true;
-  };
-
   services.gammastep = {
     enable = true;
     latitude = 52.5;
     longitude = 13.4;
-  };
-
-  wayland.windowManager.sway.enable = true;
-  wayland.windowManager.sway.config = {
-    modifier = "Mod4";
-    bars = [ { command = "\${pkgs.waybar}/bin/waybar"; } ];
   };
 }
 

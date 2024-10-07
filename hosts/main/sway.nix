@@ -13,6 +13,7 @@
   };
 
   programs.tofi.enable = true;
+  programs.foot.enable = true;
 
   services.swayidle = let 
     swaylock = "/usr/bin/swaylock" ; # swaylock from nixpkgs doesn't work on Ubuntu 
@@ -46,8 +47,6 @@
 
 
   wayland.windowManager.sway.enable = true;
-
-
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     focus.wrapping = "yes";
