@@ -4,6 +4,7 @@
   imports = [
     "${modules}/base.nix"
     "${modules}/personal.nix"
+    "${modules}/gnome.nix"
     ./home-gui.nix
   ];
 
