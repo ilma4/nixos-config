@@ -97,6 +97,10 @@
         app_id = "^.*";
       };
     }
+    {
+      command = "opacity 0.8, floating enable, sticky enable, resize set 40 ppt 70 ppt, border pixel 10";
+      criteria.app_id = "floating-term";
+    }
   ];
 
 
@@ -109,8 +113,11 @@
       playerctl = "${pkgs.playerctl}/bin/playerctl";
       slurp = "${pkgs.slurp}/bin/slurp";
       swayosd = "${pkgs.swayosd}/bin/swayosd-client";
-      favCommands = { "a" = "test a"; "b" = "test b"; } ;
+      favCommands = { "a" = "e"; "b" = "test b"; } ;
+      termWithName = "${pkgs.foot}/bin/foot --app-id";
     in lib.mkOptionDefault {
+      "${modifier}+T" = "exec ${termWithName} floating-term";
+
       "print" = "exec ${grim} - | ${wl-copy}";
       "Shift+print" = "exec ${grim} -g \"\$(${slurp})\" - | ${wl-copy}";
 
@@ -135,5 +142,5 @@
     };
 
     home.sessionVariables.NIXOS_OZONE_WL = "1"; # forces electron apps use wayland
-    home.sessionVariables.QT_QPA_PLATFORMTHEME = "gnome";
+    home.sessionVariables.QT_QPA_PLATFORMTHEME = "gnome"; # QT apps follows gtk theme
 }
