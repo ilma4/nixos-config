@@ -127,6 +127,11 @@
       "XF86AudioPlay" = "exec ${playerctl} play-pause";
       "XF86AudioPrev" = "exec ${playerctl} previous";
       "XF86AudioNext" = "exec ${playerctl} next";
+
+      "Ctrl+${modifier}+h" = "move workspace to output left";
+      "Ctrl+${modifier}+l" = "move workspace to output right";
+      "Ctrl+${modifier}+j" = "move workspace to output down";
+      "Ctrl+${modifier}+k" = "move workspace to output up";
     };
 
     home.sessionVariables.NIXOS_OZONE_WL = "1"; # forces electron apps use wayland
