@@ -24,6 +24,7 @@
   home.packages = with pkgs ; [
     brave
     google-chrome
+    vivaldi
     calibre
     slack
     telegram-desktop

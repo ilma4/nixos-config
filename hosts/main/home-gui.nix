@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, pkgs-unstable, ... }:
 
 {
   imports = [
@@ -6,12 +6,12 @@
     ./gui-apps.nix
   ];
 
-  home.packages = with pkgs ; [
+  home.packages = (with pkgs ; [
     # Drivers for non-nixos
     nixgl.nixGLIntel
     nixgl.nixVulkanIntel
     #xdg-dbus-proxy
-  ];
+  ]) ++ (with pkgs-unstable; [ browsers ]); # TODO move to stable on nixpkgs 24.11
 
   home.pointerCursor = {
     name = "Adwaita";

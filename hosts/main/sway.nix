@@ -23,7 +23,7 @@
       { timeout = 300; command = "${swaylock} -f -c 000000"; }
       { 
         timeout = 600; 
-        command = "${swaymsg} \"output * power off\";  systemctl suspend-then-hibernate"; 
+        command = "${swaymsg} \"output * power off\";  systemctl suspend"; 
         resumeCommand = "${swaymsg} \"output * power on\"";
       }
     ];
@@ -65,6 +65,12 @@
         mode = "2880x1800@120.000hz";
         scale = "2.0";
         adaptive_sync = "on";
+        position = "0 0";
+      };
+      "Dell Inc. DELL U2720Q 23TXZ83" = { # monitor in JetBrains office
+        scale = "2.0";
+        adaptive_sync = "on";
+        position = "0 -1080";
       };
     };
 
@@ -104,6 +110,7 @@
       playerctl = "${pkgs.playerctl}/bin/playerctl";
       slurp = "${pkgs.slurp}/bin/slurp";
       swayosd = "${pkgs.swayosd}/bin/swayosd-client";
+      favCommands = { "a" = "test a"; "b" = "test b"; } ;
     in lib.mkOptionDefault {
       "print" = "exec ${grim} - | ${wl-copy}";
       "Shift+print" = "exec ${grim} -g \"\$(${slurp})\" - | ${wl-copy}";
