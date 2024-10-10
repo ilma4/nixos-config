@@ -38,6 +38,7 @@
     gamescope
     d-spy
     evince
+    shotwell
   ];
 
 }
