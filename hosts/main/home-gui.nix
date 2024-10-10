@@ -10,10 +10,10 @@
     # Drivers for non-nixos
     nixgl.nixGLIntel
     nixgl.nixVulkanIntel
-    gnome.gnome-keyring
-    gnome.libgnome-keyring
-    gcr_4
-    gcr
+    #gnome.gnome-keyring
+    #gnome.libgnome-keyring
+    #gcr_4
+    #gcr
     xdg-dbus-proxy
   ]) ++ (with pkgs-unstable; [ browsers ]); # TODO move to stable on nixpkgs 24.11
 
@@ -34,9 +34,9 @@
     longitude = 13.4;
   };
 
-  services.gnome-keyring = {
-    enable = true;
-    components = [ "pkcs11" "secrets" "ssh" ];
-  };
+  #services.gnome-keyring = {
+  #  enable = true;
+  #  components = [ "pkcs11" "secrets" "ssh" ];
+  #};
 }
 

@@ -37,14 +37,14 @@
   programs.gpg.enable = true;
   services.gpg-agent = {
     enable = true;
-    pinentryPackage = pkgs.pinentry-curses;
+    pinentryPackage = pkgs.pinentry-gnome3;
   };
 
   xdg.enable = true;
   xdg.mime.enable = true; # .desktop entryes for apps
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
-  xdg.portal.configPackages = [ pkgs.sway ];
+#  xdg.portal.enable = true;
+#  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
+#  xdg.portal.configPackages = [ pkgs.sway ];
 
   home.sessionPath = let HOME=config.home.homeDirectory; in [
     "${HOME}/.local/bin"
@@ -60,5 +60,5 @@
     libreoffice-qt6-still
   ];
 
-  home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/keyring/ssh";
+  home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
 }
