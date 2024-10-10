@@ -24,7 +24,7 @@
   };
 
   
-  services.ssh-agent.enable = true;
+  #services.ssh-agent.enable = true;
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";
@@ -59,4 +59,6 @@
     bitwarden-cli
     libreoffice-qt6-still
   ];
+
+  home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/keyring/ssh";
 }

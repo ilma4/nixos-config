@@ -1,5 +1,4 @@
 { config, lib, pkgs, inputs, ... }:
-
 {
   home.packages = with pkgs ; [
     wl-clipboard
@@ -14,6 +13,8 @@
 
   programs.tofi.enable = true;
   programs.foot.enable = true;
+
+  wayland.windowManager.sway.systemd.xdgAutostart = true;
 
   services.swayidle = let 
     swaylock = "/usr/bin/swaylock" ; # swaylock from nixpkgs doesn't work on Ubuntu 
@@ -54,6 +55,7 @@
     window.titlebar = false;
     startup = [
       { command = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"; }
+      { command = "dbus-update-activation-environment --all"; }
     ];
 
     output = {

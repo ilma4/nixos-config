@@ -39,6 +39,7 @@
     d-spy
     evince
     shotwell
+    gnome.seahorse
   ];
 
 }

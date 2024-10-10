@@ -10,7 +10,11 @@
     # Drivers for non-nixos
     nixgl.nixGLIntel
     nixgl.nixVulkanIntel
-    #xdg-dbus-proxy
+    gnome.gnome-keyring
+    gnome.libgnome-keyring
+    gcr_4
+    gcr
+    xdg-dbus-proxy
   ]) ++ (with pkgs-unstable; [ browsers ]); # TODO move to stable on nixpkgs 24.11
 
   home.pointerCursor = {
@@ -28,6 +32,11 @@
     enable = true;
     latitude = 52.5;
     longitude = 13.4;
+  };
+
+  services.gnome-keyring = {
+    enable = true;
+    components = [ "pkcs11" "secrets" "ssh" ];
   };
 }
 
