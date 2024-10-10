@@ -21,6 +21,7 @@ in
   home.packages = with pkgs; [
     restic
     rclone
+    rsync
 
     powerline-fonts
     curl
