@@ -56,5 +56,10 @@
     clang
     playerctl
     pkg-config
+    bitwarden-cli
+    libreoffice-qt6-still
+    corretto21
+    corretto17
+    corretto11
   ];
 }
