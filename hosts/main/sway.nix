@@ -26,11 +26,12 @@ in
     pkgs.pavucontrol
   ];
 
-  top-commands.tofi-command = "${tofi} ${tofi-flags}";
-
-  #programs.waybar = {
-  #  enable = true;
-  #};
+  top-commands = {
+    tofi-command = "${tofi} ${tofi-flags}";
+    commands = lib.mkOptionDefault {
+      lock_screen = "${swaylock} -f -c 000000";
+    };
+  };
 
   programs.tofi.enable = isNixos;
   programs.foot.enable = isNixos;
@@ -39,7 +40,6 @@ in
 
   services.swayidle = {
     enable = true;
-    #package = null;
     timeouts = [
       { timeout = 300; command = "${swaylock} -f -c 000000"; }
       { 
@@ -77,7 +77,6 @@ in
     terminal = foot;
     startup = [
       { command = nm-applet; }
-      # { command = "dbus-update-activation-environment --all"; }
     ];
 
     output = {

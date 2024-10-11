@@ -4,13 +4,11 @@ let cfg = config.top-commands; in
   options.top-commands = {
     commands = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
-      default = { test = "echo test"; };
       example = { hello-world = "echo 'Hello World!'"; };
       description = "Named favourite commands";
     };
     tofi-command = lib.mkOption {
       type = lib.types.str;
-      default = "tofi";
       example = "\${tofi} --width 800 --height 700 --font /usr/share/fonts/TTF/JetBrainsMono-Light.ttf";
       description = "Command to run tofi";
     };
