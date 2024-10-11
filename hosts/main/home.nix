@@ -5,7 +5,7 @@
     "${modules}/base.nix"
     "${modules}/personal.nix"
     "${modules}/gnome.nix"
-    ./home-gui.nix
+    ./gui-cfg.nix
   ];
 
   home.username = "ilma4";

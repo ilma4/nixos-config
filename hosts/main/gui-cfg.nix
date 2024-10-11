@@ -34,6 +34,18 @@
     longitude = 13.4;
   };
 
+  gtk = {
+    enable = true;
+    iconTheme = {
+      name = "Adwaita";
+      package = pkgs.gnome.adwaita-icon-theme;
+    };
+    theme = {
+      name = "Adwaita";
+      package = pkgs.gnome.gnome-themes-extra;
+    };
+  };
+
   #services.gnome-keyring = {
   #  enable = true;
   #  components = [ "pkcs11" "secrets" "ssh" ];
