@@ -14,7 +14,8 @@ let
   swayosd = "${pkgs.swayosd}/bin/swayosd-client";
   favCommands = { "a" = "e"; "b" = "test b"; } ;
   termWithName = if isNixos then "${pkgs.foot}/bin/foot --app-id" else "/usr/bin/foot --app-id";
-  tofi = if isNixos then "${pkgs.tofi}/bin/tofi" else "/usr/bin/tofi";
+  tofi = if isNixos then "${pkgs.tofi}/bin/tofi" else "/usr/bin/tofi"; 
+  tofi-flags = "--width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
   foot = if isNixos then "${pkgs.foot}/bin/foot" else "/usr/bin/foot";
 in
 {
@@ -25,12 +26,14 @@ in
     pkgs.pavucontrol
   ];
 
+  top-commands.tofi-command = "${tofi} ${tofi-flags}";
+
   #programs.waybar = {
   #  enable = true;
   #};
 
-  #programs.tofi.enable = true;
-  #programs.foot.enable = true;
+  programs.tofi.enable = isNixos;
+  programs.foot.enable = isNixos;
 
   wayland.windowManager.sway.systemd.xdgAutostart = true;
 
@@ -107,7 +110,7 @@ in
       };
     };
 
-    menu = "${tofi}-drun --drun-launch=true --width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
+    menu = "${tofi}-drun --drun-launch=true ${tofi-flags}";
   };
 
   wayland.windowManager.sway.config.window.commands = [

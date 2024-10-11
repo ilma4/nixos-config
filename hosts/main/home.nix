@@ -24,6 +24,12 @@
     ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = "${dotfiles}/easyeffects/Sony MDR-7506 no bass boost.json";
   };
 
+  top-commands.commands = {
+    suspend = "systemctl suspend";
+    sleep = "systemctl suspend";
+    lock-screen = "swaylock -f -c 000000";
+  };
+
   
   #services.ssh-agent.enable = true;
   programs.ssh = {
