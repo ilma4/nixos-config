@@ -6,6 +6,7 @@
     "${modules}/personal.nix"
     ./gui-tweaks.nix
     ./sway.nix
+    ./top-commands.nix
   ];
 
   home.username = "ilma4";
