@@ -9,6 +9,7 @@
     gnome-menus
     gnome.zenity
     gnome.nautilus
+    gnome.nautilus-python
     terminator
     ptyxis
   ];

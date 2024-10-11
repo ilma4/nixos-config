@@ -14,9 +14,10 @@
     #gnome.libgnome-keyring
     #gcr_4
     #gcr
-    xdg-dbus-proxy
+    #xdg-dbus-proxy
   ]) ++ (with pkgs-unstable; [ browsers ]); # TODO move to stable on nixpkgs 24.11
 
+  
   home.pointerCursor = {
     name = "Adwaita";
     package = pkgs.gnome.adwaita-icon-theme;
@@ -26,29 +27,36 @@
       defaultCursor = "Adwaita";
     };
   };
+  
 
 
+  
   services.gammastep = {
     enable = true;
     latitude = 52.5;
     longitude = 13.4;
   };
+  
 
+  
   gtk = {
     enable = true;
     iconTheme = {
       name = "Adwaita";
       package = pkgs.gnome.adwaita-icon-theme;
     };
-    theme = {
-      name = "Adwaita";
-      package = pkgs.gnome.gnome-themes-extra;
-    };
+    #theme = {
+    #  name = "adw-gtk3";
+    #  package = pkgs.adw-gtk3;
+    #};
   };
+  
 
-  #services.gnome-keyring = {
-  #  enable = true;
-  #  components = [ "pkcs11" "secrets" "ssh" ];
-  #};
+  /*
+  services.gnome-keyring = {
+    enable = true;
+    components = [ "pkcs11" "secrets" "ssh" ];
+  };
+  */
 }
 

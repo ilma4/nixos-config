@@ -4,8 +4,8 @@
   imports = [
     "${modules}/base.nix"
     "${modules}/personal.nix"
-    "${modules}/gnome.nix"
-    ./gui-cfg.nix
+    #"${modules}/gnome.nix"
+    #./gui-cfg.nix
   ];
 
   home.username = "ilma4";
@@ -42,9 +42,9 @@
 
   xdg.enable = true;
   xdg.mime.enable = true; # .desktop entryes for apps
-#  xdg.portal.enable = true;
-#  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
-#  xdg.portal.configPackages = [ pkgs.sway ];
+  #xdg.portal.enable = true;
+  #xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
+  #xdg.portal.configPackages = [ pkgs.sway ];
 
   home.sessionPath = let HOME=config.home.homeDirectory; in [
     "${HOME}/.local/bin"
@@ -57,8 +57,9 @@
     playerctl
     pkg-config
     bitwarden-cli
-    libreoffice-qt6-still
+    #libreoffice-qt6-still
   ];
 
+  # Use gcr4 as ssh-agent
   home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
 }
