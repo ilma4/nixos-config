@@ -26,7 +26,7 @@ let cfg = config.top-commands; in
       (acc: key: _: "${acc}\n${key}") "" cfg.commands
     ;
   in let 
-    launch-favorite = (pkgs.writers.writeRustBin "launch-favorite" {} /*rust*/''
+    launch-favorite = (pkgs.writers.writeRustBin "launch-favorite" { rustcArgs = [ "-C" "opt-level=3" ]; } /*rust*/''
       use std::env;
       use std::os::unix::process::CommandExt;
       use std::process::{Command, Stdio};

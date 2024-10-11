@@ -12,11 +12,28 @@ let
   playerctl = "${pkgs.playerctl}/bin/playerctl";
   slurp = "${pkgs.slurp}/bin/slurp";
   swayosd = "${pkgs.swayosd}/bin/swayosd-client";
-  favCommands = { "a" = "e"; "b" = "test b"; } ;
   termWithName = if isNixos then "${pkgs.foot}/bin/foot --app-id" else "/usr/bin/foot --app-id";
   tofi = if isNixos then "${pkgs.tofi}/bin/tofi" else "/usr/bin/tofi"; 
   tofi-flags = "--width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
   foot = if isNixos then "${pkgs.foot}/bin/foot" else "/usr/bin/foot";
+
+  toggle-vpn = (pkgs.writers.writePython3Bin "toggle-vpn" {} /*python3*/''
+import subprocess as sp
+import sys
+
+if len(sys.argv) < 2:
+    sys.exit(1)
+vpn = sys.argv[1]
+active = sp.check_output(["nmcli", "-f", "name", "con", "show", "--active"])
+# print(active.decode("utf-8"))
+active = list(map(lambda x: x.strip(), active.decode("utf-8").split("\n")))
+# print(active)
+if vpn not in active:
+    sp.run(["nmcli", "connection", "up", "id", vpn])
+else:
+    sp.run(["nmcli", "connection", "down", "id", vpn])
+sys.exit(0)
+  '');
 in
 {
   home.packages = [
@@ -24,12 +41,15 @@ in
     pkgs.grim
     pkgs.swayosd
     pkgs.pavucontrol
+    toggle-vpn
   ];
 
   top-commands = {
     tofi-command = "${tofi} ${tofi-flags}";
     commands = lib.mkOptionDefault {
       lock_screen = "${swaylock} -f -c 000000";
+      wg = "${toggle-vpn}/bin/toggle-vpn wg";
+      jetbrainsVpn = "${toggle-vpn}/bin/toggle-vpn JetBrainsVPN";
     };
   };
 
