@@ -15,6 +15,7 @@ let
   favCommands = { "a" = "e"; "b" = "test b"; } ;
   termWithName = if isNixos then "${pkgs.foot}/bin/foot --app-id" else "/usr/bin/foot --app-id";
   tofi = if isNixos then "${pkgs.tofi}/bin/tofi" else "/usr/bin/tofi";
+  foot = if isNixos then "${pkgs.foot}/bin/foot" else "/usr/bin/foot";
 in
 {
   home.packages = [
@@ -70,6 +71,7 @@ in
     focus.wrapping = "yes";
     bars = [ { command = waybar; } ];
     window.titlebar = false;
+    terminal = foot;
     startup = [
       { command = nm-applet; }
       # { command = "dbus-update-activation-environment --all"; }

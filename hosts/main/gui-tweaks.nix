@@ -37,6 +37,8 @@
     latitude = 52.5;
     longitude = 13.4;
   };
+
+  xdg.portal.xdgOpenUsePortal = true;
   
 
   
