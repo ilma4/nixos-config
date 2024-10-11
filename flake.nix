@@ -22,6 +22,11 @@
       url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, ... }: 
@@ -49,7 +54,10 @@
       homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ nixgl.overlay ];
+          overlays = [ 
+            nixgl.overlay 
+            inputs.rust-overlay.overlays.default 
+          ];
         };
 
         extraSpecialArgs = { 
@@ -65,6 +73,7 @@
         modules = [ 
           ./hosts/main/home.nix 
           nixvim.homeManagerModules.nixvim
+
         ];
       };
 
