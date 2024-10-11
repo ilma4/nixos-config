@@ -1,26 +1,41 @@
 { config, lib, pkgs, inputs, ... }:
+let 
+  isNixos = !config.targets.genericLinux.enable;
+  swaylock = if isNixos then "${pkgs.swaylock}/bin/swaylock}" else "/usr/bin/swaylock"; 
+  swaymsg = if isNixos then "${pkgs.sway}/bin/swaymsg" else "/usr/bin/swaymsg";
+  waybar = if isNixos then "${pkgs.waybar}/bin/waybar" else "/usr/bin/waybar";
+  nm-applet = if isNixos then "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator" else "/usr/bin/nm-applet --indicator";
+  modifier = config.wayland.windowManager.sway.config.modifier;
+  pamixer = "${pkgs.pamixer}/bin/pamixer";
+  grim = "${pkgs.grim}/bin/grim";
+  wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
+  playerctl = "${pkgs.playerctl}/bin/playerctl";
+  slurp = "${pkgs.slurp}/bin/slurp";
+  swayosd = "${pkgs.swayosd}/bin/swayosd-client";
+  favCommands = { "a" = "e"; "b" = "test b"; } ;
+  termWithName = if isNixos then "${pkgs.foot}/bin/foot --app-id" else "/usr/bin/foot --app-id";
+  tofi = if isNixos then "${pkgs.tofi}/bin/tofi" else "/usr/bin/tofi";
+in
 {
-  home.packages = with pkgs ; [
-    wl-clipboard
-    grim
-    brightnessctl
-    pavucontrol
+  home.packages = [
+    pkgs.wl-clipboard
+    pkgs.grim
+    pkgs.swayosd
+    pkgs.pavucontrol
   ];
 
-  programs.waybar = {
-    enable = true;
-  };
+  #programs.waybar = {
+  #  enable = true;
+  #};
 
-  programs.tofi.enable = true;
-  programs.foot.enable = true;
+  #programs.tofi.enable = true;
+  #programs.foot.enable = true;
 
   wayland.windowManager.sway.systemd.xdgAutostart = true;
 
-  services.swayidle = let 
-    swaylock = "/usr/bin/swaylock" ; # swaylock from nixpkgs doesn't work on Ubuntu 
-    swaymsg = "${pkgs.sway}/bin/swaymsg" ;
-  in {
+  services.swayidle = {
     enable = true;
+    #package = null;
     timeouts = [
       { timeout = 300; command = "${swaylock} -f -c 000000"; }
       { 
@@ -48,14 +63,16 @@
 
 
   wayland.windowManager.sway.enable = true;
+  wayland.windowManager.sway.package = null;
+
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     focus.wrapping = "yes";
-    bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
+    bars = [ { command = waybar; } ];
     window.titlebar = false;
     startup = [
-      { command = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"; }
-      { command = "dbus-update-activation-environment --all"; }
+      { command = nm-applet; }
+      # { command = "dbus-update-activation-environment --all"; }
     ];
 
     output = {
@@ -88,7 +105,7 @@
       };
     };
 
-    menu = "${pkgs.tofi}/bin/tofi-drun --drun-launch=true --width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
+    menu = "${tofi}-drun --drun-launch=true --width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
   };
 
   wayland.windowManager.sway.config.window.commands = [
@@ -106,18 +123,7 @@
   ];
 
 
-  wayland.windowManager.sway.config.keybindings = let
-      modifier = config.wayland.windowManager.sway.config.modifier;
-      pamixer = "${pkgs.pamixer}/bin/pamixer";
-      grim = "${pkgs.grim}/bin/grim";
-      wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
-      brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
-      playerctl = "${pkgs.playerctl}/bin/playerctl";
-      slurp = "${pkgs.slurp}/bin/slurp";
-      swayosd = "${pkgs.swayosd}/bin/swayosd-client";
-      favCommands = { "a" = "e"; "b" = "test b"; } ;
-      termWithName = "${pkgs.foot}/bin/foot --app-id";
-    in lib.mkOptionDefault {
+  wayland.windowManager.sway.config.keybindings = lib.mkOptionDefault {
       "${modifier}+T" = "exec ${termWithName} floating-term";
 
       "print" = "exec ${grim} - | ${wl-copy}";
@@ -143,6 +149,6 @@
       "Ctrl+${modifier}+k" = "move workspace to output up";
     };
 
-    home.sessionVariables.NIXOS_OZONE_WL = "1"; # forces electron apps use wayland
-    home.sessionVariables.QT_QPA_PLATFORMTHEME = "gnome"; # QT apps follows gtk theme
+    #home.sessionVariables.NIXOS_OZONE_WL = "1"; # forces electron apps use wayland
+    #home.sessionVariables.QT_QPA_PLATFORMTHEME = "gnome"; # QT apps follows gtk theme
 }
