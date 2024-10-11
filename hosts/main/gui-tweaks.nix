@@ -1,15 +1,14 @@
 { config, pkgs, pkgs-unstable, ... }:
-
+# Works on any linux
 {
   imports = [
-    ./sway.nix
-    ./gui-apps.nix
   ];
 
   home.packages = (with pkgs ; [
     # Drivers for non-nixos
-    nixgl.nixGLIntel
-    nixgl.nixVulkanIntel
+    #nixgl.nixGLIntel
+    #nixgl.nixVulkanIntel
+
     #gnome.gnome-keyring
     #gnome.libgnome-keyring
     #gcr_4
@@ -21,11 +20,13 @@
   home.pointerCursor = {
     name = "Adwaita";
     package = pkgs.gnome.adwaita-icon-theme;
+    /*
     size = 48;
     x11 = {
       enable = true;
       defaultCursor = "Adwaita";
     };
+    */
   };
   
 
@@ -39,17 +40,19 @@
   
 
   
+  /*
   gtk = {
     enable = true;
     iconTheme = {
       name = "Adwaita";
       package = pkgs.gnome.adwaita-icon-theme;
     };
-    #theme = {
-    #  name = "adw-gtk3";
-    #  package = pkgs.adw-gtk3;
-    #};
+    theme = {
+      name = "adw-gtk3";
+      package = pkgs.adw-gtk3;
+    };
   };
+  */
   
 
   /*

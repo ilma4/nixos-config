@@ -4,6 +4,7 @@
   imports = [
     "${modules}/base.nix"
     "${modules}/personal.nix"
+    ./gui-tweaks.nix
     #"${modules}/gnome.nix"
     #./gui-cfg.nix
   ];
