@@ -16,6 +16,7 @@ let
   tofi = if isNixos then "${pkgs.tofi}/bin/tofi" else "/usr/bin/tofi"; 
   tofi-flags = "--width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
   foot = if isNixos then "${pkgs.foot}/bin/foot" else "/usr/bin/foot";
+  sway-audio-idle-inhibit = "${pkgs.sway-audio-idle-inhibit}/bin/sway-audio-idle-inhibit";
 
   toggle-vpn = (pkgs.writers.writePython3Bin "toggle-vpn" {} /*python3*/''
 import subprocess as sp
@@ -97,6 +98,7 @@ in
     terminal = foot;
     startup = [
       { command = nm-applet; }
+      { command = sway-audio-idle-inhibit; }
     ];
 
     output = {
