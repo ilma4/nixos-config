@@ -27,6 +27,7 @@
   top-commands.commands = lib.mkOptionDefault {
     suspend = "systemctl suspend";
     sleep = "systemctl suspend";
+    reboot = "systemctl reboot";
   };
 
   
