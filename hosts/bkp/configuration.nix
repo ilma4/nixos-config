@@ -84,6 +84,9 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput.enable = true;
 
+  # Check btrfs automatically
+  services.btrfs.autoScrub.enable = true;
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.ilma4 = {
     isNormalUser = true;
