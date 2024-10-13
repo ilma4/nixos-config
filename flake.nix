@@ -73,7 +73,6 @@
         modules = [ 
           ./hosts/main/home.nix 
           nixvim.homeManagerModules.nixvim
-
         ];
       };
 

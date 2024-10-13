@@ -65,6 +65,10 @@
     })
   ];
 
+  services.syncthing = {
+    enable = true;
+  };
+
   # Use gcr4 as ssh-agent
   home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
 

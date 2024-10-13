@@ -38,7 +38,7 @@
     longitude = 13.4;
   };
 
-  xdg.portal.xdgOpenUsePortal = true;
+  #xdg.portal.xdgOpenUsePortal = true;
   
 
   
