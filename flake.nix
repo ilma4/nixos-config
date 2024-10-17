@@ -16,7 +16,7 @@
     nixvim = {
       url = "github:nix-community/nixvim/nixos-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
-     };
+    };
 
     nixgl = {
       url = "github:nix-community/nixGL";
@@ -27,9 +27,14 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    }; 
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, ... }: 
+  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, nix-darwin, ... }: 
     let 
       system = "x86_64-linux";
       nixos-modules = "${self}/modules";
@@ -73,6 +78,25 @@
         modules = [ 
           ./hosts/main/home.nix 
           nixvim.homeManagerModules.nixvim
+        ];
+      };
+
+      darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
+        modules = [
+          ./hosts/jb-macbook/configuration.nix
+
+          home-manager.darwinModules.home-manager {
+          home-manager.useGlobalPkgs = true;
+          #home-manager.useUserPackages = true;
+
+          home-manager.extraSpecialArgs = {
+            inherit inputs;
+            inherit dotfiles;
+            modules = home-manager-modules;
+          };
+
+          home-manager.users.ilma4 = import ./hosts/jb-macbook/home.nix;
+          }
         ];
       };
 
