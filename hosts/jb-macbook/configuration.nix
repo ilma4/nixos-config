@@ -42,6 +42,8 @@
       "slack"
 
       "iterm2" 
+      "scroll-reverser"
+      "blackhole-2ch"
 
       "intellij-idea"
       "pycharm"
