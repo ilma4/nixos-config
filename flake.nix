@@ -32,6 +32,8 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     }; 
+
+    mac-app-util.url = "github:hraban/mac-app-util";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, nix-darwin, ... }: 
@@ -84,6 +86,7 @@
       darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
         modules = [
           ./hosts/jb-macbook/configuration.nix
+          inputs.mac-app-util.darwinModules.default
 
           home-manager.darwinModules.home-manager {
           home-manager.useGlobalPkgs = true;
@@ -94,6 +97,10 @@
             inherit dotfiles;
             modules = home-manager-modules;
           };
+
+          home-manager.sharedModules = [
+            inputs.mac-app-util.homeManagerModules.default
+          ];
 
           home-manager.users.ilma4 = import ./hosts/jb-macbook/home.nix;
           }

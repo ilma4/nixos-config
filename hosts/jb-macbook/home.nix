@@ -20,6 +20,7 @@
   home.packages = with pkgs; [
     obsidian
     telegram-desktop
+    # anki
   ];
 
   # This value determines the Home Manager release that your

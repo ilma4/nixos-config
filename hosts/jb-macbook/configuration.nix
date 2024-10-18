@@ -40,10 +40,12 @@
       "firefox" 
       "thunderbird"
       "slack"
+      "anki"
 
       "iterm2" 
       "scroll-reverser"
       "blackhole-2ch"
+      "au-lab"
 
       "intellij-idea"
       "pycharm"
