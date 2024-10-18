@@ -19,7 +19,7 @@
     enableKeyMapping = true;
 
     remapCapsLockToEscape = true;
-    nonUS.remapTilde = true;
+
     #swapLeftCtrlAndFn = true;
   };
 
@@ -27,12 +27,12 @@
 
   system.defaults.trackpad = {
     Clicking = true;
-    Dragging = true;
+    # Dragging = true;
   };
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
-  # nix.package = pkgs.nix;
+  nix.package = pkgs.nix;
 
   nixpkgs.config.allowUnfree = true; 
   # Necessary for using flakes on this system. 
@@ -44,9 +44,9 @@
       # Could be replaced by nix packages in future
       "firefox" 
       "thunderbird"
-      "slack"
       "anki"
       "obs"
+      "bitwarden"
 
      # Mac specific, most probably remain brew casks
       "iterm2" 
@@ -54,6 +54,8 @@
       "blackhole-2ch"
       "au-lab"
       "whisky"
+      # "alfred"
+      "raycast"
 
      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "intellij-idea"
@@ -75,6 +77,13 @@
     enable = true;
     # TODO config
   };
+
+  services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
+  services.skhd.enable = true; # hotkeys daemon
+  services.skhd.skhdConfig = ''
+lalt - h : yabai -m window --focus west
+    lalt - l : yabai -m window --focus east
+  '';
 
   # Create /etc/zshrc that loads the nix-darwin environment. 
   programs.zsh.enable = true;  # default shell on catalina 

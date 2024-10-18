@@ -24,6 +24,7 @@
   home.packages = with pkgs; [
     obsidian
     telegram-desktop
+    slack
     # anki
   ];
 
