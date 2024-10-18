@@ -37,21 +37,24 @@
   homebrew = { 
     enable = true; 
     casks = [ 
+      # Could be replaced by nix packages in future
       "firefox" 
       "thunderbird"
       "slack"
       "anki"
+      "obs"
 
+     # Mac specific, most probably remain brew casks
       "iterm2" 
       "scroll-reverser"
       "blackhole-2ch"
       "au-lab"
 
+     # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "intellij-idea"
       "pycharm"
       "clion"
       "rustrover"
-
       "android-studio"
     ]; 
 
@@ -65,7 +68,7 @@
 
   services.yabai = {
     enable = true;
-
+    # TODO config
   };
 
   # Create /etc/zshrc that loads the nix-darwin environment. 
