@@ -11,6 +11,10 @@
     home = "/Users/ilma4";
   };
 
+  users.users.ilma42 = {
+    home = "/Users/ilma42";
+  };
+
   system.keyboard = {
     enableKeyMapping = true;
 
@@ -49,6 +53,7 @@
       "scroll-reverser"
       "blackhole-2ch"
       "au-lab"
+      "whisky"
 
      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "intellij-idea"

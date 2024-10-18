@@ -17,6 +17,10 @@
   #};
   programs.git.enable = true;
 
+  services.syncthing = {
+    enable = true;
+  };
+
   home.packages = with pkgs; [
     obsidian
     telegram-desktop
