@@ -11,10 +11,6 @@
     home = "/Users/ilma4";
   };
 
-  users.users.ilma42 = {
-    home = "/Users/ilma42";
-  };
-
   system.keyboard = {
     enableKeyMapping = true;
 
@@ -27,6 +23,7 @@
 
   system.defaults.trackpad = {
     Clicking = true;
+    TrackpadThreeFingerDrag = true;
     # Dragging = true;
   };
 
@@ -53,9 +50,9 @@
       "scroll-reverser"
       "blackhole-2ch"
       "au-lab"
-      "whisky"
       # "alfred"
       "raycast"
+      "whisky"
 
      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "intellij-idea"
@@ -74,16 +71,22 @@
   };
 
   services.yabai = {
-    enable = true;
+    # enable = true;
     # TODO config
   };
+
+/*
+lalt - h : yabai -m window --focus west
+lalt - l : yabai -m window --focus east
+lalt - j : yabai -m window --focus south
+lalt - k : yabai -m window --focus north
+*/
 
   services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
   services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
-lalt - h : yabai -m window --focus west
-    lalt - l : yabai -m window --focus east
-  '';
+lalt - return : osascript <<END tell application "iTerm2" create window with default profile end tell END
+'';
 
   # Create /etc/zshrc that loads the nix-darwin environment. 
   programs.zsh.enable = true;  # default shell on catalina 
