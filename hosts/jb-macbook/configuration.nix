@@ -40,13 +40,14 @@
     casks = [ 
       # Could be replaced by nix packages in future
       "firefox" 
-      "thunderbird"
+      #"thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
       "bitwarden"
 
      # Mac specific, most probably remain brew casks
       "iterm2" 
+      "macfuse" # FUSE for macOS
 
       "scroll-reverser"
       "linearmouse"
