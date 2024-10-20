@@ -82,10 +82,11 @@ lalt - j : yabai -m window --focus south
 lalt - k : yabai -m window --focus north
 */
 
+
   services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
   services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
-lalt - return : osascript <<END tell application "iTerm2" create window with default profile end tell END
+lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
 '';
 
   # Create /etc/zshrc that loads the nix-darwin environment. 
