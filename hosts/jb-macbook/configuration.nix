@@ -47,11 +47,17 @@
 
      # Mac specific, most probably remain brew casks
       "iterm2" 
+
       "scroll-reverser"
+      "linearmouse"
+      # "middleclick" # can't open link in new tab in firefox with this
+      "alt-tab"
+
+      "raycast"
+      # "alfred"
+
       "blackhole-2ch"
       "au-lab"
-      # "alfred"
-      "raycast"
       "whisky"
 
      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
@@ -71,15 +77,11 @@
   };
 
   services.yabai = {
-    # enable = true;
+    enable = true;
     # TODO config
   };
 
 /*
-lalt - h : yabai -m window --focus west
-lalt - l : yabai -m window --focus east
-lalt - j : yabai -m window --focus south
-lalt - k : yabai -m window --focus north
 */
 
 
@@ -87,6 +89,20 @@ lalt - k : yabai -m window --focus north
   services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
 lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
+
+lalt - h : yabai -m window --focus west
+lalt - l : yabai -m window --focus east
+lalt - j : yabai -m window --focus south
+lalt - k : yabai -m window --focus north
+
+shift + lalt - h : yabai -m window --swap west
+shift + lalt - l : yabai -m window --swap east
+shift + lalt - j : yabai -m window --swap south
+shift + lalt - k : yabai -m window --swap north
+
+lalt -f : yabai -m window --toggle zoom-fullscreen
+
+lalt - e : yabai -m window --toggle split
 '';
 
   # Create /etc/zshrc that loads the nix-darwin environment. 
