@@ -17,6 +17,8 @@
   #};
   programs.git.enable = true;
 
+  programs.vscode.enable = true;
+
   services.syncthing = {
     enable = true;
   };
@@ -25,6 +27,8 @@
     obsidian
     telegram-desktop
     slack
+    iterm2
+    # calibre
     # anki
   ];
 

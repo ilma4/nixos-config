@@ -46,7 +46,7 @@
       "bitwarden"
 
      # Mac specific, most probably remain brew casks
-      "iterm2" 
+      #"iterm2" 
       "macfuse" # FUSE for macOS
 
       "scroll-reverser"
