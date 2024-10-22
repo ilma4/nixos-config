@@ -3,8 +3,8 @@
 {
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
-  environment.systemPackages = [ 
-    pkgs.vim
+  environment.systemPackages = with pkgs; [ 
+    avahi
   ];
     
   users.users.ilma4 = {
@@ -40,7 +40,7 @@
     casks = [ 
       # Could be replaced by nix packages in future
       "firefox" 
-      #"thunderbird@esr" # esr is default for thunderbird
+      "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
       "bitwarden"
@@ -85,11 +85,30 @@
 /*
 */
 
+  environment.etc.hosts.text = ''
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+##
+0.0.0.0 habr.com
+::1 habr.com
+
+0.0.0.0 www.phoronix.com
+::1 www.phoronix.com
+  '';
+
 
   services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
   services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
-lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
+# lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
 
 lalt - h : yabai -m window --focus west
 lalt - l : yabai -m window --focus east
@@ -101,7 +120,8 @@ shift + lalt - l : yabai -m window --swap east
 shift + lalt - j : yabai -m window --swap south
 shift + lalt - k : yabai -m window --swap north
 
-lalt -f : yabai -m window --toggle zoom-fullscreen
+lalt - f : yabai -m window --toggle zoom-fullscreen
+lalt - q : yabai -m window --close
 
 lalt - e : yabai -m window --toggle split
 '';
