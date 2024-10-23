@@ -97,7 +97,6 @@
             inherit inputs;
             inherit dotfiles;
             modules = home-manager-modules;
-            outOfStoreSymlink = (cfg: x: cfg.lib.file.mkOutOfStoreSymlink "/Users/ilma4/.config/nixos-config/dotfiles/${x}");
           };
 
           home-manager.sharedModules = [

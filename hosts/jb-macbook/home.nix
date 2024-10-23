@@ -46,15 +46,18 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
     ];
 
 
-    home.file = {
-    "itermNewWindow.scpt".text = ''
-tell application "iTerm2" 
-  create window with default profile 
-end tell
-  '';
-    };
+    #home.file."itermNewWindow.scpt".text = ''
+#tell application "iTerm2" 
+#  create window with default profile 
+#end tell
+#  '';
 
-    home.file.".config/rclone/rclone.conf".source = config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/rclone.conf";
+    # RW symlinks, so apps can edits their configs
+    home.file = let symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}"; in {
+      ".config/rclone/rclone.conf".source = symlink "rclone.conf";
+      ".config/karabiner/karabiner.json".source = symlink "karabiner/karabiner.json";
+      ".config/karabiner/assets".source = symlink "karabiner/assets";
+    };
 
     # This value determines the Home Manager release that your
     # configuration is compatible with. This helps avoid breakage
