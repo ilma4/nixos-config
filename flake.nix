@@ -33,6 +33,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     }; 
 
+    flake-root.url = "github:srid/flake-root";
     mac-app-util.url = "github:hraban/mac-app-util";
   };
 
@@ -96,6 +97,7 @@
             inherit inputs;
             inherit dotfiles;
             modules = home-manager-modules;
+            outOfStoreSymlink = (cfg: x: cfg.lib.file.mkOutOfStoreSymlink "/Users/ilma4/.config/nixos-config/dotfiles/${x}");
           };
 
           home-manager.sharedModules = [

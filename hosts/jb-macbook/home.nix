@@ -1,4 +1,4 @@
-{ config, pkgs, modules, inputs, ... }:
+args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
 
 {
   # Home Manager needs a bit of information about you and the
@@ -40,6 +40,13 @@ tell application "iTerm2"
 end tell
 '';
   };
+
+  #home.file.".config/rclone/rclone.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/rclone.conf";
+  
+  # works but ugly
+  #home.file.".config/rclone/rclone.conf".source = config.lib.file.mkOutOfStoreSymlink "/Users/ilma4/.config/nixos-config/dotfiles/rclone.conf";
+
+  home.file.".config/rclone/rclone.conf".source = args.outOfStoreSymlink config  "rclone.conf";
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
