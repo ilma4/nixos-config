@@ -14,6 +14,7 @@
   system.keyboard = {
     enableKeyMapping = true;
 
+    nonUs.remapTilde = true;
     remapCapsLockToEscape = true;
 
     #swapLeftCtrlAndFn = true;
@@ -45,8 +46,8 @@
       "obs"
       "bitwarden"
 
+
      # Mac specific, most probably remain brew casks
-      #"iterm2" 
       "macfuse" # FUSE for macOS
 
       "scroll-reverser"
@@ -56,6 +57,9 @@
 
       "raycast"
       # "alfred"
+
+
+      "nikitabobko/tap/aerospace"
 
       "blackhole-2ch"
       "au-lab"
@@ -77,13 +81,6 @@
     ];
   };
 
-  services.yabai = {
-    enable = true;
-    # TODO config
-  };
-
-/*
-*/
 
   environment.etc.hosts.text = ''
 ##
@@ -106,7 +103,7 @@
 
 
   services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
-  services.skhd.enable = true; # hotkeys daemon
+  #services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
 # lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
 
