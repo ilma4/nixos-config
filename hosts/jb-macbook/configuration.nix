@@ -25,8 +25,41 @@
   system.defaults.trackpad = {
     Clicking = true;
     TrackpadThreeFingerDrag = true;
-    # Dragging = true;
+    # Dragging = true; # enable when Apple fix input lag caused by it
   };
+
+  system.defaults.NSGlobalDomain = {
+    "com.apple.trackpad.scaling" = 2.0;
+
+    "com.apple.keyboard.fnState" = true; # enable fn lock
+  };
+
+  system.defaults.spaces.spans-displays = true; # monitors have shared screens
+
+
+  system.defaults.menuExtraClock.Show24Hour = true;
+
+  system.defaults.finder = {
+    ShowPathbar = true;
+  };
+
+  system.defaults.dock = {
+    wvous-bl-corner = 1; # bottom left hot corner. disabled
+    wvous-br-corner = 1; # bottom left hot corner. disabled
+    wvous-tl-corner = 2; # top left hot corner. Mission Control
+    wvous-tr-corner = 1; # top left right corner. disabled
+
+    mru-spaces = false; # disable rearrange spaces based on most recent use
+    orientation = "bottom";
+
+    autohide = true;
+    autohide-time-modifier = 0.1;
+  };
+
+  system.defaults.WindowManager = {
+    GloballyEnabled = false; # disable Stage Manager
+  };
+
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
