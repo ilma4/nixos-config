@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: 
+{ config, lib, pkgs, ... }: 
 
 {
   # List packages installed in system profile. To search by name, run:
@@ -79,6 +79,14 @@
       "obs"
       "bitwarden"
 
+      #avaliable in nix, but nix has troubles with gui apps
+      "telegram-desktop"
+      "iterm2"
+      "obsidian"
+      "slack"
+      "visual-studio-code"
+      "karabiner-elements"
+
 
      # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS
@@ -135,11 +143,12 @@
   '';
 
 
-  services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
+  #services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
   #services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
 # lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
 '';
+
 
   # Create /etc/zshrc that loads the nix-darwin environment. 
   programs.zsh.enable = true;  # default shell on catalina 

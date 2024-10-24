@@ -22,23 +22,27 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
     home.username = "ilma4";
     home.homeDirectory = "/Users/ilma4";
 
+    # Broken. FIXME: enable when fixed
     #programs.firefox = {
     #  enable = true;
     #  package = pkgs.firefox-bin;
     #};
+
     programs.git.enable = true;
 
-    programs.vscode.enable = true;
+    # nix on macos have issues with gui apps
+    #programs.vscode.enable = true;
 
     services.syncthing = {
       enable = true;
     };
 
     home.packages = with pkgs; [
-      obsidian
-      telegram-desktop
-      slack
-      iterm2
+      # gui apps on macos are broken, enable when get fixed
+      #obsidian
+      #telegram-desktop
+      #slack
+      #iterm2
 
       # Broken. FIXME: enable when fixed
       # calibre
