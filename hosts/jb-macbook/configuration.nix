@@ -83,6 +83,8 @@
       "obs"
       "bitwarden"
 
+      "docker"
+
       #avaliable in nix, but nix has troubles with gui apps
       "telegram-desktop"
       "iterm2"

@@ -38,6 +38,10 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
     };
 
     home.packages = with pkgs; [
+      vifm
+
+      #docker
+
       # gui apps on macos are broken, enable when get fixed
       #obsidian
       #telegram-desktop
