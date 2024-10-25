@@ -82,6 +82,7 @@
       "anki"
       "obs"
       "bitwarden"
+      "calibre"
 
       "docker"
 
