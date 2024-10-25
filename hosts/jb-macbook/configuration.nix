@@ -71,6 +71,10 @@
 
   homebrew = { 
     enable = true; 
+    onActivation = {
+      cleanup = "uninstall";
+    };
+
     casks = [ 
       # Could be replaced by nix packages in future
       "firefox" 
@@ -86,6 +90,7 @@
       "slack"
       "visual-studio-code"
       "karabiner-elements"
+      "discord"
 
 
      # Mac specific, most probably remain brew casks
@@ -104,7 +109,7 @@
 
       "blackhole-2ch"
       "au-lab"
-      "whisky"
+      "whisky" # wine for macos
 
      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "intellij-idea"
@@ -119,6 +124,9 @@
       "openjdk@17"
       "openjdk@11"
       "openjdk@8"
+
+
+      "kdoctor" # jb tool for kotlin multiplatform
     ];
   };
 
