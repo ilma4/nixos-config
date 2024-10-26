@@ -28,8 +28,6 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
     #  package = pkgs.firefox-bin;
     #};
 
-    programs.git.enable = true;
-
     # nix on macos have issues with gui apps
     #programs.vscode.enable = true;
 
@@ -54,17 +52,12 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
     ];
 
 
-    #home.file."itermNewWindow.scpt".text = ''
-#tell application "iTerm2" 
-#  create window with default profile 
-#end tell
-#  '';
-
     # RW symlinks, so apps can edits their configs
     home.file = let symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}"; in {
       ".config/rclone/rclone.conf".source = symlink "rclone.conf";
       ".config/karabiner/karabiner.json".source = symlink "karabiner/karabiner.json";
       ".config/karabiner/assets".source = symlink "karabiner/assets";
+
       ".config/aerospace/aerospace.toml".source = "${dotfiles}/aerospace.toml";
     };
   };
