@@ -1,6 +1,7 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 let
   HOME = config.home.homeDirectory;
+  inherit (pkgs) stdenv;
 in
 {
   imports = [
@@ -71,7 +72,8 @@ in
     };
 
     # Fix ssh agent forwarding when reattaching to screen from new ssh connection
-    profileExtra = ''
+    profileExtra = lib.mkIf stdenv.isLinux # macOS works fine with ssh agent
+    ''
       if [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
           ln -sf "$SSH_AUTH_SOCK" ${HOME}/.ssh/ssh_auth_sock
       fi
