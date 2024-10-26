@@ -65,6 +65,7 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
       ".config/rclone/rclone.conf".source = symlink "rclone.conf";
       ".config/karabiner/karabiner.json".source = symlink "karabiner/karabiner.json";
       ".config/karabiner/assets".source = symlink "karabiner/assets";
+      ".config/aerospace/aerospace.toml".source = "${dotfiles}/aerospace.toml";
     };
   };
 }

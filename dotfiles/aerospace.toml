@@ -99,7 +99,7 @@ N10 = 'secondary'
 # See: https://nikitabobko.github.io/AeroSpace/commands#exec-and-forget
 # You can uncomment the following lines to open up terminal with alt + enter shortcut (like in i3)
 cmd-enter = '''exec-and-forget osascript -e '
-tell application "iTerm2"
+tell application "iTerm"
   create window with default profile
 end tell'
 '''
