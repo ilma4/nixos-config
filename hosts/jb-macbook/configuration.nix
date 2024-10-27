@@ -3,10 +3,10 @@
 {
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
-  environment.systemPackages = with pkgs; [ 
+  environment.systemPackages = with pkgs; [
     avahi
   ];
-    
+ 
   users.users.ilma4 = {
     home = "/Users/ilma4";
   };

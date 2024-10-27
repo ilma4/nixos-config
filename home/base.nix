@@ -39,6 +39,9 @@ in
 
     bazelisk
 
+    nixd
+    alejandra
+
     (pkgs.writeShellScriptBin "dirsize" ''
       du -shc -- "$@" | sort --human-numeric-sort --reverse
     '')
