@@ -1,17 +1,19 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-{ config, lib, pkgs, inputs, modules, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  inputs,
+  modules,
+  ...
+}: {
   imports = [
     ./hardware-configuration.nix
     "${modules}/zram.nix"
     ./samba.nix
   ];
-  
-
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
     efi = {
@@ -19,22 +21,21 @@
       efiSysMountPoint = "/boot/efi";
     };
     grub = {
-     enable = true;
-     efiSupport = true;
-     # efiInstallAsRemovable = true; # in case canTouchEfiVariables doesn't work for your system
-     device = "nodev"; 
-    }; 
+      enable = true;
+      efiSupport = true;
+      # efiInstallAsRemovable = true; # in case canTouchEfiVariables doesn't work for your system
+      device = "nodev";
+    };
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   nixpkgs.config.allowUnfree = true;
   hardware.enableAllFirmware = true;
-
 
   networking.hostName = "ilma4-bkp"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
   # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
@@ -54,15 +55,12 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
 
-
   # Enable background periodic TRIM
   services.fstrim.enable = true;
-  
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -76,10 +74,10 @@
 
   # Enable sound.
   hardware.pulseaudio.enable = false;
-   services.pipewire = {
-     enable = true;
-     pulse.enable = true;
-   };
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+  };
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput.enable = true;
@@ -88,16 +86,16 @@
   services.btrfs.autoScrub.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.ilma4 = {
+  users.users.ilma4 = {
     isNormalUser = true;
     shell = pkgs.zsh;
     #initialPassword = "1234";
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-   };
+    extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
+  };
 
-   home-manager.users = {
-     "ilma4" = import ./home.nix ;
-   };
+  home-manager.users = {
+    "ilma4" = import ./home.nix;
+  };
 
   virtualisation = {
     docker = {
@@ -113,7 +111,6 @@
     };
   };
 
-
   # List packages installed in system profile. To search, run:
   #programs.obsidian.enabled = true;
 
@@ -127,47 +124,46 @@
   programs.gamescope.enable = true;
   programs.gnome-terminal.enable = true;
 
-  environment.pathsToLink = [ "/share/zsh" ];
+  environment.pathsToLink = ["/share/zsh"];
 
   # $ nix search wget
-   environment.systemPackages = with pkgs; [
-     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-     curl
-     pandoc
-     telegram-desktop
-     shotwell
-     htop
-     anki
-     qbittorrent
-     libreoffice-still
-     krita
-     kdenlive
-     gnome.gnome-tweaks
-     google-chrome
-     wl-clipboard
-     corretto21
-     corretto17
-     corretto11
-     brave
-     vlc
-     prismlauncher
-     thunderbird
-     jetbrains.clion
-     jetbrains.pycharm-professional
-     jetbrains.pycharm-community-bin
-     jetbrains.idea-ultimate
-     jetbrains.idea-community-bin
-     vscode
-     android-studio
-     ripgrep
-     fd
-     obs-studio
-     discord
-     restic
-     slack
-   ];
-
+  environment.systemPackages = with pkgs; [
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+    curl
+    pandoc
+    telegram-desktop
+    shotwell
+    htop
+    anki
+    qbittorrent
+    libreoffice-still
+    krita
+    kdenlive
+    gnome.gnome-tweaks
+    google-chrome
+    wl-clipboard
+    corretto21
+    corretto17
+    corretto11
+    brave
+    vlc
+    prismlauncher
+    thunderbird
+    jetbrains.clion
+    jetbrains.pycharm-professional
+    jetbrains.pycharm-community-bin
+    jetbrains.idea-ultimate
+    jetbrains.idea-community-bin
+    vscode
+    android-studio
+    ripgrep
+    fd
+    obs-studio
+    discord
+    restic
+    slack
+  ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -206,6 +202,4 @@
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }
-

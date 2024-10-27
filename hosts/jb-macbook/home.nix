@@ -1,6 +1,12 @@
-args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
-
-{
+args @ {
+  config,
+  lib,
+  pkgs,
+  modules,
+  inputs,
+  dotfiles,
+  ...
+}: {
   imports = [
     "${modules}/base.nix"
   ];
@@ -50,9 +56,10 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
       # anki
     ];
 
-
     # RW symlinks, so apps can edits their configs
-    home.file = let symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}"; in {
+    home.file = let
+      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
+    in {
       ".config/rclone/rclone.conf".source = symlink "rclone.conf";
       ".config/karabiner/karabiner.json".source = symlink "karabiner/karabiner.json";
       ".config/karabiner/assets".source = symlink "karabiner/assets";

@@ -1,6 +1,11 @@
-{ config, pkgs, inputs, modules, dotfiles, ... }:
-
 {
+  config,
+  pkgs,
+  inputs,
+  modules,
+  dotfiles,
+  ...
+}: {
   imports = [
     "${modules}/base.nix"
     "${modules}/personal.nix"

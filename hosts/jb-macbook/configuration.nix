@@ -1,12 +1,15 @@
-{ config, lib, pkgs, ... }: 
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
     avahi
   ];
- 
+
   users.users.ilma4 = {
     home = "/Users/ilma4";
   };
@@ -36,7 +39,6 @@
 
   system.defaults.spaces.spans-displays = true; # monitors have shared screens
 
-
   system.defaults.menuExtraClock.Show24Hour = true;
 
   system.defaults.finder = {
@@ -60,24 +62,23 @@
     GloballyEnabled = false; # disable Stage Manager
   };
 
-
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
 
-  nixpkgs.config.allowUnfree = true; 
-  # Necessary for using flakes on this system. 
-  nix.settings.experimental-features = "nix-command flakes"; 
+  nixpkgs.config.allowUnfree = true;
+  # Necessary for using flakes on this system.
+  nix.settings.experimental-features = "nix-command flakes";
 
-  homebrew = { 
-    enable = true; 
+  homebrew = {
+    enable = true;
     onActivation = {
       cleanup = "uninstall";
     };
 
-    casks = [ 
+    casks = [
       # Could be replaced by nix packages in future
-      "firefox" 
+      "firefox"
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
@@ -95,8 +96,7 @@
       "karabiner-elements"
       "discord"
 
-
-     # Mac specific, most probably remain brew casks
+      # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS
 
       "scroll-reverser"
@@ -107,20 +107,19 @@
       "raycast"
       # "alfred"
 
-
       "nikitabobko/tap/aerospace"
 
       "blackhole-2ch"
       "au-lab"
       "whisky" # wine for macos
 
-     # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
+      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "intellij-idea"
       "pycharm"
       "clion"
       "rustrover"
       "android-studio"
-    ]; 
+    ];
 
     brews = [
       "openjdk@21"
@@ -128,40 +127,36 @@
       "openjdk@11"
       "openjdk@8"
 
-
       "kdoctor" # jb tool for kotlin multiplatform
     ];
   };
 
-
   environment.etc.hosts.text = ''
-##
-# Host Database
-#
-# localhost is used to configure the loopback interface
-# when the system is booting.  Do not change this entry.
-##
-127.0.0.1	localhost
-255.255.255.255	broadcasthost
-::1             localhost
+    ##
+    # Host Database
+    #
+    # localhost is used to configure the loopback interface
+    # when the system is booting.  Do not change this entry.
+    ##
+    127.0.0.1	localhost
+    255.255.255.255	broadcasthost
+    ::1             localhost
 
-##
-0.0.0.0 habr.com
-::1 habr.com
+    ##
+    0.0.0.0 habr.com
+    ::1 habr.com
 
-0.0.0.0 www.phoronix.com
-::1 www.phoronix.com
+    0.0.0.0 www.phoronix.com
+    ::1 www.phoronix.com
   '';
-
 
   #services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
-# lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
-'';
+    # lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
+  '';
 
-
-  # Create /etc/zshrc that loads the nix-darwin environment. 
-  programs.zsh.enable = true;  # default shell on catalina 
+  # Create /etc/zshrc that loads the nix-darwin environment.
+  programs.zsh.enable = true; # default shell on catalina
 
   # Set Git commit hash for darwin-version.
   system.configurationRevision = config.rev or config.dirtyRev or null;
@@ -173,4 +168,3 @@
   # The platform the configuration will be used on.
   nixpkgs.hostPlatform = "aarch64-darwin";
 }
-
