@@ -3,7 +3,6 @@ args@{ config, lib, pkgs, modules, inputs, dotfiles, ... }:
 {
   imports = [
     "${modules}/base.nix"
-    inputs.nixvim.homeManagerModules.nixvim
   ];
 
   options = {

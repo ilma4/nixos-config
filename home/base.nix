@@ -42,7 +42,7 @@ in
     (pkgs.writeShellScriptBin "dirsize" ''
       du -shc -- "$@" | sort --human-numeric-sort --reverse
     '')
-  ];
+  ] ++ (if stdenv.isDarwin || config.targets.genericLinux.enable then [ pkgs.bazelisk ] else [ ]) ;
 
   fonts.fontconfig.enable = true;
   fonts.fontconfig.defaultFonts.monospace = [

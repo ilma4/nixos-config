@@ -154,7 +154,6 @@
   '';
 
 
-  #services.karabiner-elements.enable = true; # remap keys: I remap lower tilde to Fn
   #services.skhd.enable = true; # hotkeys daemon
   services.skhd.skhdConfig = ''
 # lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}

@@ -1,5 +1,13 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, inputs, ... }:
+let
+  inherit (lib) mkIf;
+  inherit (pkgs) stdenv;
+in
 {
+  imports = [
+    inputs.nixvim.homeManagerModules.nixvim
+  ];
+
   programs.nixvim = {
     enable = true;
     viAlias = true;
@@ -16,8 +24,8 @@
       };
     };
 
-    clipboard = {
-      providers.wl-copy.enable = true;
+    clipboard =   {
+      providers.wl-copy.enable = stdenv.isLinux;
       register = "unnamedplus";
     };
 
