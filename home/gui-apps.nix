@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     # ./jetbrains.nix # FIXME: on 2024-10-05, usage of this idea, caused gpu crashes on wayland
   ];
@@ -10,18 +12,19 @@
     enable = true;
     profiles = {};
   };
+
   programs.chromium.enable = true;
   programs.obs-studio.enable = true;
   programs.vscode = {
     enable = true;
     #enableUpdateCheck = false;
   };
+
   programs.mpv.enable = true;
 
   xsession.enable = true;
 
-  
-  home.packages = with pkgs ; [
+  home.packages = with pkgs; [
     brave
     google-chrome
     vivaldi
@@ -35,11 +38,8 @@
     xorg.xprop
     obsidian
     discord
-    gamescope
-    d-spy
     evince
     shotwell
     gnome.seahorse
   ];
-
 }

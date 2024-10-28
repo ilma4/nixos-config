@@ -43,7 +43,6 @@
     self,
     nixpkgs,
     home-manager,
-    nixvim,
     nixgl,
     nix-darwin,
     ...
@@ -96,7 +95,6 @@
 
       modules = [
         ./hosts/main/home.nix
-        nixvim.homeManagerModules.nixvim
       ];
     };
 
@@ -135,7 +133,6 @@
 
       modules = [
         ./hosts/apal-server/home.nix
-        nixvim.homeManagerModules.nixvim
       ];
     };
   };

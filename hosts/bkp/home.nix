@@ -12,8 +12,6 @@
     "${modules}/gui-apps.nix"
   ];
 
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
   home.username = "ilma4";
   home.homeDirectory = "/home/ilma4";
 

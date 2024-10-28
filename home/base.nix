@@ -44,12 +44,6 @@ in {
 
   programs.git = {
     enable = true;
-    userName = "Ilia Malakhov";
-    userEmail = "ilya.malakhov4@gmail.com";
-    signing = {
-      signByDefault = false;
-      key = "64ECA0776D0E99AC";
-    };
   };
 
   programs.zsh = {
@@ -73,15 +67,15 @@ in {
       '';
   };
 
-
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";
     matchBlocks = {
-      "ilma4-bkp" = { forwardAgent = true; };
-      "nvc00731.amt.labs.intellij.net" = { forwardAgent = true; };
+      "ilma4-bkp" = {forwardAgent = true;};
+      "nvc00731.amt.labs.intellij.net" = {forwardAgent = true;};
     };
   };
+
 
   programs.atuin = {
     enable = true;
