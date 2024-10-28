@@ -31,66 +31,89 @@
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
-    }; 
+    };
 
-    flake-root.url = "github:srid/flake-root";
+    flake-root = {
+      url = "github:srid/flake-root";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nixvim, nixgl, nix-darwin, ... }: 
-    let 
-      system = "x86_64-linux";
-      nixos-modules = "${self}/modules";
-      home-manager-modules = "${self}/home";
-      dotfiles = "${self}/dotfiles";
-    in {
-      nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit inputs; modules = nixos-modules; };
-        modules = [
-          ./hosts/bkp/configuration.nix
-          home-manager.nixosModules.home-manager {
-            home-manager.useGlobalPkgs = true;
-            home-manager.extraSpecialArgs = {
-              inherit inputs;
-              inherit dotfiles;
-              modules = home-manager-modules;
-            };
-          }
-        ];
-      };
-      homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ 
-            nixgl.overlay 
-            inputs.rust-overlay.overlays.default 
-          ];
-        };
-
-        extraSpecialArgs = { 
-          inherit inputs;
-          inherit dotfiles;
-          modules = home-manager-modules;
-          pkgs-unstable = import inputs.nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-        };
-
-        modules = [ 
-          ./hosts/main/home.nix 
-          nixvim.homeManagerModules.nixvim
-        ];
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    home-manager,
+    nixvim,
+    nixgl,
+    nix-darwin,
+    ...
+  }: let
+    x86-linux = "x86_64-linux";
+    arm64-macos = "aarch64-darwin";
+    nixos-modules = "${self}/modules";
+    home-manager-modules = "${self}/home";
+    dotfiles = "${self}/dotfiles";
+  in {
+    nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
+      system = x86-linux;
+      specialArgs = {
+        inherit inputs;
+        modules = nixos-modules;
       };
 
-      darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
-        modules = [
-          ./hosts/jb-macbook/configuration.nix
-
-          home-manager.darwinModules.home-manager {
+      modules = [
+        ./hosts/bkp/configuration.nix
+        home-manager.nixosModules.home-manager
+        {
           home-manager.useGlobalPkgs = true;
-          #home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = {
+            inherit inputs;
+            inherit dotfiles;
+            modules = home-manager-modules;
+          };
+        }
+      ];
+    };
 
+    homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
+      pkgs = import nixpkgs {
+        system = x86-linux;
+        overlays = [
+          nixgl.overlay
+          inputs.rust-overlay.overlays.default
+        ];
+      };
+
+      extraSpecialArgs = {
+        inherit inputs;
+        inherit dotfiles;
+        modules = home-manager-modules;
+        pkgs-unstable = import inputs.nixpkgs-unstable {
+          system = x86-linux;
+          config.allowUnfree = true;
+        };
+      };
+
+      modules = [
+        ./hosts/main/home.nix
+        nixvim.homeManagerModules.nixvim
+      ];
+    };
+
+    darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
+      pkgs = import nixpkgs {
+        system = arm64-macos;
+        config.allowUnfree = true;
+        overlays = [
+          inputs.rust-overlay.overlays.default
+        ];
+      };
+
+      modules = [
+        ./hosts/jb-macbook/configuration.nix
+        home-manager.darwinModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
           home-manager.extraSpecialArgs = {
             inherit inputs;
             inherit dotfiles;
@@ -98,23 +121,22 @@
           };
 
           home-manager.users.ilma4 = import ./hosts/jb-macbook/home.nix;
-          }
-        ];
-      };
-
-      homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs { inherit system; };
-
-        extraSpecialArgs = {
-          inherit inputs;
-          inherit dotfiles;
-          modules = home-manager-modules;
-        };
-
-        modules = [ 
-          ./hosts/apal-server/home.nix 
-          nixvim.homeManagerModules.nixvim
-        ];
-      };
+        }
+      ];
     };
+
+    homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
+      pkgs = import nixpkgs {system = x86-linux;};
+      extraSpecialArgs = {
+        inherit inputs;
+        inherit dotfiles;
+        modules = home-manager-modules;
+      };
+
+      modules = [
+        ./hosts/apal-server/home.nix
+        nixvim.homeManagerModules.nixvim
+      ];
+    };
+  };
 }

@@ -10,6 +10,10 @@ in {
     [
       nixd
       alejandra
+
+      (pkgs.rust-bin.stable.latest.default.override {
+        extensions = ["rust-src"];
+      })
     ]
     ++ (
       if isNotNixOS

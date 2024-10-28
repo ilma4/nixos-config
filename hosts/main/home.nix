@@ -48,10 +48,6 @@
     playerctl
     pkg-config
     bitwarden-cli
-
-    (pkgs.rust-bin.nightly.latest.default.override {
-      extensions = [ "rust-src" ];
-    })
   ];
 
   services.syncthing = {
