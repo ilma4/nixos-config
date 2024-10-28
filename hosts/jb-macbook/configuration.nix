@@ -128,6 +128,7 @@
       "openjdk@8"
 
       "kdoctor" # jb tool for kotlin multiplatform
+      "xcbeautify"
     ];
   };
 

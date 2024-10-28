@@ -30,17 +30,6 @@
     reboot = "systemctl reboot";
   };
 
-  
-  #services.ssh-agent.enable = true;
-  programs.ssh = {
-    enable = true;
-    addKeysToAgent = "yes";
-    matchBlocks = {
-      "ilma4-bkp" = { forwardAgent = true; };
-      "nvc00731.amt.labs.intellij.net" = { forwardAgent = true; };
-    };
-  };
-
   programs.gpg.enable = true;
   services.gpg-agent = {
     enable = true;

@@ -22,43 +22,24 @@ in {
   # release notes.
   home.stateVersion = "24.05"; # Please read the comment before changing.
 
-  home.packages = with pkgs;
-    [
-      restic
-      rclone
-      rsync
+  home.packages = with pkgs; [
+    restic
+    rclone
+    rsync
 
-      powerline-fonts
-      curl
-      wget
+    curl
+    wget
 
-      unrar
-      unzip
-      zip
-      zstd
-      xz
-      gzip
+    unrar
+    unzip
+    zip
+    zstd
+    xz
+    gzip
 
-      jetbrains-mono
-
-      bazelisk
-
-      nixd
-      alejandra
-
-      (pkgs.writeShellScriptBin "dirsize" ''
-        du -shc -- "$@" | sort --human-numeric-sort --reverse
-      '')
-    ]
-    ++ (
-      if stdenv.isDarwin || config.targets.genericLinux.enable
-      then [pkgs.bazelisk]
-      else []
-    );
-
-  fonts.fontconfig.enable = true;
-  fonts.fontconfig.defaultFonts.monospace = [
-    "JetBrains Mono"
+    (pkgs.writeShellScriptBin "dirsize" ''
+      du -shc -- "$@" | sort --human-numeric-sort --reverse
+    '')
   ];
 
   programs.git = {
@@ -74,9 +55,6 @@ in {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    shellAliases = {
-      bazel = "bazelisk";
-    };
     oh-my-zsh = {
       enable = true;
       plugins = ["git" "vi-mode" "extract"];
@@ -86,12 +64,23 @@ in {
     # Fix ssh agent forwarding when reattaching to screen from new ssh connection
     profileExtra =
       lib.mkIf stdenv.isLinux # macOS works fine with ssh agent
+      
       ''
-if [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
-    ln -sf "$SSH_AUTH_SOCK" ${HOME}/.ssh/ssh_auth_sock
-fi
-export SSH_AUTH_SOCK=${HOME}/.ssh/ssh_auth_sock
-'';
+        if [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
+            ln -sf "$SSH_AUTH_SOCK" ${HOME}/.ssh/ssh_auth_sock
+        fi
+        export SSH_AUTH_SOCK=${HOME}/.ssh/ssh_auth_sock
+      '';
+  };
+
+
+  programs.ssh = {
+    enable = true;
+    addKeysToAgent = "yes";
+    matchBlocks = {
+      "ilma4-bkp" = { forwardAgent = true; };
+      "nvc00731.amt.labs.intellij.net" = { forwardAgent = true; };
+    };
   };
 
   programs.atuin = {

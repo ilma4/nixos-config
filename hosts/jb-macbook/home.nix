@@ -9,6 +9,8 @@ args @ {
 }: {
   imports = [
     "${modules}/base.nix"
+    "${modules}/dev.nix"
+    "${modules}/graphics.nix"
   ];
 
   options = {
