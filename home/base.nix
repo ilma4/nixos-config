@@ -11,6 +11,7 @@ in {
   imports = [
     ./nixvim.nix
   ];
+
   nixpkgs.config.allowUnfree = true;
 
   # This value determines the Home Manager release that your configuration is
@@ -36,6 +37,7 @@ in {
     zstd
     xz
     gzip
+    p7zip
 
     (pkgs.writeShellScriptBin "dirsize" ''
       du -shc -- "$@" | sort --human-numeric-sort --reverse
@@ -44,6 +46,7 @@ in {
 
   programs.git = {
     enable = true;
+    # config to commit located in `dev.nix`
   };
 
   programs.zsh = {
@@ -76,7 +79,6 @@ in {
     };
   };
 
-
   programs.atuin = {
     enable = true;
     enableZshIntegration = true;
@@ -91,21 +93,7 @@ in {
   programs.htop.enable = true;
   programs.fzf.enable = true;
 
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
-  home.file = {
-    ".screenrc".source = "${dotfiles}/screenrc";
-
-    ".bazelrc".text = ''
-      common --disk_cache=${HOME}/.cache/bazel-disk
-    '';
-
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
-  };
+  home.file.".screenrc".source = "${dotfiles}/screenrc";
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a

@@ -25,6 +25,10 @@ in {
     bazel = "bazelisk";
   };
 
+  home.file."..bazelrc".text = ''
+    common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
+  '';
+
   programs.git = {
     userName = "Ilia Malakhov";
     userEmail = "ilya.malakhov4@gmail.com";

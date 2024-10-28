@@ -62,9 +62,8 @@ args @ {
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
     in {
-      ".config/rclone/rclone.conf".source = symlink "rclone.conf";
-      ".config/karabiner/karabiner.json".source = symlink "karabiner/karabiner.json";
-      ".config/karabiner/assets".source = symlink "karabiner/assets";
+      ".config/rclone".source = symlink "rclone";
+      ".config/karabiner".source = symlink "karabiner";
 
       ".config/aerospace/aerospace.toml".source = "${dotfiles}/aerospace.toml";
     };

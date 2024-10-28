@@ -33,10 +33,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-root = {
-      url = "github:srid/flake-root";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    flake-root.url = "github:srid/flake-root";
   };
 
   outputs = inputs @ {
@@ -99,6 +96,9 @@
     };
 
     darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
+      specialArgs = {
+        inherit inputs;
+      };
       pkgs = import nixpkgs {
         system = arm64-macos;
         config.allowUnfree = true;
