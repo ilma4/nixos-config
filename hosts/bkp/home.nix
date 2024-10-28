@@ -9,6 +9,7 @@
   imports = [
     "${modules}/base.nix"
     "${modules}/personal.nix"
+    "${modules}/gui-apps.nix"
   ];
 
   # Home Manager needs a bit of information about you and the paths it should

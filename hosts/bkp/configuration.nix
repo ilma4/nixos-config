@@ -114,11 +114,9 @@
   # List packages installed in system profile. To search, run:
   #programs.obsidian.enabled = true;
 
-  programs.git.enable = true;
   programs.screen.enable = true;
   programs.zsh.enable = true;
-  programs.firefox.enable = true;
-  programs.chromium.enable = true;
+
   programs.virt-manager.enable = true;
   programs.steam.enable = true;
   programs.gamescope.enable = true;
@@ -129,40 +127,26 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
-    curl
+
     pandoc
-    telegram-desktop
-    shotwell
-    htop
+
     anki
-    qbittorrent
     libreoffice-still
-    krita
     kdenlive
     gnome.gnome-tweaks
-    google-chrome
     wl-clipboard
     corretto21
     corretto17
     corretto11
-    brave
     vlc
     prismlauncher
-    thunderbird
+
     jetbrains.clion
     jetbrains.pycharm-professional
     jetbrains.pycharm-community-bin
     jetbrains.idea-ultimate
     jetbrains.idea-community-bin
-    vscode
     android-studio
-    ripgrep
-    fd
-    obs-studio
-    discord
-    restic
-    slack
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
