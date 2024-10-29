@@ -20,7 +20,7 @@
   system.keyboard = {
     enableKeyMapping = true;
 
-    nonUS.remapTilde = true;
+    # nonUS.remapTilde = true;
     remapCapsLockToEscape = true;
 
     #swapLeftCtrlAndFn = true;
