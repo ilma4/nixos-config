@@ -99,6 +99,7 @@
       specialArgs = {
         inherit inputs;
       };
+
       pkgs = import nixpkgs {
         system = arm64-macos;
         config.allowUnfree = true;

@@ -98,6 +98,7 @@
       "visual-studio-code"
       "karabiner-elements"
       "discord"
+      "zed"
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS

@@ -24,19 +24,8 @@ args @ {
   };
 
   config = {
-    # Home Manager needs a bit of information about you and the
-    # paths it should manage.
     home.username = "ilma4";
     home.homeDirectory = "/Users/ilma4";
-
-    # Broken. FIXME: enable when fixed
-    #programs.firefox = {
-    #  enable = true;
-    #  package = pkgs.firefox-bin;
-    #};
-
-    # nix on macos have issues with gui apps
-    #programs.vscode.enable = true;
 
     services.syncthing = {
       enable = true;
@@ -45,9 +34,9 @@ args @ {
     home.packages = with pkgs; [
       vifm
 
-      #docker
+      #docker # docker support on macos is complicated
 
-      # gui apps on macos are broken, enable when get fixed
+      # FIXME: gui apps on macos are broken, enable when get fixed
       #obsidian
       #telegram-desktop
       #slack
