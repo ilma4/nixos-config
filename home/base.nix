@@ -73,6 +73,11 @@ in {
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";
+    extraConfig = ''
+      IdentityFile ~/.ssh/github
+      UseKeychain yes
+    '';
+
     matchBlocks = {
       "ilma4-bkp" = {forwardAgent = true;};
       "nvc00731.amt.labs.intellij.net" = {forwardAgent = true;};

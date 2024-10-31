@@ -85,8 +85,9 @@
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
-      "bitwarden"
+      # "bitwarden"
       "calibre"
+      "1password-cli"
 
       "docker"
 
@@ -133,7 +134,13 @@
 
       "kdoctor" # jb tool for kotlin multiplatform
       "xcbeautify"
+      "bitwarden-cli"
     ];
+
+    masApps = {
+      Xcode = 497799835;
+      Bitwarden = 1352778147; 
+    };
   };
 
   environment.etc.hosts.text = ''
