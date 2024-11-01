@@ -27,6 +27,8 @@ args @ {
     home.username = "ilma4";
     home.homeDirectory = "/Users/ilma4";
 
+    flake-location = "${config.home.homeDirectory}/.config/nixos-config";
+
     services.syncthing = {
       enable = true;
     };
