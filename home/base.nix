@@ -21,6 +21,12 @@ in {
       description = "Location of the flake";
     };
 
+    isRootless = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether the nix installation is in rootless chroot";
+    };
+
     rebuild-script = lib.mkOption {
       type = lib.types.str;
       example = "nixos-rebuild switch";
@@ -125,7 +131,7 @@ in {
     programs.htop.enable = true;
     programs.fzf.enable = true;
 
-    home.file.".screenrc".source = "${dotfiles}/screenrc";
+    home.file.".screenrc".source = lib.mkIf (!config.isRootless) "${dotfiles}/screenrc";
 
     # Home Manager can also manage your environment variables through
     # 'home.sessionVariables'. These will be explicitly sourced when using a
