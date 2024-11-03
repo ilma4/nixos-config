@@ -130,6 +130,10 @@ in {
     programs.bat.enable = true;
     programs.htop.enable = true;
     programs.fzf.enable = true;
+    programs.tmux = {
+      enable = true;
+      keyMode = "vi";
+    };
 
     home.file = lib.mkIf (!config.isRootless) {
       ".screenrc".source = "${dotfiles}/screenrc";
