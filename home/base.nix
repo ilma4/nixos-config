@@ -28,16 +28,13 @@ in {
         (
           if isDarwin
           then "darwin-rebuild switch"
-
           else if isNixos
           then "nixos rebuild switch"
-
           else if stdenv.isLinux
           then "home-manager switch"
           else ""
         )
         + " --flake ${config.flake-location}";
-        
 
       description = "nix-rebuild script";
     };

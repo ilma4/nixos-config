@@ -14,6 +14,7 @@
 
   home.username = "ilma4";
   home.homeDirectory = "/home/ilma4";
+  flake-location = "${config.home.homeDirectory}/nixos";
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
