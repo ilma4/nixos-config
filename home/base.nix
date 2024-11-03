@@ -131,7 +131,9 @@ in {
     programs.htop.enable = true;
     programs.fzf.enable = true;
 
-    home.file.".screenrc".source = lib.mkIf (!config.isRootless) "${dotfiles}/screenrc";
+    home.file = lib.mkIf (!config.isRootless) {
+      ".screenrc".source = "${dotfiles}/screenrc";
+    };
 
     # Home Manager can also manage your environment variables through
     # 'home.sessionVariables'. These will be explicitly sourced when using a
