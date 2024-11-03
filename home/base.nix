@@ -104,10 +104,15 @@ in {
     programs.ssh = {
       enable = true;
       addKeysToAgent = "yes";
-      extraConfig = ''
-        IdentityFile ~/.ssh/github
-        UseKeychain yes
-      '';
+      extraConfig =
+        ''
+          IdentityFile ~/.ssh/github
+          ''
+        + (
+          if isDarwin
+          then "UseKeychain yes"
+          else ""
+        );
 
       matchBlocks = {
         "ilma4-bkp" = {forwardAgent = true;};
