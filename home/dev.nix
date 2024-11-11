@@ -25,7 +25,7 @@ in {
     bazel = "bazelisk";
   };
 
-  home.file."..bazelrc".text = ''
+  home.file.".bazelrc".text = ''
     common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
   '';
 
