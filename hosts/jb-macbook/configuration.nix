@@ -85,6 +85,7 @@
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
+      "steam"
       # "bitwarden"
       "calibre"
       "1password-cli"
