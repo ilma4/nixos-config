@@ -109,6 +109,8 @@
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
       "alt-tab"
+      "todoist"
+      "caffeine"
 
       "raycast"
       # "alfred"
