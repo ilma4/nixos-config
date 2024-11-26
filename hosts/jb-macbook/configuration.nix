@@ -122,6 +122,7 @@
       "whisky" # wine for macos
 
       # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
+      "jetbrains-toolbox"
       "intellij-idea"
       "pycharm"
       "clion"

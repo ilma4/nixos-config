@@ -48,7 +48,16 @@ args @ {
       # Broken. FIXME: enable when fixed
       # calibre
       # anki
+
+      (pkgs.writeShellScriptBin "system-upgrade" ''
+        nix flake update ${config.flake-location}
+        nix-rebuild
+        /opt/homebrew/bin/brew update -f
+        /opt/homebrew/bin/brew upgrade --greedy
+      '')
     ];
+
+    programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
     # RW symlinks, so apps can edits their configs
     home.file = let
