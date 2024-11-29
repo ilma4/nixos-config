@@ -90,6 +90,7 @@
       "calibre"
       "1password-cli"
       "vlc"
+      "far2l"
 
       "docker"
 
@@ -115,6 +116,8 @@
 
       "raycast"
       # "alfred"
+      "easydict"
+      "marta"
 
       "nikitabobko/tap/aerospace"
 
