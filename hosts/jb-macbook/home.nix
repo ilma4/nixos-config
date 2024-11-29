@@ -59,6 +59,8 @@ args @ {
 
     programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
+    # programs.mpv.enable = true; # broken on 24.05, TODO: try on 24.11
+
     # RW symlinks, so apps can edits their configs
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";

@@ -89,6 +89,7 @@
       # "bitwarden"
       "calibre"
       "1password-cli"
+      "vlc"
 
       "docker"
 
