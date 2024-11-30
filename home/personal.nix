@@ -31,6 +31,11 @@ in {
     "nvc00731.amt.labs.intellij.net" = {
       identityFile = "~/.ssh/apal-server";
     };
+    "192.168.1.155" = {
+      identityFile = "~/.ssh/jb-macbook-to-oneplus10R";
+      user = "nix-on-droid";
+      port = 8022;
+    };
   };
 
   programs.ssh.extraConfig =
