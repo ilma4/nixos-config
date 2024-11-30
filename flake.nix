@@ -33,7 +33,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-root.url = "github:srid/flake-root";
+    nix-on-droid = {
+      url = "github:nix-community/nix-on-droid/release-24.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    #flake-root.url = "github:srid/flake-root";
   };
 
   outputs = inputs @ {
@@ -42,6 +47,7 @@
     home-manager,
     nixgl,
     nix-darwin,
+    nix-on-droid,
     ...
   }: let
     x86-linux = "x86_64-linux";
@@ -134,6 +140,25 @@
 
       modules = [
         ./hosts/apal-server/home.nix
+      ];
+    };
+    nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration {
+      pkgs = import nixpkgs {
+        system = "aarch64-linux";
+
+        overlays = [
+          nix-on-droid.overlays.default
+          # add other overlays
+        ];
+      };
+
+      # set path to home-manager flake
+      home-manager-path = home-manager.outPath;
+      modules = [
+        ./hosts/oneplus10R/nix-on-droid.nix
+        ({...}: {
+          home-manager.extraSpecialArgs = {modules = home-manager-modules;};
+        })
       ];
     };
   };
