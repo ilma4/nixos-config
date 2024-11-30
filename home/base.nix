@@ -35,7 +35,7 @@ in {
           if isDarwin
           then "darwin-rebuild switch"
           else if isNixos
-          then "nixos rebuild switch"
+          then "sudo nixos-rebuild switch"
           else if stdenv.isLinux
           then "home-manager switch"
           else ""
