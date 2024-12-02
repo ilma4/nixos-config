@@ -59,6 +59,10 @@ args @ {
 
     programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
+    programs.texlive.enable = true;
+    programs.pandoc.enable = true;
+
+
     # programs.mpv.enable = true; # broken on 24.05, TODO: try on 24.11
 
     # RW symlinks, so apps can edits their configs
