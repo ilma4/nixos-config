@@ -59,9 +59,11 @@ args @ {
 
     programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
-    programs.texlive.enable = true;
     programs.pandoc.enable = true;
-
+    programs.texlive = {
+      enable = true;
+      extraPackages = (tpkgs: { inherit (tpkgs) scheme-full; });
+    };
 
     # programs.mpv.enable = true; # broken on 24.05, TODO: try on 24.11
 
