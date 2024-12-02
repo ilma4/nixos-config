@@ -119,6 +119,8 @@
       # "alfred"
       "easydict"
       "marta"
+      "utm"
+      "iina"
 
       "nikitabobko/tap/aerospace"
 

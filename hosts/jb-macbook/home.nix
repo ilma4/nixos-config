@@ -65,7 +65,7 @@ args @ {
       extraPackages = (tpkgs: { inherit (tpkgs) scheme-full; });
     };
 
-    # programs.mpv.enable = true; # broken on 24.05, TODO: try on 24.11
+    # programs.mpv.enable = true; # fixed in 24.11
 
     # RW symlinks, so apps can edits their configs
     home.file = let
