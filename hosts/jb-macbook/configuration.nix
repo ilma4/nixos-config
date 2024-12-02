@@ -103,6 +103,7 @@
       "karabiner-elements"
       "discord"
       "zed"
+      "browsers-software/tap/browsers"
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS
