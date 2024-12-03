@@ -5,8 +5,6 @@
   inputs,
   ...
 }: {
-  nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"]; # required for nixd
-
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
@@ -40,7 +38,7 @@
     "com.apple.keyboard.fnState" = true; # enable fn lock
   };
 
-  system.defaults.spaces.spans-displays = true; # monitors have shared screens
+  system.defaults.spaces.spans-displays = true; # displays have separate spaces option (macos default is false)
 
   system.defaults.menuExtraClock.Show24Hour = true;
 
@@ -67,16 +65,22 @@
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
-  nix.package = pkgs.nix;
+  nix = {
+    package = pkgs.nix;
+    nixPath = ["nixpkgs=${inputs.nixpkgs}"]; # required for nixd
+    gc.automatic = true;
+    optimise.automatic = true;
+    settings = {
+      experimental-features = "nix-command flakes"; # Necessary for using flakes on this system.
+    };
+  };
 
   nixpkgs.config.allowUnfree = true;
-  # Necessary for using flakes on this system.
-  nix.settings.experimental-features = "nix-command flakes";
 
   homebrew = {
     enable = true;
     onActivation = {
-      cleanup = "uninstall";
+      cleanup = "zap";
     };
 
     casks = [
@@ -114,6 +118,8 @@
       "alt-tab"
       "todoist"
       "caffeine"
+      "monitorcontrol"
+      "deskpad"
 
       "raycast"
       # "alfred"
@@ -150,7 +156,7 @@
 
     masApps = {
       Xcode = 497799835;
-      Bitwarden = 1352778147; 
+      Bitwarden = 1352778147;
     };
   };
 
