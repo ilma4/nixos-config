@@ -37,6 +37,10 @@ args @ {
     home.packages = with pkgs; [
       vifm
 
+      clang
+      lldb
+      
+
       #docker # docker support on macos is complicated
 
       # FIXME: gui apps on macos are broken, enable when get fixed

@@ -152,12 +152,14 @@
         ];
       };
 
+      extraSpecialArgs = { inherit inputs; };
+
       # set path to home-manager flake
       home-manager-path = home-manager.outPath;
       modules = [
         ./hosts/oneplus10R/nix-on-droid.nix
         ({...}: {
-          home-manager.extraSpecialArgs = {modules = home-manager-modules;};
+          home-manager.extraSpecialArgs = {modules = home-manager-modules; dotfiles = dotfiles; inherit inputs;};
         })
       ];
     };

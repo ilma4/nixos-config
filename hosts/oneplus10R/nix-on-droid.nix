@@ -7,8 +7,7 @@
   # Simply install just the packages
   environment.packages = with pkgs; [
     # User-facing stuff that you really really want to have
-    vim # or some other editor, e.g. nano or neovim
-    neovim
+    nano
 
     # Some common stuff that people expect to have
     procps
@@ -29,7 +28,18 @@
     zip
     unzip
     htop
-    openssh
+
+    which
+
+    # FIXME: https://github.com/nix-community/nix-on-droid/issues/307#issuecomment-2408116793
+    (
+      pkgs.openssh.overrideAttrs (
+        old: {
+          patchPhase = (old.patchPhase or "") + "sed -i 's/\(platform_disable_tracing(\)1\();\)/\10\2/' sftp-server.c";
+        }
+      )
+    )
+    #openssh
   ];
 
   # Backup etc files instead of failing to activate generation if a file already exists in /etc

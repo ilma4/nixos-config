@@ -141,6 +141,7 @@
       "clion"
       "rustrover"
       "android-studio"
+      "jetbrains-gateway"
     ];
 
     brews = [
