@@ -40,6 +40,6 @@
     discord
     evince
     shotwell
-    gnome.seahorse
+    seahorse
   ];
 }

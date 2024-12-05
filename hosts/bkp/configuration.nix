@@ -133,7 +133,7 @@
     anki
     libreoffice-still
     kdenlive
-    gnome.gnome-tweaks
+    gnome-tweaks
     wl-clipboard
     corretto21
     corretto17
