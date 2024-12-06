@@ -29,6 +29,8 @@ in {
     common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
   '';
 
+  home.sessionPath = ["$HOME/.local/bin"];
+
   programs.git = {
     userName = "Ilia Malakhov";
     userEmail = "ilya.malakhov4@gmail.com";

@@ -59,6 +59,8 @@ args @ {
         /opt/homebrew/bin/brew update -f
         /opt/homebrew/bin/brew upgrade --greedy
       '')
+
+      (pkgs.writeShellScriptBin "generate-random-password" "openssl rand 64 | sha512")
     ];
 
     programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
