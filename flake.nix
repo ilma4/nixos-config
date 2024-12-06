@@ -61,6 +61,10 @@
       specialArgs = {
         inherit inputs;
         modules = nixos-modules;
+        pkgs-unstable = import inputs.nixpkgs-unstable {
+          system = x86-linux;
+          config.allowUnfree = true;
+        };
       };
 
       modules = [
@@ -71,6 +75,10 @@
           home-manager.extraSpecialArgs = {
             inherit inputs;
             inherit dotfiles;
+            pkgs-unstable = import inputs.nixpkgs-unstable {
+              system = x86-linux;
+              config.allowUnfree = true;
+            };
             modules = home-manager-modules;
           };
         }
