@@ -12,8 +12,10 @@
   imports = [
     ./hardware-configuration.nix
     "${modules}/zram.nix"
+    "${modules}/gaming.nix"
     ./samba.nix
   ];
+
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
     efi = {
@@ -127,26 +129,6 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-
-    pandoc
-
-    anki
-    libreoffice-still
-    kdenlive
-    gnome-tweaks
-    wl-clipboard
-    corretto21
-    corretto17
-    corretto11
-    vlc
-    prismlauncher
-
-    jetbrains.clion
-    jetbrains.pycharm-professional
-    jetbrains.pycharm-community-bin
-    jetbrains.idea-ultimate
-    jetbrains.idea-community-bin
-    android-studio
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -160,7 +142,10 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    passwordAuthentication = false;
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

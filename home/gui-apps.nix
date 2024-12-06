@@ -29,8 +29,11 @@
     google-chrome
     vivaldi
     calibre
+
     slack
     telegram-desktop
+
+    anki
     krita
     qbittorrent
     libsForQt5.qt5ct

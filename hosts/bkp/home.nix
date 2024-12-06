@@ -10,6 +10,8 @@
     "${modules}/base.nix"
     "${modules}/personal.nix"
     "${modules}/gui-apps.nix"
+    "${modules}/jetbrains.nix"
+    "${modules}/gaming.nix"
   ];
 
   home.username = "ilma4";
