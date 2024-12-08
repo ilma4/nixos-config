@@ -7,6 +7,7 @@
 }: {
   imports = [
     "${modules}/base.nix"
+    "${modules}/macos.nix"
   ];
 
   home.username = "gggg";

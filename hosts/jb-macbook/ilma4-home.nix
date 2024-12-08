@@ -9,6 +9,7 @@ args @ {
 }: {
   imports = [
     "${modules}/base.nix"
+    "${modules}/macos.nix"
     "${modules}/personal.nix"
     "${modules}/dev.nix"
     "${modules}/graphics.nix"
@@ -35,24 +36,9 @@ args @ {
     };
 
     home.packages = with pkgs; [
-      vifm
-
       clang
       lldb
       
-
-      #docker # docker support on macos is complicated
-
-      # FIXME: gui apps on macos are broken, enable when get fixed
-      #obsidian
-      #telegram-desktop
-      #slack
-      #iterm2
-
-      # Broken. FIXME: enable when fixed
-      # calibre
-      # anki
-
       (pkgs.writeShellScriptBin "system-upgrade" ''
         nix flake update ${config.flake-location}
         nix-rebuild

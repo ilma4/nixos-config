@@ -72,6 +72,7 @@ in {
       curl
       wget
 
+      vifm
       unrar
       unzip
       zip

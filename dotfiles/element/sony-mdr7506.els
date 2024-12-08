@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<session name="External-headphones-eq" tempo="120.0" notes="" beatsPerBar="4"
+         beatDivisor="2">
+  <graphs active="0">
+    <node type="graph" uuid="d923022a28474027994363b660a094da" name="Graph"
+          bypass="0" persistent="1" renderMode="single" keyStart="0" keyEnd="127"
+          transpose="0" delayCompensation="0">
+      <nodes>
+        <node id="1" type="plugin" format="Internal" identifier="audio.input"
+              name="BlackHole 2ch" relativeX="0.2015503875968992" relativeY="0.2494033412887828"
+              numAudioIns="0" numAudioOuts="2" uuid="3190173d02504fa994eca41f059bac22"
+              bypass="0" persistent="1" renderMode="single" keyStart="0" keyEnd="127"
+              transpose="0" delayCompensation="0.0" enabled="1" x="200.0" y="186.0"
+              program="0" midiProgram="0" globalMidiPrograms="0" midiProgramsEnabled="0"
+              mute="0" muteInput="0" midiProgramsState="" oversamplingFactor="1">
+          <nodes/>
+          <ui>
+            <block/>
+          </ui>
+          <ports>
+            <port index="0" channel="0" type="audio" name="Input 1" symbol="audio_out_1"
+                  flow="output"/>
+            <port index="1" channel="1" type="audio" name="Input 2" symbol="audio_out_2"
+                  flow="output"/>
+          </ports>
+        </node>
+        <node id="2" type="plugin" format="Internal" identifier="audio.output"
+              name="External Headphones" relativeX="0.2038759689922481" relativeY="0.662291169451074"
+              numAudioIns="2" numAudioOuts="0" uuid="b856db09b4c14830b828a9e652b3f949"
+              bypass="0" persistent="1" renderMode="single" keyStart="0" keyEnd="127"
+              transpose="0" delayCompensation="0.0" enabled="1" x="203.0" y="532.0"
+              program="0" midiProgram="0" globalMidiPrograms="0" midiProgramsEnabled="0"
+              mute="0" muteInput="0" midiProgramsState="" oversamplingFactor="1">
+          <nodes/>
+          <ui>
+            <block/>
+          </ui>
+          <ports>
+            <port index="0" channel="0" type="audio" name="1" symbol="audio_in_1"
+                  flow="input"/>
+            <port index="1" channel="1" type="audio" name="2" symbol="audio_in_2"
+                  flow="input"/>
+          </ports>
+        </node>
+        <node id="5" type="plugin" format="AudioUnit" identifier="AudioUnit:Effects/aufx,nbeq,appl"
+              name="AUNBandEQ" relativeX="0.2085271317829457" relativeY="0.4892601431980907"
+              pluginIdentifierString="AudioUnit-AUNBandEQ-73d286fe-6e677365"
+              uuid="7a8229f9dc57479ca0b8ab02c230a5bd" bypass="0" persistent="1"
+              renderMode="single" keyStart="0" keyEnd="127" transpose="0" delayCompensation="0.0"
+              x="209.0" y="387.0" windowX="0" windowY="66" windowVisible="0"
+              windowOnTop="1" state="858.hAGaoMGcv.C1AHv.DTfAGfPBJr.CM3vCPvUag4VclE1XzUmbkIGUjEFcg4ETgIWXsUFcxk1XTkGbkc0b0IFc4AWYWYWYxMWZu4FUzkGbk0ka00lXkI2SlITXtQ1bT4VXsUlDgAGbr8TDBPI..............DE......yHyMC..CfN.......v.oC.......Lf5........CrN.......v.rC.......LP6........C3N.......v.uC.......L.7........CDO.......v.x+Cf.....Lv7+.H.....CP+O.B....v.0+Cf.....Lf8+.H.....Cb+O.B....vAPCD3.....bPz........GHM.......vASC.......b.0........GTM.......vAVC.......bv0........GfM.......vAYGD......bf1........GrM.......vAbC.......bP2........G3M.......vAeC.......r.tBIM.....KjqPPA....vB5NDZ.....rvtDA.v....KvKQZBF...vB8VTBfB...rfuEEFf....K7aQjAL...vB.WD3nB...rPvFwAP....KHLQFyV0..vBCWzCbYD..r.wE8zIDA..KTbQUppn..vBFWD1CsO..rvwFwAP....O.5OLxby..vCgB7vyLC..7fn.wDyMC..OL5OLxby..vCjBzDyLC..7Po+jclZB..OXJvSNyL..vCmBDaL2L..7.p.OyLy...OjJPbxby..vCpB.......7vp........OvJ.......vCsB.......7fq........O7J.......vDH9C......LQh+buB8...Sn3OOvUJ..vDK9ypE9A..LAi+btqT...Sz3OB8HW..vDN9y3Wq...Lwi9PodgC..S.4OE3At..vDQ9C......Lgj+.......SL4O......vDT9C......LQk+.......SX4O......vDW9C....DKHgahUVbP.fDgUmY3AgBXUkazkFcrUFY.f..Y.fI.rB.5.fP.nD.OAPW.HF.mIv+CDv.FL.BCzv.O........HP..........DA..................L.F"
+              programState="858.hAGaoMGcv.C1AHv.DTfAGfPBJr.CM3vCPvUag4VclE1XzUmbkIGUjEFcg4ETgIWXsUFcxk1XTkGbkc0b0IFc4AWYWYWYxMWZu4FUzkGbk0ka00lXkI2SlITXtQ1bT4VXsUlDgAGbr8TDBPI..............DE......yHyMC..CfN.......v.oC.......Lf5........CrN.......v.rC.......LP6........C3N.......v.uC.......L.7........CDO.......v.x+Cf.....Lv7+.H.....CP+O.B....v.0+Cf.....Lf8+.H.....Cb+O.B....vAPCD3.....bPz........GHM.......vASC.......b.0........GTM.......vAVC.......bv0........GfM.......vAYGD......bf1........GrM.......vAbC.......bP2........G3M.......vAeC.......r.tBIM.....KjqPPA....vB5NDZ.....rvtDA.v....KvKQZBF...vB8VTBfB...rfuEEFf....K7aQjAL...vB.WD3nB...rPvFwAP....KHLQFyV0..vBCWzCbYD..r.wE8zIDA..KTbQUppn..vBFWD1CsO..rvwFwAP....O.5OLxby..vCgB7vyLC..7fn.wDyMC..OL5OLxby..vCjBzDyLC..7Po+jclZB..OXJvSNyL..vCmBDaL2L..7.p.OyLy...OjJPbxby..vCpB.......7vp........OvJ.......vCsB.......7fq........O7J.......vDH9C......LQh+buB8...Sn3OOvUJ..vDK9ypE9A..LAi+btqT...Sz3OB8HW..vDN9y3Wq...Lwi9PodgC..S.4OE3At..vDQ9C......Lgj+.......SL4O......vDT9C......LQk+.......SX4O......vDW9C....DKHgahUVbP.fDgUmY3AgBXUkazkFcrUFY.f..Y.fI.rB.5.fP.nD.OAPW.HF.mIv+CDv.FL.BCzv.O........HP..........DA..................L.F"
+              program="-1" midiProgram="0" globalMidiPrograms="0" midiProgramsEnabled="0"
+              mute="0" muteInput="0" midiProgramsState="52.3o8Jnn7SunDysXFXfQFK.BaFXjY3rXkQF.BxKwbSkAFYhUFJtjDKAHKVX0.8XfA.h2YCaB"
+              oversamplingFactor="1" enabled="1">
+          <nodes/>
+          <ui>
+            <block/>
+          </ui>
+          <ports>
+            <port index="0" channel="0" type="audio" name="Input #1 1" symbol="audio_in_1"
+                  flow="input"/>
+            <port index="1" channel="1" type="audio" name="Input #1 2" symbol="audio_in_2"
+                  flow="input"/>
+            <port index="2" channel="0" type="audio" name="Output #1 1" symbol="audio_out_1"
+                  flow="output"/>
+            <port index="3" channel="1" type="audio" name="Output #1 2" symbol="audio_out_2"
+                  flow="output"/>
+            <port index="4" channel="0" type="control" name="Global Gain" symbol="control_0"
+                  flow="input"/>
+            <port index="5" channel="1" type="control" name="Bypass" symbol="control_1"
+                  flow="input"/>
+            <port index="6" channel="2" type="control" name="Type" symbol="control_2"
+                  flow="input"/>
+            <port index="7" channel="3" type="control" name="Frequency" symbol="control_3"
+                  flow="input"/>
+            <port index="8" channel="4" type="control" name="Gain" symbol="control_4"
+                  flow="input"/>
+            <port index="9" channel="5" type="control" name="Bandwidth" symbol="control_5"
+                  flow="input"/>
+            <port index="10" channel="6" type="control" name="Bypass" symbol="control_6"
+                  flow="input"/>
+            <port index="11" channel="7" type="control" name="Type" symbol="control_7"
+                  flow="input"/>
+            <port index="12" channel="8" type="control" name="Frequency" symbol="control_8"
+                  flow="input"/>
+            <port index="13" channel="9" type="control" name="Gain" symbol="control_9"
+                  flow="input"/>
+            <port index="14" channel="10" type="control" name="Bandwidth" symbol="control_10"
+                  flow="input"/>
+            <port index="15" channel="11" type="control" name="Bypass" symbol="control_11"
+                  flow="input"/>
+            <port index="16" channel="12" type="control" name="Type" symbol="control_12"
+                  flow="input"/>
+            <port index="17" channel="13" type="control" name="Frequency" symbol="control_13"
+                  flow="input"/>
+            <port index="18" channel="14" type="control" name="Gain" symbol="control_14"
+                  flow="input"/>
+            <port index="19" channel="15" type="control" name="Bandwidth" symbol="control_15"
+                  flow="input"/>
+            <port index="20" channel="16" type="control" name="Bypass" symbol="control_16"
+                  flow="input"/>
+            <port index="21" channel="17" type="control" name="Type" symbol="control_17"
+                  flow="input"/>
+            <port index="22" channel="18" type="control" name="Frequency" symbol="control_18"
+                  flow="input"/>
+            <port index="23" channel="19" type="control" name="Gain" symbol="control_19"
+                  flow="input"/>
+            <port index="24" channel="20" type="control" name="Bandwidth" symbol="control_20"
+                  flow="input"/>
+            <port index="25" channel="21" type="control" name="Bypass" symbol="control_21"
+                  flow="input"/>
+            <port index="26" channel="22" type="control" name="Type" symbol="control_22"
+                  flow="input"/>
+            <port index="27" channel="23" type="control" name="Frequency" symbol="control_23"
+                  flow="input"/>
+            <port index="28" channel="24" type="control" name="Gain" symbol="control_24"
+                  flow="input"/>
+            <port index="29" channel="25" type="control" name="Bandwidth" symbol="control_25"
+                  flow="input"/>
+            <port index="30" channel="26" type="control" name="Bypass" symbol="control_26"
+                  flow="input"/>
+            <port index="31" channel="27" type="control" name="Type" symbol="control_27"
+                  flow="input"/>
+            <port index="32" channel="28" type="control" name="Frequency" symbol="control_28"
+                  flow="input"/>
+            <port index="33" channel="29" type="control" name="Gain" symbol="control_29"
+                  flow="input"/>
+            <port index="34" channel="30" type="control" name="Bandwidth" symbol="control_30"
+                  flow="input"/>
+            <port index="35" channel="31" type="control" name="Bypass" symbol="control_31"
+                  flow="input"/>
+            <port index="36" channel="32" type="control" name="Type" symbol="control_32"
+                  flow="input"/>
+            <port index="37" channel="33" type="control" name="Frequency" symbol="control_33"
+                  flow="input"/>
+            <port index="38" channel="34" type="control" name="Gain" symbol="control_34"
+                  flow="input"/>
+            <port index="39" channel="35" type="control" name="Bandwidth" symbol="control_35"
+                  flow="input"/>
+            <port index="40" channel="36" type="control" name="Bypass" symbol="control_36"
+                  flow="input"/>
+            <port index="41" channel="37" type="control" name="Type" symbol="control_37"
+                  flow="input"/>
+            <port index="42" channel="38" type="control" name="Frequency" symbol="control_38"
+                  flow="input"/>
+            <port index="43" channel="39" type="control" name="Gain" symbol="control_39"
+                  flow="input"/>
+            <port index="44" channel="40" type="control" name="Bandwidth" symbol="control_40"
+                  flow="input"/>
+            <port index="45" channel="0" type="midi" name="MIDI In" symbol="element_midi_input"
+                  flow="input"/>
+          </ports>
+        </node>
+      </nodes>
+      <ports/>
+      <ui>
+        <GraphEditorView width="1290" height="838" horizontalRangeStart="12.0" verticalRangeStart="0.0"
+                         zoomScale="1.0" nodePropsVisible="0"/>
+      </ui>
+      <arcs>
+        <arc sourceNode="1" sourcePort="0" destNode="5" destPort="0"/>
+        <arc sourceNode="1" sourcePort="1" destNode="5" destPort="1"/>
+        <arc sourceNode="5" sourcePort="2" destNode="2" destPort="0"/>
+        <arc sourceNode="5" sourcePort="3" destNode="2" destPort="1"/>
+      </arcs>
+    </node>
+  </graphs>
+  <controllers/>
+  <maps/>
+  <ui content="129.3ocAAGsBBBCE..c6g9ZBjnHqWESoqIkE0sMgdPvU3cxtgMZq+9NmO9NuQHkG4dSQ+fmmxYm2373fIHjOlkllrh2V4ocGfakJh2DOU77ZUn8BpdqYhxvQBfNGfpoLP+5LRNK2NxkVJvZFvXSvR5n9NjWG2+qN46xEqalKD+wivpRa"/>
+</session>
