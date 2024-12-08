@@ -21,6 +21,12 @@ in {
       description = "Location of the flake";
     };
 
+    configure-ssh = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Configure ssh";
+    };
+
     isRootless = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -97,7 +103,7 @@ in {
 
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
-        lib.mkIf stdenv.isLinux # macOS works fine with ssh agent
+        lib.mkIf (stdenv.isLinux && config.configure-ssh) # macOS works fine with ssh agent
         
         ''
           if [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
@@ -107,7 +113,7 @@ in {
         '';
     };
 
-    programs.ssh = {
+    programs.ssh = lib.mkIf config.configure-ssh {
       enable = true;
       addKeysToAgent = "yes";
 

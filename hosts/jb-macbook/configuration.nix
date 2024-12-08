@@ -11,8 +11,19 @@
     avahi
   ];
 
-  users.users.ilma4 = {
-    home = "/Users/ilma4";
+  users.users = {
+    ilma4 = {
+      home = "/Users/ilma4";
+    };
+    gggg = {
+      home = "/Users/gggg";
+      createHome = true;
+    };
+  };
+
+  home-manager.users = {
+    ilma4 = import ./ilma4-home.nix;
+    gggg = import ./gggg-home.nix;
   };
 
   system.keyboard = {

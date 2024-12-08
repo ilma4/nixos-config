@@ -133,7 +133,6 @@
             modules = home-manager-modules;
           };
 
-          home-manager.users.ilma4 = import ./hosts/jb-macbook/home.nix;
         }
       ];
     };
