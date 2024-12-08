@@ -117,11 +117,9 @@
   #programs.obsidian.enabled = true;
 
   programs.screen.enable = true;
-  programs.zsh.enable = true;
+  programs.zsh.enable = true; # configured via home-manager
 
   programs.virt-manager.enable = true;
-  programs.steam.enable = true;
-  programs.gamescope.enable = true;
   programs.gnome-terminal.enable = true;
 
   environment.pathsToLink = ["/share/zsh"];
@@ -144,7 +142,7 @@
   # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
-    settings.PasswordAuthentication = true;
+    settings.PasswordAuthentication = false;
   };
 
   # Open ports in the firewall.

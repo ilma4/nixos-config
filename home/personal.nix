@@ -4,6 +4,7 @@
   ...
 }: let
   HOME = config.home.homeDirectory;
+  isDarwin = pkgs.stdenv.isDarwin;
 in {
   home.packages = with pkgs; [
     screen
@@ -36,10 +37,13 @@ in {
       user = "nix-on-droid";
       port = 8022;
     };
+    "ilma4-bkp" = {
+      identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
+    };
   };
 
   programs.ssh.extraConfig =
-    if pkgs.stdenv.isDarwin
+    if isDarwin
     then "UseKeychain yes"
     else "";
 }

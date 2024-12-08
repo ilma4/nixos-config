@@ -20,10 +20,11 @@
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
-  home.packages = [
-    pkgs.gnomeExtensions.gsconnect
-    pkgs.gnomeExtensions.dash-to-dock
-    pkgs.gnomeExtensions.caffeine
+  home.packages = with pkgs; [
+    gnomeExtensions.gsconnect
+    gnomeExtensions.dash-to-dock
+    gnomeExtensions.caffeine
+    gnome-tweaks
   ];
 
   programs.gnome-shell.enable = true;

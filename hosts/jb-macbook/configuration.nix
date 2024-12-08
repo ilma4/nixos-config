@@ -94,8 +94,8 @@
       "calibre"
       "1password-cli"
       "vlc"
-      "far2l"
 
+      # I don't really understand docker on mac
       "docker"
 
       #avaliable in nix, but nix has troubles with gui apps
@@ -108,27 +108,24 @@
       "discord"
       "zed"
       "browsers-software/tap/browsers"
+      "prismlauncher"
+      "iina"
+      "utm"
+      "raycast"
+      "caffeine"
+      "monitorcontrol"
+      "alt-tab"
+      "far2l"
+      "nikitabobko/tap/aerospace"
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS
-
-      "scroll-reverser"
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
-      "alt-tab"
       "todoist"
-      "caffeine"
-      "monitorcontrol"
       "deskpad"
-
-      "raycast"
-      # "alfred"
       "easydict"
       "marta"
-      "utm"
-      "iina"
-
-      "nikitabobko/tap/aerospace"
 
       "blackhole-2ch"
       "au-lab"
