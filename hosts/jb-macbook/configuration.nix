@@ -82,6 +82,7 @@
     gc.automatic = true;
     optimise.automatic = true;
     settings = {
+     # allowed-users = [ "ilma4" ];
       experimental-features = "nix-command flakes"; # Necessary for using flakes on this system.
     };
   };

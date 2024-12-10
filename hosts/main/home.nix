@@ -10,7 +10,6 @@
   ];
 
   home.username = "ilma4";
-  home.homeDirectory = "/home/ilma4";
 
 
   targets.genericLinux.enable = true;

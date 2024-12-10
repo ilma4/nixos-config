@@ -27,7 +27,7 @@ args @ {
 
   config = {
     home.username = "ilma4";
-    home.homeDirectory = "/Users/ilma4";
+    #home.homeDirectory = "/Users/ilma4";
 
     flake-location = "${config.home.homeDirectory}/.config/nixos-config";
 
@@ -38,6 +38,8 @@ args @ {
     home.packages = with pkgs; [
       clang
       lldb
+      colima
+      docker
       
       (pkgs.writeShellScriptBin "system-upgrade" ''
         nix flake update ${config.flake-location}
