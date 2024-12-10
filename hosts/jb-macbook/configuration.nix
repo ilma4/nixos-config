@@ -162,6 +162,7 @@
       "kdoctor" # jb tool for kotlin multiplatform
       "xcbeautify"
       "bitwarden-cli"
+      "screenresolution"
     ];
 
     masApps = {
