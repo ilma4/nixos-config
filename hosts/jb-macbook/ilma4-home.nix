@@ -42,7 +42,7 @@ args @ {
       docker
       
       (pkgs.writeShellScriptBin "system-upgrade" ''
-        nix flake update ${config.flake-location}
+        nix flake update --flake ${config.flake-location}
         nix-rebuild
         /opt/homebrew/bin/brew update -f
         /opt/homebrew/bin/brew upgrade --greedy
