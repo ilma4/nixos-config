@@ -92,7 +92,7 @@
   homebrew = {
     enable = true;
     onActivation = {
-      cleanup = "zap";
+      cleanup = "uninstall";
     };
 
     casks = [
@@ -129,6 +129,7 @@
       "alt-tab"
       "far2l"
       "nikitabobko/tap/aerospace"
+      "zoom"
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS
