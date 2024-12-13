@@ -113,6 +113,8 @@
     };
   };
 
+  services.swapspace.enable = true;
+
   # List packages installed in system profile. To search, run:
   #programs.obsidian.enabled = true;
 
