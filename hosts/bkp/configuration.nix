@@ -68,7 +68,7 @@
   # services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
-  # Enable avahi server. Machine will be avaliable by address 'hostname.local'
+  # Enable avahi server. Machine will be avaliable by address 'hostname'
   services.avahi.enable = true;
 
   # Enable CUPS to print documents.
