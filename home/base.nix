@@ -139,7 +139,7 @@ in {
     programs.bat.enable = true;
     programs.htop.enable = true;
     programs.fzf.enable = true;
-    programs.tmux = {
+    programs.tmux = lib.mkIf config.isRootless {
       enable = true;
       keyMode = "vi";
     };
