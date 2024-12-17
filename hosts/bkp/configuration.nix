@@ -127,6 +127,7 @@
       hostPort = 8222;
       protocol = "tcp";
     };
+    autoStart = true;
     config = let
       hostConfig = config;
     in
@@ -137,16 +138,18 @@
       }: {
         services.vaultwarden = {
           enable = true;
-          #config = {
-          #domain = "vaultwarden.ilma4.com";
-          /*
-             ssl = {
-            enable = true;
-            cert = "/etc/letsencrypt/live/vaultwarden.ilma4.com/fullchain.pem";
-            key = "/etc/letsencrypt/live/vaultwarden.ilma4.com/privkey.pem";
+          config = {
+            ROCKET_ADDRESS = "127.0.0.1";
+            ROCKET_PORT = 8222;
+            #DOMAIN = "vaultwarden.ilma4.com";
+            /*
+               ssl = {
+              enable = true;
+              cert = "/etc/letsencrypt/live/vaultwarden.ilma4.com/fullchain.pem";
+              key = "/etc/letsencrypt/live/vaultwarden.ilma4.com/privkey.pem";
+            };
+            */
           };
-          */
-          #};
         };
       };
   };
