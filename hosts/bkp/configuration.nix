@@ -121,6 +121,36 @@
     };
   };
 
+  containers."vaultwarden" = {
+    forwardPorts = {
+      containerPort = 8222;
+      hostPort = 8222;
+      protocol = "tcp";
+    };
+    config = let
+      hostConfig = config;
+    in
+      {
+        config,
+        pkgs,
+        ...
+      }: {
+        services.vaultwarden = {
+          enable = true;
+          #config = {
+          #domain = "vaultwarden.ilma4.com";
+          /*
+             ssl = {
+            enable = true;
+            cert = "/etc/letsencrypt/live/vaultwarden.ilma4.com/fullchain.pem";
+            key = "/etc/letsencrypt/live/vaultwarden.ilma4.com/privkey.pem";
+          };
+          */
+          #};
+        };
+      };
+  };
+
   services.swapspace.enable = true;
 
   # List packages installed in system profile. To search, run:
