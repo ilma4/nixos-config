@@ -83,6 +83,7 @@
     optimise.automatic = true;
     settings = {
      # allowed-users = [ "ilma4" ];
+      sandbox = true;
       experimental-features = "nix-command flakes"; # Necessary for using flakes on this system.
     };
   };
