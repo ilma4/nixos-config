@@ -120,7 +120,7 @@
       enable = true;
     };
   };
-
+/*
   containers."vaultwarden" = {
     forwardPorts = {
       containerPort = 8222;
@@ -142,16 +142,22 @@
             ROCKET_ADDRESS = "127.0.0.1";
             ROCKET_PORT = 8222;
             #DOMAIN = "vaultwarden.ilma4.com";
-            /*
                ssl = {
               enable = true;
               cert = "/etc/letsencrypt/live/vaultwarden.ilma4.com/fullchain.pem";
               key = "/etc/letsencrypt/live/vaultwarden.ilma4.com/privkey.pem";
             };
-            */
           };
         };
       };
+  };
+  */
+  virtualisation.oci-containers.containers = {
+    vaultwarden = {
+      image = "vaultwarden/server:latest";
+      ports = [ { hostPort = 8222; containerPort = 80; } ];
+      volumes = [ "/srv/vaultwarden:/data" ];
+    };
   };
 
   services.swapspace.enable = true;

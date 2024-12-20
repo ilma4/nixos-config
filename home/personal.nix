@@ -37,7 +37,7 @@ in {
       user = "nix-on-droid";
       port = 8022;
     };
-    "ilma4-bkp.local" = {
+    "ilma4-bkp" = {
       identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
     };
   };
