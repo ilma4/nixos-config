@@ -170,9 +170,8 @@
         "/etc/localtime:/etc/localtime:ro"
         "/run/dbus:/run/dbus:ro"
       ];
-      restartPolicy = "unless-stopped";
-      hostNetwork = true;
-      extraOptions = ["--privileged"];
+      autoStart = true;
+      extraOptions = ["--privileged --network=host"];
     };
   };
 
