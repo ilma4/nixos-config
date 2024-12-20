@@ -120,7 +120,7 @@
       enable = true;
     };
   };
-/*
+  /*
   containers."vaultwarden" = {
     forwardPorts = {
       containerPort = 8222;
@@ -155,8 +155,24 @@
   virtualisation.oci-containers.containers = {
     vaultwarden = {
       image = "vaultwarden/server:latest";
-      ports = [ { hostPort = 8222; containerPort = 80; } ];
-      volumes = [ "/srv/vaultwarden:/data" ];
+      ports = [
+        {
+          hostPort = 8222;
+          containerPort = 80;
+        }
+      ];
+      volumes = ["/srv/vaultwarden:/data"];
+    };
+    homeassistant = {
+      image = "ghcr.io/home-assistant/home-assistant:stable";
+      volumes = [
+        "/srv/homeassistant:/config"
+        "/etc/localtime:/etc/localtime:ro"
+        "/run/dbus:/run/dbus:ro"
+      ];
+      restartPolicy = "unless-stopped";
+      hostNetwork = true;
+      extraOptions = ["--privileged"];
     };
   };
 
