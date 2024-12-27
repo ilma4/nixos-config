@@ -5,10 +5,22 @@
   ...
 }: {
   users.users = {
-    vaultwarden.isSystemUser = true;
-    homer.isSystemUser = true;
-    homeassistant.isSystemUser = true;
-    mosquitto.isSystemUser = true;
+    vaultwarden = {
+      isSystemUser = true;
+      group = "vaultwarden";
+    };
+    homer = {
+      isSystemUser = true;
+      group = "homer";
+    };
+    homeassistant = {
+      isSystemUser = true;
+      group = "homeassistant";
+    };
+    mosquitto = {
+      isSystemUser = true;
+      group = "mosquitto";
+    };
   };
 
   virtualisation.oci-containers.containers = {
