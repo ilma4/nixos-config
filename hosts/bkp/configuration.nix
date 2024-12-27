@@ -14,6 +14,8 @@
     "${modules}/zram.nix"
     "${modules}/gaming.nix"
     ./samba.nix
+    
+    ./server.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
@@ -152,31 +154,6 @@
       };
   };
   */
-  virtualisation.oci-containers.containers = {
-    vaultwarden = {
-      image = "vaultwarden/server:latest";
-      ports = [
-          "8222:80"
-      ];
-      volumes = ["/srv/vaultwarden:/data"];
-    };
-    homeassistant = {
-      image = "ghcr.io/home-assistant/home-assistant:stable";
-      volumes = [
-        "/srv/homeassistant:/config"
-        "/etc/localtime:/etc/localtime:ro"
-        "/run/dbus:/run/dbus:ro"
-      ];
-      autoStart = true;
-      extraOptions = ["--privileged" "--network=host"];
-    };
-    mosquitto = {
-      image = "eclipse-mosquitto:latest";
-      ports = ["1883:1883"];
-      volumes = ["/srv/mosquitto:/mosquitto"];
-      autoStart = true;
-    };
-  };
 
   services.swapspace.enable = true;
 
@@ -212,12 +189,6 @@
     openFirewall = true;
     settings.PasswordAuthentication = false;
   };
-
-  networking.firewall.allowedTCPPorts = [
-    8123 # homeassistant
-    8222 # vaultwarden
-    1883 # mosquitto (aka eclipse-mqtt)
-  ];
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
