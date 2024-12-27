@@ -133,7 +133,9 @@
       "zoom"
 
       # Mac specific, most probably remain brew casks
-      "macfuse" # FUSE for macOS
+      "macfuse" # FUSE for macOS, uses kernel extension 
+      # "macos-fuse-t/homebrew-cask/fuse-t" # fuse for macos, no kernel-extension
+
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
       "todoist"
