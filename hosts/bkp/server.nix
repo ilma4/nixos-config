@@ -22,6 +22,10 @@
       group = "mosquitto";
     };
   };
+  users.groups.homeassistant = {};
+  users.groups.homer = {};
+  users.groups.mosquitto = {};
+  users.groups.vaultwarden = {};
 
   virtualisation.oci-containers.containers = {
     vaultwarden = {
