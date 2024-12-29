@@ -26,6 +26,8 @@
     gggg = import ./gggg-home.nix;
   };
 
+environment.shells = [ pkgs.zsh ];
+
   system.keyboard = {
     enableKeyMapping = true;
 
