@@ -5,10 +5,6 @@
   ...
 }: {
   users.users = {
-    vaultwarden = {
-      isSystemUser = true;
-      group = "vaultwarden";
-    };
     homer = {
       isSystemUser = true;
       group = "homer";
@@ -17,27 +13,11 @@
       isSystemUser = true;
       group = "homeassistant";
     };
-    mosquitto = {
-      isSystemUser = true;
-      group = "mosquitto";
-    };
   };
   users.groups.homeassistant = {};
   users.groups.homer = {};
-  users.groups.mosquitto = {};
-  users.groups.vaultwarden = {};
 
   virtualisation.oci-containers.containers = {
-    vaultwarden = {
-      image = "vaultwarden/server:latest";
-      ports = [
-        "8222:80"
-      ];
-      volumes = ["/srv/vaultwarden:/data"];
-      autoStart = true;
-      user = "vaultwarden";
-    };
-
     homeassistant = {
       image = "ghcr.io/home-assistant/home-assistant:stable";
       volumes = [
@@ -49,27 +29,17 @@
       extraOptions = ["--privileged" "--network=host"];
     };
 
-    mosquitto = {
-      image = "eclipse-mosquitto:latest";
-      ports = ["1883:1883"];
-      volumes = ["/srv/mosquitto:/mosquitto"];
-      autoStart = true;
-      user = "mosquitto";
-    };
-
     homer = {
       image = "b4bz/homer:latest";
       ports = ["8080:8080"];
       volumes = ["/srv/homer:/www/assets"];
       autoStart = true;
-      user = "homer";
+      # user = "homer";
     };
   };
 
   networking.firewall.allowedTCPPorts = [
     8123 # homeassistant
-    8222 # vaultwarden
-    1883 # mosquitto (aka eclipse-mqtt)
     8080 # homer
   ];
 }
