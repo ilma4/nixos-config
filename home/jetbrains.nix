@@ -5,8 +5,6 @@
   pkgs-unstable,
   ...
 }: {
-  imports = [];
-
   home.packages = with pkgs-unstable.jetbrains;
     [
       idea-ultimate
@@ -17,7 +15,5 @@
       pycharm-community-bin
       idea-community-bin
     ]
-    ++ (with pkgs-unstable; [
-      android-studio
-    ]);
+    ++ [pkgs-unstable.android-studio];
 }
