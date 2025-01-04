@@ -95,7 +95,10 @@
   services.libinput.enable = true;
 
   # Check btrfs automatically
-  services.btrfs.autoScrub.enable = true;
+  services.btrfs.autoScrub = {
+    enable = true;
+    fileSystems = [ "/" "/mnt/hdd" ];
+  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ilma4 = {
