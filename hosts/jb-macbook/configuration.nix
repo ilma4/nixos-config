@@ -26,7 +26,7 @@
     gggg = import ./gggg-home.nix;
   };
 
-environment.shells = [ pkgs.zsh ];
+  environment.shells = [pkgs.zsh];
 
   system.keyboard = {
     enableKeyMapping = true;
@@ -124,7 +124,6 @@ environment.shells = [ pkgs.zsh ];
       "zed"
       "browsers-software/tap/browsers"
       "prismlauncher"
-      "iina"
       "utm"
       "raycast"
       "caffeine"
@@ -135,7 +134,7 @@ environment.shells = [ pkgs.zsh ];
       "zoom"
 
       # Mac specific, most probably remain brew casks
-      "macfuse" # FUSE for macOS, uses kernel extension 
+      "macfuse" # FUSE for macOS, uses kernel extension
       # "macos-fuse-t/homebrew-cask/fuse-t" # fuse for macos, no kernel-extension
 
       "linearmouse"
@@ -143,7 +142,6 @@ environment.shells = [ pkgs.zsh ];
       "todoist"
       "deskpad"
       "easydict"
-      "marta"
 
       "blackhole-2ch"
       "au-lab"
@@ -165,8 +163,6 @@ environment.shells = [ pkgs.zsh ];
       "openjdk@11"
       "openjdk@8"
 
-      "kdoctor" # jb tool for kotlin multiplatform
-      "xcbeautify"
       "bitwarden-cli"
       "screenresolution"
     ];
