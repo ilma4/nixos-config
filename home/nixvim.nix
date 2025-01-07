@@ -75,6 +75,7 @@ in {
 
       plugins.auto-save.enable = true;
       plugins.telescope.enable = true;
+      plugins.web-devicons.enable = true; # icons for telescope
 
       extraPlugins = [
         pkgs.vimPlugins."vim-suda"
