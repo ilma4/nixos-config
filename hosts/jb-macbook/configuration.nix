@@ -15,15 +15,10 @@
     ilma4 = {
       home = "/Users/ilma4";
     };
-    gggg = {
-      home = "/Users/gggg";
-      createHome = true;
-    };
   };
 
   home-manager.users = {
     ilma4 = import ./ilma4-home.nix;
-    gggg = import ./gggg-home.nix;
   };
 
   environment.shells = [pkgs.zsh];
@@ -104,7 +99,6 @@
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
-      "steam"
       # "bitwarden"
       "calibre"
       "1password-cli"
@@ -123,7 +117,6 @@
       "discord"
       "zed"
       "browsers-software/tap/browsers"
-      "prismlauncher"
       "utm"
       "raycast"
       "caffeine"
@@ -145,7 +138,6 @@
 
       "blackhole-2ch"
       "au-lab"
-      "whisky" # wine for macos
 
       # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "jetbrains-toolbox"

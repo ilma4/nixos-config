@@ -12,7 +12,6 @@
   imports = [
     ./hardware-configuration.nix
     "${modules}/zram.nix"
-    "${modules}/gaming.nix"
     ./samba.nix
     
     ./server.nix
