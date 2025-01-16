@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
     
     nixpkgs-unstable = {
       url = "github:nixos/nixpkgs/nixos-unstable";
@@ -29,8 +30,8 @@
     };
 
     nix-darwin = {
-      url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:LnL7/nix-darwin/nix-darwin-24.11";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     nix-on-droid = {
@@ -44,6 +45,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-darwin,
     home-manager,
     nixgl,
     nix-darwin,
@@ -114,7 +116,7 @@
         inherit inputs;
       };
 
-      pkgs = import nixpkgs {
+      pkgs = import nixpkgs-darwin {
         system = arm64-macos;
         config.allowUnfree = true;
         overlays = [
