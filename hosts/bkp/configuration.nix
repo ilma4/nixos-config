@@ -34,6 +34,7 @@
   nix.settings.experimental-features = ["nix-command" "flakes"];
   nixpkgs.config.allowUnfree = true;
   hardware.enableAllFirmware = true;
+  security.rtkit.enable = true;
 
   networking.hostName = "ilma4-bkp"; # Define your hostname.
   # Pick only one of the below networking options.
