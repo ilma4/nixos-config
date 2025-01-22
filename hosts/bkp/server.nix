@@ -38,6 +38,7 @@
     };
   };
 
+/*
   services.dnsmasq = {
     enable = true;
     openFirewall = true;
@@ -49,6 +50,7 @@
   networking.hosts = {
     "192.168.31.41" = ["ilma4-bkp.local"];
   };
+  */
 
   /*
   containers.immich = let port = 2283; in {
