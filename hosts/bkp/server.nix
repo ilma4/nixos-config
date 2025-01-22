@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  dotfiles,
   ...
 }: {
   users.users = {
@@ -32,7 +33,8 @@
     homer = {
       image = "b4bz/homer:latest";
       ports = ["8080:8080"];
-      volumes = ["/srv/homer:/www/assets"];
+      volumes = ["${dotfiles}/homer:/www/assets:ro"];
+      # volumes = ["/srv/homer:/www/assets"];
       autoStart = true;
       # user = "homer";
     };

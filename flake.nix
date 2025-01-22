@@ -62,6 +62,7 @@
       system = x86-linux;
       specialArgs = {
         inherit inputs;
+        inherit dotfiles;
         modules = nixos-modules;
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
