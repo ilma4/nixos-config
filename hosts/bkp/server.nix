@@ -28,7 +28,7 @@
       autoStart = true;
       extraOptions = ["--privileged" "--network=host"];
     };
-    
+
     homer = {
       image = "b4bz/homer:latest";
       ports = ["8080:8080"];
@@ -38,6 +38,18 @@
     };
   };
 
+  services.dnsmasq = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      # servers = ["ilma4-bkp/192.168.31.41"];
+    };
+  };
+
+  networking.hosts = {
+    "192.168.31.41" = ["ilma4-bkp.local"];
+  };
+
   /*
   containers.immich = let port = 2283; in {
     forwardPorts = {
@@ -45,9 +57,9 @@
       hostPort = port;
       protocol = "tcp";
     };
-    
+
     bindMounts = {
-      "/srv/immich" = { 
+      "/srv/immich" = {
         #hostPath = "/srv/nixos-immich";
         hostPath = "/mnt/hdd/immich"; # mediaLocation
         isReadOnly = false;
