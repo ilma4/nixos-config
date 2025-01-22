@@ -55,7 +55,11 @@ in {
   config = {
     nixpkgs.config.allowUnfree = true;
 
-    home.homeDirectory = "${if isDarwin then "/Users/" else "/home/"}${config.home.username}";
+    home.homeDirectory = "${
+      if isDarwin
+      then "/Users/"
+      else "/home/"
+    }${config.home.username}";
 
     # This value determines the Home Manager release that your configuration is
     # compatible with. This helps avoid breakage when a new Home Manager release
@@ -121,7 +125,7 @@ in {
       addKeysToAgent = "yes";
 
       matchBlocks = {
-        "ilma4-bkp" = {forwardAgent = true;};
+        "ilma4-bkp.local" = {forwardAgent = true;};
         "nvc00731.amt.labs.intellij.net" = {forwardAgent = true;};
       };
     };
