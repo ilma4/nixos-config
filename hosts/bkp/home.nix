@@ -11,6 +11,7 @@
     "${modules}/personal.nix"
     "${modules}/gui-apps.nix"
     "${modules}/jetbrains.nix"
+    "${modules}/dev.nix"
   ];
 
   home.username = "ilma4";

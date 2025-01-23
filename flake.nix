@@ -59,6 +59,13 @@
     dotfiles = "${self}/dotfiles";
   in {
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
+      pkgs = import nixpkgs {
+        system = x86-linux;
+        config.allowUnfree = true;
+        overlays = [
+          inputs.rust-overlay.overlays.default
+        ];
+      };
       system = x86-linux;
       specialArgs = {
         inherit inputs;

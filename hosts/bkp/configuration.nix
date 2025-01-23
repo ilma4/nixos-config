@@ -32,7 +32,6 @@
   };
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
-  nixpkgs.config.allowUnfree = true;
   hardware.enableAllFirmware = true;
   security.rtkit.enable = true;
 
@@ -112,7 +111,6 @@
   users.users.ilma4 = {
     isNormalUser = true;
     shell = pkgs.zsh;
-    #initialPassword = "1234";
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
   };
 

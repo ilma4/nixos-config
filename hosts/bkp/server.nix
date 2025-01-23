@@ -33,10 +33,9 @@
     homer = {
       image = "b4bz/homer:latest";
       ports = ["8080:8080"];
-      volumes = ["${dotfiles}/homer:/www/assets:ro"];
-      # volumes = ["/srv/homer:/www/assets"];
+      volumes = ["${dotfiles}/homer:/www/assets:ro" "/etc/passwd:/etc/passwd:ro" "/etc/group:/etc/group:ro"];
       autoStart = true;
-      # user = "homer";
+      user = "homer:homer";
     };
   };
 
