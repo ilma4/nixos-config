@@ -81,6 +81,7 @@
     settings = {
       # allowed-users = [ "ilma4" ];
       # sandbox = false; # FIXME: broken on 24.11
+      auto-optimise-store = false; # DO NOT enable
       experimental-features = "nix-command flakes"; # Necessary for using flakes on this system.
     };
   };

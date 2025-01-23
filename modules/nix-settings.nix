@@ -1,0 +1,21 @@
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}: {
+  nix = {
+    package = pkgs.nix;
+    nixPath = ["nixpkgs=${inputs.nixpkgs}"]; # required for nixd. # TODO: enable only on dev machines
+    gc.automatic = true;
+    optimise.automatic = true;
+    settings = {
+      # allowed-users = [ "ilma4" ];
+      # sandbox = true; # enabled on linux by default FIXME: broken on nix-darwin 24.11
+
+      auto-optimise-store = false; # DO NOT enable. Use optimize.automatic instead
+      experimental-features = "nix-command flakes"; # Necessary for using flakes on this system.
+    };
+  };
+}

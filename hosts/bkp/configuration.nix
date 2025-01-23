@@ -12,6 +12,7 @@
   imports = [
     ./hardware-configuration.nix
     "${modules}/zram.nix"
+    "${modules}/nix-settings.nix"
     ./samba.nix
     
     ./server.nix
@@ -31,7 +32,7 @@
     };
   };
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  #nix.settings.experimental-features = ["nix-command" "flakes"];
   hardware.enableAllFirmware = true;
   security.rtkit.enable = true;
 
