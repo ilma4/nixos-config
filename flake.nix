@@ -57,6 +57,7 @@
     nixos-modules = "${self}/modules";
     home-manager-modules = "${self}/home";
     dotfiles = "${self}/dotfiles";
+    darwin-modules = "${self}/darwin-modules";
   in {
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
       pkgs = import nixpkgs {
@@ -122,6 +123,7 @@
     darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
       specialArgs = {
         inherit inputs;
+        modules = darwin-modules;
       };
 
       pkgs = import nixpkgs-darwin {

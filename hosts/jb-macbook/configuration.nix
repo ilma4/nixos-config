@@ -3,8 +3,13 @@
   lib,
   pkgs,
   inputs,
+  modules,
   ...
 }: {
+  imports = [
+    "${modules}/nix-settings.nix"
+  ];
+
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   environment.systemPackages = with pkgs; [
