@@ -23,6 +23,7 @@ in {
 
   programs.zsh.shellAliases = lib.mkIf isNotNixOS {
     bazel = "bazelisk";
+    gw = "./gradlew";
   };
 
   home.file.".bazelrc".text = ''
