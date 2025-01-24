@@ -16,6 +16,11 @@ in {
       })
     ]
     ++ (
+      if pkgs.stdenv.isDarwin
+      then [pkgs.darwin.libiconv]
+      else []
+    )
+    ++ (
       if isNotNixOS
       then [pkgs.bazelisk]
       else []
