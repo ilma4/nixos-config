@@ -28,6 +28,9 @@
     };
   };
 
+  # allows dns resolving for containers on custom networks
+  networking.firewall.interfaces."podman+".allowedUDPPorts = [ 53 ];
+
   virtualisation.oci-containers.containers = {
     homeassistant = {
       image = "ghcr.io/home-assistant/home-assistant:stable";
@@ -42,13 +45,12 @@
 
     homer = {
       image = "b4bz/homer:latest";
-      ports = ["8080"];
+      # ports = ["8080"];
       volumes = ["${dotfiles}/homer:/www/assets:ro" "/etc/passwd:/etc/passwd:ro" "/etc/group:/etc/group:ro"];
       autoStart = true;
       user = "homer:homer";
       hostname = "homer";
-      extraOptions = ["--network=host"];
-      # extraOptions = ["--network=nginx"];
+      extraOptions = ["--network=nginx"];
     };
 
     nginx = {
@@ -56,7 +58,7 @@
       ports = ["80:80" "443:443"];
       volumes = ["${dotfiles}/nginx:/etc/nginx:ro" /*"/etc/letsencrypt:/etc/letsencrypt:ro"*/ ];
       autoStart = true;
-      extraOptions = ["--network=host"];
+      extraOptions = ["--network=nginx"];
     };
   };
 
