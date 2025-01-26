@@ -2,24 +2,6 @@
 { pkgs, lib, ... }:
 
 {
-  # Runtime
-  virtualisation.podman = {
-    enable = true;
-    autoPrune.enable = true;
-    dockerCompat = true;
-    defaultNetwork.settings = {
-      # Required for container networking to be able to use names.
-      dns_enabled = true;
-    };
-  };
-
-  # Enable container name DNS for non-default Podman networks.
-  # https://github.com/NixOS/nixpkgs/issues/226365
-  networking.firewall.interfaces."podman+".allowedUDPPorts = [ 53 ];
-
-  virtualisation.oci-containers.backend = "podman";
-
-  # Containers
   virtualisation.oci-containers.containers."immich_machine_learning" = {
     image = "ghcr.io/immich-app/immich-machine-learning:release";
     environment = {
@@ -67,7 +49,7 @@
       "POSTGRES_USER" = "postgres";
     };
     volumes = [
-      "/home/ilma4/NoBackup/immich-to-nix/postgres:/var/lib/postgresql/data:rw"
+      "/mnt/hdd/immich/postgres:/var/lib/postgresql/data:rw"
     ];
     cmd = [ "postgres" "-c" "shared_preload_libraries=vectors.so" "-c" "search_path=\"$user\", public, vectors" "-c" "logging_collector=on" "-c" "max_wal_size=2GB" "-c" "shared_buffers=512MB" "-c" "wal_compression=on" ];
     log-driver = "journald";
@@ -135,7 +117,8 @@
     };
     volumes = [
       "/etc/localtime:/etc/localtime:ro"
-      "/home/ilma4/NoBackup/immich-to-nix/library:/usr/src/app/upload:rw"
+      "/mnt/hdd/immich/data:/usr/src/app/upload:rw"
+      "/mnt/hdd/Pictures:/external/syncthing:ro"
     ];
     ports = [
       "2283:2283/tcp"
@@ -206,4 +189,8 @@
     };
     wantedBy = [ "multi-user.target" ];
   };
+
+  networking.firewall.allowedTCPPorts = [
+    2283 # immich
+  ];
 }

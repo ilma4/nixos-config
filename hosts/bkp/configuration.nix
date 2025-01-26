@@ -16,6 +16,7 @@
     ./samba.nix
     
     ./server.nix
+    ./immich.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
