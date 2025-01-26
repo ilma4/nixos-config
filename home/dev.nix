@@ -45,4 +45,8 @@ in {
       key = "64ECA0776D0E99AC";
     };
   };
+
+  home.sessionVariables = {
+    LIBRARY_PATH = "$LIBRARY_PATH:${config.home.profileDirectory}/lib";
+  };
 }
