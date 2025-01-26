@@ -66,6 +66,7 @@
         "/etc/localtime:/etc/localtime:ro"
       ];
       hostname = "ilma4-bkp-syncthing";
+      extraOptions = ["--network=host"]; # so UPnP mapping will work
       # TODO: healthcheck
     };
 
