@@ -49,7 +49,8 @@
       "POSTGRES_USER" = "postgres";
     };
     volumes = [
-      "/mnt/hdd/immich/postgres:/var/lib/postgresql/data:rw"
+      "/srv/immich-postgres:/var/lib/postgresql/data:rw"
+      # "/mnt/hdd/immich/postgres:/var/lib/postgresql/data:rw"
     ];
     cmd = [ "postgres" "-c" "shared_preload_libraries=vectors.so" "-c" "search_path=\"$user\", public, vectors" "-c" "logging_collector=on" "-c" "max_wal_size=2GB" "-c" "shared_buffers=512MB" "-c" "wal_compression=on" ];
     log-driver = "journald";
