@@ -14,7 +14,7 @@ footer: '<p>Created with <span class="has-text-danger">❤️</span> with <a hre
 theme: default
 
 # Optional theme customization (color overrrides)
-# overrrides can also be done using CSS vars 
+# overrrides can also be done using CSS vars
 colors:
   light:
     highlight-primary: "#3367d6"
@@ -65,7 +65,7 @@ links:
   # see url field and assets/additional-page.yml.dist used in this example:
   #- name: "another page!"
   #  icon: "fas fa-file-alt"
-  #  url: "#additional-page" 
+  #  url: "#additional-page"
 
 # Services
 # First level array represent a group.
@@ -100,5 +100,12 @@ services:
         tag: "setup"
         url: "https://github.com/walkxcode/dashboard-icons"
       - name: "home assistant"
-        url: "http://ilma4-bkp.local:8123"
-
+        url: "https://home-assistant.ilma4.keenetic.pro"
+        icon: "home-assistant"
+        #icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg"
+      - name: "immich"
+        url: "https://immich.ilma4.keenetic.pro"
+      - name: "router"
+        url: "https://ilma4.keenetic.pro"
+        icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/keenetic-alt.webp"
+        #icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/router.svg"
