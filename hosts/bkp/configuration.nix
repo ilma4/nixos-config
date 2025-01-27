@@ -96,6 +96,9 @@
   };
   */
 
+  services.tlp.enable = true;
+  services.power-profiles-daemon.enable = false;
+
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput.enable = true;
 
