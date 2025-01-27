@@ -96,12 +96,12 @@
     
     qbittorrent = {
       image = "linuxserver/qbittorrent:latest";
-      # ports = ["6881:6881" "6881:6881/udp" "8080:8080"];
       volumes = [
+        "/etc/localtime:/etc/localtime:ro"
         "/srv/qbittorrent/config:/config"
         "/mnt/hdd/torrent:/downloads"
       ];
-      #hostname = "qbittorrent";
+      dependsOn = ["gluetun"];
       autoStart = true;
       extraOptions = ["--network=container:gluetun"];
     };
@@ -110,15 +110,18 @@
     /*
     nginx =  {
       image = "nginx:stable";
-      ports = ["80:80" "443:443"];
+      ports = ["8080:8080"];
       volumes = [
+        "/etc/localtime:/etc/localtime:ro"
         "${dotfiles}/nginx:/etc/nginx:ro"
         # "/etc/letsencrypt:/etc/letsencrypt:ro"
-        ];
+      ];
       autoStart = true;
-      extraOptions = ["--network=nginx"];
+      extraOptions = [
+        "--network=qbittorrent"
+      ];
     };
-    */
+    */ 
   };
 
   services.avahi = {
@@ -162,6 +165,7 @@
     8123 # home-assistant
     80 # homer
     2283 # immich
+    8080 # qbittorrent
 
     # syncthing
     8334
