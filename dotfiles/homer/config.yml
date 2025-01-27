@@ -111,3 +111,5 @@ services:
         #icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/router.svg"
       - name: "torrent"
         url: "https://torrent.ilma4.keenetic.pro"
+      - name: "actual-budget"
+        url: "https://actual-budget.ilma4.keenetic.pro"
