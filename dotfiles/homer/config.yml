@@ -109,3 +109,5 @@ services:
         url: "https://ilma4.keenetic.pro"
         icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/keenetic-alt.webp"
         #icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/router.svg"
+      - name: "torrent"
+        url: "https://torrent.ilma4.keenetic.pro"

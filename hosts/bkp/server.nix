@@ -18,7 +18,6 @@
   users.groups.homeassistant = {};
   users.groups.homer = {};
 
-
   virtualisation.podman = {
     enable = true;
     autoPrune.enable = true;
@@ -30,7 +29,7 @@
 
   # Enable container name DNS for non-default Podman networks.
   # https://github.com/NixOS/nixpkgs/issues/226365
-  networking.firewall.interfaces."podman+".allowedUDPPorts = [ 53 ];
+  networking.firewall.interfaces."podman+".allowedUDPPorts = [53];
 
   virtualisation.oci-containers.backend = "podman";
 
@@ -59,8 +58,8 @@
     syncthing = {
       image = "syncthing/syncthing:latest";
       ports = [
-        "8384:8384" 
-        "22000:22000" 
+        "8384:8384"
+        "22000:22000"
         "21027:21027/udp"
       ];
       volumes = [
@@ -73,17 +72,52 @@
       # TODO: healthcheck
     };
 
-    /*     
+    gluetun = {
+      image = "qmcgaw/gluetun:latest";
+      environment = {
+        "VPN_SERVICE_PROVIDER" = "custom";
+        "VPN_TYPE" = "wireguard";
+      };
+      volumes = [
+        "/etc/localtime:/etc/localtime:ro"
+        "/home/ilma4/Docker/torrent/config/wireguard/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
+      ];
+      ports = [
+        "8080:8080" # qBittorrent
+      ];
+      hostname = "gluetun";
+      autoStart = true;
+      extraOptions = [
+        "--device=/dev/net/tun:/dev/net/tun"
+        "--cap-add=NET_ADMIN"
+      ];
+    };
+
+    
+    qbittorrent = {
+      image = "linuxserver/qbittorrent:latest";
+      # ports = ["6881:6881" "6881:6881/udp" "8080:8080"];
+      volumes = [
+        "/srv/qbittorrent/config:/config"
+        "/mnt/hdd/torrent:/downloads"
+      ];
+      #hostname = "qbittorrent";
+      autoStart = true;
+      extraOptions = ["--network=container:gluetun"];
+    };
+    
+
+    /*
     nginx =  {
       image = "nginx:stable";
       ports = ["80:80" "443:443"];
       volumes = [
-        "${dotfiles}/nginx:/etc/nginx:ro" 
+        "${dotfiles}/nginx:/etc/nginx:ro"
         # "/etc/letsencrypt:/etc/letsencrypt:ro"
         ];
       autoStart = true;
       extraOptions = ["--network=nginx"];
-    }; 
+    };
     */
   };
 
@@ -137,6 +171,6 @@
   networking.firewall.allowedUDPPorts = [
     #syncthing
     22000
-    21027   
+    21027
   ];
 }
