@@ -44,6 +44,7 @@ in {
       signByDefault = false;
       key = "64ECA0776D0E99AC";
     };
+    lfs.enable = true;
   };
 
   home.sessionVariables = {
