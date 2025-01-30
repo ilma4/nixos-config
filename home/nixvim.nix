@@ -73,7 +73,7 @@ in {
         };
       };
 
-      plugins.auto-save.enable = true;
+      #plugins.auto-save.enable = true;
       plugins.telescope.enable = true;
       plugins.web-devicons.enable = true; # icons for telescope
 
