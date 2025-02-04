@@ -124,6 +124,10 @@
       specialArgs = {
         inherit inputs;
         modules = darwin-modules;
+        pkgs-unstable = import inputs.nixpkgs-unstable {
+          system = arm64-macos;
+          config.allowUnfree = true;
+        };
       };
 
       pkgs = import nixpkgs-darwin {
@@ -143,8 +147,11 @@
             inherit inputs;
             inherit dotfiles;
             modules = home-manager-modules;
+            pkgs-unstable = import inputs.nixpkgs-unstable {
+              system = arm64-macos;
+              config.allowUnfree = true;
+            };
           };
-
         }
       ];
     };

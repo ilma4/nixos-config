@@ -2,6 +2,7 @@ args @ {
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   modules,
   inputs,
   dotfiles,
@@ -24,6 +25,7 @@ args @ {
       description = "Location of the dotfiles working copy";
     };
   };
+
 
   config = {
     home.username = "ilma4";
@@ -49,7 +51,10 @@ args @ {
       '')
 
       (pkgs.writeShellScriptBin "generate-random-password" "openssl rand 64 | sha512")
-    ];
+    ] ++ (with pkgs-unstable ; [
+      ollama
+      llama-cpp
+    ]);
 
     programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 

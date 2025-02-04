@@ -98,7 +98,7 @@
       "1password-cli"
       "vlc"
 
-      # I don't really understand docker on mac
+      # Docker Desktop for Mac: vm to run docker containers
       "docker"
 
       #avaliable in nix, but nix has troubles with gui apps
