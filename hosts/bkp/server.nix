@@ -64,7 +64,8 @@
       ];
       volumes = [
         "/srv/syncthing:/var/syncthing"
-        "/mnt/hdd/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
+        # "/mnt/hdd/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
+        "/srv/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
         "/etc/localtime:/etc/localtime:ro"
       ];
       hostname = "ilma4-bkp-syncthing";

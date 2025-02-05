@@ -118,8 +118,9 @@
     };
     volumes = [
       "/etc/localtime:/etc/localtime:ro"
-      "/mnt/hdd/immich/data:/usr/src/app/upload:rw"
-      "/mnt/hdd/Pictures:/external/syncthing:ro"
+      "/srv/immich/data:/usr/src/app/upload:rw"
+      # "/mnt/hdd/Pictures:/external/syncthing:ro"
+      "/srv/Pictures:/external/syncthing:ro"
     ];
     ports = [
       "2283:2283/tcp"
