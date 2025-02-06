@@ -32,12 +32,14 @@ in {
     "nvc00731.amt.labs.intellij.net" = {
       identityFile = "~/.ssh/apal-server";
     };
-    "192.168.1.155" = {
+    /*
+    "192.168.1.155" = { # oneplus10R nix-on-droid
       identityFile = "~/.ssh/jb-macbook-to-oneplus10R";
       user = "nix-on-droid";
       port = 8022;
     };
-    "ilma4-bkp" = {
+    */
+    "ilma4-bkp.local" = {
       identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
     };
   };

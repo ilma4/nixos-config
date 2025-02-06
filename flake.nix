@@ -120,7 +120,7 @@
       ];
     };
 
-    darwinConfigurations."DE-UNIT-1907" = nix-darwin.lib.darwinSystem {
+    darwinConfigurations."DE-UNIT-1880" = nix-darwin.lib.darwinSystem {
       specialArgs = {
         inherit inputs;
         modules = darwin-modules;
