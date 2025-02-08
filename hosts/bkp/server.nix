@@ -66,6 +66,7 @@
         "/srv/syncthing:/var/syncthing"
         # "/mnt/hdd/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
         "/srv/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
+        "/srv/Pictures/GalaxyS24:/var/syncthing/Pictures/GalaxyS24"
         "/etc/localtime:/etc/localtime:ro"
       ];
       hostname = "ilma4-bkp-syncthing";
