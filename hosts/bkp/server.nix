@@ -64,7 +64,6 @@
       ];
       volumes = [
         "/srv/syncthing:/var/syncthing"
-        # "/mnt/hdd/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
         "/srv/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
         "/srv/Pictures/GalaxyS24:/var/syncthing/Pictures/GalaxyS24"
         "/etc/localtime:/etc/localtime:ro"
@@ -138,30 +137,6 @@
     };
     reflector = true;
   };
-
-  /*
-  systemd.timers.duck-dns-update = {
-    enable = true;
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec="1min";
-      OnUnitActiveSec="5min";
-      Persistent="true";
-      Unit = "duck-dns-update.service";
-    };
-    unitConfig = {
-      Description="DuckDNS Update";
-    };
-  };
-
-  systemd.services.duck-dns-update = {
-    description="DuckDNS Update";
-    serviceConfig  = {
-      Type = "simple";
-    };
-    script=''echo url='https://www.duckdns.org/update?domains=ilma4-bkp&token=2a2144ab-3e5f-4288-8467-543ff76c751c&ip=' | ${pkgs.curl}/bin/curl -k -K -'';
-  };
-  */
 
   networking.firewall.allowedTCPPorts = [
     8123 # home-assistant
