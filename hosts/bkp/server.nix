@@ -103,7 +103,7 @@
         "/mnt/hdd/torrent:/downloads"
       ];
       dependsOn = ["gluetun"];
-      autoStart = true;
+      autoStart = false;
       extraOptions = ["--network=container:gluetun"];
     };
     
