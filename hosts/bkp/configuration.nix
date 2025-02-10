@@ -17,6 +17,7 @@
     
     ./server.nix
     ./immich.nix
+    ./paperless.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
