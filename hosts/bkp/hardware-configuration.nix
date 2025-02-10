@@ -28,7 +28,7 @@
     bypassWorkqueues = true; # improve performance on ssd
     allowDiscards = true; # allow trim
   };
-fileSystems."/home" = {
+  fileSystems."/home" = {
     device = "/dev/disk/by-uuid/cedf22fb-7b4f-4ed5-9866-6df52db6a986";
     fsType = "btrfs";
     options = ["subvol=@home" "compress=zstd:1"];
@@ -57,17 +57,28 @@ fileSystems."/home" = {
     options = ["subvol=@" "compress=zstd:1"];
   };
 
-  /*
-  systemd.mounts."usb-hdd" = {
-    what = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
-    where = "/mnt/hdd";
-  };
-  */
+  systemd.mounts = [
+    {
+      description = "Mount USB HDD RAID1 array";
+      # wantedBy = ["multi-user.target"]; # uncomment to mount on boot
+      after = ["local-fs.target"];
+      what = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
+      where = "/mnt/hdd";
+      type = "auto";
+      options = "defaults";
+    }
+  ];
 
-  fileSystems."/mnt/hdd" = {
-    device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
-    fsType = "btrfs";
-  };
+  systemd.automounts = [
+    {
+      description = "Mount USB HDD RAID1 array";
+      where = "/mnt/hdd";
+      wantedBy = ["multi-user.target"];
+      automountConfig = {
+        TimeoutIdleSec = "5min"; # auto-umount after 5 minutes of inactivity
+      };
+    }
+  ];
 
   swapDevices = [];
 
