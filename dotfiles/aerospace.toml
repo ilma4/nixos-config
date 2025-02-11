@@ -211,6 +211,11 @@ alt-shift-semicolon = 'mode service'
 
 alt-f = 'fullscreen'
 
+
+[[on-window-detected]]
+if.app-id = 'com.bitwarden.desktop'
+run = 'move-node-to-workspace N10'
+
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
