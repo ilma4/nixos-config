@@ -8,6 +8,7 @@
 in {
   home.packages = with pkgs; [
     screen
+    resticprofile
 
     /*
     TODO: generate new keys defined in `programs.ssh.matchBlocks` and send them to hosts
