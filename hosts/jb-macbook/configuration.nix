@@ -97,6 +97,7 @@
       "calibre"
       "1password-cli"
       "vlc"
+      "prismlauncher"
 
       # Docker Desktop for Mac: vm to run docker containers
       "docker"
