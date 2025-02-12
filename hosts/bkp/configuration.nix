@@ -14,7 +14,7 @@
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
     ./samba.nix
-    
+
     ./server.nix
     ./immich.nix
     ./paperless.nix
@@ -34,8 +34,7 @@
     };
   };
 
-  #nix.settings.experimental-features = ["nix-command" "flakes"];
-  hardware.enableAllFirmware = true;
+  #nix.settings.experimental-features = ["nix-command" "flakes"]; hardware.enableAllFirmware = true;
   security.rtkit.enable = true;
 
   networking.hostName = "ilma4-bkp"; # Define your hostname.
@@ -106,7 +105,7 @@
   # Check btrfs automatically
   services.btrfs.autoScrub = {
     enable = true;
-    fileSystems = [ "/" "/mnt/hdd" ];
+    fileSystems = ["/" "/mnt/hdd"];
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -200,6 +199,8 @@
     openFirewall = true;
     settings.PasswordAuthentication = false;
   };
+
+  services.smartd.enable = true;
 
   programs.nix-ld.enable = true;
 
