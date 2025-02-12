@@ -74,6 +74,7 @@ args @ {
       ".config/karabiner".source = symlink "karabiner";
 
       ".config/aerospace/aerospace.toml".source = "${dotfiles}/aerospace.toml";
+      ".config/resticprofile/profiles.toml".source = "${dotfiles}/resticprofile.toml";
     };
   };
 }

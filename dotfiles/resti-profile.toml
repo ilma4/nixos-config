@@ -1,9 +1,0 @@
-version = "1"
-
-[default]
-  repository = "ilma4-bkp.local:/home/ilma4/NoBackup/restic"
-  password-file = "todo.txt"
-
-  [default.backup]
-    verbose = true
-

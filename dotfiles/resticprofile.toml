@@ -1,0 +1,42 @@
+#:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+
+version = "1"
+
+[default]
+repository = "local:/Users/ilma4/NoBackup/restic"
+password-file = "/Users/ilma4/NoBackup/restic-password.txt"
+
+[default.backup]
+verbose = true
+source = ["/Users/ilma4"]
+exclude-caches = true # not very helpful. https://bford.info/cachedir/
+exclude = [
+  "/Users/ilma4/Downloads",
+  "/Users/ilma4/NoBackup",
+
+  "/Users/ilma4/.cache",
+  "/Users/ilma4/.Trash",
+
+  "/Users/ilma4/Library/Caches",
+  "/Users/ilma4/Library/Android",    # android sdks
+  "/Users/ilma4/Library/Developer",  # xcode stuff
+  "/Users/ilma4/Library/Containers", # docker, vms, wine bottles
+  "/Users/ilma4/Library/Java",       # jdk's binaries
+  "/Users/ilma4/Library/Logs",
+
+  "/Users/ilma4/.android",
+  "/Users/ilma4/.colima",
+  "/Users/ilma4/.vscode",
+
+  # caches
+  "/Users/ilma4/.gradle",
+  "/Users/ilma4/.ollama",
+  "/Users/ilma4/.konan",
+  "/Users/ilma4/.npm",
+  "/Users/ilma4/.gem",    # ruby(?)
+  "/Users/ilma4/.cargo",
+  "/Users/ilma4/.m2",     # maven
+
+
+  "/Users/ilma4/Applications",
+]
