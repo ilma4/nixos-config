@@ -24,8 +24,8 @@ exclude = [
   "/Users/ilma4/Library/Java",       # jdk's binaries
   "/Users/ilma4/Library/Logs",
 
-  "/Users/ilma4/.android",
-  "/Users/ilma4/.colima",
+  "/Users/ilma4/.android", # android emulator images
+  "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
   "/Users/ilma4/.vscode",
 
   # caches
@@ -40,3 +40,30 @@ exclude = [
 
   "/Users/ilma4/Applications",
 ]
+
+
+[ssd256]
+repository = "sftp:ilma4@ilma4-bkp.local:/mnt/ssd256/restic"
+password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
+
+[ssd256.copy]
+from-repo = "local:/Users/ilma4/NoBackup/restic"
+from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
+
+
+[hdd]
+repository = "sftp:ilma4@ilma4-bkp.local:/mnt/hdd/restic"
+password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
+
+[hdd.copy]
+from-repo = "local:/Users/ilma4/NoBackup/restic"
+from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
+
+
+[ilma4-bkp]
+repository = "sftp:ilma4@ilma4-bkp.local:/home/ilma4/NoBackup/restic"
+password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
+
+[ilma4-bkp.copy]
+from-repo = "local:/Users/ilma4/NoBackup/restic"
+from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
