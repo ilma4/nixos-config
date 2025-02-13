@@ -26,15 +26,15 @@ exclude = [
 
   "/Users/ilma4/.android", # android emulator images
   "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
-  "/Users/ilma4/.vscode",
+  "/Users/ilma4/.vscode",  # vscode extensions
 
   # caches
-  "/Users/ilma4/.gradle",
-  "/Users/ilma4/.ollama",
-  "/Users/ilma4/.konan",
-  "/Users/ilma4/.npm",
+  "/Users/ilma4/.ollama", # LLMs
+  "/Users/ilma4/.konan",  # c++
+  "/Users/ilma4/.npm",    # javascript!
   "/Users/ilma4/.gem",    # ruby(?)
-  "/Users/ilma4/.cargo",
+  "/Users/ilma4/.cargo",  # rust 
+  "/Users/ilma4/.gradle", 
   "/Users/ilma4/.m2",     # maven
 
 
