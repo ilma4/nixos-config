@@ -34,12 +34,16 @@ exclude = [
   "/Users/ilma4/.npm",    # javascript!
   "/Users/ilma4/.gem",    # ruby(?)
   "/Users/ilma4/.cargo",  # rust 
-  "/Users/ilma4/.gradle", 
+  "/Users/ilma4/.gradle",
   "/Users/ilma4/.m2",     # maven
 
 
   "/Users/ilma4/Applications",
 ]
+
+schedule = "*-*-* 02:00:00"
+schedule-permission = "user"
+schedule-lock-wait = "15m"
 
 
 [ssd256]
