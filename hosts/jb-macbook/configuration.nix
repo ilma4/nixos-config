@@ -110,7 +110,6 @@
       "visual-studio-code"
       "karabiner-elements"
       "discord"
-      "zed"
       "browsers-software/tap/browsers"
       "utm"
       "raycast"
