@@ -94,7 +94,6 @@
       ];
     };
 
-    
     qbittorrent = {
       image = "linuxserver/qbittorrent:latest";
       volumes = [
@@ -106,7 +105,20 @@
       autoStart = false;
       extraOptions = ["--network=container:gluetun"];
     };
-    
+
+    stirling-pdf = {
+      # pdf tools
+      image = "docker.io/stirlingtools/stirling-pdf:latest";
+      volumes = [
+        "/etc/localtime:/etc/localtime:ro"
+        "/srv/stirling-pdf/trainingData:/usr/share/tessdata"
+        "/srv/stirling-pdf/extraConfigs:/configs"
+        "/srv/stirling-pdf/logs:/logs"
+        "/srv/stirling-pdf/pipeline:/pipeline"
+      ];
+      ports = ["8085:8080"];
+      autoStart = true;
+    };
 
     /*
     nginx =  {
@@ -122,7 +134,7 @@
         "--network=qbittorrent"
       ];
     };
-    */ 
+    */
   };
 
   services.avahi = {
@@ -143,6 +155,7 @@
     80 # homer
     2283 # immich
     8080 # qbittorrent
+    8085 # stirling-pdf (pdf tools)
 
     # syncthing
     8334
