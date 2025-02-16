@@ -115,3 +115,5 @@ services:
         url: "https://actual-budget.ilma4.keenetic.pro"
       - name: "paperless"
         url: "https://paperless.ilma4.keenetic.pro"
+      - name: "pdf-tools"
+        url: "https://pdf-tools.ilma4.keenetic.pro"
