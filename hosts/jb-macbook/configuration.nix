@@ -62,7 +62,8 @@
   system.defaults.dock = {
     wvous-bl-corner = 1; # bottom left hot corner. disabled
     wvous-br-corner = 1; # bottom left hot corner. disabled
-    wvous-tl-corner = 2; # top left hot corner. Mission Control
+    wvous-tl-corner = 1; # top left hot corner. Mission Control
+    # wvous-tl-corner = 2; # top left hot corner. Mission Control
     wvous-tr-corner = 1; # top left right corner. disabled
 
     mru-spaces = false; # disable rearrange spaces based on most recent use
