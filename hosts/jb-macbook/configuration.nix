@@ -125,6 +125,8 @@
       "macfuse" # FUSE for macOS, uses kernel extension
       # "macos-fuse-t/homebrew-cask/fuse-t" # fuse for macos, no kernel-extension
 
+      "android-file-transfer" # transfer files from android (and Kindle) to mac via usb
+
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
       "todoist"
