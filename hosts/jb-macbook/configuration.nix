@@ -151,7 +151,7 @@
       "openjdk@21"
       "openjdk@17"
       "openjdk@11"
-      "openjdk@8"
+      # "openjdk@8"
 
       "bitwarden-cli"
       "screenresolution"
