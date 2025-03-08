@@ -24,6 +24,10 @@
     gnomeExtensions.dash-to-dock
     gnomeExtensions.caffeine
     gnome-tweaks
+
+    (writers.writePython3Bin "set-power" {
+      doCheck = false; # disable PEP style checks
+    } (builtins.readFile "${dotfiles}/set-power.py"))
   ];
 
   programs.gnome-shell.enable = true;
