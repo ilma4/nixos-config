@@ -133,6 +133,7 @@
       "ticktick"
       "deskpad"
       "easydict"
+      "steam"
 
       "blackhole-2ch"
       "au-lab"
