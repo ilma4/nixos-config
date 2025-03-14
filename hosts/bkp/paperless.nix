@@ -7,9 +7,11 @@
   # Containers
   virtualisation.oci-containers.containers."paperless-broker" = {
     image = "docker.io/library/redis:7";
+    /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
     ];
+    */
     volumes = [
       "paperless_redisdata:/data:rw"
     ];
@@ -45,9 +47,11 @@
       "POSTGRES_PASSWORD" = "paperless";
       "POSTGRES_USER" = "paperless";
     };
+    /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
     ];
+    */
     volumes = [
       "paperless_pgdata:/var/lib/postgresql/data:rw"
     ];
@@ -78,9 +82,11 @@
   };
   virtualisation.oci-containers.containers."paperless-gotenberg" = {
     image = "docker.io/gotenberg/gotenberg:8.7";
+    /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
     ];
+    */
     cmd = ["gotenberg" "--chromium-disable-javascript=true" "--chromium-allow-list=file:///tmp/.*"];
     log-driver = "journald";
     extraOptions = [
@@ -107,9 +113,11 @@
   };
   virtualisation.oci-containers.containers."paperless-tika" = {
     image = "docker.io/apache/tika:latest";
+    /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
     ];
+    */
     log-driver = "journald";
     extraOptions = [
       "--network-alias=tika"
@@ -143,9 +151,11 @@
       "PAPERLESS_TIKA_ENDPOINT" = "http://tika:9998";
       "PAPERLESS_TIKA_GOTENBERG_ENDPOINT" = "http://gotenberg:3000";
     };
+    /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
     ];
+    */
     volumes = [
       "/srv/paperless-ngx/consume:/usr/src/paperless/consume:rw"
       "/srv/paperless-ngx/export:/usr/src/paperless/export:rw"
