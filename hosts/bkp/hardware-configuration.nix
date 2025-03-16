@@ -57,12 +57,12 @@
     options = ["subvol=@" "compress=zstd:1"];
   };
 
-  fileSystems."/mnt/hdd" = {
-    device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
-    depends = [ "/" ];
-  };
+  # fileSystems."/mnt/hdd" = {
+    # device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
+    # depends = [ "/" ];
+  # };
 
-  /*
+  
   systemd.mounts = [
     {
       description = "Mount USB HDD RAID1 array";
@@ -74,18 +74,18 @@
       options = "defaults";
     }
   ];
-  */
+  
 
-  systemd.automounts = [
-    {
-      description = "Mount USB HDD RAID1 array";
-      where = "/mnt/hdd";
-      wantedBy = ["multi-user.target"];
-      automountConfig = {
-        TimeoutIdleSec = "5min"; # auto-umount after 5 minutes of inactivity
-      };
-    }
-  ];
+  # systemd.automounts = [
+    # {
+      # description = "Mount USB HDD RAID1 array";
+      # where = "/mnt/hdd";
+      # wantedBy = ["multi-user.target"];
+      # automountConfig = {
+        # TimeoutIdleSec = "5min"; # auto-umount after 5 minutes of inactivity
+      # };
+    # }
+  # ];
 
   swapDevices = [];
 

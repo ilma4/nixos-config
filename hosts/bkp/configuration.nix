@@ -200,7 +200,15 @@
     settings.PasswordAuthentication = false;
   };
 
-  services.smartd.enable = true;
+  services.smartd = {
+    enable = true;
+    autodetect = false;
+    devices = [
+      {device = "/dev/nvme0n1";}
+      {device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";}
+    ];
+    # defaults.autodetected = "-a -o on -S on -n standby,q -s (S/../.././02|L/../../7/04)" ;
+  };
 
   programs.nix-ld.enable = true;
 
