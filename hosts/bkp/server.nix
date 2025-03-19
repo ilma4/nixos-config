@@ -8,15 +8,21 @@
   users.users = {
     homer = {
       isSystemUser = true;
+      uid = 989;
       group = "homer";
     };
     homeassistant = {
       isSystemUser = true;
+      uid = 990;
       group = "homeassistant";
     };
   };
-  users.groups.homeassistant = {};
-  users.groups.homer = {};
+  users.groups.homeassistant = {
+    gid = 986;
+  };
+  users.groups.homer = {
+    gid = 985;
+  };
 
   virtualisation.podman = {
     enable = true;
@@ -48,9 +54,9 @@
     homer = {
       image = "b4bz/homer:latest";
       ports = ["80:8080"];
-      volumes = ["${dotfiles}/homer:/www/assets:ro" "/etc/passwd:/etc/passwd:ro" "/etc/group:/etc/group:ro"];
+      volumes = ["${dotfiles}/homer:/www/assets:ro"];
       autoStart = true;
-      user = "homer:homer";
+      user = "${toString config.users.users.homer.uid}:${toString config.users.groups.homer.gid}";
       # hostname = "homer";
       # extraOptions = ["--network=nginx"];
     };
