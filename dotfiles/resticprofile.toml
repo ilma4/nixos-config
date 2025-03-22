@@ -47,27 +47,30 @@ schedule-lock-wait = "15m"
 
 
 [ssd256]
+
+[ssd256.copy]
 repository = "sftp:ilma4@ilma4-bkp.local:/mnt/ssd256/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
-[ssd256.copy]
 from-repo = "local:/Users/ilma4/NoBackup/restic"
 from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 
 
 [hdd]
+
+[hdd.copy]
 repository = "sftp:ilma4@ilma4-bkp.local:/mnt/hdd/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
-[hdd.copy]
 from-repo = "local:/Users/ilma4/NoBackup/restic"
 from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 
 
 [ilma4-bkp]
+
+[ilma4-bkp.copy]
 repository = "sftp:ilma4@ilma4-bkp.local:/home/ilma4/NoBackup/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
-[ilma4-bkp.copy]
 from-repo = "local:/Users/ilma4/NoBackup/restic"
 from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
