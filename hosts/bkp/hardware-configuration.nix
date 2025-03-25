@@ -57,10 +57,10 @@
     options = ["subvol=@" "compress=zstd:1"];
   };
 
-  # fileSystems."/mnt/hdd" = {
-    # device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
-    # depends = [ "/" ];
-  # };
+  fileSystems."/mnt/hdd" = {
+    device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
+    depends = [ "/" ];
+  };
 
   
   systemd.mounts = [
