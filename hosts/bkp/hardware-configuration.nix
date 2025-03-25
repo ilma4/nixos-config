@@ -63,6 +63,7 @@
   };
 
   
+  /*
   systemd.mounts = [
     {
       description = "Mount USB HDD RAID1 array";
@@ -74,6 +75,7 @@
       options = "defaults";
     }
   ];
+  */
   
 
   # systemd.automounts = [
