@@ -101,7 +101,7 @@
       "prismlauncher" # minecraft
 
       # Docker Desktop for Mac: vm to run docker containers
-      "docker"
+      # "docker"
 
       #avaliable in nix, but nix has troubles with gui apps
       "telegram-desktop"
