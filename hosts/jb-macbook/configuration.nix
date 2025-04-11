@@ -98,7 +98,7 @@
       "calibre"
       "1password-cli"
       "vlc"
-      "prismlauncher"
+      "prismlauncher" # minecraft
 
       # Docker Desktop for Mac: vm to run docker containers
       "docker"
@@ -109,16 +109,17 @@
       "obsidian"
       "slack"
       "visual-studio-code"
-      "karabiner-elements"
+      "karabiner-elements" # keyboard remapping
       "discord"
       "browsers-software/tap/browsers"
-      "utm"
+      "utm" # qemu
       "raycast"
       "caffeine"
       "monitorcontrol"
       "alt-tab"
       "far2l"
-      "nikitabobko/tap/aerospace"
+      "nikitabobko/tap/aerospace" # tiling window manager
+      "jordanbaird-ice" # edit menu bar
       "zoom"
 
       # Mac specific, most probably remain brew casks
@@ -151,13 +152,14 @@
     ];
 
     brews = [
+      "displayplacer" # cli to configure displays 
+
       "openjdk@21"
       "openjdk@17"
       "openjdk@11"
       # "openjdk@8"
 
       "bitwarden-cli"
-      "screenresolution"
     ];
 
     masApps = {

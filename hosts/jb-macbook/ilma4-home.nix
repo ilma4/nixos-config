@@ -50,6 +50,14 @@ args @ {
         /opt/homebrew/bin/brew upgrade --greedy
       '')
 
+      (pkgs.writeShellScriptBin "display-internal-set-defaults" ''
+      displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0"
+      '')
+
+      (pkgs.writeShellScriptBin "display-internal-full-res" ''
+      displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:3024x1964 hz:120 color_depth:8 enabled:true scaling:off origin:(0,0) degree:0"
+      '')
+
       (pkgs.writeShellScriptBin "generate-random-password" "openssl rand 64 | sha512")
     ] ++ (with pkgs-unstable ; [
       ollama
