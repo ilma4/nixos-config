@@ -8,6 +8,9 @@
 let 
   home-assistant-version = "2025.4.1";
   homer-version = "v25.04.1";
+  gluetun-version = "v3.40.0";
+  qbittorrent-version = "5.0.4-r0-ls388";
+  stirling-pdf-version = "0.45.4";
 in 
 {
   users.users = {
@@ -85,7 +88,7 @@ in
     };
 
     gluetun = {
-      image = "qmcgaw/gluetun:latest";
+      image = "qmcgaw/gluetun:${gluetun-version}";
       environment = {
         "VPN_SERVICE_PROVIDER" = "custom";
         "VPN_TYPE" = "wireguard";
@@ -106,7 +109,7 @@ in
     };
 
     qbittorrent = {
-      image = "linuxserver/qbittorrent:latest";
+      image = "linuxserver/qbittorrent:${qbittorrent-version}";
       volumes = [
         "/etc/localtime:/etc/localtime:ro"
         "/srv/qbittorrent/config:/config"
@@ -119,7 +122,7 @@ in
 
     stirling-pdf = {
       # pdf tools
-      image = "docker.io/stirlingtools/stirling-pdf:latest";
+      image = "docker.io/stirlingtools/stirling-pdf:${stirling-pdf-version}";
       volumes = [
         "/etc/localtime:/etc/localtime:ro"
         "/srv/stirling-pdf/trainingData:/usr/share/tessdata"
