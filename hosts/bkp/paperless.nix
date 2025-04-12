@@ -7,7 +7,7 @@
 let 
   paperless-version = "2.15.1";
   redis-version = "7";
-  postgres-version = "17";
+  postgres-version = "16";
   gotenberg-version = "8.19";
 in
  {
