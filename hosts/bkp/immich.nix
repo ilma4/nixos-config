@@ -1,9 +1,13 @@
 # Auto-generated using compose2nix v0.3.1.
 { pkgs, lib, ... }:
-
+let 
+  immich-version = "v1.131.3";
+  postgres-version = "739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52";
+  redis-version = "148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8";
+in
 {
   virtualisation.oci-containers.containers."immich_machine_learning" = {
-    image = "ghcr.io/immich-app/immich-machine-learning:release";
+    image = "ghcr.io/immich-app/immich-machine-learning:${immich-version}";
     environment = {
       "DB_DATABASE_NAME" = "immich";
       "DB_DATA_LOCATION" = "./postgres";
@@ -41,7 +45,7 @@
     ];
   };
   virtualisation.oci-containers.containers."immich_postgres" = {
-    image = "docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0";
+    image = "docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:${postgres-version}";
     environment = {
       "POSTGRES_DB" = "immich";
       "POSTGRES_INITDB_ARGS" = "--data-checksums";
@@ -81,7 +85,7 @@
     ];
   };
   virtualisation.oci-containers.containers."immich_redis" = {
-    image = "docker.io/redis:6.2-alpine@sha256:eaba718fecd1196d88533de7ba49bf903ad33664a92debb24660a922ecd9cac8";
+    image = "docker.io/redis:6.2-alpine@sha256:${redis-version}";
     log-driver = "journald";
     extraOptions = [
       "--health-cmd=redis-cli ping || exit 1"
@@ -107,7 +111,7 @@
     ];
   };
   virtualisation.oci-containers.containers."immich_server" = {
-    image = "ghcr.io/immich-app/immich-server:release";
+    image = "ghcr.io/immich-app/immich-server:${immich-version}";
     environment = {
       "DB_DATABASE_NAME" = "immich";
       "DB_DATA_LOCATION" = "./postgres";
