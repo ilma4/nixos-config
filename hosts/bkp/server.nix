@@ -4,7 +4,12 @@
   pkgs,
   dotfiles,
   ...
-}: {
+}: 
+let 
+  home-assistant-version = "2025.4.1";
+  homer-version = "v25.04.1";
+in 
+{
   users.users = {
     homer = {
       isSystemUser = true;
@@ -41,7 +46,7 @@
 
   virtualisation.oci-containers.containers = {
     homeassistant = {
-      image = "ghcr.io/home-assistant/home-assistant:stable";
+      image = "ghcr.io/home-assistant/home-assistant:${home-assistant-version}";
       volumes = [
         "/srv/homeassistant:/config"
         "/etc/localtime:/etc/localtime:ro"
@@ -52,7 +57,7 @@
     };
 
     homer = {
-      image = "b4bz/homer:latest";
+      image = "b4bz/homer:${homer-version}";
       ports = ["80:8080"];
       volumes = ["${dotfiles}/homer:/www/assets:ro"];
       autoStart = true;
