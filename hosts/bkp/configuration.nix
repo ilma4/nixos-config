@@ -105,7 +105,12 @@
   # Check btrfs automatically
   services.btrfs.autoScrub = {
     enable = true;
-    fileSystems = ["/" "/mnt/hdd"];
+    interval = "*-*-01 03:00:00"; # monthly at 03 am
+    fileSystems = [
+      "/" 
+      "/mnt/hdd"
+      "/mnt/ssd256"
+    ];
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
