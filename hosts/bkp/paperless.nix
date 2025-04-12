@@ -3,10 +3,17 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+let 
+  paperless-version = "2.15.1";
+  redis-version = "7";
+  postgres-version = "17";
+  gotenberg-version = "8.19";
+in
+ {
   # Containers
   virtualisation.oci-containers.containers."paperless-broker" = {
-    image = "docker.io/library/redis:7";
+    image = "docker.io/library/redis:${redis-version}";
     /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
@@ -41,7 +48,7 @@
     ];
   };
   virtualisation.oci-containers.containers."paperless-db" = {
-    image = "docker.io/library/postgres:16";
+    image = "docker.io/library/postgres:${postgres-version}";
     environment = {
       "POSTGRES_DB" = "paperless";
       "POSTGRES_PASSWORD" = "paperless";
@@ -81,7 +88,7 @@
     ];
   };
   virtualisation.oci-containers.containers."paperless-gotenberg" = {
-    image = "docker.io/gotenberg/gotenberg:8.7";
+    image = "docker.io/gotenberg/gotenberg:${gotenberg-version}";
     /*
     environmentFiles = [
       "/home/ilma4/paperless-ngx/docker-compose.env"
@@ -142,7 +149,7 @@
     ];
   };
   virtualisation.oci-containers.containers."paperless-webserver" = {
-    image = "ghcr.io/paperless-ngx/paperless-ngx:latest";
+    image = "ghcr.io/paperless-ngx/paperless-ngx:${paperless-version}";
     environment = {
       "PAPERLESS_DBHOST" = "db";
       "PAPERLESS_OCR_LANGUAGES" = "eng deu rus";
