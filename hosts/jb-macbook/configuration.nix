@@ -165,7 +165,6 @@
     masApps = {
       Xcode = 497799835;
       Bitwarden = 1352778147;
-      Tailscale = 1475387142;
     };
   };
 
@@ -188,10 +187,8 @@
     ::1 www.phoronix.com
   '';
 
-  #services.skhd.enable = true; # hotkeys daemon
-  services.skhd.skhdConfig = ''
-    # lalt - return : osascript ${config.home-manager.users.ilma4.home.file."itermNewWindow.scpt".source}
-  '';
+  # VPN to access homelab
+  services.tailscale.enable = true;
 
   # Create /etc/zshrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
