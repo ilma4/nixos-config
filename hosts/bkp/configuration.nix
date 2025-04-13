@@ -102,6 +102,11 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput.enable = true;
 
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+  };
+
   # Check btrfs automatically
   services.btrfs.autoScrub = {
     enable = true;

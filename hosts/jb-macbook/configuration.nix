@@ -162,10 +162,12 @@
       "bitwarden-cli"
     ];
 
+    /*
     masApps = {
       Xcode = 497799835;
       Bitwarden = 1352778147;
     };
+    */
   };
 
   environment.etc.hosts.text = ''
