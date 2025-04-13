@@ -4,15 +4,13 @@
   pkgs,
   dotfiles,
   ...
-}: 
-let 
+}: let
   home-assistant-version = "2025.4.1";
   homer-version = "v25.04.1";
   gluetun-version = "v3.40.0";
   qbittorrent-version = "5.0.4-r0-ls388";
   stirling-pdf-version = "0.45.4";
-in 
-{
+in {
   users.users = {
     homer = {
       isSystemUser = true;
@@ -24,12 +22,16 @@ in
       uid = 990;
       group = "homeassistant";
     };
+    actual-budget = {
+      isSystemUser = true;
+      uid = 800;
+      group = "actual-budget";
+    };
   };
-  users.groups.homeassistant = {
-    gid = 986;
-  };
-  users.groups.homer = {
-    gid = 985;
+  users.groups = {
+    homeassistant.gid = 986;
+    homer.gid = 985;
+    actual-budget.gid = config.users.users.actual-budget.uid;
   };
 
   virtualisation.podman = {
@@ -134,6 +136,24 @@ in
       autoStart = true;
     };
 
+    actual-budget = {
+      image = "docker.io/actualbudget/actual-server:latest-alpine";
+      volumes = [
+        "/srv/actual-budget:/data:rw"
+      ];
+      ports = [
+        "5006:5006/tcp"
+      ];
+      user = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
+      extraOptions = [
+        "--health-cmd=node src/scripts/health-check.js"
+        "--health-interval=1m0s"
+        "--health-retries=3"
+        "--health-start-period=20s"
+        "--health-timeout=10s"
+      ];
+    };
+
     /*
     nginx =  {
       image = "nginx:stable";
@@ -170,6 +190,7 @@ in
     2283 # immich
     8080 # qbittorrent
     8085 # stirling-pdf (pdf tools)
+    5006 # actual-budget
 
     # syncthing
     8334
