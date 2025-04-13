@@ -195,6 +195,8 @@ in {
     # syncthing
     8334
     22000
+
+    443 # https for tailscale serve
   ];
 
   networking.firewall.allowedUDPPorts = [
