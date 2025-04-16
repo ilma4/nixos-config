@@ -107,6 +107,9 @@
     openFirewall = true;
   };
 
+  # accept all incoming connections from tailscale
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+
   # Check btrfs automatically
   services.btrfs.autoScrub = {
     enable = true;
