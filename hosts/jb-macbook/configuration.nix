@@ -99,6 +99,7 @@
       "1password-cli"
       "vlc"
       "prismlauncher" # minecraft
+      "heroic"
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker"
