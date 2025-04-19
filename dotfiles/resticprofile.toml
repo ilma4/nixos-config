@@ -11,6 +11,7 @@ verbose = true
 source = ["/Users/ilma4"]
 exclude-caches = true # not very helpful. https://bford.info/cachedir/
 exclude = [
+  "/Users/ilma4/Games",
   "/Users/ilma4/Downloads",
   "/Users/ilma4/NoBackup",
 
