@@ -44,39 +44,6 @@ in {
 
       plugins.treesitter.enable = true;
 
-      plugins.cmp = {
-        enable = true;
-        autoEnableSources = true;
-      };
-
-      plugins.none-ls = {
-        enable = true;
-        sources.formatting = {
-          alejandra.enable = true;
-          hclfmt.enable = true;
-          just.enable = true;
-          #opentofu_fmt.enable = true;
-          prettier.enable = true;
-          # rubyfmt is broken on darwin-based systems
-          rubyfmt.enable = (
-            pkgs.stdenv.hostPlatform.system
-            != "x86_64-darwin"
-            && pkgs.stdenv.hostPlatform.system != "aarch64-darwin"
-          );
-          sqlformat.enable = true;
-          stylua.enable = true;
-          yamlfmt.enable = true;
-        };
-        sources.diagnostics = {
-          trivy.enable = true;
-          yamllint.enable = true;
-        };
-      };
-
-      #plugins.auto-save.enable = true;
-      plugins.telescope.enable = true;
-      plugins.web-devicons.enable = true; # icons for telescope
-
       extraPlugins = [
         pkgs.vimPlugins."vim-suda"
       ];
