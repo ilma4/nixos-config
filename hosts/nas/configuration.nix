@@ -35,7 +35,7 @@
   };
 
   #nix.settings.experimental-features = ["nix-command" "flakes"]; hardware.enableAllFirmware = true;
-  security.rtkit.enable = true;
+  security.rtkit.enable = true; # realtime privileges
 
   networking.hostName = "ilma4-bkp"; # Define your hostname.
   # Pick only one of the below networking options.
@@ -57,13 +57,6 @@
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
   # Enable background periodic TRIM
   services.fstrim.enable = true;
 
@@ -82,25 +75,6 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
-
-  # Enable sound.
-  hardware.pulseaudio.enable = false;
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-  };
-
-  /*
-  services.syncthing = {
-    enable = true;
-  };
-  */
-
-  services.tlp.enable = true;
-  services.power-profiles-daemon.enable = false;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.libinput.enable = true;
 
   services.tailscale = {
     enable = true;
@@ -132,63 +106,12 @@
     "ilma4" = import ./home.nix;
   };
 
-  virtualisation = {
-    docker = {
-      enable = true;
-      storageDriver = "btrfs";
-      rootless = {
-        enable = false;
-        #setSocketVariable = true;
-      };
-    };
-    libvirtd = {
-      enable = true;
-    };
-  };
-  /*
-  containers."vaultwarden" = {
-    forwardPorts = {
-      containerPort = 8222;
-      hostPort = 8222;
-      protocol = "tcp";
-    };
-    autoStart = true;
-    config = let
-      hostConfig = config;
-    in
-      {
-        config,
-        pkgs,
-        ...
-      }: {
-        services.vaultwarden = {
-          enable = true;
-          config = {
-            ROCKET_ADDRESS = "127.0.0.1";
-            ROCKET_PORT = 8222;
-            #DOMAIN = "vaultwarden.ilma4.com";
-               ssl = {
-              enable = true;
-              cert = "/etc/letsencrypt/live/vaultwarden.ilma4.com/fullchain.pem";
-              key = "/etc/letsencrypt/live/vaultwarden.ilma4.com/privkey.pem";
-            };
-          };
-        };
-      };
-  };
-  */
-
-  services.swapspace.enable = true;
+  services.swapspace.enable = true; # auto swap files when needed
 
   # List packages installed in system profile. To search, run:
-  #programs.obsidian.enabled = true;
-
   programs.screen.enable = true;
+
   programs.zsh.enable = true; # configured via home-manager
-
-  programs.virt-manager.enable = true;
-  programs.gnome-terminal.enable = true;
-
   environment.pathsToLink = ["/share/zsh"];
 
   # $ nix search wget
@@ -210,12 +133,13 @@
   services.openssh = {
     enable = true;
     openFirewall = true;
-    settings.PasswordAuthentication = false;
+    # settings.PasswordAuthentication = false; # TODO set false
   };
 
   services.smartd = {
     enable = true;
     autodetect = false;
+    # TODO add all disks
     devices = [
       {device = "/dev/nvme0n1";}
       {device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";}
@@ -223,7 +147,7 @@
     # defaults.autodetected = "-a -o on -S on -n standby,q -s (S/../.././02|L/../../7/04)" ;
   };
 
-  programs.nix-ld.enable = true;
+  # programs.nix-ld.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
