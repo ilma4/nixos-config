@@ -96,6 +96,40 @@
       ];
     };
 
+    nixosConfigurations.ilma4-nas = nixpkgs.lib.nixosSystem {
+      pkgs = import nixpkgs {
+        system = x86-linux;
+        config.allowUnfree = true;
+      };
+      system = x86-linux;
+      specialArgs = {
+        inherit inputs;
+        inherit dotfiles;
+        modules = nixos-modules;
+        pkgs-unstable = import inputs.nixpkgs-unstable {
+          system = x86-linux;
+          config.allowUnfree = true;
+        };
+      };
+
+      modules = [
+        ./hosts/nas/configuration.nix
+        home-manager.nixosModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.extraSpecialArgs = {
+            inherit inputs;
+            inherit dotfiles;
+            pkgs-unstable = import inputs.nixpkgs-unstable {
+              system = x86-linux;
+              config.allowUnfree = true;
+            };
+            modules = home-manager-modules;
+          };
+        }
+      ];
+    };
+
     homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
         system = x86-linux;
