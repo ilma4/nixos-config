@@ -52,8 +52,8 @@
       authorizedKeysFile = "/etc/hoopsnake/authorized_keys";
     };
     tailscale = {
-      name = "my-initrd-device";  # Choose a unique name for your device
-      tags = [ "tag:example" ];  # Set appropriate tags, ensure ACLs allow port 22
+      name = "ilma4-bkp-init";  # Choose a unique name for your device
+      tags = [ "tag:hoopsnake" ];  # Set appropriate tags, ensure ACLs allow port 22
     };
     systemd-credentials = {
       privateHostKey = {
