@@ -1,7 +1,7 @@
 #Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-{
+i@{
   config,
   lib,
   pkgs,
@@ -34,6 +34,14 @@
     };
   };
 
+  sops.defaultSopsFile = "${i.secrets}/example.yaml";
+  #sops.defaultSopsFile = ../../secrets/example.yaml;
+  sops.defaultSopsFormat = "yaml";
+
+  sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
+
+  sops.secrets.example-key = {};
+  # sops.secrets."myservie/my_subdir_my_secret" = {};
 
 
   boot.initrd.systemd.enable = true;

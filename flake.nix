@@ -65,6 +65,7 @@
     nixos-modules = "${self}/modules";
     home-manager-modules = "${self}/home";
     dotfiles = "${self}/dotfiles";
+    secrets = "${self}/secrets";
     darwin-modules = "${self}/darwin-modules";
   in {
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
@@ -79,6 +80,7 @@
       specialArgs = {
         inherit inputs;
         inherit dotfiles;
+        inherit secrets;
         modules = nixos-modules;
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
