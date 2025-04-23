@@ -4,7 +4,11 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
-    hoopsnake.url = "github:boinkor-net/hoopsnake";
+
+    hoopsnake = {
+      url = "github:boinkor-net/hoopsnake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     
     nixpkgs-unstable = {
       url = "github:nixos/nixpkgs/nixos-unstable";
