@@ -34,6 +34,40 @@
     };
   };
 
+
+  boot.initrd.systemd.enable = true;
+  boot.initrd.network.enable = true;
+  boot.initrd.network.interfaces."enp0s20f0u3".useDHCP = true;  # Example: DHCP on eth0, adjust interface name
+
+  boot.initrd.secrets = {
+    "/etc/hoopsnake/host-key" = /etc/nixos/secrets/hoopsnake/host-key;
+    "/etc/hoopsnake/authorized_keys" = /etc/nixos/secrets/hoopsnake/authorized_keys;
+    "/etc/hoopsnake/tailscale-client-id" = /etc/nixos/secrets/hoopsnake/tailscale-client-id;
+    "/etc/hoopsnake/tailscale-client-secret" = /etc/nixos/secrets/hoopsnake/tailscale-client-secret;
+  };
+
+  boot.initrd.network.hoopsnake = {
+    enable = true;
+    ssh = {
+      authorizedKeysFile = "/etc/hoopsnake/authorized_keys";
+    };
+    tailscale = {
+      name = "my-initrd-device";  # Choose a unique name for your device
+      tags = [ "tag:example" ];  # Set appropriate tags, ensure ACLs allow port 22
+    };
+    systemd-credentials = {
+      privateHostKey = {
+        file = "/etc/hoopsnake/host-key";
+      };
+      clientId = {
+        file = "/etc/hoopsnake/tailscale-client-id";
+      };
+      clientSecret = {
+        file = "/etc/hoopsnake/tailscale-client-secret";
+      };
+    };
+  };
+
   #nix.settings.experimental-features = ["nix-command" "flakes"]; hardware.enableAllFirmware = true;
   security.rtkit.enable = true;
 

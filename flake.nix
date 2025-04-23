@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
+    hoopsnake.url = "github:boinkor-net/hoopsnake";
     
     nixpkgs-unstable = {
       url = "github:nixos/nixpkgs/nixos-unstable";
@@ -80,6 +81,7 @@
 
       modules = [
         ./hosts/bkp/configuration.nix
+        inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
