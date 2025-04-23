@@ -51,6 +51,7 @@
     options = ["fmask=0022" "dmask=0022"];
   };
 
+  /*
   fileSystems."/mnt/ssd256" = {
     device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";
     fsType = "btrfs";
@@ -61,6 +62,7 @@
     device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
     depends = [ "/" ];
   };
+  */
 
   
   /*

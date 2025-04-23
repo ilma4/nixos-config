@@ -37,7 +37,7 @@
 
   boot.initrd.systemd.enable = true;
   boot.initrd.network.enable = true;
-  boot.initrd.network.interfaces."enp0s20f0u3".useDHCP = true;  # Example: DHCP on eth0, adjust interface name
+  # boot.initrd.network.interfaces."enp0s20f0u3".useDHCP = true;  # Example: DHCP on eth0, adjust interface name
 
   boot.initrd.secrets = {
     "/etc/hoopsnake/host-key" = /etc/nixos/secrets/hoopsnake/host-key;
