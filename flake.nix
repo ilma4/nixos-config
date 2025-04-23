@@ -90,7 +90,7 @@
         ./hosts/bkp/configuration.nix
         inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
         home-manager.nixosModules.home-manager
-        sops-nix.nixosModules.sops
+        inputs.sops-nix.nixosModules.sops
         {
           home-manager.useGlobalPkgs = true;
           home-manager.extraSpecialArgs = {
