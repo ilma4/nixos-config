@@ -5,6 +5,9 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
 
+    inputs.sops-nix.url = "github:Mic92/sops-nix";
+    inputs.sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
     hoopsnake = {
       url = "github:boinkor-net/hoopsnake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -87,6 +90,7 @@
         ./hosts/bkp/configuration.nix
         inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
         home-manager.nixosModules.home-manager
+        sops-nix.nixosModules.sops
         {
           home-manager.useGlobalPkgs = true;
           home-manager.extraSpecialArgs = {
