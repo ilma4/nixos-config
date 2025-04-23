@@ -95,6 +95,11 @@ in {
     ];
 
     programs.git = {
+      extraConfig = {
+        core = {
+          autocrlf = "input";
+        };
+      };
       enable = true;
       # config to commit located in `dev.nix`
     };

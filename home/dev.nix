@@ -46,6 +46,11 @@ in {
       key = "64ECA0776D0E99AC";
     };
     lfs.enable = true;
+    extraConfig = {
+      "includeIf \"gitdir:~/Projects/JetBrains/\"" = {
+        path = "~/Projects/JetBrains/.gitconfig";
+      };
+    };
   };
 
   home.sessionVariables = {
