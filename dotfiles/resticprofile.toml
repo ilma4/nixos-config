@@ -25,6 +25,8 @@ exclude = [
   "/Users/ilma4/Library/Java",       # jdk's binaries
   "/Users/ilma4/Library/Logs",
 
+  "/Users/ilma4/Projects/JetBrains", # TODO: enable backup for my parts of monorepo
+
   "/Users/ilma4/.android", # android emulator images
   "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
   "/Users/ilma4/.vscode",  # vscode extensions
