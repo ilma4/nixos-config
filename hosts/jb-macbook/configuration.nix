@@ -144,7 +144,7 @@
 
       # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "jetbrains-toolbox"
-      "intellij-idea"
+      # "intellij-idea@eap"
       "pycharm"
       "clion"
       "rustrover"

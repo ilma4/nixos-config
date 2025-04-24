@@ -40,15 +40,25 @@ in {
 
   programs.git = {
     userName = "Ilia Malakhov";
-    userEmail = "ilya.malakhov4@gmail.com";
+    # userEmail = "ilya.malakhov4@gmail.com";
+    /*
     signing = {
       signByDefault = false;
       key = "64ECA0776D0E99AC";
     };
+    */
     lfs.enable = true;
     extraConfig = {
       "includeIf \"gitdir:~/Projects/JetBrains/\"" = {
         path = "~/Projects/JetBrains/.gitconfig";
+      };
+    };
+  };
+
+  programs.ssh.matchBlocks = {
+    "git.jetbrains.team" = {
+      extraOptions = {
+      "IdentityAgent" = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""; # 1password ssh-agent
       };
     };
   };
