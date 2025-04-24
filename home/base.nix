@@ -99,6 +99,11 @@ in {
         core = {
           autocrlf = "input";
         };
+        oh-my-zsh = {
+          hide-dirty = "1";
+          hide-status = "1";
+          hide-info = "1";
+        };
       };
       enable = true;
       # config to commit located in `dev.nix`
@@ -109,9 +114,12 @@ in {
       enableCompletion = true;
       oh-my-zsh = {
         enable = true;
-        plugins = ["git" "vi-mode" "extract"];
+        plugins = [ /*"git"*/ "vi-mode" "extract"];
         theme = "apple";
+        extraConfig = ''zstyle ':omz:alpha:lib:git' async-prompt yes'';
       };
+
+      # speed up git status prompt
 
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
