@@ -43,16 +43,21 @@ i@{
   sops.secrets.example-key = {};
   # sops.secrets."myservie/my_subdir_my_secret" = {};
   sops.secrets.ilma4-passwd = {
-    sopsFile = "${i.secrets}/ilma4-passwd.txt";
-    format = "binary";
     neededForUsers = true;
   };
 
 
   boot.initrd.systemd.enable = true;
   boot.initrd.network.enable = true;
-  boot.initrd.availableKernelModules = [ "r8152" ];
+  boot.initrd.availableKernelModules = [ "r8152" /*"iwlwifi"*/ ];
   # boot.initrd.network.interfaces."enp0s20f0u3".useDHCP = true;  # Example: DHCP on eth0, adjust interface name
+  boot.initrd.network.ssh = {
+    enable = true;
+    hostKeys = [ "/etc/secrets/initrd/ssh_host_ed25519_key" ];
+    authorizedKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832" ];
+    # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
+  };
+
 
   /*
   # TODO secrets instead
