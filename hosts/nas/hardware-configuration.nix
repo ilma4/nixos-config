@@ -41,7 +41,7 @@
   fileSystems."/mnt/hdd" = {
     device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
     fsType = "btrfs";
-    options = ["compression=zstd" "x-systemd.automount" "x-systemd.mount-timeout=5s"];
+    options = ["compression=zstd" "x-systemd.mount-timeout=5s"];
   };
 
   swapDevices = [];
