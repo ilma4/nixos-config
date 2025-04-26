@@ -15,9 +15,9 @@
     "${modules}/nix-settings.nix"
     ./samba.nix
 
-    ./server.nix
-    ./immich.nix
-    ./paperless.nix
+    #./server.nix
+    #./immich.nix
+    #./paperless.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
@@ -37,10 +37,22 @@
   #nix.settings.experimental-features = ["nix-command" "flakes"]; hardware.enableAllFirmware = true;
   security.rtkit.enable = true; # realtime privileges
 
-  networking.hostName = "ilma4-bkp"; # Define your hostname.
+  networking.hostName = "ilma4-nas"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
+  # networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
+
+  boot.initrd.systemd.enable = true;
+  boot.initrd.network.enable = true;
+
+  boot.initrd.network.ssh = {
+    enable = true;
+    hostKeys = [ "/etc/secrets/initrd/ssh_host_ed25519_key" ];
+    authorizedKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832" ];
+    # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
+  };
+
+
 
   # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
@@ -59,10 +71,6 @@
 
   # Enable background periodic TRIM
   services.fstrim.enable = true;
-
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
   # Enable avahi server. Machine will be avaliable by address 'hostname'
   /*
@@ -138,12 +146,13 @@
 
   services.smartd = {
     enable = true;
-    autodetect = false;
+    #autodetect = false;
     # TODO add all disks
-    devices = [
-      {device = "/dev/nvme0n1";}
-      {device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";}
-    ];
+    
+    #devices = [
+    #  {device = "/dev/nvme0n1";}
+    #  {device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";}
+    #];
     # defaults.autodetected = "-a -o on -S on -n standby,q -s (S/../.././02|L/../../7/04)" ;
   };
 
