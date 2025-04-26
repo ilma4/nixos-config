@@ -99,7 +99,7 @@
       "1password-cli"
       "vlc"
       "prismlauncher" # minecraft
-      "heroic"
+      "heroic" # Epic Games/GOG launcher
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker"
@@ -116,7 +116,7 @@
       "utm" # qemu
       "raycast"
       "caffeine"
-      "monitorcontrol"
+      "monitorcontrol" # control external monitor brightness
       "alt-tab"
       "far2l"
       "nikitabobko/tap/aerospace" # tiling window manager
@@ -134,17 +134,15 @@
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
       "todoist"
-      "ticktick"
       "deskpad"
       "easydict"
       "steam"
 
       "blackhole-2ch"
-      "au-lab"
 
       # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "jetbrains-toolbox"
-      # "intellij-idea@eap"
+      # "intellij-idea@eap" # as IntelliJ developer, I use nightly builds
       "pycharm"
       "clion"
       "rustrover"
