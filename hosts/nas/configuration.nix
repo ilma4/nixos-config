@@ -13,11 +13,11 @@
     ./hardware-configuration.nix
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
-    ./samba.nix
+    # ./samba.nix
 
-    #./server.nix
-    #./immich.nix
-    #./paperless.nix
+    ./server.nix
+    ./immich.nix
+    ./paperless.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
@@ -34,13 +34,9 @@
     };
   };
 
-  #nix.settings.experimental-features = ["nix-command" "flakes"]; hardware.enableAllFirmware = true;
   security.rtkit.enable = true; # realtime privileges
 
   networking.hostName = "ilma4-nas"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
   boot.initrd.systemd.enable = true;
   boot.initrd.network.enable = true;
@@ -52,14 +48,7 @@
     # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
   };
 
-
-
-  # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -90,13 +79,11 @@
   services.fstrim.enable = true;
 
   # Enable avahi server. Machine will be avaliable by address 'hostname'
-  /*
   services.avahi = {
     enable = true;
     reflector = true;
     nssmdns4 = true; # enables .local resolution
   };
-  */
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -116,7 +103,6 @@
     fileSystems = [
       "/" 
       "/mnt/hdd"
-      "/mnt/ssd256"
     ];
   };
 
@@ -132,9 +118,6 @@
   };
 
   services.swapspace.enable = true; # auto swap files when needed
-
-  # List packages installed in system profile. To search, run:
-  programs.screen.enable = true;
 
   programs.zsh.enable = true; # configured via home-manager
   environment.pathsToLink = ["/share/zsh"];
@@ -166,14 +149,6 @@
     extraOptions = [ 
       "--interval=10800" # run checks every 3 hours # TODO reset to default when noise wont be issue
     ];
-    #autodetect = false;
-    # TODO add all disks
-    
-    #devices = [
-    #  {device = "/dev/nvme0n1";}
-    #  {device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";}
-    #];
-    # defaults.autodetected = "-a -o on -S on -n standby,q -s (S/../.././02|L/../../7/04)" ;
   };
 
   # programs.nix-ld.enable = true;
