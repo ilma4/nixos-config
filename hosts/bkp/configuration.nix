@@ -42,6 +42,11 @@ i@{
 
   sops.secrets.example-key = {};
   # sops.secrets."myservie/my_subdir_my_secret" = {};
+  sops.secrets.ilma4-passwd = {
+    sopsFile = "${i.secrets}/ilma4-passwd.txt";
+    format = "binary";
+    neededForUsers = true;
+  };
 
 
   boot.initrd.systemd.enable = true;
@@ -176,6 +181,7 @@ i@{
   users.users.ilma4 = {
     isNormalUser = true;
     shell = pkgs.zsh;
+    hashedPasswordFile = config.sops.secrets.ilma4-passwd.path;
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
   };
 
@@ -244,6 +250,7 @@ i@{
 
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    sops
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
