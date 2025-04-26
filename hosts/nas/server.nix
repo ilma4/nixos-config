@@ -43,6 +43,11 @@ in {
     };
   };
 
+  systemd.tmpfiles.rules = [
+    "d /mnt 0755 root root"
+    "d /mnt/hdd 0755 root root"
+  ];
+
   # Enable container name DNS for non-default Podman networks.
   # https://github.com/NixOS/nixpkgs/issues/226365
   networking.firewall.interfaces."podman+".allowedUDPPorts = [53];
