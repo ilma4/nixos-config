@@ -69,6 +69,23 @@
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
+  /* Doesnt work :(
+  systemd.services.hd-idle = {
+    description = "HDD spin down daemon";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "forking";
+      ExecStart = "${pkgs.hd-idle}/bin/hd-idle -i 0 -d -a sdb -i 300 -a sda -i 300";
+    };
+  };
+  */
+
+  # suspend sata hdds after 1 minute of inactivity
+  powerManagement.powerUpCommands = ''
+    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sdb
+    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
+  '';
+
   # Enable background periodic TRIM
   services.fstrim.enable = true;
 
@@ -146,6 +163,9 @@
 
   services.smartd = {
     enable = true;
+    extraOptions = [ 
+      "--interval=10800" # run checks every 3 hours # TODO reset to default when noise wont be issue
+    ];
     #autodetect = false;
     # TODO add all disks
     
