@@ -2,8 +2,10 @@
 
 keys:
   - &primary age1y0rfvrvhwraualay2kwv0ungf3m97pp8pkz5xe9hz40pgre26enqd7s6u4
+  - &jb-mac  age1w8qd7w00umznswy0afvyzz6d7h7kw9j9nm28cgha96wxz5fc959sag995g
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini|txt|bin)$
     key_groups:
     - age:
       - *primary
+      - *jb-mac
