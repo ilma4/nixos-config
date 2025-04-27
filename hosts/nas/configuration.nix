@@ -75,7 +75,7 @@ i @ {
   sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
-  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {neededForUsers = true;};
+  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {owner = "ilma4"; group = "users";};
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
@@ -119,10 +119,16 @@ i @ {
     isNormalUser = true;
     shell = pkgs.zsh;
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
-    openssh.authorizedKeys.keyFiles = [
-      config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path
-    ];
+    #openssh.authorizedKeys.keyFiles = [
+    #  config.sops.secrets."/etc/ssh/jb-mac/ilma4-nas/pub".path
+    #];
   };
+
+   # Create .ssh/authorized_keys with right content
+  systemd.tmpfiles.rules = [
+    "d /home/ilma4/.ssh 0700 ilma4 users -"
+    "C /home/ilma4/.ssh/authorized_keys 0600 ilma4 users - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
+  ];
 
   home-manager.users = {
     "ilma4" = import ./home.nix;
