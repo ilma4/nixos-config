@@ -122,6 +122,7 @@
       "nikitabobko/tap/aerospace" # tiling window manager
       "jordanbaird-ice" # edit menu bar
       "zoom"
+      "spotify"
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS, uses kernel extension
