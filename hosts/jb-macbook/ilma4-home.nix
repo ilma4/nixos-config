@@ -40,8 +40,8 @@ args @ {
     home.packages = with pkgs; [
       clang
       lldb
-      colima
-      docker
+      colima # vm to run docker
+      docker # docker cli
       
       (pkgs.writeShellScriptBin "system-upgrade" ''
         nix flake update --flake ${config.flake-location}
