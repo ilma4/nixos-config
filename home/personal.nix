@@ -44,6 +44,17 @@ in {
     "ilma4-bkp.local" = {
       identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
     };
+    "ilma4-nas.local" = {
+      identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
+    };
+    "ilma4-nas" = {
+      identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
+    };
+    "ilma4-nas-init" = {
+      identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
+      hostname = "192.168.1.33";
+      user = "root";
+    };
   };
 
   programs.ssh.extraConfig =
