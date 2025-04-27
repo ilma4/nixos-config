@@ -1,7 +1,7 @@
 #Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-i@{
+i @ {
   config,
   lib,
   pkgs,
@@ -43,8 +43,8 @@ i@{
 
   boot.initrd.network.ssh = {
     enable = true;
-    hostKeys = [ "/etc/secrets/initrd/ssh_host_ed25519_key" ];
-    authorizedKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832" ];
+    hostKeys = ["/etc/secrets/initrd/ssh_host_ed25519_key"];
+    authorizedKeys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832"];
     # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
   };
 
@@ -58,7 +58,8 @@ i@{
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  /* Doesnt work :(
+  /*
+     Doesnt work :(
   systemd.services.hd-idle = {
     description = "HDD spin down daemon";
     wantedBy = [ "multi-user.target" ];
@@ -74,7 +75,7 @@ i@{
   sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
-  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {};
+  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {neededForUsers = true;};
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
@@ -101,14 +102,14 @@ i@{
   };
 
   # accept all incoming connections from tailscale
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  networking.firewall.trustedInterfaces = ["tailscale0"];
 
   # Check btrfs automatically
   services.btrfs.autoScrub = {
     enable = true;
     interval = "*-*-01 03:00:00"; # monthly at 03 am
     fileSystems = [
-      "/" 
+      "/"
       "/mnt/hdd"
     ];
   };
@@ -156,7 +157,7 @@ i@{
 
   services.smartd = {
     enable = true;
-    extraOptions = [ 
+    extraOptions = [
       "--interval=10800" # run checks every 3 hours # TODO reset to default when noise wont be issue
     ];
   };
