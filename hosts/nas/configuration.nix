@@ -74,7 +74,7 @@ i@{
   sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
-  sops.secrets.ssh.jb-mac.ilma4-nas.pub = {};
+  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {};
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
