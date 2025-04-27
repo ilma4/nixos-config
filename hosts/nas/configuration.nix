@@ -69,6 +69,13 @@
   };
   */
 
+  sops.defaultSopsFile = "${i.secrets}/example.yaml";
+  #sops.defaultSopsFile = ../../secrets/example.yaml;
+  sops.defaultSopsFormat = "yaml";
+
+  sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
+  sops.secrets.ssh.jb-mac.ilma4-nas.pub = {};
+
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
     ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sdb
@@ -111,6 +118,9 @@
     isNormalUser = true;
     shell = pkgs.zsh;
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
+    openssh.authorizedKeys.keyFiles = [
+      config.sops.secrets.ssh.jb-mac.ilma4-nas.pub.path
+    ];
   };
 
   home-manager.users = {

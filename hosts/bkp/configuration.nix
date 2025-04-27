@@ -40,7 +40,6 @@ i@{
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
 
-  sops.secrets.example-key = {};
   # sops.secrets."myservie/my_subdir_my_secret" = {};
   sops.secrets.ilma4-passwd = {
     neededForUsers = true;
