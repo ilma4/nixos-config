@@ -117,6 +117,7 @@
       specialArgs = {
         inherit inputs;
         inherit dotfiles;
+        inherit secrets;
         modules = nixos-modules;
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
