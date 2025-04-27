@@ -120,7 +120,7 @@ i @ {
     shell = pkgs.zsh;
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
     openssh.authorizedKeys.keyFiles = [
-      config.sops.secrets.ssh.jb-mac.ilma4-nas.pub.path
+      config.sops.secrets"ssh/jb-mac/ilma4-nas/pub".path
     ];
   };
 
