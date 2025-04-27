@@ -127,7 +127,7 @@ i @ {
    # Create .ssh/authorized_keys with right content
   systemd.tmpfiles.rules = [
     "d /home/ilma4/.ssh 0700 ilma4 users -"
-    "C /home/ilma4/.ssh/authorized_keys 0600 ilma4 users - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
+    "L /home/ilma4/.ssh/authorized_keys - - - - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
   ];
 
   home-manager.users = {
