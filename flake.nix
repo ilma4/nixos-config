@@ -128,6 +128,7 @@
       modules = [
         ./hosts/nas/configuration.nix
         home-manager.nixosModules.home-manager
+        inputs.sops-nix.nixosModules.sops
         {
           home-manager.useGlobalPkgs = true;
           home-manager.extraSpecialArgs = {
