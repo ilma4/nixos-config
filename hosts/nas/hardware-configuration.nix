@@ -22,7 +22,7 @@
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/76a184dc-385c-4f62-8ddd-90656ba787e5";
     fsType = "btrfs";
-    options = ["subvol=@"];
+    options = ["subvol=@" "compress=zstd"];
   };
 
   boot.initrd.luks.devices."root".device = "/dev/disk/by-uuid/c91d9c3f-3cda-4028-ab27-2f41e35ba272";
@@ -41,7 +41,7 @@
   fileSystems."/mnt/hdd" = {
     device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
     fsType = "btrfs";
-    options = ["compression=zstd" "nofail" "x-systemd.mount-timeout=5s"];
+    options = ["compress=zstd" "nofail" "x-systemd.mount-timeout=5s"];
   };
 
   swapDevices = [];
