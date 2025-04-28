@@ -114,9 +114,18 @@ in {
       enableCompletion = true;
       oh-my-zsh = {
         enable = true;
-        plugins = [ /*"git"*/ "vi-mode" "extract"];
+        plugins = [
+          "git"
+          "vi-mode"
+          "extract"
+        ];
         theme = "apple";
-        extraConfig = ''zstyle ':omz:alpha:lib:git' async-prompt yes'';
+        extraConfig = ''
+          zstyle ':omz:alpha:lib:git' async-prompt yes
+          git_prompt_info(){} # disable git prompt
+          zstyle ':vcs_info:*' disable git cvs svn
+          zstyle ':vcs_info:*' disable-patterns "$HOME/*"
+        '';
       };
 
       # speed up git status prompt
