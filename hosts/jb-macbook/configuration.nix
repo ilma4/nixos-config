@@ -129,6 +129,7 @@
       # "macos-fuse-t/homebrew-cask/fuse-t" # fuse for macos, no kernel-extension
 
       "whisky" # wine for macos
+      "eqmac" # equalizer for macos
 
       "android-file-transfer" # transfer files from android (and Kindle) to mac via usb
 
