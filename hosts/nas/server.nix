@@ -119,7 +119,7 @@ in {
       image = "linuxserver/qbittorrent:${qbittorrent-version}";
       volumes = [
         "/etc/localtime:/etc/localtime:ro"
-        "/srv/qbittorrent/config:/config"
+        "/qbittorrent/config:/config"
         "/mnt/hdd/torrent:/downloads"
       ];
       dependsOn = ["gluetun"];
