@@ -123,6 +123,7 @@
       "jordanbaird-ice" # edit menu bar
       "zoom"
       "spotify"
+      "zed" # very fast text editor
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS, uses kernel extension
