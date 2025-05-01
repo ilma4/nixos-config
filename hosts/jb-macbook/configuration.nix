@@ -100,7 +100,7 @@
       "heroic" # Epic Games/GOG launcher
 
       # Docker Desktop for Mac: vm to run docker containers
-      # "docker"
+      # "docker" # i use colima instead
 
       #avaliable in nix, but nix has troubles with gui apps
       "telegram-desktop"
@@ -112,7 +112,7 @@
       "discord"
       "browsers-software/tap/browsers"
       "utm" # qemu
-      "raycast"
+      "raycast" # cmd+space : search apps and commands
       "caffeine"
       "monitorcontrol" # control external monitor brightness
       "alt-tab"
@@ -143,7 +143,7 @@
 
       # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "jetbrains-toolbox"
-      # "intellij-idea@eap" # as IntelliJ developer, I use nightly builds
+      # "intellij-idea@eap" # as an IntelliJ developer, I use nightly builds from toolbox
       "pycharm"
       "clion"
       "rustrover"
