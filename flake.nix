@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -11,10 +12,6 @@
     hoopsnake = {
       url = "github:boinkor-net/hoopsnake";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    
-    nixpkgs-unstable = {
-      url = "github:nixos/nixpkgs/nixos-unstable";
     };
 
     home-manager = {
@@ -36,12 +33,6 @@
       url = "github:LnL7/nix-darwin/nix-darwin-24.11";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
-
-    nix-on-droid = {
-      url = "github:nix-community/nix-on-droid/release-24.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     #flake-root.url = "github:srid/flake-root";
   };
 
@@ -52,7 +43,6 @@
     home-manager,
     nixgl,
     nix-darwin,
-    nix-on-droid,
     ...
   }: let
     x86-linux = "x86_64-linux";
@@ -209,27 +199,6 @@
 
       modules = [
         ./hosts/apal-server/home.nix
-      ];
-    };
-    nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration {
-      pkgs = import nixpkgs {
-        system = "aarch64-linux";
-
-        overlays = [
-          nix-on-droid.overlays.default
-          # add other overlays
-        ];
-      };
-
-      extraSpecialArgs = { inherit inputs; };
-
-      # set path to home-manager flake
-      home-manager-path = home-manager.outPath;
-      modules = [
-        ./hosts/oneplus10R/nix-on-droid.nix
-        ({...}: {
-          home-manager.extraSpecialArgs = {modules = home-manager-modules; dotfiles = dotfiles; inherit inputs;};
-        })
       ];
     };
   };
