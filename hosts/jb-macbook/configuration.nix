@@ -191,6 +191,14 @@
     ::1 www.phoronix.com
   '';
 
+  nix.linux-builder = {
+    enable = true;
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+  };
+
   # VPN to access homelab
   services.tailscale.enable = true;
 
