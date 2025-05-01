@@ -80,8 +80,6 @@
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
 
-  nixpkgs.config.allowUnfree = true;
-
   homebrew = {
     enable = true;
     onActivation = {
