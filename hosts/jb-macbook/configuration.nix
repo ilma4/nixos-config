@@ -30,10 +30,8 @@
 
   system.keyboard = {
     enableKeyMapping = true;
-
-    # nonUS.remapTilde = true;
     remapCapsLockToEscape = true;
-
+    # nonUS.remapTilde = true;
     #swapLeftCtrlAndFn = true;
   };
 
@@ -47,14 +45,11 @@
 
   system.defaults.NSGlobalDomain = {
     "com.apple.trackpad.scaling" = 2.0;
-
     "com.apple.keyboard.fnState" = true; # enable fn lock
   };
 
   system.defaults.spaces.spans-displays = false; # displays have separate spaces option (macos default is false)
-
   system.defaults.menuExtraClock.Show24Hour = true;
-
   system.defaults.finder = {
     ShowPathbar = true;
   };
