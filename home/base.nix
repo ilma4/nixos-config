@@ -120,10 +120,7 @@ in {
         ];
         theme = "apple";
         extraConfig = ''
-          zstyle ':omz:alpha:lib:git' async-prompt yes
-          git_prompt_info(){} # disable git prompt
-          zstyle ':vcs_info:*' disable git cvs svn
-          zstyle ':vcs_info:*' disable-patterns "$HOME/*"
+          zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
         '';
       };
 
