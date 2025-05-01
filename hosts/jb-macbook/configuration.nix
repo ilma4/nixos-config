@@ -126,8 +126,8 @@
       "zed" # very fast text editor
 
       # Mac specific, most probably remain brew casks
-      "macfuse" # FUSE for macOS, uses kernel extension
-      # "macos-fuse-t/homebrew-cask/fuse-t" # fuse for macos, no kernel-extension
+      # "macfuse" # FUSE for macOS, uses kernel extension
+      "macos-fuse-t/homebrew-cask/fuse-t" # fuse for macos, no kernel-extension
 
       "whisky" # wine for macos
       "eqmac" # equalizer for macos
@@ -154,7 +154,7 @@
     ];
 
     brews = [
-      "displayplacer" # cli to configure displays 
+      "displayplacer" # cli to configure displays
 
       "openjdk@21"
       "openjdk@17"

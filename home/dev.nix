@@ -9,6 +9,7 @@ in {
   home.packages = with pkgs;
     [
       nixd
+      nil
       alejandra
       tex-fmt
       sops

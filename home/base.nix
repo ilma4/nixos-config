@@ -11,7 +11,6 @@
   isNixos = stdenv.isLinux && !config.targets.genericLinux.enable;
 in {
   imports = [
-    ./nixvim.nix
   ];
 
   options = {
@@ -168,6 +167,10 @@ in {
     programs.tmux = lib.mkIf (!config.isRootless) {
       enable = true;
       keyMode = "vi";
+    };
+
+    programs.neovim = {
+      enable = true;
     };
 
     home.file = lib.mkIf (!config.isRootless) {

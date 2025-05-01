@@ -92,8 +92,6 @@
      };
    };
 
-  programs.nixvim.enable = true;
-
   virtualisation = {
     docker = {
       enable = true;
