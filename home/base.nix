@@ -52,7 +52,7 @@ in {
   };
 
   config = {
-    nixpkgs.config.allowUnfree = true;
+    hardware.enableAllFirmware = true;
 
     home.homeDirectory = "${
       if isDarwin

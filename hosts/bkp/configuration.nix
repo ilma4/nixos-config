@@ -1,7 +1,7 @@
 #Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-i@{
+i @ {
   config,
   lib,
   pkgs,
@@ -45,18 +45,21 @@ i@{
     neededForUsers = true;
   };
 
-
   boot.initrd.systemd.enable = true;
   boot.initrd.network.enable = true;
-  boot.initrd.availableKernelModules = [ "r8152" /*"iwlwifi"*/ ];
+  boot.initrd.availableKernelModules = [
+    "r8152"
+    /*
+    "iwlwifi"
+    */
+  ];
   # boot.initrd.network.interfaces."enp0s20f0u3".useDHCP = true;  # Example: DHCP on eth0, adjust interface name
   boot.initrd.network.ssh = {
     enable = true;
-    hostKeys = [ "/etc/secrets/initrd/ssh_host_ed25519_key" ];
-    authorizedKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832" ];
+    hostKeys = ["/etc/secrets/initrd/ssh_host_ed25519_key"];
+    authorizedKeys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832"];
     # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
   };
-
 
   /*
   # TODO secrets instead
@@ -93,13 +96,9 @@ i@{
 
   # boot.initrd.systemd.services.hoopsnake.before = [ "systemd-cryptsetup@root.service" ];
 
-
-  #nix.settings.experimental-features = ["nix-command" "flakes"]; hardware.enableAllFirmware = true;
-  security.rtkit.enable = true;
+  security.rtkit.enable = true; # enable realtime kit (process can have different priorities)
 
   networking.hostName = "ilma4-bkp"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
   # Set your time zone.
@@ -168,14 +167,14 @@ i@{
   };
 
   # accept all incoming connections from tailscale
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  networking.firewall.trustedInterfaces = ["tailscale0"];
 
   # Check btrfs automatically
   services.btrfs.autoScrub = {
     enable = true;
     interval = "*-*-01 03:00:00"; # monthly at 03 am
     fileSystems = [
-      "/" 
+      "/"
       "/mnt/hdd"
       "/mnt/ssd256"
     ];
