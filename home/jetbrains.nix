@@ -11,9 +11,6 @@
       clion
       pycharm-professional
       rust-rover
-
-      pycharm-community-bin
-      idea-community-bin
     ]
     ++ [pkgs-unstable.android-studio];
 }

@@ -52,8 +52,6 @@ in {
   };
 
   config = {
-    hardware.enableAllFirmware = true;
-
     home.homeDirectory = "${
       if isDarwin
       then "/Users/"

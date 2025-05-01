@@ -11,6 +11,7 @@ i @ {
 }: {
   imports = [
     ./hardware-configuration.nix
+    "${modules}/base.nix"
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
     ./samba.nix

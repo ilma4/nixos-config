@@ -11,6 +11,7 @@ i @ {
 }: {
   imports = [
     ./hardware-configuration.nix
+    "${modules}/base.nix"
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
     # ./samba.nix
@@ -75,7 +76,10 @@ i @ {
   sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
-  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {owner = "ilma4"; group = "users";};
+  sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {
+    owner = "ilma4";
+    group = "users";
+  };
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
@@ -124,7 +128,7 @@ i @ {
     #];
   };
 
-   # Create .ssh/authorized_keys with right content
+  # Create .ssh/authorized_keys with right content
   systemd.tmpfiles.rules = [
     "d /home/ilma4/.ssh 0700 ilma4 users -"
     "L /home/ilma4/.ssh/authorized_keys - - - - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
