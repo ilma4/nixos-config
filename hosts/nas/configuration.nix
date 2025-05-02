@@ -72,7 +72,6 @@ i @ {
   */
 
   sops.defaultSopsFile = "${i.secrets}/example.yaml";
-  #sops.defaultSopsFile = ../../secrets/example.yaml;
   sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
@@ -129,9 +128,11 @@ i @ {
   };
 
   # Create .ssh/authorized_keys with right content
-  systemd.tmpfiles.rules = [
-    "d /home/ilma4/.ssh 0700 ilma4 users -"
-    "L /home/ilma4/.ssh/authorized_keys - - - - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
+  systemd.tmpfiles.rules = let
+    ilma4Home = config.users.users.ilma4.home;
+  in [
+    "d ${ilma4Home}/.ssh 0700 ilma4 users -"
+    "L ${ilma4Home}/.ssh/authorized_keys - - - - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
   ];
 
   home-manager.users = {
@@ -148,21 +149,11 @@ i @ {
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
   # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
     openFirewall = true;
-    # settings.PasswordAuthentication = false; # TODO set false
+    settings.PasswordAuthentication = false; # TODO set false
   };
 
   services.smartd = {
