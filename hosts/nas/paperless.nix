@@ -7,7 +7,6 @@
 let 
   paperless-version = "2.15.1";
   redis-version = "7";
-  postgres-version = "16";
   gotenberg-version = "8.19";
 in
  {
@@ -150,7 +149,6 @@ in
   virtualisation.oci-containers.containers."paperless-webserver" = {
     image = "ghcr.io/paperless-ngx/paperless-ngx:${paperless-version}";
     environment = {
-      "PAPERLESS_DBHOST" = "db";
       "PAPERLESS_OCR_LANGUAGES" = "eng deu rus";
       "PAPERLESS_REDIS" = "redis://broker:6379";
       "PAPERLESS_TIKA_ENABLED" = "1";
