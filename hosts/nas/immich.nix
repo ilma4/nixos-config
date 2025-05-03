@@ -124,7 +124,7 @@ in
       "/etc/localtime:/etc/localtime:ro"
       "/srv/immich/data:/usr/src/app/upload:rw"
       # "/mnt/hdd/Pictures:/external/syncthing:ro"
-      "/srv/Pictures:/external/syncthing:ro"
+      "/srv/syncthing/Pictures:/external/syncthing:ro"
     ];
     ports = [
       "2283:2283/tcp"
