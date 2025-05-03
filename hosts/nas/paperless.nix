@@ -47,6 +47,7 @@ in
       "podman-compose-paperless-root.target"
     ];
   };
+  /*
   virtualisation.oci-containers.containers."paperless-db" = {
     image = "docker.io/library/postgres:${postgres-version}";
     environment = {
@@ -54,11 +55,6 @@ in
       "POSTGRES_PASSWORD" = "paperless";
       "POSTGRES_USER" = "paperless";
     };
-    /*
-    environmentFiles = [
-      "/home/ilma4/paperless-ngx/docker-compose.env"
-    ];
-    */
     volumes = [
       "paperless_pgdata:/var/lib/postgresql/data:rw"
     ];
@@ -68,6 +64,8 @@ in
       "--network=paperless_default"
     ];
   };
+  */
+  /*
   systemd.services."podman-paperless-db" = {
     serviceConfig = {
       Restart = lib.mkOverride 90 "always";
@@ -87,6 +85,7 @@ in
       "podman-compose-paperless-root.target"
     ];
   };
+  */
   virtualisation.oci-containers.containers."paperless-gotenberg" = {
     image = "docker.io/gotenberg/gotenberg:${gotenberg-version}";
     /*
@@ -175,7 +174,6 @@ in
     ];
     dependsOn = [
       "paperless-broker"
-      "paperless-db"
       "paperless-gotenberg"
       "paperless-tika"
     ];
