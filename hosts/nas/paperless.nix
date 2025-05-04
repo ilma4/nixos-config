@@ -3,24 +3,15 @@
   pkgs,
   lib,
   ...
-}:
-let 
+}: let
   paperless-version = "2.15.1";
   redis-version = "7";
   gotenberg-version = "8.19";
-in
- {
+in {
   # Containers
   virtualisation.oci-containers.containers."paperless-broker" = {
     image = "docker.io/library/redis:${redis-version}";
-    /*
-    environmentFiles = [
-      "/home/ilma4/paperless-ngx/docker-compose.env"
-    ];
-    */
-    volumes = [
-      "paperless_redisdata:/data:rw"
-    ];
+    volumes = ["paperless_redisdata:/data:rw"];
     log-driver = "journald";
     extraOptions = [
       "--network-alias=broker"
@@ -46,52 +37,8 @@ in
       "podman-compose-paperless-root.target"
     ];
   };
-  /*
-  virtualisation.oci-containers.containers."paperless-db" = {
-    image = "docker.io/library/postgres:${postgres-version}";
-    environment = {
-      "POSTGRES_DB" = "paperless";
-      "POSTGRES_PASSWORD" = "paperless";
-      "POSTGRES_USER" = "paperless";
-    };
-    volumes = [
-      "paperless_pgdata:/var/lib/postgresql/data:rw"
-    ];
-    log-driver = "journald";
-    extraOptions = [
-      "--network-alias=db"
-      "--network=paperless_default"
-    ];
-  };
-  */
-  /*
-  systemd.services."podman-paperless-db" = {
-    serviceConfig = {
-      Restart = lib.mkOverride 90 "always";
-    };
-    after = [
-      "podman-network-paperless_default.service"
-      "podman-volume-paperless_pgdata.service"
-    ];
-    requires = [
-      "podman-network-paperless_default.service"
-      "podman-volume-paperless_pgdata.service"
-    ];
-    partOf = [
-      "podman-compose-paperless-root.target"
-    ];
-    wantedBy = [
-      "podman-compose-paperless-root.target"
-    ];
-  };
-  */
   virtualisation.oci-containers.containers."paperless-gotenberg" = {
     image = "docker.io/gotenberg/gotenberg:${gotenberg-version}";
-    /*
-    environmentFiles = [
-      "/home/ilma4/paperless-ngx/docker-compose.env"
-    ];
-    */
     cmd = ["gotenberg" "--chromium-disable-javascript=true" "--chromium-allow-list=file:///tmp/.*"];
     log-driver = "journald";
     extraOptions = [
@@ -118,11 +65,6 @@ in
   };
   virtualisation.oci-containers.containers."paperless-tika" = {
     image = "docker.io/apache/tika:latest";
-    /*
-    environmentFiles = [
-      "/home/ilma4/paperless-ngx/docker-compose.env"
-    ];
-    */
     log-driver = "journald";
     extraOptions = [
       "--network-alias=tika"
@@ -155,11 +97,6 @@ in
       "PAPERLESS_TIKA_ENDPOINT" = "http://tika:9998";
       "PAPERLESS_TIKA_GOTENBERG_ENDPOINT" = "http://gotenberg:3000";
     };
-    /*
-    environmentFiles = [
-      "/home/ilma4/paperless-ngx/docker-compose.env"
-    ];
-    */
     volumes = [
       "/srv/paperless-ngx/consume:/usr/src/paperless/consume:rw"
       "/srv/paperless-ngx/export:/usr/src/paperless/export:rw"
@@ -239,18 +176,6 @@ in
     };
     script = ''
       podman volume inspect paperless_media || podman volume create paperless_media
-    '';
-    partOf = ["podman-compose-paperless-root.target"];
-    wantedBy = ["podman-compose-paperless-root.target"];
-  };
-  systemd.services."podman-volume-paperless_pgdata" = {
-    path = [pkgs.podman];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      podman volume inspect paperless_pgdata || podman volume create paperless_pgdata
     '';
     partOf = ["podman-compose-paperless-root.target"];
     wantedBy = ["podman-compose-paperless-root.target"];

@@ -1,5 +1,4 @@
-{ config, lib, pkgs, inputs, modules, ... }:
-{ 
+{
   services.samba = {
     enable = true;
     openFirewall = true;
