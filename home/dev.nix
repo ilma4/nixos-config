@@ -14,6 +14,8 @@ in {
       tex-fmt
       sops
 
+      haskell-language-server
+
       (pkgs.rust-bin.stable.latest.default.override {
         extensions = ["rust-src"];
       })
@@ -60,7 +62,7 @@ in {
   programs.ssh.matchBlocks = {
     "git.jetbrains.team" = {
       extraOptions = {
-      "IdentityAgent" = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""; # 1password ssh-agent
+        "IdentityAgent" = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""; # 1password ssh-agent
       };
     };
   };
