@@ -25,7 +25,11 @@
     options = ["subvol=@" "compress=zstd"];
   };
 
-  boot.initrd.luks.devices."root".device = "/dev/disk/by-uuid/c91d9c3f-3cda-4028-ab27-2f41e35ba272";
+  boot.initrd.luks.devices."root" = {
+    device = "/dev/disk/by-uuid/c91d9c3f-3cda-4028-ab27-2f41e35ba272";
+    bypassWorkqueues = true; # improve performance on ssd
+    allowDiscards = true; # allow trim
+  };
 
   fileSystems."/boot" = {
     device = "/dev/disk/by-uuid/fe7ccc35-d3d4-4573-827e-2ec637f16754";

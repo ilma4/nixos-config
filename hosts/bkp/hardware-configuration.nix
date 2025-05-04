@@ -11,7 +11,7 @@
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
-boot.initrd.availableKernelModules = ["xhci_pci" "nvme" "usb_storage" "uas" "sd_mod" "rtsx_usb_sdmmc"];
+  boot.initrd.availableKernelModules = ["xhci_pci" "nvme" "usb_storage" "uas" "sd_mod" "rtsx_usb_sdmmc"];
   boot.initrd.kernelModules = [];
   boot.kernelModules = ["kvm-intel"];
   boot.extraModulePackages = [];
@@ -50,46 +50,7 @@ boot.initrd.availableKernelModules = ["xhci_pci" "nvme" "usb_storage" "uas" "sd_
     options = ["fmask=0022" "dmask=0022"];
   };
 
-  /*
-  fileSystems."/mnt/ssd256" = {
-    device = "/dev/disk/by-uuid/b043e463-7643-47a9-8c9e-66a013a714a8";
-    fsType = "btrfs";
-    options = ["subvol=@" "compress=zstd:1"];
-  };
-
-  fileSystems."/mnt/hdd" = {
-    device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
-    depends = [ "/" ];
-  };
-  */
-
-  /*
-  systemd.mounts = [
-    {
-      description = "Mount USB HDD RAID1 array";
-      # wantedBy = ["multi-user.target"]; # uncomment to mount on boot
-      after = ["local-fs.target"];
-      what = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
-      where = "/mnt/hdd";
-      type = "auto";
-      options = "defaults";
-    }
-  ];
-  */
-  
-
-  # systemd.automounts = [
-    # {
-      # description = "Mount USB HDD RAID1 array";
-      # where = "/mnt/hdd";
-      # wantedBy = ["multi-user.target"];
-      # automountConfig = {
-        # TimeoutIdleSec = "5min"; # auto-umount after 5 minutes of inactivity
-      # };
-    # }
-  # ];
-
-  swapDevices = [];
+  swapDevices = []; # no swap, because I use zram
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
