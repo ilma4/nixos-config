@@ -94,12 +94,7 @@ in {
     programs.git = {
       extraConfig = {
         core = {
-          autocrlf = "input";
-        };
-        oh-my-zsh = {
-          hide-dirty = "1";
-          hide-status = "1";
-          hide-info = "1";
+          autocrlf = "input"; # do not change line separators
         };
       };
       enable = true;
@@ -118,11 +113,10 @@ in {
         ];
         theme = "apple";
         extraConfig = ''
+          # don't do git status after every command for theese repos
           zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
         '';
       };
-
-      # speed up git status prompt
 
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
@@ -141,7 +135,6 @@ in {
       addKeysToAgent = "yes";
 
       matchBlocks = {
-        "ilma4-bkp.local" = {forwardAgent = true;};
         "nvc00731.amt.labs.intellij.net" = {forwardAgent = true;};
       };
     };
