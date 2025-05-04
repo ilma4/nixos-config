@@ -61,11 +61,20 @@
     secrets = "${self}/secrets";
     darwin-modules = "${self}/darwin-modules";
   in {
-    deploy.nodes.ilma4-bkp = {
-      hostname = "ilma4-bkp";
-      profiles.system = {
-        user = "root";
-        path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-bkp;
+    deploy.nodes = {
+      ilma4-bkp = {
+        hostname = "ilma4-bkp";
+        profiles.system = {
+          user = "root";
+          path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-bkp;
+        };
+      };
+      ilma4-nas = {
+        hostname = "ilma4-nas";
+        profiles.system = {
+          user = "root";
+          path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-nas;
+        };
       };
     };
     # deploy-rs checks
