@@ -8,6 +8,7 @@
 }: {
   imports = [
     "${modules}/nix-settings.nix"
+    inputs.nix-rosetta-builder.darwinModules.default
   ];
 
   # List packages installed in system profile. To search by name, run:
@@ -184,13 +185,9 @@
     ::1 www.phoronix.com
   '';
 
-  nix.linux-builder = {
-    enable = true;
-    systems = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
-  };
+  # uncomment on clean nix-darwin
+  # nix.linux-builder.enable = true;
+  nix-rosetta-builder.onDemand = true;
 
   # VPN to access homelab
   services.tailscale.enable = true;

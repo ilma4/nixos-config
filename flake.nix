@@ -6,6 +6,13 @@
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    nix-rosetta-builder = {
+      url = "github:cpick/nix-rosetta-builder";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
+    deploy-rs.url = "github:serokell/deploy-rs";
+
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -43,6 +50,7 @@
     home-manager,
     nixgl,
     nix-darwin,
+    deploy-rs,
     ...
   }: let
     x86-linux = "x86_64-linux";
@@ -53,6 +61,16 @@
     secrets = "${self}/secrets";
     darwin-modules = "${self}/darwin-modules";
   in {
+    deploy.nodes.ilma4-bkp = {
+      hostname = "ilma4-bkp";
+      profiles.system = {
+        user = "root";
+        path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-bkp;
+      };
+    };
+    # deploy-rs checks
+    checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
+
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
       pkgs = import nixpkgs {
         system = x86-linux;
