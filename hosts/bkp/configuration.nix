@@ -15,10 +15,6 @@ i @ {
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
     ./samba.nix
-
-    ./server.nix
-    ./immich.nix
-    ./paperless.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
