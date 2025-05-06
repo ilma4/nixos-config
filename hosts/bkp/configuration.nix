@@ -31,8 +31,8 @@ i @ {
   };
 
   sops.defaultSopsFile = "${i.secrets}/example.yaml";
-  #sops.defaultSopsFile = ../../secrets/example.yaml;
   sops.defaultSopsFormat = "yaml";
+  #sops.defaultSopsFile = ../../secrets/example.yaml;
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
 
@@ -100,10 +100,6 @@ i @ {
   # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
   # console = {
@@ -126,14 +122,19 @@ i @ {
   # services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
-  # Enable avahi server. Machine will be avaliable by address 'hostname'
-  /*
+  # Enable avahi server. Machine will be avaliable by address 'hostname.local'
   services.avahi = {
     enable = true;
+    nssmdns4 = true;
+    nssmdns6 = true;
+    ipv6 = true;
+    publish = {
+      enable = true;
+      domain = true;
+      addresses = true;
+    };
     reflector = true;
-    nssmdns4 = true; # enables .local resolution
   };
-  */
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -144,12 +145,6 @@ i @ {
     enable = true;
     pulse.enable = true;
   };
-
-  /*
-  services.syncthing = {
-    enable = true;
-  };
-  */
 
   services.tlp.enable = true;
   services.power-profiles-daemon.enable = false;
@@ -171,8 +166,6 @@ i @ {
     interval = "*-*-01 03:00:00"; # monthly at 03 am
     fileSystems = [
       "/"
-      "/mnt/hdd"
-      "/mnt/ssd256"
     ];
   };
 
@@ -201,44 +194,10 @@ i @ {
       enable = true;
     };
   };
-  /*
-  containers."vaultwarden" = {
-    forwardPorts = {
-      containerPort = 8222;
-      hostPort = 8222;
-      protocol = "tcp";
-    };
-    autoStart = true;
-    config = let
-      hostConfig = config;
-    in
-      {
-        config,
-        pkgs,
-        ...
-      }: {
-        services.vaultwarden = {
-          enable = true;
-          config = {
-            ROCKET_ADDRESS = "127.0.0.1";
-            ROCKET_PORT = 8222;
-            #DOMAIN = "vaultwarden.ilma4.com";
-               ssl = {
-              enable = true;
-              cert = "/etc/letsencrypt/live/vaultwarden.ilma4.com/fullchain.pem";
-              key = "/etc/letsencrypt/live/vaultwarden.ilma4.com/privkey.pem";
-            };
-          };
-        };
-      };
-  };
-  */
 
   services.swapspace.enable = true;
 
   # List packages installed in system profile. To search, run:
-  #programs.obsidian.enabled = true;
-
   programs.screen.enable = true;
   programs.zsh.enable = true; # configured via home-manager
 
@@ -253,16 +212,6 @@ i @ {
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
   # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
@@ -276,12 +225,6 @@ i @ {
   };
 
   programs.nix-ld.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.

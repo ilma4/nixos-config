@@ -4,9 +4,7 @@ i @ {
   config,
   inputs,
   ...
-}: let
-  inherit (pkgs) stdenv;
-in {
+}: {
   options = {
   };
   imports = [
