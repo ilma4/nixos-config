@@ -102,6 +102,7 @@
         inherit inputs;
         inherit dotfiles;
         inherit secrets;
+        inherit home-manager-modules;
         modules = nixos-modules;
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
