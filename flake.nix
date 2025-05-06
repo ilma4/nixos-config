@@ -82,21 +82,6 @@
 
       modules = [
         ./hosts/bkp/configuration.nix
-        inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
-        home-manager.nixosModules.home-manager
-        inputs.sops-nix.nixosModules.sops
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs;
-            inherit dotfiles;
-            pkgs-unstable = import inputs.nixpkgs-unstable {
-              system = x86-linux;
-              config.allowUnfree = true;
-            };
-            modules = home-manager-modules;
-          };
-        }
       ];
     };
 
@@ -111,6 +96,7 @@
         inherit dotfiles;
         inherit secrets;
         modules = nixos-modules;
+        inherit home-manager-modules;
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
           config.allowUnfree = true;
@@ -119,20 +105,6 @@
 
       modules = [
         ./hosts/nas/configuration.nix
-        home-manager.nixosModules.home-manager
-        inputs.sops-nix.nixosModules.sops
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs;
-            inherit dotfiles;
-            pkgs-unstable = import inputs.nixpkgs-unstable {
-              system = x86-linux;
-              config.allowUnfree = true;
-            };
-            modules = home-manager-modules;
-          };
-        }
       ];
     };
 
@@ -151,7 +123,6 @@
 
       modules = [
         ./hosts/arm-vm/configuration.nix
-        inputs.sops-nix.nixosModules.sops
       ];
     };
 

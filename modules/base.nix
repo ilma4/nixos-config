@@ -1,4 +1,4 @@
-{
+i @ {
   lib,
   pkgs,
   config,
@@ -12,6 +12,7 @@ in {
   imports = [
     inputs.home-manager.nixosModules.home-manager
     inputs.sops-nix.nixosModules.sops
+    inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
   ];
 
   config = {
@@ -20,9 +21,9 @@ in {
     home-manager.useGlobalPkgs = true;
     home-manager.extraSpecialArgs = {
       inherit inputs;
-      dotfiles = inputs.dotfiles;
-      pkgs-unstable = inputs.pkgs-unstable;
-      modules = inputs.home-manager-modules;
+      dotfiles = i.dotfiles;
+      pkgs-unstable = i.pkgs-unstable;
+      modules = i.home-manager-modules;
     };
   };
 }
