@@ -11,37 +11,37 @@ verbose = true
 source = ["/Users/ilma4"]
 exclude-caches = true # not very helpful. https://bford.info/cachedir/
 exclude = [
-  "/Users/ilma4/Games",
-  "/Users/ilma4/Downloads",
-  "/Users/ilma4/NoBackup",
+    "/Users/ilma4/Games",
+    "/Users/ilma4/Downloads",
+    "/Users/ilma4/NoBackup",
 
-  "/Users/ilma4/.cache",
-  "/Users/ilma4/.Trash",
+    "/Users/ilma4/.cache",
+    "/Users/ilma4/.Trash",
 
-  "/Users/ilma4/Library/Caches",
-  "/Users/ilma4/Library/Android",    # android sdks
-  "/Users/ilma4/Library/Developer",  # xcode stuff
-  "/Users/ilma4/Library/Containers", # docker, vms, wine bottles
-  "/Users/ilma4/Library/Java",       # jdk's binaries
-  "/Users/ilma4/Library/Logs",
+    "/Users/ilma4/Library/Caches",
+    "/Users/ilma4/Library/Android",    # android sdks
+    "/Users/ilma4/Library/Developer",  # xcode stuff
+    "/Users/ilma4/Library/Containers", # docker, vms, wine bottles
+    "/Users/ilma4/Library/Java",       # jdk's binaries
+    "/Users/ilma4/Library/Logs",
 
-  "/Users/ilma4/Projects/JetBrains", # TODO: enable backup for my parts of monorepo
+    "/Users/ilma4/Projects/JetBrains", # TODO: enable backup for my parts of monorepo
 
-  "/Users/ilma4/.android", # android emulator images
-  "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
-  "/Users/ilma4/.vscode",  # vscode extensions
+    "/Users/ilma4/.android", # android emulator images
+    "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
+    "/Users/ilma4/.vscode",  # vscode extensions
 
-  # caches
-  "/Users/ilma4/.ollama", # LLMs
-  "/Users/ilma4/.konan",  # c++
-  "/Users/ilma4/.npm",    # javascript!
-  "/Users/ilma4/.gem",    # ruby(?)
-  "/Users/ilma4/.cargo",  # rust 
-  "/Users/ilma4/.gradle",
-  "/Users/ilma4/.m2",     # maven
+    # caches
+    "/Users/ilma4/.ollama", # LLMs
+    "/Users/ilma4/.konan",  # c++
+    "/Users/ilma4/.npm",    # javascript!
+    "/Users/ilma4/.gem",    # ruby(?)
+    "/Users/ilma4/.cargo",  # rust
+    "/Users/ilma4/.gradle",
+    "/Users/ilma4/.m2",     # maven
 
 
-  "/Users/ilma4/Applications",
+    "/Users/ilma4/Applications",
 ]
 
 schedule = "*-*-* 02:00:00"
@@ -62,7 +62,7 @@ from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 [hdd]
 
 [hdd.copy]
-repository = "sftp:ilma4@ilma4-bkp.local:/mnt/hdd/restic"
+repository = "sftp:ilma4@ilma4-nas:/mnt/hdd/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
 from-repo = "local:/Users/ilma4/NoBackup/restic"
