@@ -49,7 +49,7 @@ i @ {
     # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
   };
 
-  time.timeZone = "Europe/Amsterdam";
+  time.timeZone = "Europe/Berlin";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -58,18 +58,6 @@ i @ {
   #   keyMap = "us";
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
-
-  /*
-     Doesnt work :(
-  systemd.services.hd-idle = {
-    description = "HDD spin down daemon";
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "forking";
-      ExecStart = "${pkgs.hd-idle}/bin/hd-idle -i 0 -d -a sdb -i 300 -a sda -i 300";
-    };
-  };
-  */
 
   sops.defaultSopsFile = "${i.secrets}/example.yaml";
   sops.defaultSopsFormat = "yaml";
@@ -144,7 +132,6 @@ i @ {
   programs.zsh.enable = true; # configured via home-manager
   environment.pathsToLink = ["/share/zsh"];
 
-  # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
@@ -153,7 +140,7 @@ i @ {
   services.openssh = {
     enable = true;
     openFirewall = true;
-    settings.PasswordAuthentication = false; # TODO set false
+    settings.PasswordAuthentication = false;
   };
 
   services.smartd = {
@@ -164,12 +151,6 @@ i @ {
   };
 
   # programs.nix-ld.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
