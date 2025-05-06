@@ -11,8 +11,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    deploy-rs.url = "github:serokell/deploy-rs";
-
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -50,7 +48,6 @@
     home-manager,
     nixgl,
     nix-darwin,
-    deploy-rs,
     ...
   }: let
     x86-linux = "x86_64-linux";
@@ -62,33 +59,6 @@
     secrets = "${self}/secrets";
     darwin-modules = "${self}/darwin-modules";
   in {
-    deploy.nodes = {
-      ilma4-bkp = {
-        hostname = "ilma4-bkp";
-        profiles.system = {
-          user = "root";
-          path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-bkp;
-        };
-      };
-      ilma4-nas = {
-        hostname = "ilma4-nas";
-        profiles.system = {
-          user = "root";
-          path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-nas;
-        };
-      };
-      ilma4-arm-vm = {
-        hostname = "192.168.64.12";
-        profiles.system = {
-          user = "root";
-          ssh_user = "root";
-          path = deploy-rs.lib."aarch64-linux".activate.nixos self.nixosConfigurations.ilma4-arm-vm;
-        };
-      };
-    };
-    # deploy-rs checks
-    # checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
-
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
       pkgs = import nixpkgs {
         system = x86-linux;

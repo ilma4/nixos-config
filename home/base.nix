@@ -88,6 +88,10 @@ in {
         du -shc -- "$@" | sort --human-numeric-sort --reverse
       '')
 
+      (pkgs.writeShellScriptBin "check-im-alive" ''
+        echo yay
+      '')
+
       (pkgs.writeShellScriptBin "nix-rebuild" config.rebuild-script)
     ];
 
