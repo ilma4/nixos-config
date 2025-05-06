@@ -14,7 +14,6 @@ i @ {
     "${modules}/base.nix"
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
-    ./samba.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
