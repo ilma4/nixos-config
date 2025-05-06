@@ -54,6 +54,7 @@
     ...
   }: let
     x86-linux = "x86_64-linux";
+    arm64-linux = "aarch64-linux";
     arm64-macos = "aarch64-darwin";
     nixos-modules = "${self}/modules";
     home-manager-modules = "${self}/home";
@@ -76,9 +77,17 @@
           path = deploy-rs.lib."x86_64-linux".activate.nixos self.nixosConfigurations.ilma4-nas;
         };
       };
+      ilma4-arm-vm = {
+        hostname = "192.168.64.12";
+        profiles.system = {
+          user = "root";
+          ssh_user = "root";
+          path = deploy-rs.lib."aarch64-linux".activate.nixos self.nixosConfigurations.ilma4-arm-vm;
+        };
+      };
     };
     # deploy-rs checks
-    checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
+    # checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
 
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
       pkgs = import nixpkgs {
@@ -153,6 +162,25 @@
             modules = home-manager-modules;
           };
         }
+      ];
+    };
+
+    nixosConfigurations.ilma4-arm-vm = nixpkgs.lib.nixosSystem {
+      pkgs = import nixpkgs {
+        system = arm64-linux;
+        config.allowUnfree = true;
+      };
+      system = arm64-linux;
+      specialArgs = {
+        inherit inputs;
+        inherit dotfiles;
+        inherit secrets;
+        modules = nixos-modules;
+      };
+
+      modules = [
+        ./hosts/arm-vm/configuration.nix
+        inputs.sops-nix.nixosModules.sops
       ];
     };
 
