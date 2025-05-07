@@ -92,10 +92,6 @@ args @ {
   networking.hostName = "ilma4-bkp";
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
-  time.timeZone = "Europe/Amsterdam";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
   # console = {
   #   font = "Lat2-Terminus16";
   #   keyMap = "us";
