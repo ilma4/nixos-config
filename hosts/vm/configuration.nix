@@ -1,33 +1,26 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-{ config, lib, pkgs,  ... }:
-
-{
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ./zram.nix
-    ];
-  
+{pkgs, ...}: {
+  imports = [
+    # Include the results of the hardware scan.
+    # TODO: "${modules}/avahi.nix"
+    ./hardware-configuration.nix
+    ./zram.nix
+  ];
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.grub = {
     enable = true;
-    device = "/dev/vda"; 
+    device = "/dev/vda";
     useOSProber = true;
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   nixpkgs.config.allowUnfree = true;
   programs.nix-ld.enable = true;
-
 
   networking.hostName = "ilma4-vm"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
   # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
@@ -47,22 +40,16 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
 
-
   # Enable background periodic TRIM
   services.fstrim.enable = true;
-  
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable avahi server. Machine will be avaliable by address 'hostname.local'
-  services.avahi.enable = true;
 
   # Enable CUPS to print documents.
   # services.printing.enable = true;
@@ -78,19 +65,19 @@
   # services.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.ilma4 = {
+  users.users.ilma4 = {
     isNormalUser = true;
     shell = pkgs.zsh;
     #initialPassword = "1234";
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-   };
+    extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
+  };
 
-   home-manager = {
-     # extraSpecialArgs = { inherit inputs; };
-     users = {
-       "ilma4" = import ./home.nix ;
-     };
-   };
+  home-manager = {
+    # extraSpecialArgs = { inherit inputs; };
+    users = {
+      "ilma4" = import ./home.nix;
+    };
+  };
 
   virtualisation = {
     docker = {
@@ -106,7 +93,6 @@
     };
   };
 
-
   # List packages installed in system profile. To search, run:
   #programs.obsidian.enabled = true;
 
@@ -118,23 +104,23 @@
   };
   programs.virt-manager.enable = true;
 
-  environment.pathsToLink = [ "/share/zsh" ];
+  environment.pathsToLink = ["/share/zsh"];
 
   # $ nix search wget
-   environment.systemPackages = with pkgs; [
-     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-     curl
-     shotwell
-     htop
-     gnome.gnome-tweaks
-     wl-clipboard
-     corretto17
-     jetbrains.idea-community-bin
-     ripgrep
-     fd
-     restic
-   ];
+  environment.systemPackages = with pkgs; [
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+    curl
+    shotwell
+    htop
+    gnome.gnome-tweaks
+    wl-clipboard
+    corretto17
+    jetbrains.idea-community-bin
+    ripgrep
+    fd
+    restic
+  ];
 
   /*
   zramSwap = {
@@ -181,6 +167,4 @@
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }
-

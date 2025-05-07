@@ -174,20 +174,6 @@ in {
     */
   };
 
-  services.avahi = {
-    openFirewall = true;
-    enable = true;
-    nssmdns4 = true;
-    nssmdns6 = true;
-    ipv6 = true;
-    publish = {
-      enable = true;
-      domain = true;
-      addresses = true;
-    };
-    reflector = true;
-  };
-
   networking.firewall.allowedTCPPorts = [
     8123 # home-assistant
     80 # homer

@@ -12,6 +12,7 @@ i @ {
   imports = [
     ./hardware-configuration.nix
     "${modules}/base.nix"
+    "${modules}/avahi.nix"
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
     # ./samba.nix
@@ -76,13 +77,6 @@ i @ {
 
   # Enable background periodic TRIM
   services.fstrim.enable = true;
-
-  # Enable avahi server. Machine will be avaliable by address 'hostname'
-  services.avahi = {
-    enable = true;
-    reflector = true;
-    nssmdns4 = true; # enables .local resolution
-  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;

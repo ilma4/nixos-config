@@ -6,6 +6,7 @@ args @ {
 }: {
   imports = [
     ./hardware-configuration.nix
+    "${modules}/avahi.nix"
     "${modules}/base.nix"
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
@@ -114,21 +115,6 @@ args @ {
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable avahi server. Machine will be avaliable by address 'hostname.local'
-  services.avahi = {
-    openFirewall = true;
-    enable = true;
-    nssmdns4 = true;
-    nssmdns6 = true;
-    ipv6 = true;
-    publish = {
-      enable = true;
-      domain = true;
-      addresses = true;
-    };
-    reflector = true;
-  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
