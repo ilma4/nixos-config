@@ -1,7 +1,5 @@
 {
   config,
-  lib,
-  pkgs,
   dotfiles,
   ...
 }: let
@@ -105,7 +103,7 @@ in {
         "/home/ilma4/Docker/torrent/config/wireguard/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
       ];
       ports = [
-        "8080:8080" # qBittorrent
+        "8080:8080" # qBittorrent web interface
       ];
       hostname = "gluetun";
       autoStart = true;
