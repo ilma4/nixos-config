@@ -18,6 +18,14 @@ in {
       type = lib.types.str;
       example = "/home/ilma4/.config/nixos-config";
       description = "Location of the flake";
+      default = "none"; # TODO null
+    };
+
+    flake-configuration = lib.mkOption {
+      type = lib.types.str;
+      example = "ilma4-bkp";
+      description = "Configuration of the flake";
+      default = "none"; # TODO null
     };
 
     configure-ssh = lib.mkOption {
@@ -45,7 +53,7 @@ in {
           then "home-manager switch"
           else ""
         )
-        + " --flake ${config.flake-location}";
+        + " --flake ${config.flake-location}#${config.flake-configuration}";
 
       description = "nix-rebuild script";
     };

@@ -1,10 +1,9 @@
-args @ {
+{
   config,
   lib,
   pkgs,
   pkgs-unstable,
   modules,
-  inputs,
   dotfiles,
   ...
 }: {
@@ -26,50 +25,51 @@ args @ {
     };
   };
 
-
   config = {
     home.username = "ilma4";
-    #home.homeDirectory = "/Users/ilma4";
 
     flake-location = "${config.home.homeDirectory}/.config/nixos-config";
+    flake-configuration = "DE-UNIT-1832"; # TODO: set better name and sync with flakes.nix
 
     services.syncthing = {
       enable = true;
     };
 
-    home.packages = with pkgs; [
-      clang
-      lldb
-      colima # vm to run docker
-      docker # docker cli
-      
-      (pkgs.writeShellScriptBin "system-upgrade" ''
-        nix flake update --flake ${config.flake-location}
-        nix-rebuild
-        /opt/homebrew/bin/brew update -f
-        /opt/homebrew/bin/brew upgrade --greedy
-      '')
+    home.packages = with pkgs;
+      [
+        clang
+        lldb
+        colima # vm to run docker
+        docker # docker cli
 
-      (pkgs.writeShellScriptBin "display-internal-set-defaults" ''
-      displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0"
-      '')
+        (pkgs.writeShellScriptBin "system-upgrade" ''
+          nix flake update --flake ${config.flake-location}
+          nix-rebuild
+          /opt/homebrew/bin/brew update -f
+          /opt/homebrew/bin/brew upgrade --greedy
+        '')
 
-      (pkgs.writeShellScriptBin "display-internal-full-res" ''
-      displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:3024x1964 hz:120 color_depth:8 enabled:true scaling:off origin:(0,0) degree:0"
-      '')
+        (pkgs.writeShellScriptBin "display-internal-set-defaults" ''
+          displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0"
+        '')
 
-      (pkgs.writeShellScriptBin "generate-random-password" "openssl rand 64 | sha512")
-    ] ++ (with pkgs-unstable ; [
-      ollama
-      llama-cpp
-    ]);
+        (pkgs.writeShellScriptBin "display-internal-full-res" ''
+          displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:3024x1964 hz:120 color_depth:8 enabled:true scaling:off origin:(0,0) degree:0"
+        '')
+
+        (pkgs.writeShellScriptBin "generate-random-password" "openssl rand 64 | sha512")
+      ]
+      ++ (with pkgs-unstable; [
+        ollama
+        llama-cpp
+      ]);
 
     programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
     programs.pandoc.enable = true;
     programs.texlive = {
       enable = true;
-      extraPackages = (tpkgs: { inherit (tpkgs) scheme-full; });
+      extraPackages = tpkgs: {inherit (tpkgs) scheme-full;};
     };
 
     # programs.mpv.enable = true; # fixed in 24.11
