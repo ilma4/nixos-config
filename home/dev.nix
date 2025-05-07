@@ -19,6 +19,24 @@ in {
       (pkgs.rust-bin.stable.latest.default.override {
         extensions = ["rust-src"];
       })
+
+      (
+        pkgs.writeShellScriptBin "i4-update-host" ''
+          if [ -z "$1" ]; then
+            echo "Error: No 'targetHost' provided."
+            echo "Usage: i4-update-host <targetHost>"
+            exit 1
+          fi
+
+          targetHost="$1"
+
+          nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
+            --flake "${config.flake-location}#$targetHost" \
+            --target-host "root@$targetHost" \
+            --build-host "root@$targetHost" \
+            --fast
+        ''
+      )
     ]
     ++ (
       if pkgs.stdenv.isDarwin
