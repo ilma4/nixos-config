@@ -1,11 +1,6 @@
-#Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-i @ {
+args @ {
   config,
-  lib,
   pkgs,
-  inputs,
   modules,
   ...
 }: {
@@ -56,7 +51,7 @@ i @ {
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  sops.defaultSopsFile = "${i.secrets}/example.yaml";
+  sops.defaultSopsFile = "${args.secrets}/example.yaml";
   sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
