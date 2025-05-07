@@ -140,11 +140,6 @@
       # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
       "jetbrains-toolbox"
       # "intellij-idea@eap" # as an IntelliJ developer, I use nightly builds from toolbox
-      "pycharm"
-      "clion"
-      "rustrover"
-      "android-studio"
-      "jetbrains-gateway"
     ];
 
     brews = [
