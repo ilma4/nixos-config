@@ -1,11 +1,6 @@
-#Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-i @ {
+args @ {
   config,
-  lib,
   pkgs,
-  inputs,
   modules,
   ...
 }: {
@@ -16,7 +11,6 @@ i @ {
     "${modules}/nix-settings.nix"
   ];
 
-  # Use the systemd-boot EFI boot loader.
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
@@ -30,7 +24,7 @@ i @ {
     };
   };
 
-  sops.defaultSopsFile = "${i.secrets}/example.yaml";
+  sops.defaultSopsFile = "${args.secrets}/example.yaml";
   sops.defaultSopsFormat = "yaml";
   #sops.defaultSopsFile = ../../secrets/example.yaml;
 
@@ -94,10 +88,9 @@ i @ {
 
   security.rtkit.enable = true; # enable realtime kit (process can have different priorities)
 
-  networking.hostName = "ilma4-bkp"; # Define your hostname.
+  networking.hostName = "ilma4-bkp";
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
-  # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
 
   # Select internationalisation properties.
@@ -124,6 +117,7 @@ i @ {
 
   # Enable avahi server. Machine will be avaliable by address 'hostname.local'
   services.avahi = {
+    openFirewall = true;
     enable = true;
     nssmdns4 = true;
     nssmdns6 = true;

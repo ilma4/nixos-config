@@ -1,6 +1,4 @@
-i @ {
-  lib,
-  pkgs,
+args @ {
   config,
   inputs,
   ...
@@ -16,12 +14,20 @@ i @ {
   config = {
     hardware.enableAllFirmware = true;
 
+    /*
+    nixpkgs.config = {
+      allowUnfree = true;
+    };
+    */
+
+    # inputs.nixpkgs-unstable.config = config.nixpkgs.config;
+
     home-manager.useGlobalPkgs = true;
     home-manager.extraSpecialArgs = {
       inherit inputs;
-      dotfiles = i.dotfiles;
-      pkgs-unstable = i.pkgs-unstable;
-      modules = i.home-manager-modules;
+      dotfiles = args.dotfiles;
+      pkgs-unstable = args.pkgs-unstable;
+      modules = args.home-manager-modules;
     };
   };
 }
