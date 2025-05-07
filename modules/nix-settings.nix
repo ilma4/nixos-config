@@ -7,7 +7,6 @@
 }: {
   nix = {
     package = pkgs.nix;
-    nixPath = ["nixpkgs=${inputs.nixpkgs}"]; # required for nixd. # TODO: enable only on dev machines
     gc.automatic = true;
     optimise.automatic = true;
     settings = {
