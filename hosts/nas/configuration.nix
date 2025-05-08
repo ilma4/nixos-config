@@ -15,6 +15,11 @@ args @ {
     ./server.nix
     ./immich.nix
     ./paperless.nix
+    ./home-assistant.nix
+    ./syncthing.nix
+    ./qbittorrent.nix
+    ./pdf-tools.nix
+    ./dashboard.nix
   ];
 
   # Use the systemd-boot EFI boot loader.

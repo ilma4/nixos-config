@@ -1,9 +1,14 @@
 args @ {
-  config,
+  lib,
   inputs,
   ...
 }: {
   options = {
+    isServer = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Is this machine a server. Configure podman for containers";
+    };
   };
   imports = [
     inputs.home-manager.nixosModules.home-manager

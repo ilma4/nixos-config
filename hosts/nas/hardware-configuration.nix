@@ -4,7 +4,6 @@
 {
   config,
   lib,
-  pkgs,
   modulesPath,
   ...
 }: {
@@ -47,6 +46,12 @@
     fsType = "btrfs";
     options = ["compress=zstd" "nofail" "x-systemd.mount-timeout=5s"];
   };
+
+  # create mountpoints for hdd
+  systemd.tmpfiles.rules = [
+    "d /mnt 0755 root root"
+    "d /mnt/hdd 0755 root root"
+  ];
 
   swapDevices = [];
 
