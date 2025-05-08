@@ -1,9 +1,5 @@
-{
-  config,
-  pkgs,
-  ...
-}: let
-  HOME = config.home.homeDirectory;
+{pkgs, ...}: let
+  # HOME = config.home.homeDirectory;
   isDarwin = pkgs.stdenv.isDarwin;
 in {
   home.packages = with pkgs; [

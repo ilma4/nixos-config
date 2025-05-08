@@ -1,6 +1,4 @@
-{ config, lib, pkgs, ... }:
-
-{
+{pkgs, ...}: {
   home.packages = with pkgs; [
     gnome.gnome-session
     gnome.eog # image viewer

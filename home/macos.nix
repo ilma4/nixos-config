@@ -1,11 +1,5 @@
-{
-  config,
-  lib,
-  pkgs,
-  dotfiles,
-  ...
-}: {
-  home.file.".config/element-vts/sony-mdr7506.els".source = "${dotfiles}/element/sony-mdr7506.els"; # equalizer for headphones
+{...}: {
+  # add homebrew programms to PATH
   home.sessionPath = [
     "/opt/homebrew/bin"
   ];

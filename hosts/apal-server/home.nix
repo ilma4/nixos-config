@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  modules,
-  ...
-}: {
+{modules, ...}: {
   imports = [
     "${modules}/base.nix"
     "${modules}/work.nix"

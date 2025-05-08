@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     # ./jetbrains.nix # FIXME: on 2024-10-05, usage of this idea, caused gpu crashes on wayland
   ];
