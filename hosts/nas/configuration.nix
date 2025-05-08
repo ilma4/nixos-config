@@ -12,14 +12,14 @@ args @ {
     "${modules}/nix-settings.nix"
     # ./samba.nix
 
-    ./server.nix
-    ./immich.nix
-    ./paperless.nix
-    ./home-assistant.nix
-    ./syncthing.nix
-    ./qbittorrent.nix
-    ./pdf-tools.nix
-    ./dashboard.nix
+    "${modules}/server.nix"
+    "${modules}/immich.nix"
+    "${modules}/paperless.nix"
+    "${modules}/home-assistant.nix"
+    "${modules}/syncthing.nix"
+    "${modules}/qbittorrent.nix"
+    "${modules}/pdf-tools.nix"
+    "${modules}/dashboard.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.
