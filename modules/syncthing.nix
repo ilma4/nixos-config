@@ -9,8 +9,6 @@
       ];
       volumes = [
         "/srv/syncthing:/var/syncthing"
-        #"/srv/Pictures/Oneplus10R:/var/syncthing/Pictures/Oneplus10R"
-        #"/srv/Pictures/GalaxyS24:/var/syncthing/Pictures/GalaxyS24"
         "/etc/localtime:/etc/localtime:ro"
       ];
       hostname = "ilma4-bkp-syncthing";
@@ -19,7 +17,7 @@
     };
   };
   networking.firewall.allowedTCPPorts = [
-    8334
+    8334 # web interface
     22000
   ];
   networking.firewall.allowedUDPPorts = [
