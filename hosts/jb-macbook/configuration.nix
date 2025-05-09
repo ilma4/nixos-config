@@ -81,6 +81,7 @@
     casks = [
       # Could be replaced by nix packages in future
       "firefox"
+      "vivaldi"
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
