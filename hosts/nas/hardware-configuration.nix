@@ -44,7 +44,13 @@
   fileSystems."/mnt/hdd" = {
     device = "/dev/disk/by-uuid/f86b7490-3309-44ad-876a-50a8578012b0";
     fsType = "btrfs";
-    options = ["compress=zstd" "nofail" "x-systemd.mount-timeout=5s"];
+    options = [
+      "compress=zstd"
+      "nofail"
+      "x-systemd.mount-timeout=5s"
+      "x-systemd.idle-timeout=1min"
+      "x-systemd.automount"
+    ];
   };
 
   # create mountpoints for hdd
