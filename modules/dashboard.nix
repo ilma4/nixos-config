@@ -5,16 +5,13 @@
 }: let
   homer-version = "v25.04.1";
 in {
-  users.users = {
-    homer = {
-      isSystemUser = true;
-      uid = 989;
-      group = "homer";
-    };
+  users.users.homer = {
+    isSystemUser = true;
+    uid = 989;
+    group = "homer";
   };
-  users.groups = {
-    homer.gid = 985;
-  };
+  users.groups.homer.gid = 985;
+
   virtualisation.oci-containers.containers = {
     homer = {
       image = "b4bz/homer:${homer-version}";

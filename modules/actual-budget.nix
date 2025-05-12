@@ -1,14 +1,10 @@
 {config, ...}: {
-  users.users = {
-    actual-budget = {
-      isSystemUser = true;
-      uid = 800;
-      group = "actual-budget";
-    };
+  users.users.actual-budget = {
+    isSystemUser = true;
+    uid = 800;
+    group = "actual-budget";
   };
-  users.groups = {
-    actual-budget.gid = config.users.users.actual-budget.uid;
-  };
+  users.groups.actual-budget.gid = config.users.users.actual-budget.uid;
 
   virtualisation.oci-containers.containers = {
     actual-budget = {
