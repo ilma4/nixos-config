@@ -15,8 +15,8 @@ args @ {
 
     # "${modules}/actual-budget.nix"
     # "${modules}/paperless.nix"
-    "${modules}/immich.nix"
-    "${modules}/syncthing.nix"
+    # "${modules}/immich.nix"
+    # "${modules}/syncthing.nix"
 
     # "${modules}/home-assistant.nix"
     # "${modules}/dashboard.nix"

@@ -19,12 +19,11 @@ args @ {
     "${modules}/home-assistant.nix"
     "${modules}/pdf-tools.nix"
 
-    # TODO: enable when noise is not an issue
     "${modules}/actual-budget.nix"
     "${modules}/paperless.nix"
 
-    # "${modules}/immich.nix"
-    # "${modules}/syncthing.nix"
+    "${modules}/immich.nix"
+    "${modules}/syncthing.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.
