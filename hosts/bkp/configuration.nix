@@ -12,13 +12,15 @@ args @ {
     "${modules}/nix-settings.nix"
 
     "${modules}/server.nix"
+
     "${modules}/actual-budget.nix"
     "${modules}/paperless.nix"
     "${modules}/immich.nix"
     "${modules}/syncthing.nix"
-    "${modules}/home-assistant.nix"
-    "${modules}/dashboard.nix"
-    "${modules}/pdf-tools.nix"
+
+    # "${modules}/home-assistant.nix"
+    # "${modules}/dashboard.nix"
+    # "${modules}/pdf-tools.nix"
   ];
 
   boot.loader = {
