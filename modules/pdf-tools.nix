@@ -1,5 +1,5 @@
 {...}: let
-  stirling-pdf-version = "0.45.4";
+  stirling-pdf-version = "0.46.1-ultra-lite";
 in {
   virtualisation.oci-containers.containers = {
     stirling-pdf = {
