@@ -12,6 +12,7 @@ in {
       };
       volumes = [
         "/etc/localtime:/etc/localtime:ro"
+        # TODO: migrate config to secrets
         "/home/ilma4/Docker/torrent/config/wireguard/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
       ];
       ports = [

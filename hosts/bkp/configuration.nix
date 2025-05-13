@@ -13,8 +13,8 @@ args @ {
 
     "${modules}/server.nix"
 
-    "${modules}/actual-budget.nix"
-    "${modules}/paperless.nix"
+    # "${modules}/actual-budget.nix"
+    # "${modules}/paperless.nix"
     "${modules}/immich.nix"
     "${modules}/syncthing.nix"
 
