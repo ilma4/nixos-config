@@ -47,6 +47,6 @@ in {
   };
 
   networking.firewall.allowedTCPPorts = [
-    8080 # qbittorrent
+    8080 # qbittorrent web interface
   ];
 }
