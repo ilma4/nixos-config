@@ -29,11 +29,8 @@ args @ {
 
   sops.defaultSopsFile = "${args.secrets}/example.yaml";
   sops.defaultSopsFormat = "yaml";
-  #sops.defaultSopsFile = ../../secrets/example.yaml;
-
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
 
-  # sops.secrets."myservie/my_subdir_my_secret" = {};
   sops.secrets.ilma4-passwd = {
     neededForUsers = true;
   };
