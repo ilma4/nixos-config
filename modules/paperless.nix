@@ -3,7 +3,8 @@
   lib,
   ...
 }: let
-  paperless-version = "2.15.1";
+  # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite-tika.yml
+  paperless-version = "latest";
   redis-version = "7";
   gotenberg-version = "8.19";
 in {

@@ -3,7 +3,7 @@
   dotfiles,
   ...
 }: let
-  homer-version = "v25.04.1";
+  homer-version = "latest";
 in {
   users.users.homer = {
     isSystemUser = true;

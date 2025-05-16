@@ -1,5 +1,5 @@
 {...}: let
-  home-assistant-version = "2025.4.1";
+  home-assistant-version = "latest";
 in {
   users.users.homeassistant = {
     isSystemUser = true;

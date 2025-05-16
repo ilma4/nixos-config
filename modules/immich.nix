@@ -3,9 +3,8 @@
   lib,
   ...
 }: let
-  immich-version = "v1.131.3";
+  immich-version = "release";
   postgres-version = "739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52";
-  redis-version = "148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8";
 in {
   virtualisation.oci-containers.containers."immich_machine_learning" = {
     image = "ghcr.io/immich-app/immich-machine-learning:${immich-version}";
@@ -86,7 +85,7 @@ in {
     ];
   };
   virtualisation.oci-containers.containers."immich_redis" = {
-    image = "docker.io/redis:6.2-alpine@sha256:${redis-version}";
+    image = "docker.io/valkey/valkey:8-bookworm@sha256:42cba146593a5ea9a622002c1b7cba5da7be248650cbb64ecb9c6c33d29794b1";
     log-driver = "journald";
     extraOptions = [
       "--health-cmd=redis-cli ping || exit 1"
