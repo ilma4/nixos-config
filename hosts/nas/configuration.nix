@@ -10,6 +10,7 @@ args @ {
     "${modules}/avahi.nix"
     "${modules}/zram.nix"
     "${modules}/nix-settings.nix"
+    "${modules}/sops.nix"
     # ./samba.nix
 
     "${modules}/server.nix"

@@ -6,10 +6,8 @@
   gluetun-version = "v3.40.0";
   qbittorrent-version = "5.0.4-r0-ls388";
 in {
-  sops.secrets."ru-torrent-wg.conf" = {
-    sopsFile = "${secrets}/ru-torrent-wg.conf";
-    format = "binary";
-  };
+  i4-encrypted-files = ["ru-torrent-wg.conf"];
+
   virtualisation.oci-containers.containers = {
     # VPN for qbittorrent
     gluetun = {
