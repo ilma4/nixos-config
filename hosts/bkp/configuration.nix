@@ -12,15 +12,6 @@ args @ {
     "${modules}/nix-settings.nix"
 
     "${modules}/server.nix"
-
-    # "${modules}/actual-budget.nix"
-    # "${modules}/paperless.nix"
-    # "${modules}/immich.nix"
-    # "${modules}/syncthing.nix"
-
-    # "${modules}/home-assistant.nix"
-    # "${modules}/dashboard.nix"
-    # "${modules}/pdf-tools.nix"
   ];
 
   boot.loader = {
@@ -127,7 +118,6 @@ args @ {
   services.printing.enable = true;
 
   # Enable sound.
-  hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     pulse.enable = true;
@@ -156,7 +146,6 @@ args @ {
     ];
   };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ilma4 = {
     isNormalUser = true;
     shell = pkgs.zsh;
@@ -211,7 +200,7 @@ args @ {
     autodetect = true;
   };
 
-  programs.nix-ld.enable = true;
+  programs.nix-ld.enable = true; # allows to run programs not from nix
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
