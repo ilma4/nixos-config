@@ -10,10 +10,13 @@ args @ {
       description = "Is this machine a server. Configure podman for containers";
     };
   };
+
   imports = [
     inputs.home-manager.nixosModules.home-manager
     inputs.sops-nix.nixosModules.sops
     inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
+
+    "${args.modules}/nix-settings.nix"
   ];
 
   config = {

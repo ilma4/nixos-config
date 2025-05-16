@@ -6,10 +6,10 @@ args @ {
 }: {
   imports = [
     ./hardware-configuration.nix
+
     "${modules}/base.nix"
     "${modules}/avahi.nix"
     "${modules}/zram.nix"
-    "${modules}/nix-settings.nix"
     "${modules}/sops.nix"
     # ./samba.nix
 
@@ -60,9 +60,6 @@ args @ {
   #   keyMap = "us";
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
-
-  sops.defaultSopsFile = "${args.secrets}/example.yaml";
-  sops.defaultSopsFormat = "yaml";
 
   sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
   sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {
