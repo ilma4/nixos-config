@@ -73,6 +73,8 @@ args @ {
     ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
   '';
 
+  torrent-wg-conf = "ru-torrent-wg.conf";
+
   # Enable background periodic TRIM
   services.fstrim.enable = true;
 
