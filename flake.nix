@@ -126,6 +126,24 @@
       ];
     };
 
+    nixosConfigurations.i4-torrent-vm = nixpkgs.lib.nixosSystem {
+      pkgs = import nixpkgs {
+        system = arm64-linux;
+        config.allowUnfree = true;
+      };
+      system = arm64-linux;
+      specialArgs = {
+        inherit inputs;
+        inherit dotfiles;
+        inherit secrets;
+        modules = nixos-modules;
+      };
+
+      modules = [
+        ./hosts/i4-torrent-vm/configuration.nix
+      ];
+    };
+
     homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
         system = x86-linux;
