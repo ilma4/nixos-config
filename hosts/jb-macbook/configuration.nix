@@ -182,8 +182,9 @@
 
   # uncomment on clean nix-darwin
   nix.linux-builder.enable = false;
-  nix-rosetta-builder.enable = false;
-  # nix-rosetta-builder.onDemand = true;
+
+  nix-rosetta-builder.enable = true;
+  nix-rosetta-builder.onDemand = true;
 
   # VPN to access homelab
   services.tailscale.enable = true;
