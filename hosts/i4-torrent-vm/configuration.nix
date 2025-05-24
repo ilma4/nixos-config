@@ -9,6 +9,7 @@
     ./hardware-configuration.nix
     "${modules}/base.nix"
     "${modules}/avahi.nix"
+    "${modules}/sops.nix"
     "${modules}/qbittorrent.nix"
   ];
 
@@ -22,11 +23,22 @@
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
   };
 
+  torrent.wg-conf = "ru-torrent-nixos-vm-wg.conf";
+  virtualisation.oci-containers.containers.qbittorrent.autoStart = true;
+
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    neovim
   ];
 
-  torrent-wg-conf = "ru-torrent-nixos-vm-wg.conf";
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+  };
+
+  # accept all incoming connections from tailscale
+  networking.firewall.trustedInterfaces = ["tailscale0"];
+
+  services.qemuGuest.enable = true;
   services.openssh.enable = true;
 
   # This option defines the first version of NixOS you have installed on this particular machine,

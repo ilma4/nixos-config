@@ -7,14 +7,23 @@
   qbittorrent-version = "5.0.4-r0-ls388";
 in {
   options = {
-    torrent-wg-conf = lib.mkOption {
-      type = lib.types.singleLineStr;
-      description = "TODO";
-      example = "ru-torrent-wg.conf";
+    torrent = {
+      wg-conf = lib.mkOption {
+        type = lib.types.singleLineStr;
+        description = "TODO";
+        example = "ru-torrent-wg.conf";
+      };
+      downloads = lib.mkOption {
+        type = lib.types.singleLineStr;
+        description = "TODO";
+        example = "/mnt/hdd";
+      };
     };
   };
-  config = {
-    i4-encrypted-files = [config.torrent-wg-conf];
+  config = let
+    wg-conf = config.torrent.wg-conf;
+  in {
+    i4-encrypted-files = [wg-conf];
 
     virtualisation.oci-containers.containers = {
       # VPN for qbittorrent
@@ -26,7 +35,7 @@ in {
         };
         volumes = [
           "/etc/localtime:/etc/localtime:ro"
-          "${config.sops.secrets."ru-torrent-wg.conf".path}:/gluetun/wireguard/wg0.conf:ro"
+          "${config.sops.secrets.${wg-conf}.path}:/gluetun/wireguard/wg0.conf:ro"
         ];
         ports = [
           "8080:8080" # qBittorrent web interface
@@ -47,7 +56,7 @@ in {
           "/mnt/hdd/torrent:/downloads"
         ];
         dependsOn = ["gluetun"];
-        autoStart = false;
+        autoStart = lib.mkDefault false;
         extraOptions = ["--network=container:gluetun"];
       };
     };

@@ -83,6 +83,10 @@ in {
         "IdentityAgent" = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""; # 1password ssh-agent
       };
     };
+    "torrent-vm" = {
+      hostname = "127.0.0.1";
+      port = 2222;
+    };
   };
 
   home.sessionVariables = {

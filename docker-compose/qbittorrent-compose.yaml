@@ -1,0 +1,38 @@
+name: "qbittorent-gluetun"
+services:
+  gluetun:
+    image: "qmcgaw/gluetun"
+    container_name: gluetun
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/Users/ilma4/.config/nixos-config/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    ports:
+      - "8080:8080" # qBittorrent web interface
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - "VPN_SERVICE_PROVIDER=custom"
+      - "VPN_TYPE=wireguard"
+
+  qbittorrent:
+    image: "linuxserver/qbittorrent"
+    container_name: qbittorrent
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/Users/ilma4/Downloads/Torrent/torrent-vm:/downloads"
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - >
+          CURRENT_IP=$(curl -s https://ifconfig.me) &&
+          [ "$CURRENT_IP" = "185.68.21.215" ]
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 30s

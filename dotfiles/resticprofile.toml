@@ -68,6 +68,9 @@ password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 from-repo = "local:/Users/ilma4/NoBackup/restic"
 from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 
+schedule = "*-*-* 03:00:00"
+schedule-permission = "user"
+schedule-lock-wait = "15m"
 
 [ilma4-bkp]
 

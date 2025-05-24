@@ -15,6 +15,8 @@
   config = {
     sops.defaultSopsFile = "${secrets}/example.yaml";
     sops.defaultSopsFormat = "yaml";
+    # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
+    sops.age.keyFile = "${config.users.users.ilma4.home}/.config/sops/age/keys.txt";
 
     # map i4-encrypted-files
     sops.secrets = lib.pipe config.i4-encrypted-files [
