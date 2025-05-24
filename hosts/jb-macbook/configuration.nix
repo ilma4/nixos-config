@@ -32,8 +32,9 @@
     #swapLeftCtrlAndFn = true;
   };
 
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
 
+  system.primaryUser = "ilma4";
   system.defaults.trackpad = {
     Clicking = true;
     TrackpadThreeFingerDrag = true;
@@ -68,9 +69,6 @@
   system.defaults.WindowManager = {
     GloballyEnabled = false; # disable Stage Manager
   };
-
-  # Auto upgrade nix package and the daemon service.
-  services.nix-daemon.enable = true;
 
   homebrew = {
     enable = true;
