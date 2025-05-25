@@ -46,7 +46,7 @@ in {
       default =
         (
           if isDarwin
-          then "darwin-rebuild switch"
+          then "sudo darwin-rebuild switch"
           else if isNixos
           then "sudo nixos-rebuild switch"
           else if stdenv.isLinux
