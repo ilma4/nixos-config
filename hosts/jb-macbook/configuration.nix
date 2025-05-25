@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   inputs,
   modules,
@@ -159,7 +160,8 @@
     */
   };
 
-  environment.etc.hosts.text = ''
+  /*
+  environment.etc.hosts.text = lib.mkIf false ''
     ##
     # Host Database
     #
@@ -177,9 +179,10 @@
     0.0.0.0 www.phoronix.com
     ::1 www.phoronix.com
   '';
+  */
 
   # uncomment on clean nix-darwin
-  nix.linux-builder.enable = false;
+  # nix.linux-builder.enable = true;
 
   nix-rosetta-builder.enable = true;
   nix-rosetta-builder.onDemand = true;
