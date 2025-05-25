@@ -3,8 +3,7 @@
   lib,
   ...
 }: let
-  immich-version = "release";
-  postgres-version = "739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52";
+  immich-version = "v1.133.1";
 in {
   virtualisation.oci-containers.containers."immich_machine_learning" = {
     image = "ghcr.io/immich-app/immich-machine-learning:${immich-version}";
@@ -45,7 +44,8 @@ in {
     ];
   };
   virtualisation.oci-containers.containers."immich_postgres" = {
-    image = "docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:${postgres-version}";
+    # image = "docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:${postgres-version}";
+    image = "ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0";
     environment = {
       "POSTGRES_DB" = "immich";
       "POSTGRES_INITDB_ARGS" = "--data-checksums";
@@ -56,13 +56,8 @@ in {
       "/srv/immich-postgres:/var/lib/postgresql/data:rw"
       # "/mnt/hdd/immich/postgres:/var/lib/postgresql/data:rw"
     ];
-    cmd = ["postgres" "-c" "shared_preload_libraries=vectors.so" "-c" "search_path=\"$user\", public, vectors" "-c" "logging_collector=on" "-c" "max_wal_size=2GB" "-c" "shared_buffers=512MB" "-c" "wal_compression=on"];
     log-driver = "journald";
     extraOptions = [
-      "--health-cmd=pg_isready --dbname=\"\${POSTGRES_DB}\" --username=\"\${POSTGRES_USER}\" || exit 1; Chksum=\"$(psql --dbname=\"\${POSTGRES_DB}\" --username=\"\${POSTGRES_USER}\" --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')\"; echo \"checksum failure count is $Chksum\"; [ \"$Chksum\" = '0' ] || exit 1"
-      "--health-interval=5m0s"
-      "--health-start-period=5m0s"
-      "--health-startup-interval=30s"
       "--network-alias=database"
       "--network=immich_default"
     ];
