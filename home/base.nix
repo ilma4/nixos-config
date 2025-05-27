@@ -92,6 +92,8 @@ in {
       gzip
       p7zip
 
+      tree
+
       (pkgs.writeShellScriptBin "dirsize" ''
         du -shc -- "$@" | sort --human-numeric-sort --reverse
       '')
