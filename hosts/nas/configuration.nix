@@ -6,6 +6,7 @@ args @ {
 }: {
   imports = [
     ./hardware-configuration.nix
+    ./hdd.nix
 
     "${modules}/base.nix"
     "${modules}/avahi.nix"
