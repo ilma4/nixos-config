@@ -10,6 +10,10 @@
       url = "github:cpick/nix-rosetta-builder";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+    nixos-wsl = {
+      url = "github:nix-community/NixOS-WSL/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -123,6 +127,24 @@
 
       modules = [
         ./hosts/arm-vm/configuration.nix
+      ];
+    };
+
+    nixosConfigurations.i4-ideapad-wsl = nixpkgs.lib.nixosSystem {
+      pkgs = import nixpkgs {
+        system = x86-linux;
+        config.allowUnfree = true;
+      };
+      system = x86-linux;
+      specialArgs = {
+        inherit inputs;
+        inherit dotfiles;
+        inherit secrets;
+        modules = nixos-modules;
+      };
+
+      modules = [
+        ./hosts/i4-ideapad-wsl/configuration.nix
       ];
     };
 
