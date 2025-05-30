@@ -88,6 +88,7 @@
       "calibre"
       "1password-cli"
       "vlc"
+      "iina" # player with HDR support
       "prismlauncher" # minecraft
       "heroic" # Epic Games/GOG launcher
 
@@ -97,6 +98,7 @@
       #avaliable in nix, but nix has troubles with gui apps
       "telegram-desktop"
       "iterm2"
+      "itermai"
       "obsidian"
       "slack"
       "visual-studio-code"
