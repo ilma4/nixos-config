@@ -37,10 +37,12 @@
 
     home.packages = with pkgs;
       [
-        clang
-        lldb
+        # clang
+        # lldb
         colima # vm to run docker
         docker # docker cli
+
+        texlab
 
         (pkgs.writeShellScriptBin "system-upgrade" ''
           nix flake update --flake ${config.flake-location}

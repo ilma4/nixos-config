@@ -120,6 +120,8 @@
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS, uses kernel extension
 
+      "skim" # pdf viewer
+
       # fuse for macos, no kernel-extension, probably became better in the future
       # "macos-fuse-t/homebrew-cask/fuse-t"
 
