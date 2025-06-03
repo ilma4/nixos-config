@@ -50,6 +50,8 @@ args @ {
     # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
   };
 
+  services.logind.lidSwitch = "ignore";
+
   /*
   # TODO secrets instead
   boot.initrd.extraFiles = {
