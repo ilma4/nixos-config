@@ -216,6 +216,11 @@ alt-f = 'fullscreen'
 if.app-id = 'com.bitwarden.desktop'
 run = 'move-node-to-workspace N10'
 
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+if.window-title-regex-substring = 'Extension: \(Bitwarden Password Manager\) - Bitwarden'
+run = 'layout floating'
+
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
