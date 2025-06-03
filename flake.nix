@@ -42,6 +42,7 @@
       url = "github:LnL7/nix-darwin/nix-darwin-25.05";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     #flake-root.url = "github:srid/flake-root";
   };
 
