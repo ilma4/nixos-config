@@ -38,6 +38,7 @@ exclude = [
     "/Users/ilma4/.ollama", # LLMs
     "/Users/ilma4/.konan",  # c++
     "/Users/ilma4/.npm",    # javascript!
+    "/Users/ilma4/.swiftly",    # Swift!
     "/Users/ilma4/.gem",    # ruby(?)
     "/Users/ilma4/.cargo",  # rust
     "/Users/ilma4/.gradle",
