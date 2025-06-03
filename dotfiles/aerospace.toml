@@ -5,7 +5,7 @@
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
 after-login-command = [
-  'exec-and-forget open /Applications/kdeconnect-indicator.app',
+  'exec-and-forget open /Applications/KDE Connect.app',
 ]
 
 # You can use it to add commands that run after AeroSpace startup.
