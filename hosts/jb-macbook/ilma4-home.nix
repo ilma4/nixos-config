@@ -34,6 +34,10 @@
     services.syncthing = {
       enable = true;
     };
+    services.ollama = {
+      enable = true;
+      package = pkgs-unstable.ollama;
+    };
 
     home.packages = with pkgs;
       [
