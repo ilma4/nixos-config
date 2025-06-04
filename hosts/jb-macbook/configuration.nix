@@ -169,7 +169,7 @@
 
   # TODO: use homebrew path from config
   system.activationScripts.aerospace-config.text = ''
-    /opt/homebrew/bin/aerospace reload-config
+    sudo --user=ilma4 -- /opt/homebrew/bin/aerospace reload-config
   '';
 
   /*
