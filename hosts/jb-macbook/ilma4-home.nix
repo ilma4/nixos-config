@@ -70,7 +70,7 @@
         llama-cpp
       ]);
 
-    programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
+    # programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
     programs.pandoc.enable = true;
     programs.texlive = {
@@ -78,6 +78,10 @@
       extraPackages = tpkgs: {inherit (tpkgs) scheme-full;};
     };
 
+    # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
+    home.sessionVariables = {
+      PATH = "$PATH:/opt/homebrew/bin";
+    };
     # programs.mpv.enable = true; # fixed in 24.11
 
     # RW symlinks, so apps can edits their configs

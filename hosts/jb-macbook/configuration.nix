@@ -156,6 +156,16 @@
       # "openjdk@8"
 
       "bitwarden-cli"
+
+      # Telegram desktop build deps
+      "automake"
+      "cmake"
+      "wget"
+      "pkg-config"
+      "gnu-tar"
+      "ninja"
+      "nasm"
+      "meson"
     ];
 
     masApps = {
