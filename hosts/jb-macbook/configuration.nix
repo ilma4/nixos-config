@@ -93,6 +93,7 @@
       "iina" # player with HDR support
       "prismlauncher" # minecraft
       "heroic" # Epic Games/GOG launcher
+      "activitywatch"
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker" # i use colima instead
