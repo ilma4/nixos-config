@@ -6,6 +6,7 @@
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
 after-login-command = [
   'exec-and-forget open /Applications/KDE Connect.app',
+  'exec-and-forget open /Applications/ActivityWatch.app',
 ]
 
 # You can use it to add commands that run after AeroSpace startup.
