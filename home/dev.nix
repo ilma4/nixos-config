@@ -62,7 +62,8 @@ in {
 
   programs.git = {
     userName = "Ilia Malakhov";
-    # userEmail = "ilya.malakhov4@gmail.com";
+    userEmail = "ilya.malakhov4@gmail.com";
+
     /*
     signing = {
       signByDefault = false;
@@ -70,11 +71,12 @@ in {
     };
     */
     lfs.enable = true;
-    extraConfig = {
-      "includeIf \"gitdir:~/Projects/JetBrains/\"" = {
-        path = "~/Projects/JetBrains/.gitconfig";
-      };
-    };
+    includes = [
+      {
+        contents.user.email = "ilia.malakhov@jetbrains.com";
+        condition = "gitdir:~/Projects/JetBrains/";
+      }
+    ];
   };
 
   programs.ssh.matchBlocks = {
