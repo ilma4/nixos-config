@@ -109,6 +109,7 @@
       "discord"
       "browsers-software/tap/browsers"
       "utm" # qemu
+      "vmware-fusion"
       "raycast" # cmd+space : search apps and commands
       "caffeine"
       "monitorcontrol" # control external monitor brightness
@@ -157,6 +158,8 @@
       # "openjdk@8"
 
       "bitwarden-cli"
+
+      "resticprofile"
 
       # Telegram desktop build deps
       "automake"

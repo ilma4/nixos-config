@@ -7,7 +7,7 @@ repository = "local:/Users/ilma4/NoBackup/restic"
 password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 
 [default.backup]
-verbose = true
+# verbose = true
 source = ["/Users/ilma4"]
 exclude-caches = true # not very helpful. https://bford.info/cachedir/
 exclude = [
@@ -24,6 +24,8 @@ exclude = [
     "/Users/ilma4/Library/Containers", # docker, vms, wine bottles
     "/Users/ilma4/Library/Java",       # jdk's binaries
     "/Users/ilma4/Library/Logs",
+
+    "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
 
     "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
 
