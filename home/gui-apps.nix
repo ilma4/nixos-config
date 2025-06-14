@@ -20,26 +20,6 @@
 
   xsession.enable = true;
 
-  programs.zed-editor = {
-    enable = true;
-    extensions = [
-      "nix"
-      "html"
-      "toml"
-      "dockerfile"
-      "latex"
-      "markdown-oxide"
-      "xml"
-      "log"
-      "kotlin"
-      "docker-compose"
-      "basher"
-      "ini"
-      "haskell"
-      "activitiwatch"
-    ];
-  };
-
   home.packages = with pkgs; [
     google-chrome
     vivaldi

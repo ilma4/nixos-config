@@ -13,6 +13,7 @@
     "${modules}/personal.nix"
     "${modules}/dev.nix"
     "${modules}/graphics.nix"
+    "${modules}/zed.nix"
   ];
 
   options = {
