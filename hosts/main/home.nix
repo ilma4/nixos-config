@@ -12,6 +12,7 @@
     "${modules}/personal.nix"
     "${modules}/gui-apps.nix"
     "${modules}/dev.nix"
+    "${modules}/zed.nix"
 
     ./gui-tweaks.nix
     ./sway.nix
