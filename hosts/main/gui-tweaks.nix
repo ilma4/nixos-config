@@ -35,7 +35,21 @@
     longitude = 13.4;
   };
 
-  #xdg.portal.xdgOpenUsePortal = true;
+  xdg.portal.xdgOpenUsePortal = true;
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = with pkgs; [
+    xdg-desktop-portal-gtk
+    xdg-desktop-portal-wlr
+  ];
+
+  xdg.portal.config = {
+    common = {
+      default = [
+        "gtk"
+        "wlr"
+      ];
+    };
+  };
 
   /*
   gtk = {
