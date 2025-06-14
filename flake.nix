@@ -28,8 +28,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixgl = {
-      url = "github:nix-community/nixGL";
+    system-manager = {
+      url = "github:numtide/system-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-system-graphics = {
+      url = "github:soupglasses/nix-system-graphics";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -51,7 +56,6 @@
     nixpkgs,
     nixpkgs-darwin,
     home-manager,
-    nixgl,
     nix-darwin,
     ...
   }: let
@@ -171,7 +175,6 @@
       pkgs = import nixpkgs {
         system = x86-linux;
         overlays = [
-          nixgl.overlay
           inputs.rust-overlay.overlays.default
         ];
       };
@@ -222,6 +225,19 @@
               system = arm64-macos;
               config.allowUnfree = true;
             };
+          };
+        }
+      ];
+    };
+
+    systemConfigs.default = inputs.system-manager.lib.makeSystemConfig {
+      modules = [
+        inputs.nix-system-graphics.systemModules.default
+        {
+          config = {
+            nixpkgs.hostPlatform = "x86_64-linux";
+            # system-manager.allowAnyDistro = true;
+            system-graphics.enable = true;
           };
         }
       ];
