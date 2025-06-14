@@ -10,15 +10,9 @@
     if isNixos
     then "${pkgs.swaylock}/bin/swaylock}"
     else "/usr/bin/swaylock";
-  swaymsg =
-    if isNixos
-    then "${pkgs.sway}/bin/swaymsg"
-    else "/usr/bin/swaymsg";
+  swaymsg = "${pkgs.sway}/bin/swaymsg";
   waybar = "${pkgs.waybar}/bin/waybar";
-  nm-applet =
-    if isNixos
-    then "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"
-    else "/usr/bin/nm-applet --indicator";
+  nm-applet = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator";
   modifier = config.wayland.windowManager.sway.config.modifier;
   pamixer = "${pkgs.pamixer}/bin/pamixer";
   grim = "${pkgs.grim}/bin/grim";
@@ -152,7 +146,7 @@ in {
 
       "type:keyboard" = {
         xkb_layout = "us,ru";
-        xkb_options = "grp:win_space_toggle,caps:escape,compose:ralt";
+        xkb_options = "grp:alt_space_toggle,caps:escape,compose:ralt";
       };
     };
 
@@ -183,6 +177,7 @@ in {
     "Mod1+Return" = "exec ${foot}";
 
     "${modifier}+T" = "exec ${termWithName} floating-term";
+    "${modifier}+Space" = "exec ${tofi}-drun --drun-launch=true ${tofi-flags}";
 
     "print" = "exec ${grim} - | ${wl-copy}";
     "Shift+print" = "exec ${grim} -g \"\$(${slurp})\" - | ${wl-copy}";
