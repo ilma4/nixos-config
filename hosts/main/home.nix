@@ -47,8 +47,8 @@
   };
   */
 
-  xdg.enable = true;
-  xdg.mime.enable = true; # .desktop entryes for apps
+  # xdg.enable = true;
+  # xdg.mime.enable = true; # .desktop entryes for apps
 
   home.sessionPath = let
     HOME = config.home.homeDirectory;

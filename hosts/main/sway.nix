@@ -150,7 +150,8 @@ in {
       };
     };
 
-    menu = "${tofi}-drun --drun-launch=true ${tofi-flags}";
+    # TODO: get rid of `env` hack
+    menu = "env PATH=\"/home/ilma4/.nix-profile/bin:$PATH\" ${tofi}-drun --drun-launch=true ${tofi-flags}";
   };
 
   wayland.windowManager.sway.config.window.commands = [

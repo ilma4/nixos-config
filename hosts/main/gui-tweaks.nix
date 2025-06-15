@@ -35,6 +35,7 @@
     longitude = 13.4;
   };
 
+  /*
   xdg.portal.xdgOpenUsePortal = true;
   xdg.portal.enable = true;
   xdg.portal.extraPortals = with pkgs; [
@@ -50,6 +51,7 @@
       ];
     };
   };
+  */
 
   /*
   gtk = {
