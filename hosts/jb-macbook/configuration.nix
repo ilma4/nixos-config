@@ -94,6 +94,7 @@
       "prismlauncher" # minecraft
       "heroic" # Epic Games/GOG launcher
       "activitywatch"
+      "gitbutler"
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker" # i use colima instead
