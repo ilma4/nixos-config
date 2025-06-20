@@ -113,12 +113,10 @@
       "raycast" # cmd+space : search apps and commands
       "caffeine"
       "monitorcontrol" # control external monitor brightness
-      "alt-tab"
       "far2l"
       "nikitabobko/tap/aerospace" # tiling window manager
       "jordanbaird-ice" # edit menu bar
       "zoom"
-      "spotify"
       "zed" # very fast text editor
 
       # Mac specific, most probably remain brew casks
