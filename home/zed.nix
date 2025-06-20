@@ -66,6 +66,7 @@ in {
           # "shift shift": "file_finder::Toggle"
           "cmd-9" = "git_panel::ToggleFocus";
           "cmd-1" = "project_panel::ToggleFocus";
+          "shift-F12" = "workspace::CloseAllDocks";
         };
       }
       {
