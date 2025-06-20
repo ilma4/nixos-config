@@ -118,6 +118,7 @@
       "jordanbaird-ice" # edit menu bar
       "zoom"
       "zed" # very fast text editor
+      "vial" # configure my split keyboard
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS, uses kernel extension
