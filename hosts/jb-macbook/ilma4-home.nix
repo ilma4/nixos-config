@@ -47,6 +47,10 @@
         colima # vm to run docker
         docker # docker cli
 
+        ghc
+        stack
+        haskell-language-server
+
         texlab
 
         (pkgs.writeShellScriptBin "system-upgrade" ''
