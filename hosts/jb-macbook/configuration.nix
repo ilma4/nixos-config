@@ -136,7 +136,6 @@
 
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
-      "todoist"
       "deskpad"
       "easydict"
       "steam"
@@ -205,6 +204,8 @@
 
   # VPN to access homelab
   services.tailscale.enable = true;
+
+  services.sketchybar.enable = true;
 
   # Create /etc/zshrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
