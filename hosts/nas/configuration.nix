@@ -26,6 +26,8 @@ args @ {
 
     "${modules}/immich.nix"
     "${modules}/syncthing.nix"
+
+    "${modules}/grafana.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.

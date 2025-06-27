@@ -1,19 +1,24 @@
-{config}: {
+{config, ...}: {
   users.users.grafana = {
-    systemUser = true;
+    isSystemUser = true;
     uid = 801;
-    group = config.users.users.grafana.group.name;
+    group = config.users.groups.grafana.name;
   };
   users.groups.grafana = {
     gid = config.users.users.grafana.uid;
   };
 
-  # virtualisation.oci-containers.grafana = {
-  # image = "grafana/grafana:latest";
-  # ports = [8080];
-  # volumes = ["/srv-test/grafana"];
-  # };
+  virtualisation.oci-containers.containers.grafana = {
+    image = "grafana/grafana:latest";
+    ports = ["3000:3000"];
+    user = "${toString config.users.users.grafana.uid}:${toString config.users.groups.grafana.gid}";
+    volumes = ["/srv/grafana:/var/lib/grafana"];
+  };
   systemd.tmpfiles.rules = [
-    "d /srv-test/grafana 700 grafana grafana"
+    "d /srv/grafana 700 grafana grafana -"
+  ];
+
+  networking.firewall.allowedTCPPorts = [
+    3000 # grafana
   ];
 }
