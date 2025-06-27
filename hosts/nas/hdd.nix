@@ -12,7 +12,7 @@
 
   # create mountpoints for hdd
   systemd.tmpfiles.rules = [
-    "d /mnt 0755 root root"
-    "d /mnt/hdd 0755 root root"
+    "d /mnt 0755 root root -"
+    "d /mnt/hdd 0755 root root -"
   ];
 }
