@@ -28,6 +28,7 @@ args @ {
     "${modules}/syncthing.nix"
 
     "${modules}/grafana.nix"
+    "${modules}/prometheus.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.
