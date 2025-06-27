@@ -96,6 +96,7 @@
       "activitywatch"
       "gitbutler"
       "logseq" # notes
+      "dolphin" # Wii emulator
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker" # i use colima instead
