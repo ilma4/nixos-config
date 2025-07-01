@@ -41,9 +41,11 @@ exclude = [
     # caches
     "/Users/ilma4/.ollama", # LLMs
     "/Users/ilma4/.konan",  # c++
+    "/Users/ilma4/.lldb",   # lldb
     "/Users/ilma4/.npm",    # javascript!
     "/Users/ilma4/.swiftly",    # Swift!
     "/Users/ilma4/.gem",    # ruby(?)
+    "/Users/ilma4/.skiko", # idk, just a guess, https://github.com/JetBrains/skiko
     "/Users/ilma4/.cargo",  # rust
     "/Users/ilma4/.gradle",
     "/Users/ilma4/.m2",     # maven
