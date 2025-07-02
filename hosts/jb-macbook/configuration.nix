@@ -158,8 +158,6 @@
       # "openjdk@8"
 
       "bitwarden-cli"
-
-      "resticprofile"
     ];
 
     masApps = {
