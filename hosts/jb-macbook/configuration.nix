@@ -157,6 +157,7 @@
       "openjdk@11"
       # "openjdk@8"
 
+      # FIXME: replace with nixpkgs version, when issue is resolved: https://github.com/NixOS/nixpkgs/issues/339576
       "bitwarden-cli"
     ];
 

@@ -68,7 +68,14 @@
           displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:3024x1964 hz:120 color_depth:8 enabled:true scaling:off origin:(0,0) degree:0"
         '')
 
-        (pkgs.writeShellScriptBin "generate-random-password" "openssl rand 64 | sha512")
+        # FIXME: Remove this hack when issue is fixed: https://github.com/NixOS/nixpkgs/issues/339576
+        (let
+          bw =
+            if pkgs.stdenv.isDarwin
+            then "/opt/homebrew/bin/bw"
+            else "${pkgs.bitwarden-cli}/bin/bw";
+        in
+          pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous")
       ]
       ++ (with pkgs-unstable; [
         ollama
