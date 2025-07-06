@@ -28,6 +28,9 @@
     ports = [
       "9090:9090"
     ];
+    extraOptions = [
+      "--network=host"
+    ];
   };
 
   networking.firewall.allowedTCPPorts = [
