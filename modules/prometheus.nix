@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  dotfiles,
+  ...
+}: {
   users.users.prometheus = {
     isSystemUser = true;
     uid = 802;
@@ -18,7 +22,7 @@
     image = "prom/prometheus:latest";
     user = "${toString config.users.users.prometheus.uid}:${toString config.users.groups.prometheus.gid}";
     volumes = [
-      "/srv/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
+      "${dotfiles}/prometheus.yml:/etc/prometheus/prometheus.yml"
       "/srv/prometheus/data:/prometheus"
     ];
     ports = [
