@@ -13,6 +13,7 @@
     ports = ["3000:3000"];
     user = "${toString config.users.users.grafana.uid}:${toString config.users.groups.grafana.gid}";
     volumes = ["/srv/grafana:/var/lib/grafana"];
+    extraOptions = ["--network=host"];
   };
   systemd.tmpfiles.rules = [
     "d /srv/grafana 700 grafana grafana -"
