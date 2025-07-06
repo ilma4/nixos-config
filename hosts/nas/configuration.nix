@@ -29,6 +29,7 @@ args @ {
 
     "${modules}/grafana.nix"
     "${modules}/prometheus.nix"
+    "${modules}/node-exporter.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.
@@ -78,6 +79,8 @@ args @ {
   '';
 
   torrent.wg-conf = "ru-torrent-wg.conf";
+
+  services.prometheus.node-exporter-docker.enable = true;
 
   # Enable background periodic TRIM
   services.fstrim.enable = true;
