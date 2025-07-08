@@ -173,6 +173,15 @@ in {
 
     programs.neovim = {
       enable = true;
+      extraConfigLua = ''
+        vim.o.clipboard = "unnamedplus"
+
+        vim.opt.expandtab   = true
+        vim.opt.shiftwidth  = 4
+        vim.opt.softtabstop = -1
+      '';
+      configure = {
+      };
     };
 
     home.file = lib.mkIf (!config.isRootless) {
