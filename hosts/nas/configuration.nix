@@ -46,6 +46,9 @@ args @ {
     };
   };
 
+  hardware.bluetooth.enable = true; # enables support for Bluetooth
+  hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
+
   security.rtkit.enable = true; # realtime privileges
 
   networking.hostName = "ilma4-nas"; # Define your hostname.
