@@ -80,6 +80,7 @@
       ++ (with pkgs-unstable; [
         ollama
         llama-cpp
+        gemini-cli
       ]);
 
     # programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
