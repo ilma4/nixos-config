@@ -101,7 +101,7 @@ in {
 
       scriptsPath = mkOption {
         type = types.str;
-        default = "~/.local/share/raycast/scripts";
+        default = "~/Scripts";
         description = "Path where Raycast scripts will be installed";
       };
     };
@@ -117,17 +117,14 @@ in {
         echo "Setting up Raycast scripts..."
 
         # Create the scripts directory if it doesn't exist
-        mkdir -p /Users/ilma4/.local/share/raycast/scripts
+        sudo -u ilma4 mkdir -p /Users/ilma4/scripts
 
-        # Copy scripts from the nix store to the raycast directory
+        # Copy scripts from the nix store to the scripts directory
         ${concatStringsSep "\n" (mapAttrsToList (name: content: ''
-            cp ${raycastScripts}/bin/${name} /Users/ilma4/.local/share/raycast/scripts/${name}
-            chmod +x /Users/ilma4/.local/share/raycast/scripts/${name}
+            sudo -u ilma4 cp ${raycastScripts}/bin/${name} /Users/ilma4/scripts/${name}
+            sudo -u ilma4 chmod +x /Users/ilma4/scripts/${name}
           '')
           scriptFiles)}
-
-        # Set proper ownership
-        chown -R ilma4:staff /Users/ilma4/.local/share/raycast/scripts
 
         echo "Raycast scripts installed successfully!"
       '';
