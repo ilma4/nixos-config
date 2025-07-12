@@ -7,89 +7,19 @@
 with lib; let
   cfg = config.services.raycast;
 
-  # AppleScript files content
+  # AppleScript files
   scriptFiles = {
-    "display-enable-scaling.applescript" = ''
-      #!/usr/bin/osascript
-
-      # Required parameters:
-      # @raycast.schemaVersion 1
-      # @raycast.title Enable scaling
-      # @raycast.mode compact
-
-      # Optional parameters:
-      # @raycast.icon F
-
-      do shell script "/Users/ilma4/.nix-profile/bin/display-internal-set-defaults"
-    '';
-
-    "display-disable-scaling.applescript" = ''
-      #!/usr/bin/osascript
-
-      # Required parameters:
-      # @raycast.schemaVersion 1
-      # @raycast.title Disable scaling
-      # @raycast.mode compact
-
-      # Optional parameters:
-      # @raycast.icon F
-
-      do shell script "/Users/ilma4/.nix-profile/bin/display-internal-full-res"
-    '';
-
-    "firefox.applescript" = ''
-      #!/usr/bin/osascript
-
-      # Required parameters:
-      # @raycast.schemaVersion 1
-      # @raycast.title Firefox
-      # @raycast.mode compact
-
-      # Optional parameters:
-      # @raycast.icon F
-
-
-      tell application "System Events"
-          if (name of processes) contains "Firefox" then
-              do shell script "/opt/homebrew/bin/firefox"
-          else
-              do shell script "open -a Firefox"
-          end if
-      end tell
-    '';
-
-    "nas-mount-toggle.applescript" = ''
-      #!/usr/bin/osascript
-
-      # Required parameters:
-      # @raycast.schemaVersion 1
-      # @raycast.title NAS mount toggle
-      # @raycast.mode compact
-
-      # Optional parameters:
-      # @raycast.icon F
-
-
-      set mountPoint to "/Users/ilma4/NoBackup/ilma4-nas"
-
-      try
-      	do shell script "mount | grep " & quoted form of mountPoint
-      	-- Mounted, so unmount
-      	do shell script "umount " & quoted form of mountPoint
-      on error
-      	-- Not mounted, so mount
-      	do shell script "/Users/ilma4/.nix-profile/bin/rclone mount --daemon ilma4-nas:/ " & quoted form of mountPoint
-      end try
-    '';
+    "display-enable-scaling.applescript" = ./raycast-scripts/display-enable-scaling.applescript;
+    "display-disable-scaling.applescript" = ./raycast-scripts/display-disable-scaling.applescript;
+    "firefox.applescript" = ./raycast-scripts/firefox.applescript;
+    "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
   };
 
   # Create derivation for raycast scripts
   raycastScripts = pkgs.runCommand "raycast-scripts" {} ''
     mkdir -p $out/bin
-    ${concatStringsSep "\n" (mapAttrsToList (name: content: ''
-        cat > $out/bin/${name} << 'EOF'
-        ${content}
-        EOF
+    ${concatStringsSep "\n" (mapAttrsToList (name: scriptPath: ''
+        cp ${scriptPath} $out/bin/${name}
         chmod +x $out/bin/${name}
       '')
       scriptFiles)}
@@ -120,7 +50,7 @@ in {
         sudo -u ilma4 mkdir -p /Users/ilma4/scripts
 
         # Copy scripts from the nix store to the scripts directory
-        ${concatStringsSep "\n" (mapAttrsToList (name: content: ''
+        ${concatStringsSep "\n" (mapAttrsToList (name: scriptPath: ''
             sudo -u ilma4 cp ${raycastScripts}/bin/${name} /Users/ilma4/scripts/${name}
             sudo -u ilma4 chmod +x /Users/ilma4/scripts/${name}
           '')
