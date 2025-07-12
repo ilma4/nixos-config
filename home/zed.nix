@@ -119,6 +119,7 @@ in {
       "ini"
       "haskell"
       "activitiwatch"
+      "swift"
     ];
   };
 }
