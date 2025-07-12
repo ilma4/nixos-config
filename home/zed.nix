@@ -10,6 +10,42 @@ in {
     package = lib.mkIf isDarwin pkgs.bash; # hack to avoid installing, on darwin zed is installed via homebrew
 
     userSettings = {
+      # AI Agent configuration
+      "agent" = {
+        "version" = "2";
+        "default_model" = {
+          "provider" = "zed.dev";
+          "model" = "claude-sonnet-4";
+        };
+        "profiles" = {
+          "Write" = {
+            "tools" = {
+              "terminal" = {
+                "auto_confirm" = true;
+                "confirm_before_running" = false;
+              };
+              "file_operations" = {
+                "auto_confirm" = true;
+              };
+            };
+          };
+        };
+        "tool_confirmations" = {
+          "terminal" = false;
+          "file_write" = false;
+          "file_create" = false;
+        };
+        "notify_when_agent_waiting" = true;
+        "play_sound_when_agent_done" = true;
+      };
+      # Assistant panel configuration
+      "assistant" = {
+        "version" = "2";
+        "default_model" = {
+          "provider" = "zed.dev";
+          "model" = "claude-sonnet-4";
+        };
+      };
       # disable ligatures
       "buffer_font_features" = {
         "calt" = false;
