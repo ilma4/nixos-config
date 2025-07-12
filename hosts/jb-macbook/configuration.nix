@@ -8,6 +8,7 @@
 }: {
   imports = [
     "${modules}/nix-settings.nix"
+    "${modules}/raycast.nix"
     # inputs.nix-rosetta-builder.darwinModules.default
   ];
 
@@ -206,6 +207,7 @@
   services.tailscale.enable = true;
 
   services.sketchybar.enable = true;
+  services.raycast.enable = true;
 
   # Create /etc/zshrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
