@@ -1,10 +1,11 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 with lib; let
+  cfg = config.programs.raycast;
+
   # AppleScript files
   scriptFiles = {
     "display-enable-scaling.applescript" = ./raycast-scripts/display-enable-scaling.applescript;
@@ -13,7 +14,19 @@ with lib; let
     "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
   };
 in {
-  config = {
+  options = {
+    programs.raycast = {
+      enable = mkEnableOption "Raycast AppleScript commands";
+
+      scriptsPath = mkOption {
+        type = types.str;
+        default = "Scripts";
+        description = "Relative path from home directory where Raycast scripts will be installed";
+      };
+    };
+  };
+
+  config = mkIf cfg.enable {
     # Install AppleScript files to ~/Scripts directory using home.file
     home.file =
       mapAttrs' (name: scriptPath: {

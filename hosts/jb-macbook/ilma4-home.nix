@@ -14,6 +14,7 @@
     "${modules}/dev.nix"
     "${modules}/graphics.nix"
     "${modules}/zed.nix"
+    "${modules}/raycast.nix"
   ];
 
   options = {
@@ -38,6 +39,11 @@
     services.ollama = {
       enable = true;
       package = pkgs-unstable.ollama;
+    };
+
+    programs.raycast = {
+      enable = true;
+      scriptsPath = "Scripts";
     };
 
     home.packages = with pkgs;
