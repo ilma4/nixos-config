@@ -49,6 +49,11 @@
     };
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     #flake-root.url = "github:srid/flake-root";
+
+    mcp-nixos = {
+      url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -57,6 +62,7 @@
     nixpkgs-darwin,
     home-manager,
     nix-darwin,
+    mcp-nixos,
     ...
   }: let
     x86-linux = "x86_64-linux";
