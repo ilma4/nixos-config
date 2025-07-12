@@ -16,7 +16,11 @@ with lib; let
 in {
   options = {
     programs.raycast = {
-      enable = mkEnableOption "Raycast AppleScript commands";
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable Raycast AppleScript commands";
+      };
 
       scriptsPath = mkOption {
         type = types.str;
