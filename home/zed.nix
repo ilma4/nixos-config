@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
 }: let
   isDarwin = pkgs.stdenv.isDarwin;
@@ -21,7 +22,7 @@ in {
       "context_servers" = {
         "mcp-nixos" = {
           "source" = "custom";
-          "command" = "mcp-nixos";
+          "command" = "${inputs.mcp-nixos.packages.${pkgs.system}.mcp-nixos}/bin/mcp-nixos";
           "args" = ["--"];
           "env" = {};
         };
