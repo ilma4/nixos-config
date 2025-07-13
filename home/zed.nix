@@ -18,6 +18,14 @@ in {
           "model" = "claude-sonnet-4";
         };
       };
+      "context_servers" = {
+        "mcp-nixos" = {
+          "source" = "custom";
+          "command" = "mcp-nixos";
+          "args" = ["--"];
+          "env" = {};
+        };
+      };
       # disable ligatures
       "buffer_font_features" = {
         "calt" = false;
