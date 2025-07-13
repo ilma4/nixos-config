@@ -97,6 +97,7 @@
       "gitbutler"
       "logseq" # notes
       "dolphin" # Wii emulator
+      "lm-studio"
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker" # i use colima instead
