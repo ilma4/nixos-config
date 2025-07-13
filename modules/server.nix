@@ -14,6 +14,10 @@
 
   virtualisation.oci-containers.backend = "podman";
 
+  systemd.tmpfiles.rules = [
+    "d /srv/ 0751 root root -"
+  ];
+
   /*
   networking.firewall.allowedTCPPorts = [
     443 # https for tailscale serve
