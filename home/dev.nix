@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }: let
   isNotNixOS = pkgs.stdenv.isDarwin || config.targets.genericLinux.enable;
@@ -20,8 +19,6 @@ in {
       (pkgs.rust-bin.stable.latest.default.override {
         extensions = ["rust-src"];
       })
-
-      inputs.mcp-nixos.packages.${pkgs.system}.mcp-nixos
 
       (
         pkgs.writeShellScriptBin "i4-update-host" ''
