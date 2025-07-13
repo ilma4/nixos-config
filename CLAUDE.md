@@ -30,5 +30,6 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 
 ## Environment Setup
-- `nix-rebuild` - to switch to the new configuration
 - `nix flake check` - to check that the configuration is correct
+- `nix-rebuild` - to switch to the new configuration
+- `i4-update-host <hostname>` - to switch to the new configuration on selected host (supported hosts: "ilma4-bkp", "ilma4-nas")
