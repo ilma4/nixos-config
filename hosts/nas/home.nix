@@ -1,13 +1,12 @@
 {
   config,
   pkgs,
-  modules,
-  dotfiles,
+  flake-location,
   ...
 }: {
   imports = [
-    "${modules}/base.nix"
-    "${modules}/personal.nix"
+    "${flake-location}/home/base.nix"
+    "${flake-location}/home/personal.nix"
   ];
 
   home.username = "ilma4";
@@ -31,6 +30,6 @@
   home.packages = with pkgs; [
     (writers.writePython3Bin "set-power" {
       doCheck = false; # disable PEP style checks
-    } (builtins.readFile "${dotfiles}/set-power.py"))
+    } (builtins.readFile "${flake-location}/dotfiles/set-power.py"))
   ];
 }

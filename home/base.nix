@@ -2,7 +2,7 @@
   config,
   pkgs,
   lib,
-  dotfiles,
+  flake-location,
   ...
 }: let
   HOME = config.home.homeDirectory;
@@ -183,7 +183,7 @@ in {
     };
 
     home.file = lib.mkIf (!config.isRootless) {
-      ".screenrc".source = "${dotfiles}/screenrc";
+      ".screenrc".source = "${flake-location}/dotfiles/screenrc";
     };
 
     # Home Manager can also manage your environment variables through

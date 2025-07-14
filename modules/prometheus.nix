@@ -1,6 +1,6 @@
 {
   config,
-  dotfiles,
+  flake-location,
   ...
 }: {
   users.users.prometheus = {
@@ -22,7 +22,7 @@
     image = "prom/prometheus:latest";
     user = "${toString config.users.users.prometheus.uid}:${toString config.users.groups.prometheus.gid}";
     volumes = [
-      "${dotfiles}/prometheus.yml:/etc/prometheus/prometheus.yml"
+      "${flake-location}/dotfiles/prometheus.yml:/etc/prometheus/prometheus.yml"
       "/srv/prometheus/data:/prometheus"
     ];
     ports = [

@@ -3,11 +3,11 @@
   lib,
   pkgs,
   inputs,
-  modules,
+  flake-location,
   ...
 }: {
   imports = [
-    "${modules}/nix-settings.nix"
+    "${flake-location}/darwin-modules/nix-settings.nix"
     # inputs.nix-rosetta-builder.darwinModules.default
   ];
 

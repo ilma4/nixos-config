@@ -1,6 +1,8 @@
 args @ {
   lib,
   inputs,
+  config,
+  pkgs-unstable,
   ...
 }: {
   options = {
@@ -16,7 +18,7 @@ args @ {
     inputs.sops-nix.nixosModules.sops # secrets
     inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
 
-    "${args.modules}/nix-settings.nix"
+    "${args.flake-location or "/etc/nixos"}/modules/nix-settings.nix"
   ];
 
   config = {
@@ -36,9 +38,8 @@ args @ {
     home-manager.useGlobalPkgs = true;
     home-manager.extraSpecialArgs = {
       inherit inputs;
-      dotfiles = args.dotfiles;
-      pkgs-unstable = args.pkgs-unstable;
-      modules = args.home-manager-modules;
+      inherit pkgs-unstable;
+      flake-location = args.flake-location or "/etc/nixos";
     };
   };
 }

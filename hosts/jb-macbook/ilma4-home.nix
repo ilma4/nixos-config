@@ -3,20 +3,18 @@
   lib,
   pkgs,
   pkgs-unstable,
-  modules,
-  dotfiles,
-  secrets,
+  flake-location,
   inputs,
   ...
 }: {
   imports = [
-    "${modules}/base.nix"
-    "${modules}/macos.nix"
-    "${modules}/personal.nix"
-    "${modules}/dev.nix"
-    "${modules}/graphics.nix"
-    "${modules}/zed.nix"
-    "${modules}/raycast.nix"
+    "${flake-location}/home/base.nix"
+    "${flake-location}/home/macos.nix"
+    "${flake-location}/home/personal.nix"
+    "${flake-location}/home/dev.nix"
+    "${flake-location}/home/graphics.nix"
+    "${flake-location}/home/zed.nix"
+    "${flake-location}/home/raycast.nix"
     inputs.sops-nix.homeManagerModules.sops
   ];
 
@@ -39,10 +37,10 @@
     # sops-nix configuration
     sops = {
       age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
-      defaultSopsFile = "${secrets}/example.yaml";
+      defaultSopsFile = "${flake-location}/secrets/example.yaml";
 
       secrets."wg.conf" = {
-        sopsFile = "${secrets}/ru-torrent-nixos-vm-wg.conf";
+        sopsFile = "${flake-location}/secrets/ru-torrent-nixos-vm-wg.conf";
         format = "binary";
       };
     };
@@ -126,8 +124,8 @@
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
 
-      ".config/aerospace/aerospace.toml".source = "${dotfiles}/aerospace.toml";
-      ".config/resticprofile/profiles.toml".source = "${dotfiles}/resticprofile.toml";
+      ".config/aerospace/aerospace.toml".source = "${flake-location}/dotfiles/aerospace.toml";
+      ".config/resticprofile/profiles.toml".source = "${flake-location}/dotfiles/resticprofile.toml";
     };
   };
 }

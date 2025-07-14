@@ -2,15 +2,15 @@
   config,
   lib,
   pkgs,
-  modules,
+  flake-location,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
-    "${modules}/base.nix"
-    "${modules}/avahi.nix"
-    "${modules}/sops.nix"
-    "${modules}/qbittorrent.nix"
+    "${flake-location}/modules/base.nix"
+    "${flake-location}/modules/avahi.nix"
+    "${flake-location}/modules/sops.nix"
+    "${flake-location}/modules/qbittorrent.nix"
   ];
 
   boot.loader.systemd-boot.enable = true;

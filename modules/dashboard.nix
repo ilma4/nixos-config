@@ -1,6 +1,6 @@
 {
   config,
-  dotfiles,
+  flake-location,
   ...
 }: let
   homer-version = "latest";
@@ -16,7 +16,7 @@ in {
     homer = {
       image = "b4bz/homer:${homer-version}";
       ports = ["80:8080"];
-      volumes = ["${dotfiles}/homer:/www/assets:ro"];
+      volumes = ["${flake-location}/dotfiles/homer:/www/assets:ro"];
       autoStart = true;
       user = "${toString config.users.users.homer.uid}:${toString config.users.groups.homer.gid}";
       # hostname = "homer";

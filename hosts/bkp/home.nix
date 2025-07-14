@@ -1,16 +1,15 @@
 {
   config,
   pkgs,
-  modules,
-  dotfiles,
+  flake-location,
   ...
 }: {
   imports = [
-    "${modules}/base.nix"
-    "${modules}/personal.nix"
-    "${modules}/gui-apps.nix"
-    "${modules}/jetbrains.nix"
-    "${modules}/dev.nix"
+    "${flake-location}/home/base.nix"
+    "${flake-location}/home/personal.nix"
+    "${flake-location}/home/gui-apps.nix"
+    "${flake-location}/home/jetbrains.nix"
+    "${flake-location}/home/dev.nix"
   ];
 
   home.username = "ilma4";
@@ -26,7 +25,7 @@
 
     (writers.writePython3Bin "set-power" {
       doCheck = false; # disable PEP style checks
-    } (builtins.readFile "${dotfiles}/set-power.py"))
+    } (builtins.readFile "${flake-location}/dotfiles/set-power.py"))
   ];
 
   programs.gnome-shell.enable = true;

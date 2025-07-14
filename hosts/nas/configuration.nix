@@ -1,35 +1,35 @@
 args @ {
   config,
   pkgs,
-  modules,
+  flake-location,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
     ./hdd.nix
 
-    "${modules}/base.nix"
-    "${modules}/avahi.nix"
-    "${modules}/zram.nix"
-    "${modules}/sops.nix"
+    "${flake-location}/modules/base.nix"
+    "${flake-location}/modules/avahi.nix"
+    "${flake-location}/modules/zram.nix"
+    "${flake-location}/modules/sops.nix"
     # ./samba.nix
 
-    "${modules}/server.nix"
-    "${modules}/qbittorrent.nix"
+    "${flake-location}/modules/server.nix"
+    "${flake-location}/modules/qbittorrent.nix"
 
-    "${modules}/dashboard.nix"
-    "${modules}/home-assistant.nix"
-    "${modules}/pdf-tools.nix"
+    "${flake-location}/modules/dashboard.nix"
+    "${flake-location}/modules/home-assistant.nix"
+    "${flake-location}/modules/pdf-tools.nix"
 
-    "${modules}/actual-budget.nix"
-    "${modules}/paperless.nix"
+    "${flake-location}/modules/actual-budget.nix"
+    "${flake-location}/modules/paperless.nix"
 
-    "${modules}/immich.nix"
-    "${modules}/syncthing.nix"
+    "${flake-location}/modules/immich.nix"
+    "${flake-location}/modules/syncthing.nix"
 
-    "${modules}/grafana.nix"
-    "${modules}/prometheus.nix"
-    "${modules}/node-exporter.nix"
+    "${flake-location}/modules/grafana.nix"
+    "${flake-location}/modules/prometheus.nix"
+    "${flake-location}/modules/node-exporter.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.

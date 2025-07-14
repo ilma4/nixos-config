@@ -1,18 +1,18 @@
 args @ {
   config,
   pkgs,
-  modules,
+  flake-location,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
 
-    "${modules}/base.nix"
-    "${modules}/avahi.nix"
-    "${modules}/zram.nix"
-    "${modules}/sops.nix"
+    "${flake-location}/modules/base.nix"
+    "${flake-location}/modules/avahi.nix"
+    "${flake-location}/modules/zram.nix"
+    "${flake-location}/modules/sops.nix"
 
-    "${modules}/server.nix"
+    "${flake-location}/modules/server.nix"
   ];
 
   boot.loader = {

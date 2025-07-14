@@ -68,11 +68,6 @@
     x86-linux = "x86_64-linux";
     arm64-linux = "aarch64-linux";
     arm64-macos = "aarch64-darwin";
-    nixos-modules = "${self}/modules";
-    home-manager-modules = "${self}/home";
-    dotfiles = "${self}/dotfiles";
-    secrets = "${self}/secrets";
-    darwin-modules = "${self}/darwin-modules";
   in {
     nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
       pkgs = import nixpkgs {
@@ -85,10 +80,7 @@
       system = x86-linux;
       specialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        inherit secrets;
-        inherit home-manager-modules;
-        modules = nixos-modules;
+        flake-location = "${self}";
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
           config.allowUnfree = true;
@@ -108,10 +100,7 @@
       system = x86-linux;
       specialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        inherit secrets;
-        modules = nixos-modules;
-        inherit home-manager-modules;
+        flake-location = "${self}";
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
           config.allowUnfree = true;
@@ -131,9 +120,7 @@
       system = arm64-linux;
       specialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        inherit secrets;
-        modules = nixos-modules;
+        flake-location = "${self}";
       };
 
       modules = [
@@ -149,9 +136,7 @@
       system = x86-linux;
       specialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        inherit secrets;
-        modules = nixos-modules;
+        flake-location = "${self}";
       };
 
       modules = [
@@ -167,9 +152,7 @@
       system = arm64-linux;
       specialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        inherit secrets;
-        modules = nixos-modules;
+        flake-location = "${self}";
       };
 
       modules = [
@@ -187,8 +170,7 @@
 
       extraSpecialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        modules = home-manager-modules;
+        flake-location = "${self}";
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = x86-linux;
           config.allowUnfree = true;
@@ -203,7 +185,7 @@
     darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
       specialArgs = {
         inherit inputs;
-        modules = darwin-modules;
+        flake-location = "${self}";
         pkgs-unstable = import inputs.nixpkgs-unstable {
           system = arm64-macos;
           config.allowUnfree = true;
@@ -225,9 +207,7 @@
           home-manager.useGlobalPkgs = true;
           home-manager.extraSpecialArgs = {
             inherit inputs;
-            inherit dotfiles;
-            inherit secrets;
-            modules = home-manager-modules;
+            flake-location = "${self}";
             pkgs-unstable = import inputs.nixpkgs-unstable {
               system = arm64-macos;
               config.allowUnfree = true;
@@ -254,8 +234,7 @@
       pkgs = import nixpkgs {system = x86-linux;};
       extraSpecialArgs = {
         inherit inputs;
-        inherit dotfiles;
-        modules = home-manager-modules;
+        flake-location = "${self}";
       };
 
       modules = [

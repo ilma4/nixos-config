@@ -2,17 +2,16 @@
   config,
   lib,
   pkgs,
-  modules,
-  dotfiles,
+  flake-location,
   inputs,
   ...
 }: {
   imports = [
-    "${modules}/base.nix"
-    "${modules}/personal.nix"
-    "${modules}/gui-apps.nix"
-    "${modules}/dev.nix"
-    "${modules}/zed.nix"
+    "${flake-location}/home/base.nix"
+    "${flake-location}/home/personal.nix"
+    "${flake-location}/home/gui-apps.nix"
+    "${flake-location}/home/dev.nix"
+    "${flake-location}/home/zed.nix"
 
     ./gui-tweaks.nix
     ./sway.nix
@@ -29,8 +28,8 @@
   services.easyeffects.enable = true;
 
   home.file = {
-    ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = "${dotfiles}/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs";
-    ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = "${dotfiles}/easyeffects/Sony MDR-7506 no bass boost.json";
+    ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = "${flake-location}/dotfiles/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs";
+    ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = "${flake-location}/dotfiles/easyeffects/Sony MDR-7506 no bass boost.json";
   };
 
   top-commands.commands = lib.mkOptionDefault {

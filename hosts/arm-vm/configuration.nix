@@ -1,11 +1,12 @@
 {
+  config,
   pkgs,
-  modules,
+  flake-location,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
-    "${modules}/base.nix"
+    "${flake-location}/modules/base.nix"
   ];
 
   boot.loader.systemd-boot.enable = true;

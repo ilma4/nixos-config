@@ -1,7 +1,11 @@
-{modules, ...}: {
+{
+  config,
+  flake-location,
+  ...
+}: {
   imports = [
-    "${modules}/base.nix"
-    "${modules}/work.nix"
+    "${flake-location}/home/base.nix"
+    "${flake-location}/home/work.nix"
   ];
 
   home.username = "malakhov";
