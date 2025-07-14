@@ -5,6 +5,8 @@
   pkgs-unstable,
   modules,
   dotfiles,
+  secrets,
+  inputs,
   ...
 }: {
   imports = [
@@ -15,6 +17,7 @@
     "${modules}/graphics.nix"
     "${modules}/zed.nix"
     "${modules}/raycast.nix"
+    inputs.sops-nix.homeManagerModules.sops
   ];
 
   options = {
@@ -32,6 +35,17 @@
 
     flake-location = "${config.home.homeDirectory}/.config/nixos-config";
     flake-configuration = "DE-UNIT-1832"; # TODO: set better name and sync with flakes.nix
+
+    # sops-nix configuration
+    sops = {
+      age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+      defaultSopsFile = "${secrets}/example.yaml";
+
+      secrets."wg.conf" = {
+        sopsFile = "${secrets}/ru-torrent-nixos-vm-wg.conf";
+        format = "binary";
+      };
+    };
 
     services.syncthing = {
       enable = true;
@@ -58,6 +72,8 @@
         haskell-language-server
 
         texlab
+        sops # for managing secrets
+        age # for age key management
 
         (pkgs.writeShellScriptBin "system-upgrade" ''
           nix flake update --flake ${config.flake-location}

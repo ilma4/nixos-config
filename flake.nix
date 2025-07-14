@@ -226,6 +226,7 @@
           home-manager.extraSpecialArgs = {
             inherit inputs;
             inherit dotfiles;
+            inherit secrets;
             modules = home-manager-modules;
             pkgs-unstable = import inputs.nixpkgs-unstable {
               system = arm64-macos;
