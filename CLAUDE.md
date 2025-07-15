@@ -18,6 +18,9 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - /hosts - device-specific configurations
   - /bkp - ilma4-bkp: my old laptop, used as personal device, when other are unavailable. Runs on NixOS
   - /jb-macbook - macbook from jetbrains, used both as personal and work device. Runs on macOS with nix-darwin. - /nas - ugreen nassync: NAS device used as homelab. Runs on NixOS
+  - usually filename ending with `home.nix` is home-manager configuration
+  - usually filename ending with `configuration.nix` is main NixOS/Nix-darwin configuration file
+  - other .nix file are usually modules specific to the host
 - /darwin-modules - nix-darwin modules
 - /home - home-manager modules
 - /modules - nixos modules
