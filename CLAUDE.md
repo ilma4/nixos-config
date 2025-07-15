@@ -5,8 +5,8 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 ## Tech Stack
 - NixOS
-- Home-Manager
 - Nix-Darwin
+- Home-Manager
 - sops-nix
 - podman
 
@@ -26,6 +26,8 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 ## Important Notes
 - If you create new file always do `git add` before switching to the new configuration
+- Home-Manager is used as NixOS or Nix-Darwin module where applicable
+- You are running on jb-macbook
 - Always check that the configuration is correct before switching to it
 
 
