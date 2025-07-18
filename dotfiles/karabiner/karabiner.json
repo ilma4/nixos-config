@@ -5,11 +5,24 @@
     },
     "profiles": [
         {
+            "complex_modifications": {
+                "rules": [
+                    {
+                        "description": "Disable \"command + tab\"",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "tab",
+                                    "modifiers": { "mandatory": ["command"] }
+                                },
+                                "to": [],
+                                "type": "basic"
+                            }
+                        ]
+                    }
+                ]
+            },
             "devices": [
-                {
-                    "identifiers": { "is_keyboard": true },
-                    "ignore": true
-                },
                 {
                     "fn_function_keys": [
                         {
