@@ -50,6 +50,8 @@ exclude = [
     "/Users/ilma4/.swiftly",    # Swift!
     "/Users/ilma4/.gem",    # ruby(?)
     "/Users/ilma4/sdk",     # go
+    "/Users/ilma4/go",     # go
+    "/Users/ilma4/golangci-lint",     # go
     "/Users/ilma4/.skiko", # idk, just a guess, https://github.com/JetBrains/skiko
     "/Users/ilma4/.cargo",  # rust
     "/Users/ilma4/.rustup",  # rust
