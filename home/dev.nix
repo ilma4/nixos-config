@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }: let
   isNotNixOS = pkgs.stdenv.isDarwin || config.targets.genericLinux.enable;
@@ -45,7 +46,7 @@ in {
     )
     ++ (
       if isNotNixOS
-      then [pkgs.bazelisk]
+      then [pkgs-unstable.bazelisk]
       else []
     );
 
