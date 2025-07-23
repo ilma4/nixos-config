@@ -144,22 +144,6 @@
       ];
     };
 
-    nixosConfigurations.i4-torrent-vm = nixpkgs.lib.nixosSystem {
-      pkgs = import nixpkgs {
-        system = arm64-linux;
-        config.allowUnfree = true;
-      };
-      system = arm64-linux;
-      specialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-      };
-
-      modules = [
-        ./hosts/i4-torrent-vm/configuration.nix
-      ];
-    };
-
     homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
         system = x86-linux;
@@ -227,18 +211,6 @@
             system-graphics.enable = true;
           };
         }
-      ];
-    };
-
-    homeConfigurations."malakhov" = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs {system = x86-linux;};
-      extraSpecialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-      };
-
-      modules = [
-        ./hosts/apal-server/home.nix
       ];
     };
   };
