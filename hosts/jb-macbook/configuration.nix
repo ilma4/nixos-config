@@ -47,7 +47,7 @@
     "com.apple.keyboard.fnState" = true; # enable fn lock
   };
 
-  system.defaults.spaces.spans-displays = false; # displays have separate spaces option (macos default is false)
+  system.defaults.spaces.spans-displays = true; # displays have separate spaces option (macos default is false)
   system.defaults.menuExtraClock.Show24Hour = true;
   system.defaults.finder = {
     ShowPathbar = true;
