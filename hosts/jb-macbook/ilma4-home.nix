@@ -7,14 +7,16 @@
   inputs,
   ...
 }: {
-  imports = [
-    "${flake-location}/home/base.nix"
-    "${flake-location}/home/macos.nix"
-    "${flake-location}/home/personal.nix"
-    "${flake-location}/home/dev.nix"
-    "${flake-location}/home/graphics.nix"
-    "${flake-location}/home/zed.nix"
-    "${flake-location}/home/raycast.nix"
+  imports = let
+    home = x: "${flake-location}/home/${x}.nix";
+  in [
+    (home "base")
+    (home "macos")
+    (home "personal")
+    (home "dev")
+    (home "graphics")
+    (home "zed")
+    (home "raycast")
     inputs.sops-nix.homeManagerModules.sops
   ];
 
@@ -119,7 +121,7 @@
 
     # RW symlinks, so apps can edits their configs
     home.file = let
-      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
+      symlink = x: config.lib.file.mkOutOfStoreSymlink "${flake-location}/dotfiles/${x}";
     in {
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
