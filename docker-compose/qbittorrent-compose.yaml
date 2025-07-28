@@ -5,7 +5,7 @@ services:
     container_name: gluetun
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "/Users/ilma4/.config/nixos-config/docker-compose/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
+      - "/Users/ilma4/.config/sops-nix/secrets/wg.conf:/gluetun/wireguard/wg0.conf:ro"
     devices:
       - "/dev/net/tun:/dev/net/tun"
     ports:
