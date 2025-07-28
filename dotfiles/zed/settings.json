@@ -3,8 +3,7 @@
     "default_model": {
       "model": "claude-sonnet-4",
       "provider": "zed.dev"
-    },
-    "version": "2"
+    }
   },
   "auto_install_extensions": {
     "activitiwatch": true,
@@ -33,9 +32,7 @@
   "buffer_font_size": 13,
   "context_servers": {
     "mcp-nixos": {
-      "args": [
-        "--"
-      ],
+      "args": ["--"],
       "command": "/nix/store/nsimbc2cf02ilvcmvx6p1im3na8bh99g-mcp-nixos-1.0.0/bin/mcp-nixos",
       "env": {},
       "source": "custom"
@@ -45,10 +42,7 @@
     "Nix": {
       "formatter": {
         "external": {
-          "arguments": [
-            "--quiet",
-            "--"
-          ],
+          "arguments": ["--quiet", "--"],
           "command": "alejandra"
         }
       }
@@ -58,9 +52,7 @@
     "nil": {
       "settings": {
         "diagnostics": {
-          "ignored": [
-            "unused_binding"
-          ]
+          "ignored": ["unused_binding"]
         },
         "nix": {
           "flake": {
@@ -72,9 +64,7 @@
     "nixd": {
       "settings": {
         "diagnostic": {
-          "suppress": [
-            "sema-extra-with"
-          ]
+          "suppress": ["sema-extra-with"]
         }
       }
     }
