@@ -17,6 +17,7 @@
     (home "graphics")
     (home "zed")
     (home "raycast")
+    "${flake-location}/modules/sops.nix"
     inputs.sops-nix.homeManagerModules.sops
   ];
 
@@ -38,9 +39,6 @@
 
     # sops-nix configuration
     sops = {
-      age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
-      defaultSopsFile = "${flake-location}/secrets/example.yaml";
-
       secrets."wg.conf" = {
         sopsFile = "${flake-location}/secrets/ru-torrent-nixos-vm-wg.conf";
         format = "binary";
