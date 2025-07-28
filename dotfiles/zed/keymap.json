@@ -1,0 +1,42 @@
+[
+  {
+    "bindings": {
+      "cmd-1": "project_panel::ToggleFocus",
+      "cmd-9": "git_panel::ToggleFocus",
+      "shift-F12": "workspace::CloseAllDocks"
+    },
+    "context": "Workspace"
+  },
+  {
+    "bindings": {
+      "cmd-1": "workspace::ToggleLeftDock",
+      "shift-escape": "workspace::ToggleLeftDock"
+    },
+    "context": "ProjectPanel"
+  },
+  {
+    "bindings": {
+      "cmd-9": "git_panel::Close",
+      "escape": "git_panel::ToggleFocus"
+    },
+    "context": "GitPanel"
+  },
+  {
+    "bindings": {
+      "F2": "editor::GoToDiagnostic",
+      "alt-F12": "terminal_panel::ToggleFocus"
+    },
+    "context": "Editor"
+  },
+  {
+    "bindings": {
+      "alt-F12": "workspace::ToggleBottomDock",
+      "cmd-shift-[": "workspace::ActivatePreviousWindow",
+      "cmd-shift-]": "workspace::ActivateNextWindow",
+      "cmd-t": "workspace::NewTerminal",
+      "escape": "terminal_panel::ToggleFocus",
+      "shift-escape": "workspace::ToggleBottomDock"
+    },
+    "context": "Terminal"
+  }
+]

@@ -123,6 +123,7 @@
     in {
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
+      ".config/zed".source = symlink "zed";
 
       ".config/aerospace/aerospace.toml".source = "${flake-location}/dotfiles/aerospace.toml";
       ".config/resticprofile/profiles.toml".source = "${flake-location}/dotfiles/resticprofile.toml";
