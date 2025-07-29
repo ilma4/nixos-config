@@ -169,6 +169,7 @@ in {
     programs.tmux = lib.mkIf (!config.isRootless) {
       enable = true;
       keyMode = "vi";
+      baseIndex = 1; # enumerate windows from 1 instead of 0
     };
 
     programs.neovim = {
