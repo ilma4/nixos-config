@@ -1,6 +1,10 @@
 #:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
 
 version = "1"
+[global]
+prevent-sleep = true # note: https://creativeprojects.github.io/resticprofile/configuration/sleep/index.html
+priority = "low"
+
 
 [default]
 repository = "local:/Users/ilma4/NoBackup/restic"
