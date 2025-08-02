@@ -174,6 +174,13 @@ in {
 
     programs.neovim = {
       enable = true;
+      plugins = with pkgs.vimPlugins; [
+        {
+          plugin = vim-suda;
+          config = "let g:suda_smart_edit = 1";
+        }
+      ];
+
       extraLuaConfig = ''
         vim.o.clipboard = "unnamedplus"
 
