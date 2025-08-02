@@ -119,7 +119,7 @@
 
     # RW symlinks, so apps can edits their configs
     home.file = let
-      symlink = x: config.lib.file.mkOutOfStoreSymlink "${flake-location}/dotfiles/${x}";
+      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
     in {
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
