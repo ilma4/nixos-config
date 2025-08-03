@@ -102,6 +102,7 @@
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker" # i use colima instead
+      "zulu@21"
 
       #avaliable in nix, but nix has troubles with gui apps
       "telegram-desktop"
