@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  immich-version = "v1.133.1";
+  immich-version = "v1.137.3";
 in {
   virtualisation.oci-containers.containers."immich_machine_learning" = {
     image = "ghcr.io/immich-app/immich-machine-learning:${immich-version}";
