@@ -5,7 +5,6 @@ services:
     container_name: gluetun
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "${WG_CONFIG}:/gluetun/wireguard/wg0.conf:ro"
     devices:
       - "/dev/net/tun:/dev/net/tun"
     ports:
