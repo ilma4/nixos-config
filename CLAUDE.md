@@ -32,6 +32,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - Home-Manager is used as NixOS or Nix-Darwin module where applicable
 - You are running on jb-macbook
 - Always check that the configuration is correct before switching to it
+- DO NOT switch to new configuration unless specifically asked to
 
 
 ## Environment Setup
