@@ -98,27 +98,11 @@
             colima start
           fi
 
-          WG_CONFIG="${config.sops.secrets."wg.conf".path}"
-          [ ! -f "$WG_CONFIG" ] && { echo "Error: WireGuard config not found"; exit 1; }
+          mkdir -p "${config.home.homeDirectory}/.local/share/qbittorrent-container"
+          cp "${config.sops.secrets."wg.conf".path}" "${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
+          export WG_CONFIG="${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
 
-          # Parse WireGuard config
-          export WIREGUARD_ADDRESSES=$(grep "^Address" "$WG_CONFIG" | cut -d'=' -f2 | xargs)
-          export WIREGUARD_PRIVATE_KEY=$(grep "^PrivateKey" "$WG_CONFIG" | cut -d'=' -f2 | xargs)
-          export WIREGUARD_PUBLIC_KEY=$(grep "^PublicKey" "$WG_CONFIG" | cut -d'=' -f2 | xargs)
-          export WIREGUARD_PRESHARED_KEY=$(grep "^PresharedKey" "$WG_CONFIG" | cut -d'=' -f2 | xargs)
-          ENDPOINT=$(grep "^Endpoint" "$WG_CONFIG" | cut -d'=' -f2 | xargs)
-          export WIREGUARD_ENDPOINT_IP=$(echo "$ENDPOINT" | cut -d':' -f1)
-          export WIREGUARD_ENDPOINT_PORT=$(echo "$ENDPOINT" | cut -d':' -f2)
-
-          # Validate required fields
-          [ -z "$WIREGUARD_ADDRESSES" ] && { echo "Error: Missing Address"; exit 1; }
-          [ -z "$WIREGUARD_PRIVATE_KEY" ] && { echo "Error: Missing PrivateKey"; exit 1; }
-          [ -z "$WIREGUARD_PUBLIC_KEY" ] && { echo "Error: Missing PublicKey"; exit 1; }
-          [ -z "$WIREGUARD_ENDPOINT_IP" ] && { echo "Error: Missing Endpoint IP"; exit 1; }
-          
-          [ -z "$WIREGUARD_ENDPOINT_PORT" ] && { echo "Error: Missing Endpoint port"; exit 1; }
-
-          env WIREGUARD_ENDPOINT_IP=$WIREGUARD_ENDPOINT_IP ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up -d
+          ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up -d
         '')
       ]
       ++ (with pkgs-unstable; [
