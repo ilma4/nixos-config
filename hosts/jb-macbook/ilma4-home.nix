@@ -48,10 +48,6 @@
     services.syncthing = {
       enable = true;
     };
-    services.ollama = {
-      enable = true;
-      package = pkgs-unstable.ollama;
-    };
 
     programs.raycast = {
       enable = true;
@@ -94,11 +90,24 @@
             if pkgs.stdenv.isDarwin
             then "/opt/homebrew/bin/bw"
             else "${pkgs.bitwarden-cli}/bin/bw";
-        in
-          pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous")
+        in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
+
+        (
+          pkgs.writeShellScriptBin "i4-test-qbittorrent-start" ''
+            echo "lol"
+          ''
+        )
+        (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
+          if ! colima status | grep -q "Running"; then
+            echo "Starting colima..."
+            colima start
+          fi
+
+          export WG_CONF="${config.sops.secrets."wg.conf".path}"
+          ${pkgs.docker}/bin/docker compose -f "${config.dotfiles}/qbittorrent/qbittorrent-compose.yaml" up -d
+        '')
       ]
       ++ (with pkgs-unstable; [
-        ollama
         llama-cpp
         gemini-cli
       ]);
