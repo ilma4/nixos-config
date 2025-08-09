@@ -24,6 +24,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/Users/ilma4/Downloads/Torrent/torrent-vm:/downloads"
+      - qbittorrent_config:/config/qBittorrent
     restart: unless-stopped
     network_mode: "service:gluetun"
     depends_on:
