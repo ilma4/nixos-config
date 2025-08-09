@@ -8,6 +8,7 @@
 }: {
   imports = [
     "${flake-location}/darwin-modules/nix-settings.nix"
+    "${flake-location}/darwin-modules/launchd-agents.nix"
     # inputs.nix-rosetta-builder.darwinModules.default
   ];
 
