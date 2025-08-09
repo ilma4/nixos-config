@@ -33,7 +33,7 @@ services:
       test:
         - "CMD-SHELL"
         - >
-          CURRENT_IP=$(curl -s https://ifconfig.me) &&
+          CURRENT_IP=$(/usr/bin/env curl --silent https://ifconfig.me) &&
           [ "$CURRENT_IP" = "185.68.21.215" ]
       interval: 1m
       timeout: 3s
