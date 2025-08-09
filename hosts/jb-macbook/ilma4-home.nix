@@ -102,7 +102,7 @@
           cp "${config.sops.secrets."wg.conf".path}" "${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
           export WG_CONFIG="${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
 
-          ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up -d
+          ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --quiet-pull
         '')
       ]
       ++ (with pkgs-unstable; [
