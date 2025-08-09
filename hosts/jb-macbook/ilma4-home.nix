@@ -93,16 +93,13 @@
         in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
         (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
-          if ! colima status | grep -q "Running"; then
-            echo "Starting colima..."
-            colima start
-          fi
+          /usr/bin/env colima start
 
           mkdir -p "${config.home.homeDirectory}/.local/share/qbittorrent-container"
           cp "${config.sops.secrets."wg.conf".path}" "${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
           export WG_CONFIG="${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
 
-          ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --quiet-pull
+          ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --quiet-pull --pull always
         '')
       ]
       ++ (with pkgs-unstable; [
