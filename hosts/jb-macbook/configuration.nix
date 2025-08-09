@@ -154,6 +154,7 @@
     brews = [
       "displayplacer" # cli to configure displays
       "swiftly"
+      "gemini-cli"
 
       # FIXME: replace with nixpkgs version, when issue is resolved: https://github.com/NixOS/nixpkgs/issues/339576
       "bitwarden-cli"

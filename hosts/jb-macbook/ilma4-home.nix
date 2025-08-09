@@ -107,7 +107,6 @@
       ]
       ++ (with pkgs-unstable; [
         llama-cpp
-        gemini-cli
       ]);
 
     # programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
