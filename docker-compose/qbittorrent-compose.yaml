@@ -42,6 +42,7 @@ services:
 
 volumes:
   qbittorrent_config:
+    name: qbittorrent_config
 
 networks:
   qbt:
