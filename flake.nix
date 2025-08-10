@@ -1,5 +1,5 @@
 {
-  description = "Nixos config flake";
+  description = "Configs for all my devices";
 
   inputs = {
     # Core Nixpkgs inputs
