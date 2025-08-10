@@ -2,56 +2,62 @@
   description = "Nixos config flake";
 
   inputs = {
+    # Core Nixpkgs inputs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    nix-rosetta-builder = {
-      url = "github:cpick/nix-rosetta-builder";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    # Flake utilities
+    flake-utils.url = "github:numtide/flake-utils";
+
+    # System-specific inputs
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin/nix-darwin-25.05";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL/main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    sops-nix.url = "github:Mic92/sops-nix";
-    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-
-    hoopsnake = {
-      url = "github:boinkor-net/hoopsnake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    # Home and user management
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
     system-manager = {
       url = "github:numtide/system-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-system-graphics = {
-      url = "github:soupglasses/nix-system-graphics";
+    # Security and secrets
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Development and tooling
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nix-darwin = {
-      url = "github:LnL7/nix-darwin/nix-darwin-25.05";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    hoopsnake = {
+      url = "github:boinkor-net/hoopsnake";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
-    #flake-root.url = "github:srid/flake-root";
-
     mcp-nixos = {
       url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Platform-specific utilities
+    nix-rosetta-builder = {
+      url = "github:cpick/nix-rosetta-builder";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    nix-system-graphics = {
+      url = "github:soupglasses/nix-system-graphics";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -60,158 +66,205 @@
     self,
     nixpkgs,
     nixpkgs-darwin,
+    nixpkgs-unstable,
+    flake-utils,
     home-manager,
     nix-darwin,
-    mcp-nixos,
     ...
   }: let
-    x86-linux = "x86_64-linux";
-    arm64-linux = "aarch64-linux";
-    arm64-macos = "aarch64-darwin";
-  in {
-    nixosConfigurations.ilma4-bkp = nixpkgs.lib.nixosSystem {
-      pkgs = import nixpkgs {
-        system = x86-linux;
-        config.allowUnfree = true;
-        overlays = [
-          inputs.rust-overlay.overlays.default
-        ];
-      };
-      system = x86-linux;
-      specialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-        pkgs-unstable = import inputs.nixpkgs-unstable {
-          system = x86-linux;
-          config.allowUnfree = true;
-        };
-      };
-
-      modules = [
-        ./hosts/bkp/configuration.nix
-      ];
+    # System aliases for readability
+    systems = {
+      x86-linux = "x86_64-linux";
+      arm64-linux = "aarch64-linux";
+      arm64-macos = "aarch64-darwin";
     };
 
-    nixosConfigurations.ilma4-nas = nixpkgs.lib.nixosSystem {
-      pkgs = import nixpkgs {
-        system = x86-linux;
+    # Centralized package sets with common configuration
+    mkPkgs = nixpkgsInput: system: overlays:
+      import nixpkgsInput {
+        inherit system;
         config.allowUnfree = true;
-      };
-      system = x86-linux;
-      specialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-        pkgs-unstable = import inputs.nixpkgs-unstable {
-          system = x86-linux;
-          config.allowUnfree = true;
-        };
+        inherit overlays;
       };
 
-      modules = [
-        ./hosts/nas/configuration.nix
-      ];
+    # Common overlays
+    commonOverlays = [
+      inputs.rust-overlay.overlays.default
+    ];
+
+    # Centralized package sets
+    pkgsSets = system: {
+      stable = mkPkgs nixpkgs system commonOverlays;
+      darwin = mkPkgs nixpkgs-darwin system commonOverlays;
+      unstable = mkPkgs nixpkgs-unstable system [];
     };
 
-    nixosConfigurations.ilma4-arm-vm = nixpkgs.lib.nixosSystem {
-      pkgs = import nixpkgs {
-        system = arm64-linux;
-        config.allowUnfree = true;
-      };
-      system = arm64-linux;
-      specialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-      };
-
-      modules = [
-        ./hosts/arm-vm/configuration.nix
-      ];
+    # Base special arguments shared across all configurations
+    baseSpecialArgs = {
+      inherit inputs;
+      flake-location = "${self}";
     };
 
-    nixosConfigurations.i4-ideapad-wsl = nixpkgs.lib.nixosSystem {
-      pkgs = import nixpkgs {
-        system = x86-linux;
-        config.allowUnfree = true;
-      };
-      system = x86-linux;
-      specialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-      };
-
-      modules = [
-        ./hosts/i4-ideapad-wsl/configuration.nix
-      ];
-    };
-
-    homeConfigurations."ilma4" = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs {
-        system = x86-linux;
-        overlays = [
-          inputs.rust-overlay.overlays.default
-        ];
-      };
-
-      extraSpecialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-        pkgs-unstable = import inputs.nixpkgs-unstable {
-          system = x86-linux;
-          config.allowUnfree = true;
-        };
-      };
-
-      modules = [
-        ./hosts/main/home.nix
-      ];
-    };
-
-    darwinConfigurations."DE-UNIT-1832" = nix-darwin.lib.darwinSystem {
-      specialArgs = {
-        inherit inputs;
-        flake-location = "${self}";
-        pkgs-unstable = import inputs.nixpkgs-unstable {
-          system = arm64-macos;
-          config.allowUnfree = true;
-        };
-      };
-
-      pkgs = import nixpkgs-darwin {
-        system = arm64-macos;
-        config.allowUnfree = true;
-        overlays = [
-          inputs.rust-overlay.overlays.default
-        ];
-      };
-
-      modules = [
-        ./hosts/jb-macbook/configuration.nix
-        home-manager.darwinModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs;
-            flake-location = "${self}";
-            pkgs-unstable = import inputs.nixpkgs-unstable {
-              system = arm64-macos;
-              config.allowUnfree = true;
-            };
-          };
+    # Helper function to create NixOS system configurations
+    mkNixosSystem = {
+      system,
+      modules,
+      extraSpecialArgs ? {},
+    }: let
+      pkgs = (pkgsSets system).stable;
+      specialArgs =
+        baseSpecialArgs
+        // {
+          pkgs-unstable = (pkgsSets system).unstable;
         }
-      ];
-    };
+        // extraSpecialArgs;
+    in
+      nixpkgs.lib.nixosSystem {
+        inherit pkgs system modules specialArgs;
+      };
 
-    systemConfigs.default = inputs.system-manager.lib.makeSystemConfig {
-      modules = [
-        inputs.nix-system-graphics.systemModules.default
-        {
-          config = {
-            nixpkgs.hostPlatform = "x86_64-linux";
-            # system-manager.allowAnyDistro = true;
-            system-graphics.enable = true;
-          };
+    # Helper function to create Darwin system configurations
+    mkDarwinSystem = {
+      system,
+      modules,
+      extraSpecialArgs ? {},
+    }: let
+      pkgs = (pkgsSets system).darwin;
+      specialArgs =
+        baseSpecialArgs
+        // {
+          pkgs-unstable = (pkgsSets system).unstable;
         }
-      ];
+        // extraSpecialArgs;
+    in
+      nix-darwin.lib.darwinSystem {
+        inherit pkgs modules specialArgs;
+      };
+
+    # Helper function to create Home Manager configurations
+    mkHomeConfig = {
+      system,
+      modules,
+      extraSpecialArgs ? {},
+    }: let
+      pkgs = (pkgsSets system).stable;
+      extraSpecialArgs' =
+        baseSpecialArgs
+        // {
+          pkgs-unstable = (pkgsSets system).unstable;
+        }
+        // extraSpecialArgs;
+    in
+      home-manager.lib.homeManagerConfiguration {
+        inherit pkgs modules;
+        extraSpecialArgs = extraSpecialArgs';
+      };
+  in
+    flake-utils.lib.eachDefaultSystem (system: {
+      # Per-system outputs can be added here if needed
+    })
+    // {
+      # NixOS Configurations
+      nixosConfigurations = {
+        ilma4-bkp = mkNixosSystem {
+          system = systems.x86-linux;
+          modules = [
+            ./hosts/bkp/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.extraSpecialArgs =
+                baseSpecialArgs
+                // {
+                  pkgs-unstable = (pkgsSets systems.x86-linux).unstable;
+                };
+            }
+          ];
+        };
+
+        ilma4-nas = mkNixosSystem {
+          system = systems.x86-linux;
+          modules = [
+            ./hosts/nas/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.extraSpecialArgs =
+                baseSpecialArgs
+                // {
+                  pkgs-unstable = (pkgsSets systems.x86-linux).unstable;
+                };
+            }
+          ];
+        };
+
+        ilma4-arm-vm = mkNixosSystem {
+          system = systems.arm64-linux;
+          modules = [
+            ./hosts/arm-vm/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.extraSpecialArgs = baseSpecialArgs;
+            }
+          ];
+        };
+
+        i4-ideapad-wsl = mkNixosSystem {
+          system = systems.x86-linux;
+          modules = [
+            ./hosts/i4-ideapad-wsl/configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.extraSpecialArgs = baseSpecialArgs;
+            }
+          ];
+        };
+      };
+
+      # Darwin Configurations
+      darwinConfigurations = {
+        "DE-UNIT-1832" = mkDarwinSystem {
+          system = systems.arm64-macos;
+          modules = [
+            ./hosts/jb-macbook/configuration.nix
+            home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.extraSpecialArgs =
+                baseSpecialArgs
+                // {
+                  pkgs-unstable = (pkgsSets systems.arm64-macos).unstable;
+                };
+            }
+          ];
+        };
+      };
+
+      # Standalone Home Manager Configuration (kept for compatibility)
+      homeConfigurations = {
+        "ilma4" = mkHomeConfig {
+          system = systems.x86-linux;
+          modules = [
+            ./hosts/main/home.nix
+          ];
+        };
+      };
+
+      # System Manager Configuration
+      systemConfigs = {
+        default = inputs.system-manager.lib.makeSystemConfig {
+          modules = [
+            inputs.nix-system-graphics.systemModules.default
+            {
+              config = {
+                nixpkgs.hostPlatform = systems.x86-linux;
+                system-graphics.enable = true;
+              };
+            }
+          ];
+        };
+      };
     };
-  };
 }
