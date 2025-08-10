@@ -1,4 +1,4 @@
-name: "qbittorent-gluetun"
+name: "qbittorent-through-wireguard"
 services:
   gluetun:
     image: "qmcgaw/gluetun"
