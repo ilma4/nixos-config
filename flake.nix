@@ -148,24 +148,24 @@
     // {
       # NixOS Configurations
       nixosConfigurations = {
-        ilma4-bkp = mkNixosSystem {
+        rex = mkNixosSystem {
           system = systems.x86-linux;
-          module = ./hosts/bkp/configuration.nix;
+          module = ./hosts/rex/configuration.nix;
         };
 
-        ilma4-nas = mkNixosSystem {
+        laat = mkNixosSystem {
           system = systems.x86-linux;
-          module = ./hosts/nas/configuration.nix;
+          module = ./hosts/laat/configuration.nix;
         };
 
-        ilma4-arm-vm = mkNixosSystem {
+        dooku = mkNixosSystem {
           system = systems.arm64-linux;
-          module = ./hosts/arm-vm/configuration.nix;
+          module = ./hosts/dooku/configuration.nix;
         };
 
-        i4-ideapad-wsl = mkNixosSystem {
+        jailbreak = mkNixosSystem {
           system = systems.x86-linux;
-          module = ./hosts/i4-ideapad-wsl/configuration.nix;
+          module = ./hosts/jailbreak/configuration.nix;
         };
       };
 
@@ -179,9 +179,9 @@
 
       # Standalone Home Manager Configuration (kept for compatibility)
       homeConfigurations = {
-        "ilma4" = mkHomeConfig {
+        anakin = mkHomeConfig {
           system = systems.x86-linux;
-          module = ./hosts/main/home.nix;
+          module = ./hosts/anakin/home.nix;
         };
       };
 
