@@ -55,6 +55,15 @@ in {
     gw = "./gradlew";
   };
 
+  programs.direnv = {
+    enable = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
+  };
+  programs.bash.enable = true;
+  programs.zsh.enable = true;
+
   home.file.".bazelrc".text = ''
     common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
   '';
