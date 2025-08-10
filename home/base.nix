@@ -21,13 +21,6 @@ in {
       default = "none"; # TODO null
     };
 
-    flake-configuration = lib.mkOption {
-      type = lib.types.str;
-      example = "ilma4-bkp";
-      description = "Configuration of the flake";
-      default = config.networking.hostName;
-    };
-
     configure-ssh = lib.mkOption {
       type = lib.types.bool;
       default = true;
