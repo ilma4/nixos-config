@@ -3,7 +3,7 @@
 # docker-volume-cp - Copy a Docker volume to a new volume with a different name
 # Usage: docker-volume-cp <source_volume> <destination_volume>
 
-set -euo pipefail  # Exit on any error, unset variables, or pipe failures
+set -euo pipefail
 
 # Function to display usage
 usage() {
@@ -37,7 +37,6 @@ cleanup() {
 # Set up cleanup trap
 trap cleanup EXIT
 
-# Check if correct number of arguments provided
 if [ $# -ne 2 ]; then
     usage
 fi
@@ -45,36 +44,28 @@ fi
 SOURCE_VOLUME="$1"
 DEST_VOLUME="$2"
 
-# Validate arguments
 if [ -z "$SOURCE_VOLUME" ] || [ -z "$DEST_VOLUME" ]; then
     echo "Error: Volume names cannot be empty"
     usage
 fi
 
-# Check if source volume exists
 if ! docker volume inspect "$SOURCE_VOLUME" >/dev/null 2>&1; then
     echo "Error: Source volume '$SOURCE_VOLUME' does not exist"
     exit 1
 fi
 
-# Check if destination volume already exists
 if docker volume inspect "$DEST_VOLUME" >/dev/null 2>&1; then
     echo "Error: Destination volume '$DEST_VOLUME' already exists"
     exit 1
 fi
 
-# Step 1: Create destination volume
 docker volume create "$DEST_VOLUME"
 
-# Step 2: Create temporary containers with volumes mounted
 SOURCE_CONTAINER=$(docker create -v "$SOURCE_VOLUME:/data" hello-world)
 DEST_CONTAINER=$(docker create -v "$DEST_VOLUME:/data" hello-world)
 
-# Step 3: Create temporary directory and copy data from source volume
 TEMP_DIR=$(mktemp -d)
 docker cp "$SOURCE_CONTAINER:/data/." "$TEMP_DIR/"
-
-# Step 4: Copy data from temporary directory to destination volume
 docker cp "$TEMP_DIR/." "$DEST_CONTAINER:/data/"
 
 # Note: Cleanup will be handled by the EXIT trap
