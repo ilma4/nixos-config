@@ -35,7 +35,6 @@
     home.username = "ilma4";
 
     flake-location = "${config.home.homeDirectory}/.config/nixos-config";
-    flake-configuration = "DE-UNIT-1832"; # TODO: set better name and sync with flakes.nix
 
     # sops-nix configuration
     sops = {

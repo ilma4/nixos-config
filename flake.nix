@@ -192,9 +192,9 @@
 
       # Darwin Configurations
       darwinConfigurations = {
-        "DE-UNIT-1832" = mkDarwinSystem {
+        quicksilver = mkDarwinSystem {
           system = systems.arm64-macos;
-          module = ./hosts/jb-macbook/configuration.nix;
+          module = ./hosts/quicksilver/configuration.nix;
         };
       };
 

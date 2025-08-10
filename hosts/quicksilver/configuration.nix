@@ -18,6 +18,8 @@
   # environment.systemPackages = with pkgs; [
   # ];
 
+  networking.hostName = "quicksilver";
+
   users.users = {
     ilma4 = {
       home = "/Users/ilma4";

@@ -25,7 +25,7 @@ in {
       type = lib.types.str;
       example = "ilma4-bkp";
       description = "Configuration of the flake";
-      default = "none"; # TODO null
+      default = config.networking.hostName;
     };
 
     configure-ssh = lib.mkOption {
@@ -53,7 +53,7 @@ in {
           then "home-manager switch"
           else ""
         )
-        + " --flake ${config.flake-location}#${config.flake-configuration}";
+        + " --flake ${config.flake-location}#\"$(uname -n)\"";
 
       description = "nix-rebuild script";
     };
