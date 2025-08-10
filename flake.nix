@@ -170,15 +170,6 @@
           system = systems.x86-linux;
           modules = [
             ./hosts/bkp/configuration.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.extraSpecialArgs =
-                baseSpecialArgs
-                // {
-                  pkgs-unstable = (pkgsSets systems.x86-linux).unstable;
-                };
-            }
           ];
         };
 
@@ -186,15 +177,6 @@
           system = systems.x86-linux;
           modules = [
             ./hosts/nas/configuration.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.extraSpecialArgs =
-                baseSpecialArgs
-                // {
-                  pkgs-unstable = (pkgsSets systems.x86-linux).unstable;
-                };
-            }
           ];
         };
 
@@ -202,11 +184,6 @@
           system = systems.arm64-linux;
           modules = [
             ./hosts/arm-vm/configuration.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.extraSpecialArgs = baseSpecialArgs;
-            }
           ];
         };
 
@@ -214,11 +191,6 @@
           system = systems.x86-linux;
           modules = [
             ./hosts/i4-ideapad-wsl/configuration.nix
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.extraSpecialArgs = baseSpecialArgs;
-            }
           ];
         };
       };
@@ -230,14 +202,6 @@
           modules = [
             ./hosts/jb-macbook/configuration.nix
             home-manager.darwinModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.extraSpecialArgs =
-                baseSpecialArgs
-                // {
-                  pkgs-unstable = (pkgsSets systems.arm64-macos).unstable;
-                };
-            }
           ];
         };
       };
