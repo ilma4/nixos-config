@@ -108,7 +108,7 @@
     # Helper function to create NixOS system configurations
     mkNixosSystem = {
       system,
-      modules,
+      module,
       extraSpecialArgs ? {},
     }: let
       pkgs = (pkgsSets system).stable;
@@ -120,13 +120,14 @@
         // extraSpecialArgs;
     in
       nixpkgs.lib.nixosSystem {
-        inherit pkgs system modules specialArgs;
+        inherit pkgs system specialArgs;
+        modules = [module];
       };
 
     # Helper function to create Darwin system configurations
     mkDarwinSystem = {
       system,
-      modules,
+      module,
       extraSpecialArgs ? {},
     }: let
       pkgs = (pkgsSets system).darwin;
@@ -138,13 +139,14 @@
         // extraSpecialArgs;
     in
       nix-darwin.lib.darwinSystem {
-        inherit pkgs modules specialArgs;
+        inherit pkgs specialArgs;
+        modules = [module];
       };
 
     # Helper function to create Home Manager configurations
     mkHomeConfig = {
       system,
-      modules,
+      module,
       extraSpecialArgs ? {},
     }: let
       pkgs = (pkgsSets system).stable;
@@ -156,7 +158,8 @@
         // extraSpecialArgs;
     in
       home-manager.lib.homeManagerConfiguration {
-        inherit pkgs modules;
+        inherit pkgs;
+        modules = [module];
         extraSpecialArgs = extraSpecialArgs';
       };
   in
@@ -168,30 +171,22 @@
       nixosConfigurations = {
         ilma4-bkp = mkNixosSystem {
           system = systems.x86-linux;
-          modules = [
-            ./hosts/bkp/configuration.nix
-          ];
+          module = ./hosts/bkp/configuration.nix;
         };
 
         ilma4-nas = mkNixosSystem {
           system = systems.x86-linux;
-          modules = [
-            ./hosts/nas/configuration.nix
-          ];
+          module = ./hosts/nas/configuration.nix;
         };
 
         ilma4-arm-vm = mkNixosSystem {
           system = systems.arm64-linux;
-          modules = [
-            ./hosts/arm-vm/configuration.nix
-          ];
+          module = ./hosts/arm-vm/configuration.nix;
         };
 
         i4-ideapad-wsl = mkNixosSystem {
           system = systems.x86-linux;
-          modules = [
-            ./hosts/i4-ideapad-wsl/configuration.nix
-          ];
+          module = ./hosts/i4-ideapad-wsl/configuration.nix;
         };
       };
 
@@ -199,10 +194,7 @@
       darwinConfigurations = {
         "DE-UNIT-1832" = mkDarwinSystem {
           system = systems.arm64-macos;
-          modules = [
-            ./hosts/jb-macbook/configuration.nix
-            home-manager.darwinModules.home-manager
-          ];
+          module = ./hosts/jb-macbook/configuration.nix;
         };
       };
 
@@ -210,9 +202,7 @@
       homeConfigurations = {
         "ilma4" = mkHomeConfig {
           system = systems.x86-linux;
-          modules = [
-            ./hosts/main/home.nix
-          ];
+          module = ./hosts/main/home.nix;
         };
       };
 
