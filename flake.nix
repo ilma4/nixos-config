@@ -7,9 +7,6 @@
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Flake utilities
-    flake-utils.url = "github:numtide/flake-utils";
-
     # System-specific inputs
     nix-darwin = {
       url = "github:LnL7/nix-darwin/nix-darwin-25.05";
@@ -67,7 +64,6 @@
     nixpkgs,
     nixpkgs-darwin,
     nixpkgs-unstable,
-    flake-utils,
     home-manager,
     nix-darwin,
     ...
@@ -141,63 +137,59 @@
     mkNixosSystem = mkAny "nixos";
     mkDarwinSystem = mkAny "darwin";
     mkHomeConfig = mkAny "home";
-  in
-    flake-utils.lib.eachDefaultSystem (system: {
-      # Per-system outputs can be added here if needed
-    })
-    // {
-      # NixOS Configurations
-      nixosConfigurations = {
-        rex = mkNixosSystem {
-          system = systems.x86-linux;
-          module = ./hosts/rex/configuration.nix;
-        };
-
-        laat = mkNixosSystem {
-          system = systems.x86-linux;
-          module = ./hosts/laat/configuration.nix;
-        };
-
-        dooku = mkNixosSystem {
-          system = systems.arm64-linux;
-          module = ./hosts/dooku/configuration.nix;
-        };
-
-        jailbreak = mkNixosSystem {
-          system = systems.x86-linux;
-          module = ./hosts/jailbreak/configuration.nix;
-        };
+  in {
+    # NixOS Configurations
+    nixosConfigurations = {
+      rex = mkNixosSystem {
+        system = systems.x86-linux;
+        module = ./hosts/rex/configuration.nix;
       };
 
-      # Darwin Configurations
-      darwinConfigurations = {
-        quicksilver = mkDarwinSystem {
-          system = systems.arm64-macos;
-          module = ./hosts/quicksilver/configuration.nix;
-        };
+      laat = mkNixosSystem {
+        system = systems.x86-linux;
+        module = ./hosts/laat/configuration.nix;
       };
 
-      # Standalone Home Manager Configuration (kept for compatibility)
-      homeConfigurations = {
-        anakin = mkHomeConfig {
-          system = systems.x86-linux;
-          module = ./hosts/anakin/home.nix;
-        };
+      dooku = mkNixosSystem {
+        system = systems.arm64-linux;
+        module = ./hosts/dooku/configuration.nix;
       };
 
-      # System Manager Configuration
-      systemConfigs = {
-        default = inputs.system-manager.lib.makeSystemConfig {
-          modules = [
-            inputs.nix-system-graphics.systemModules.default
-            {
-              config = {
-                nixpkgs.hostPlatform = systems.x86-linux;
-                system-graphics.enable = true;
-              };
-            }
-          ];
-        };
+      jailbreak = mkNixosSystem {
+        system = systems.x86-linux;
+        module = ./hosts/jailbreak/configuration.nix;
       };
     };
+
+    # Darwin Configurations
+    darwinConfigurations = {
+      quicksilver = mkDarwinSystem {
+        system = systems.arm64-macos;
+        module = ./hosts/quicksilver/configuration.nix;
+      };
+    };
+
+    # Standalone Home Manager Configuration (kept for compatibility)
+    homeConfigurations = {
+      anakin = mkHomeConfig {
+        system = systems.x86-linux;
+        module = ./hosts/anakin/home.nix;
+      };
+    };
+
+    # System Manager Configuration
+    systemConfigs = {
+      default = inputs.system-manager.lib.makeSystemConfig {
+        modules = [
+          inputs.nix-system-graphics.systemModules.default
+          {
+            config = {
+              nixpkgs.hostPlatform = systems.x86-linux;
+              system-graphics.enable = true;
+            };
+          }
+        ];
+      };
+    };
+  };
 }
