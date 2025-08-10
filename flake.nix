@@ -94,8 +94,10 @@
 
     # Centralized package sets
     pkgsSets = system: {
-      stable = mkPkgs nixpkgs system commonOverlays;
-      darwin = mkPkgs nixpkgs-darwin system commonOverlays;
+      stable =
+        if system != "darwin"
+        then mkPkgs nixpkgs system commonOverlays
+        else mkPkgs nixpkgs-darwin system commonOverlays;
       unstable = mkPkgs nixpkgs-unstable system [];
     };
 
@@ -105,63 +107,40 @@
       flake-location = "${self}";
     };
 
-    # Helper function to create NixOS system configurations
-    mkNixosSystem = {
+    builders = {
+      nixos = nixpkgs.lib.nixosSystem;
+      darwin = nix-darwin.lib.darwinSystem;
+      home = home-manager.lib.homeManagerSystem;
+      system-manager = inputs.system-manager.lib.makeSystemConfig; # for system-manager
+    };
+
+    # workaround over home-manager using `extraSpecialArgs` instead of `specialArgs`
+    mkSpecialArgs = type: extraArgs:
+      if type == "home"
+      then {extraSpecialArgs = extraArgs;}
+      else {specialArgs = extraArgs;};
+  in let
+    mkAny = type: {
       system,
       module,
       extraSpecialArgs ? {},
     }: let
       pkgs = (pkgsSets system).stable;
-      specialArgs =
+      specialArgs = mkSpecialArgs type (
         baseSpecialArgs
-        // {
-          pkgs-unstable = (pkgsSets system).unstable;
-        }
-        // extraSpecialArgs;
+        // {pkgs-unstable = (pkgsSets system).unstable;}
+        // extraSpecialArgs
+      );
     in
-      nixpkgs.lib.nixosSystem {
-        inherit pkgs system specialArgs;
-        modules = [module];
-      };
+      builders.${type} ({
+          inherit pkgs;
+          modules = [module];
+        }
+        // specialArgs);
 
-    # Helper function to create Darwin system configurations
-    mkDarwinSystem = {
-      system,
-      module,
-      extraSpecialArgs ? {},
-    }: let
-      pkgs = (pkgsSets system).darwin;
-      specialArgs =
-        baseSpecialArgs
-        // {
-          pkgs-unstable = (pkgsSets system).unstable;
-        }
-        // extraSpecialArgs;
-    in
-      nix-darwin.lib.darwinSystem {
-        inherit pkgs specialArgs;
-        modules = [module];
-      };
-
-    # Helper function to create Home Manager configurations
-    mkHomeConfig = {
-      system,
-      module,
-      extraSpecialArgs ? {},
-    }: let
-      pkgs = (pkgsSets system).stable;
-      extraSpecialArgs' =
-        baseSpecialArgs
-        // {
-          pkgs-unstable = (pkgsSets system).unstable;
-        }
-        // extraSpecialArgs;
-    in
-      home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [module];
-        extraSpecialArgs = extraSpecialArgs';
-      };
+    mkNixosSystem = mkAny "nixos";
+    mkDarwinSystem = mkAny "darwin";
+    mkHomeConfig = mkAny "home";
   in
     flake-utils.lib.eachDefaultSystem (system: {
       # Per-system outputs can be added here if needed
