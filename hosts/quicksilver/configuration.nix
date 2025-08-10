@@ -130,6 +130,7 @@
       "zoom"
       "zed" # very fast text editor
       "vial" # configure my split keyboard
+      "warp" # terminal with AI agent
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS, uses kernel extension
