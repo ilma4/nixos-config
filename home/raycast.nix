@@ -8,8 +8,6 @@ with lib; let
 
   # AppleScript files
   scriptFiles = {
-    "display-enable-scaling.applescript" = ./raycast-scripts/display-enable-scaling.applescript;
-    "display-disable-scaling.applescript" = ./raycast-scripts/display-disable-scaling.applescript;
     "firefox.applescript" = ./raycast-scripts/firefox.applescript;
     "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
   };
