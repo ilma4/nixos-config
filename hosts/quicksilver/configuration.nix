@@ -101,7 +101,6 @@
       "heroic" # Epic Games/GOG launcher
       "activitywatch"
       "gitbutler"
-      "logseq" # notes
       "dolphin" # Wii emulator
       "spotify"
 
