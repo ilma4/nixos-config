@@ -151,22 +151,22 @@
     nixosConfigurations = {
       rex = mkNixosSystem {
         system = systems.x86-linux;
-        module = ./hosts/rex/configuration.nix;
+        module = ./hosts/rex/rex.nix;
       };
 
       laat = mkNixosSystem {
         system = systems.x86-linux;
-        module = ./hosts/laat/configuration.nix;
+        module = ./hosts/laat/laat.nix;
       };
 
       dooku = mkNixosSystem {
         system = systems.arm64-linux;
-        module = ./hosts/dooku/configuration.nix;
+        module = ./hosts/dooku/dooku.nix;
       };
 
       jailbreak = mkNixosSystem {
         system = systems.x86-linux;
-        module = ./hosts/jailbreak/configuration.nix;
+        module = ./hosts/jailbreak/jailbreak.nix;
       };
     };
 
