@@ -53,7 +53,7 @@ args @ {
 
   security.rtkit.enable = true; # realtime privileges
 
-  networking.hostName = "ilma4-nas"; # Define your hostname.
+  networking.hostName = "laat"; # Define your hostname.
 
   boot.initrd.systemd.enable = true;
   boot.initrd.network.enable = true;
