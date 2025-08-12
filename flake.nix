@@ -110,6 +110,12 @@
       system-manager = inputs.system-manager.lib.makeSystemConfig; # for system-manager
     };
 
+    baseModule = {
+      nixos = ./modules/base.nix;
+      # darwin = ./darwin-modules/base.nix;
+      home = ./home/base.nix;
+    };
+
     # workaround over home-manager using `extraSpecialArgs` instead of `specialArgs`
     mkSpecialArgs = type: extraArgs:
       if type == "home"
@@ -130,7 +136,10 @@
     in
       builders.${type} ({
           inherit pkgs;
-          modules = [module];
+          modules = [
+            baseModule.${type} or {}
+            module
+          ];
         }
         // specialArgs);
 

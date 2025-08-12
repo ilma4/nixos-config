@@ -10,7 +10,6 @@ args @ {
     ./hardware-configuration.nix
     ./hdd.nix
 
-    "${modules}/base.nix"
     "${modules}/avahi.nix"
     "${modules}/zram.nix"
     "${modules}/sops.nix"
