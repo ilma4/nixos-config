@@ -23,19 +23,9 @@ in {
 
       (
         pkgs.writeShellScriptBin "i4-update-host" ''
-          if [ -z "$1" ]; then
-            echo "Error: No 'targetHost' provided."
-            echo "Usage: i4-update-host <targetHost>"
-            exit 1
-          fi
-
-          targetHost="$1"
-
-          nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
-            --flake "${config.flake-location}#$targetHost" \
-            --target-host "root@$targetHost" \
-            --build-host "root@$targetHost" \
-            --fast
+          # Wrapper around external script to set default FLAKE_LOCATION
+          export FLAKE_LOCATION="${"\$"}{FLAKE_LOCATION:-${config.flake-location}}"
+          exec "${config.flake-location}/dotfiles/i4-update-host.sh" "$@"
         ''
       )
     ]
