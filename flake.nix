@@ -174,7 +174,7 @@
     darwinConfigurations = {
       quicksilver = mkDarwinSystem {
         system = systems.arm64-macos;
-        module = ./hosts/quicksilver/configuration.nix;
+        module = ./hosts/quicksilver/quicksilver.nix;
       };
     };
 
