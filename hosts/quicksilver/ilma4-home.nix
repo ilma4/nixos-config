@@ -53,49 +53,45 @@
       scriptsPath = "Scripts";
     };
 
-    home.packages = with pkgs;
-      [
-        # clang
-        # lldb
-        colima # vm to run docker
-        docker # docker cli
+    home.packages = with pkgs; [
+      # clang
+      # lldb
+      colima # vm to run docker
+      docker # docker cli
 
-        ghc
-        stack
-        haskell-language-server
+      ghc
+      stack
+      haskell-language-server
 
-        texlab
-        sops # for managing secrets
-        age # for age key management
+      texlab
+      sops # for managing secrets
+      age # for age key management
 
-        (pkgs.writeShellScriptBin "system-upgrade" ''
-          nix flake update --flake ${config.flake-location}
-          nix-rebuild
-          /opt/homebrew/bin/brew update -f
-          /opt/homebrew/bin/brew upgrade --greedy
-        '')
+      (pkgs.writeShellScriptBin "system-upgrade" ''
+        nix flake update --flake ${config.flake-location}
+        nix-rebuild
+        /opt/homebrew/bin/brew update -f
+        /opt/homebrew/bin/brew upgrade --greedy
+      '')
 
-        # FIXME: Remove this hack when issue is fixed: https://github.com/NixOS/nixpkgs/issues/339576
-        (let
-          bw =
-            if pkgs.stdenv.isDarwin
-            then "/opt/homebrew/bin/bw"
-            else "${pkgs.bitwarden-cli}/bin/bw";
-        in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
+      # FIXME: Remove this hack when issue is fixed: https://github.com/NixOS/nixpkgs/issues/339576
+      (let
+        bw =
+          if pkgs.stdenv.isDarwin
+          then "/opt/homebrew/bin/bw"
+          else "${pkgs.bitwarden-cli}/bin/bw";
+      in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
-        (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
-          /usr/bin/env colima start
+      (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
+        /usr/bin/env colima start
 
-          mkdir -p "${config.home.homeDirectory}/.local/share/qbittorrent-container"
-          cp "${config.sops.secrets."wg.conf".path}" "${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
-          export WG_CONFIG="${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
+        mkdir -p "${config.home.homeDirectory}/.local/share/qbittorrent-container"
+        cp "${config.sops.secrets."wg.conf".path}" "${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
+        export WG_CONFIG="${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
 
-          ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --quiet-pull --pull always
-        '')
-      ]
-      ++ (with pkgs-unstable; [
-        llama-cpp
-      ]);
+        ${pkgs.docker}/bin/docker compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --quiet-pull --pull always
+      '')
+    ];
 
     # programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
 
