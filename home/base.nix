@@ -103,6 +103,9 @@ in {
         core = {
           autocrlf = "input"; # do not change line separators
         };
+        alias = {
+          sfpush = "push --force-with-lease --force-if-includes"; # aka "safe force push"
+        };
       };
       enable = true;
       # config to commit located in `dev.nix`
