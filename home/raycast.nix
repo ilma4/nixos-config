@@ -10,6 +10,7 @@ with lib; let
   scriptFiles = {
     "firefox.applescript" = ./raycast-scripts/firefox.applescript;
     "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
+    "nix-rebuild.applescript" = ./raycast-scripts/nix-rebuild.applescript;
   };
 in {
   options = {
