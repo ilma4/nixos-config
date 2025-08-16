@@ -126,7 +126,7 @@
       "caffeine"
       "monitorcontrol" # control external monitor brightness
       "far2l"
-      "nikitabobko/tap/aerospace" # tiling window manager
+      # "nikitabobko/tap/aerospace" # tiling window manager
       "jordanbaird-ice" # edit menu bar
       "zoom"
       "zed" # very fast text editor
@@ -177,11 +177,6 @@
       AusweisApp = 948660805; # German ID card reader
     };
   };
-
-  # TODO: use homebrew path from config
-  system.activationScripts.aerospace-config.text = ''
-    sudo --user=ilma4 -- /opt/homebrew/bin/aerospace reload-config
-  '';
 
   /*
   environment.etc.hosts.text = lib.mkIf false ''
