@@ -8,7 +8,7 @@
 
   virtualisation.oci-containers.containers = {
     actual-budget = {
-      image = "docker.io/actualbudget/actual-server:latest-alpine";
+      image = "docker.io/actualbudget/actual-server:25.8.0-alpine"; # TODO: latest-alpine";
       volumes = [
         "/srv/actual-budget:/data:rw"
       ];
