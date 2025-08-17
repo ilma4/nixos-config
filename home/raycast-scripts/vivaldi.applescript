@@ -2,7 +2,7 @@
 
 # Required parameters:
 # @raycast.schemaVersion 1
-# @raycast.title Vivaldi
+# @raycast.title Vivaldi new Tab
 # @raycast.mode compact
 
 # Optional parameters:
