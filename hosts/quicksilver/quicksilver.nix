@@ -152,6 +152,7 @@
       "deskpad"
       "easydict"
       "steam"
+      "alt-tab"
 
       "blackhole-2ch"
 
