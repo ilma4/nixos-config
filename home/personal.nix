@@ -40,13 +40,13 @@ in {
     "ilma4-bkp.local" = {
       identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
     };
-    "ilma4-nas.local" = {
+    "laat.local" = {
       identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
     };
-    "ilma4-nas" = {
+    "laat" = {
       identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
     };
-    "ilma4-nas-init" = {
+    "laat-init" = {
       identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
       hostname = "192.168.1.33";
       user = "root";

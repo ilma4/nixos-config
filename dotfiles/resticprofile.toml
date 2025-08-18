@@ -86,7 +86,7 @@ from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 [hdd]
 
 [hdd.copy]
-repository = "sftp:ilma4@ilma4-nas:/mnt/hdd/restic"
+repository = "sftp:ilma4@laat:/mnt/hdd/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
 from-repo = "local:/Users/ilma4/NoBackup/restic"
