@@ -18,6 +18,23 @@
   # environment.systemPackages = with pkgs; [
   # ];
 
+  /*
+  environment.etc."hosts".text = ''
+    ##
+    # Host Database
+    #
+    # localhost is used to configure the loopback interface
+    # when the system is booting.  Do not change this entry.
+    ##
+    127.0.0.1	localhost
+    255.255.255.255	broadcasthost
+    ::1             localhost
+    0.0.0.0         habr.com
+    0.0.0.0         www.phoronix.com
+    0.0.0.0         news.ycombinator.com
+  '';
+  */
+
   networking.hostName = "quicksilver";
 
   users.users = {
