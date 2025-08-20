@@ -9,6 +9,7 @@
                 "rules": [
                     {
                         "description": "Disable \"command + tab\"",
+                        "enabled": false,
                         "manipulators": [
                             {
                                 "from": {
