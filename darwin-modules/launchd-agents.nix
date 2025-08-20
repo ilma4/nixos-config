@@ -4,6 +4,33 @@
   pkgs,
   ...
 }: {
+  launchd.user.agents.colima-start = {
+    serviceConfig = {
+      ProgramArguments = [
+        "${pkgs.bash}/bin/bash"
+        "-c"
+        ''
+          set -euo pipefail
+          echo "$(${pkgs.coreutils}/bin/date): Starting colima"
+
+          # Check if colima is already running
+          if ${pkgs.colima}/bin/colima status >/dev/null 2>&1; then
+            echo "$(${pkgs.coreutils}/bin/date): Colima is already running"
+            exit 0
+          fi
+
+          echo "$(${pkgs.coreutils}/bin/date): Starting colima..."
+          ${pkgs.colima}/bin/colima start
+
+          echo "$(${pkgs.coreutils}/bin/date): Colima started successfully"
+        ''
+      ];
+      RunAtLoad = true;
+      StandardOutPath = "/tmp/colima-start.log";
+      StandardErrorPath = "/tmp/colima-start.log";
+    };
+  };
+
   launchd.user.agents.obsidian-auto-commit = {
     serviceConfig = {
       ProgramArguments = [
