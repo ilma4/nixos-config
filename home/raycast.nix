@@ -8,7 +8,7 @@ with lib; let
 
   # AppleScript files
   scriptFiles = {
-    # "firefox.applescript" = ./raycast-scripts/firefox.applescript;
+    "firefox.applescript" = ./raycast-scripts/firefox.applescript;
     "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
     "nix-rebuild.applescript" = ./raycast-scripts/nix-rebuild.applescript;
     "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;

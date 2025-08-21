@@ -2,7 +2,7 @@
 
 # Required parameters:
 # @raycast.schemaVersion 1
-# @raycast.title Firefox
+# @raycast.title Firefox new window
 # @raycast.mode compact
 
 # Optional parameters:
