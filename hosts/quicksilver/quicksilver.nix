@@ -35,7 +35,7 @@
   '';
   */
 
-  networking.hostName = "quicksilver";
+  networking.hostName = "DE-UNIT-1832";
 
   users.users = {
     ilma4 = {
