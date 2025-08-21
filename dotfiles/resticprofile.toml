@@ -74,20 +74,10 @@ schedule-permission = "user"
 schedule-lock-wait = "15m"
 
 
-[ssd256]
-
-[ssd256.copy]
-repository = "sftp:ilma4@ilma4-bkp.local:/mnt/ssd256/restic"
-password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
-
-from-repo = "local:/Users/ilma4/NoBackup/restic"
-from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
-
-
 [hdd]
 
 [hdd.copy]
-repository = "sftp:ilma4@laat:/mnt/hdd/restic"
+repository = "sftp:ilma4@laat.local:/mnt/hdd/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
 from-repo = "local:/Users/ilma4/NoBackup/restic"
