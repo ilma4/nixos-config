@@ -125,8 +125,9 @@
       "spotify"
 
       # Docker Desktop for Mac: vm to run docker containers
-      # "docker" # i use colima instead
-      "podman-desktop"
+      # "docker" # I use podman (including docker compatibility) instead
+      # "podman-desktop" # I use "podman machine" directly
+
       "zulu@21"
 
       #avaliable in nix, but nix has troubles with gui apps

@@ -9,6 +9,10 @@
 in {
   home.packages = with pkgs;
     [
+      docker # docker cli
+      podman # podman cli
+      podman-compose # podman-compose is not bundled with podman
+
       nixd
       nil
       alejandra
