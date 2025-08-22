@@ -36,7 +36,12 @@ in {
     )
     ++ (
       if isNotNixOS
-      then [pkgs-unstable.bazelisk]
+      then [
+        pkgs-unstable.bazelisk
+        (pkgs.writeShellScriptBin "bazel" ''
+          exec ${pkgs.bazelisk}/bin/bazelisk "$@"
+        '')
+      ]
       else []
     );
 
