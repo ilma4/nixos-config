@@ -11,6 +11,8 @@
         "-c"
         ''
           set -euo pipefail
+          export PATH="$PATH:${pkgs.docker}/bin"
+
           echo "$(${pkgs.coreutils}/bin/date): Starting colima"
 
           # Check if colima is already running
