@@ -152,6 +152,7 @@ in {
     programs.atuin = {
       enable = true;
       enableZshIntegration = true;
+      enableBashIntegration = false;
       flags = [
         "--disable-up-arrow"
       ];
