@@ -81,15 +81,19 @@
           else "${pkgs.bitwarden-cli}/bin/bw";
       in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
-      (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
-        set -euo pipefail
+      (
+        let
+          CONFIG_LOCATION = "${config.home.homeDirectory}/.local/share/qbittorrent-container";
+        in (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
+          set -euo pipefail
 
-        mkdir -p "${config.home.homeDirectory}/.local/share/qbittorrent-container"
-        cp "${config.sops.secrets."wg.conf".path}" "${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
-        export WG_CONFIG="${config.home.homeDirectory}/.local/share/qbittorrent-container/wg.conf"
+          mkdir -p "${CONFIG_LOCATION}"
+          cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
+          export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
 
-        ${pkgs.podman-compose}/bin/podman-compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --quiet-pull --pull always
-      '')
+          ${pkgs.podman-compose}/bin/podman-compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --pull
+        '')
+      )
     ];
 
     # programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
