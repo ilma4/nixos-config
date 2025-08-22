@@ -126,6 +126,7 @@
 
       # Docker Desktop for Mac: vm to run docker containers
       # "docker" # i use colima instead
+      "podman-desktop"
       "zulu@21"
 
       #avaliable in nix, but nix has troubles with gui apps
@@ -149,7 +150,7 @@
       "zed" # very fast text editor
       "vial" # configure my split keyboard
       "warp" # terminal with AI agent
-      "todoist"
+      # "todoist"
 
       # Mac specific, most probably remain brew casks
       "macfuse" # FUSE for macOS, uses kernel extension

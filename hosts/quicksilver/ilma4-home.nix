@@ -59,6 +59,8 @@
       # lldb
       colima # vm to run docker
       docker # docker cli
+      podman # podman cli
+      podman-compose
 
       ghc
       stack
