@@ -87,10 +87,6 @@ in {
 
       tree
 
-      (pkgs.writeShellScriptBin "dirsize" ''
-        du -shc -- "$@" | sort --human-numeric-sort --reverse
-      '')
-
       (pkgs.writeShellScriptBin "check-im-alive" ''
         echo yay
       '')
@@ -114,6 +110,10 @@ in {
     programs.zsh = {
       enable = true;
       enableCompletion = true;
+      shellAliases = {
+        dirsize = "${pkgs.ncdu}/bin/ncdu";
+      };
+
       oh-my-zsh = {
         enable = true;
         plugins = [
