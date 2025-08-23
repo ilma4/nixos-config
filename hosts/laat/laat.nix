@@ -162,7 +162,6 @@ args @ {
 
   dockerCompose = {
     pihole.composeFile = "${flake-location}/compose/pihole.yml";
-    immich.composeFile = "${flake-location}/compose/immich.yml";
   };
 
   # programs.nix-ld.enable = true;
