@@ -86,12 +86,13 @@
           CONFIG_LOCATION = "${config.home.homeDirectory}/.local/share/qbittorrent-container";
         in (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
           set -euo pipefail
+          export PATH="${pkgs.podman-compose}/bin:${pkgs.podman}/bin:$PATH"
 
           mkdir -p "${CONFIG_LOCATION}"
           cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
           export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
 
-          ${pkgs.podman-compose}/bin/podman-compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --detach --pull
+          ${pkgs.podman}/bin/podman compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --force-recreate --remove-orphans --detach --pull
         '')
       )
     ];
