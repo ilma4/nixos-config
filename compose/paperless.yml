@@ -16,10 +16,12 @@ services:
     volumes:
       - data:/usr/src/paperless/data
       - media:/usr/src/paperless/media
-      - ./export:/usr/src/paperless/export
-      - ./consume:/usr/src/paperless/consume
+      - /srv/paperless-ngx/export:/usr/src/paperless/export
+      - /srv/paperless-ngx/consume:/usr/src/paperless/consume
     env_file: docker-compose.env
     environment:
+      PAPERLESS_OCR_LANGUAGES: "eng deu rus"
+
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
