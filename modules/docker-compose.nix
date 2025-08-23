@@ -10,6 +10,10 @@ in {
   options.dockerCompose = mkOption {
     type = types.attrsOf (types.submodule (_: {
       options = {
+        enable = mkOption {
+          type = types.bool;
+          default = true;
+        };
         composeFile = mkOption {type = types.str;};
         environment = mkOption {
           type = types.attrsOf types.str;
@@ -43,5 +47,5 @@ in {
 
       wantedBy = ["multi-user.target"];
     })
-    cfg;
+    (lib.filterAttrs (name: svc: svc.enable) cfg);
 }
