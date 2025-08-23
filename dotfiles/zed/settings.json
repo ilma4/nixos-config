@@ -2,8 +2,8 @@
   "agent": {
     "always_allow_tool_actions": true,
     "default_model": {
-      "model": "claude-sonnet-4",
-      "provider": "zed.dev"
+      "model": "gpt-5",
+      "provider": "copilot_chat"
     }
   },
   "auto_install_extensions": {
