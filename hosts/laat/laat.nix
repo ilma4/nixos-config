@@ -26,7 +26,7 @@ args @ {
     "${modules}/actual-budget.nix"
     "${modules}/paperless.nix"
 
-    "${modules}/immich.nix"
+    # "${modules}/immich.nix"
     "${modules}/syncthing.nix"
 
     "${modules}/grafana.nix"
@@ -160,8 +160,9 @@ args @ {
     ];
   };
 
-  dockerCompose.pihole = {
-    composeFile = "${flake-location}/compose/pihole.yaml";
+  dockerCompose = {
+    pihole.composeFile = "${flake-location}/compose/pihole.yml";
+    immich.composeFile = "${flake-location}/compose/immich.yml";
   };
 
   # programs.nix-ld.enable = true;
