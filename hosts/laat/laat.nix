@@ -161,8 +161,10 @@ args @ {
 
   systemd.services."pihole" = {
     description = "Pihole Serice for docker-compose";
+
     after = ["network-online.target" "podman.socket"];
-    wants = ["network-online.target" "podman.socket"];
+    wants = ["network-online.target"];
+    requires = ["podman.socket"];
 
     path = [pkgs.podman pkgs.podman-compose];
 
