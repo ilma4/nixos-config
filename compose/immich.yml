@@ -23,12 +23,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       # "/mnt/hdd/Pictures:/external/syncthing:ro"
     environment:
-      - "DB_DATABASE_NAME": "immich"
-      - "DB_DATA_LOCATION": "./postgres"
-      - "DB_PASSWORD": "postgres"
-      - "DB_USERNAME": "postgres"
-      - "IMMICH_VERSION": "release"
-      - "UPLOAD_LOCATION": "./library"
+      DB_DATABASE_NAME: "immich"
+      DB_DATA_LOCATION: "./postgres"
+      DB_PASSWORD: "postgres"
+      DB_USERNAME: "postgres"
+      IMMICH_VERSION: "release"
+      UPLOAD_LOCATION: "./library"
     # env_file: # TODO use .env file instead of directly passing environment variables
     #   - .env
     ports:
@@ -49,12 +49,12 @@ services:
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
     environment:
-      - "DB_DATABASE_NAME": "immich"
-      - "DB_DATA_LOCATION": "./postgres"
-      - "DB_PASSWORD": "postgres"
-      - "DB_USERNAME": "postgres"
-      - "IMMICH_VERSION": "release"
-      - "UPLOAD_LOCATION": "./library"
+      DB_DATABASE_NAME: "immich"
+      DB_DATA_LOCATION: "./postgres"
+      DB_PASSWORD: "postgres"
+      DB_USERNAME: "postgres"
+      IMMICH_VERSION: "release"
+      UPLOAD_LOCATION: "./library"
     volumes:
       - model-cache:/cache
     # env_file: # TODO
