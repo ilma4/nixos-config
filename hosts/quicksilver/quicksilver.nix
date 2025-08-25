@@ -105,6 +105,9 @@
       cleanup = "uninstall";
     };
 
+    # TODO: enable with 25.11 release
+    # greedyCasks = true; # always upgrade casks
+
     casks = [
       # Could be replaced by nix packages in future
       "firefox"
