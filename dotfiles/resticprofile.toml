@@ -43,6 +43,7 @@ exclude = [
 
     "/Users/ilma4/.android", # android emulator images
     "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
+    "/Users/ilma4/.local/share/containers", # podman local containers, vms etc.
     "/Users/ilma4/.vscode",  # vscode extensions
 
     # caches
