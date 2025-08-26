@@ -7,12 +7,15 @@ services:
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
+    container_name: paperless
     depends_on:
       - broker
       - gotenberg
       - tika
     ports:
       - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - /srv/paperless-ngx/data:/usr/src/paperless/data
       - /srv/paperless-ngx/media:/usr/src/paperless/media

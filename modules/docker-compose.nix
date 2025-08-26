@@ -52,4 +52,7 @@ in {
       wantedBy = ["multi-user.target"];
     })
     (lib.filterAttrs (name: svc: svc.enable) cfg);
+
+  # TODO: script to update images (and restart if needed)
+  # TODO: systemd-timer checking for image updates and restarting services
 }
