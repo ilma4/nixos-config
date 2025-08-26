@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: {
-  launchd.user.agents.colima-start = {
+  launchd.user.agents.podman-machine-autostart = {
     serviceConfig = {
       ProgramArguments = [
         "${pkgs.bash}/bin/bash"
@@ -13,18 +13,18 @@
           set -euo pipefail
           export PATH="$PATH:${pkgs.docker}/bin"
 
-          echo "$(${pkgs.coreutils}/bin/date): Starting colima"
+          echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine"
 
-          # Check if colima is already running
-          if ${pkgs.colima}/bin/colima status >/dev/null 2>&1; then
-            echo "$(${pkgs.coreutils}/bin/date): Colima is already running"
+          # Check if podman-machine is already running
+          if ${pkgs.podman}/bin/podman machine status >/dev/null 2>&1; then
+            echo "$(${pkgs.coreutils}/bin/date): Podman-machine is already running"
             exit 0
           fi
 
-          echo "$(${pkgs.coreutils}/bin/date): Starting colima..."
-          ${pkgs.colima}/bin/colima start
+          echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine..."
+          ${pkgs.podman}/bin/podman machine start
 
-          echo "$(${pkgs.coreutils}/bin/date): Colima started successfully"
+          echo "$(${pkgs.coreutils}/bin/date): Podman-machine started successfully"
         ''
       ];
       RunAtLoad = true;
