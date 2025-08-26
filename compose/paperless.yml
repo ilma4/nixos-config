@@ -14,8 +14,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - data:/usr/src/paperless/data
-      - media:/usr/src/paperless/media
+      - /srv/paperless-ngx/data:/usr/src/paperless/data
+      - /srv/paperless-ngx/media:/usr/src/paperless/media
       - /srv/paperless-ngx/export:/usr/src/paperless/export
       - /srv/paperless-ngx/consume:/usr/src/paperless/consume
     env_file: docker-compose.env
