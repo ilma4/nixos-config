@@ -18,7 +18,7 @@ services:
       - /srv/paperless-ngx/media:/usr/src/paperless/media
       - /srv/paperless-ngx/export:/usr/src/paperless/export
       - /srv/paperless-ngx/consume:/usr/src/paperless/consume
-    env_file: docker-compose.env
+    # env_file: docker-compose.env # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.env
     environment:
       PAPERLESS_OCR_LANGUAGES: "eng deu rus"
 
