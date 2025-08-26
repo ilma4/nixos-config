@@ -34,7 +34,11 @@ in {
       requires = ["podman.socket"];
 
       path = [pkgs.podman pkgs.podman-compose];
-      restartTriggers = [pkgs.podman pkgs.podman-compose svc.composeFile];
+      restartTriggers = [
+        pkgs.podman
+        pkgs.podman-compose
+        (builtins.readFile svc.composeFile)
+      ];
 
       environment = svc.environment;
 
