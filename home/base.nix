@@ -86,6 +86,7 @@ in {
       p7zip
 
       tree
+      ncdu
 
       (pkgs.writeShellScriptBin "check-im-alive" ''
         echo yay
