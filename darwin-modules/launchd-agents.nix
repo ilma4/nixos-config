@@ -12,17 +12,18 @@
         ''
           set -euo pipefail
           export PATH="$PATH:${pkgs.docker}/bin"
+          echo $(whoami)
 
           echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine"
 
           # Check if podman-machine is already running
-          if ${pkgs.podman}/bin/podman machine status >/dev/null 2>&1; then
+          if ${pkgs.podman}/bin/podman machine ls >/dev/null 2>&1; then
             echo "$(${pkgs.coreutils}/bin/date): Podman-machine is already running"
             exit 0
           fi
 
           echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine..."
-          ${pkgs.podman}/bin/podman machine start
+          # ${pkgs.podman}/bin/podman machine start
 
           echo "$(${pkgs.coreutils}/bin/date): Podman-machine started successfully"
         ''
