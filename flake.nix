@@ -46,6 +46,10 @@
       url = "github:utensils/mcp-nixos";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    yaml = {
+      url = "github:folospior/yaml.arm64.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Platform-specific utilities
     nix-rosetta-builder = {
@@ -131,6 +135,11 @@
       specialArgs = mkSpecialArgs type (
         baseSpecialArgs
         // {pkgs-unstable = (pkgsSets system).unstable;}
+        // {
+          lib = nixpkgs.lib.extend (
+            final: prev: {yaml = inputs.yaml.lib.${system};}
+          );
+        }
         // extraSpecialArgs
       );
     in
