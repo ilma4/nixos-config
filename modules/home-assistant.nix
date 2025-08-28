@@ -1,6 +1,4 @@
-{...}: let
-  home-assistant-version = "2025.7.1";
-in {
+{flake-location, ...}: {
   users.users.homeassistant = {
     isSystemUser = true;
     uid = 990;
@@ -8,18 +6,14 @@ in {
   };
   users.groups.homeassistant.gid = 986;
 
-  virtualisation.oci-containers.containers = {
-    homeassistant = {
-      image = "ghcr.io/home-assistant/home-assistant:${home-assistant-version}";
-      volumes = [
-        "/srv/homeassistant:/config"
-        "/etc/localtime:/etc/localtime:ro"
-        "/run/dbus:/run/dbus:ro"
-      ];
-      autoStart = true;
-      extraOptions = ["--privileged" "--network=host"];
-    };
+  dockerCompose.home-assistant.composeFile = "${flake-location}/compose/home-assistant.yml";
+  dockerCompose.home-assistant.environment = {
+    CONFIG_DIR = "/srv/homeassistant";
   };
+
+  systemd.tmpfiles.rules = [
+    "/srv/homeassistant 0755 root root -"
+  ];
   networking.firewall.allowedTCPPorts = [
     8123 # home-assistant
   ];
