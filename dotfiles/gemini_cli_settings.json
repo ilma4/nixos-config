@@ -1,0 +1,9 @@
+{
+  "selectedAuthType": "oauth-personal",
+  "preferredEditor": "zed",
+  "theme": "Default Light",
+  "vimMode": false,
+  "showMemoryUsage": true,
+  "hideBanner": false,
+  "hideTips": false
+}

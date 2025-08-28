@@ -125,9 +125,11 @@
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
     in {
+      # TODO: move those options to some common module
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
       ".config/zed".source = symlink "zed";
+      ".gemini/settings.json".source = symlink "gemini_cli_settings.json";
 
       ".config/aerospace/aerospace.toml".source = "${flake-location}/dotfiles/aerospace.toml";
       ".config/resticprofile/profiles.toml".source = "${flake-location}/dotfiles/resticprofile.toml";
