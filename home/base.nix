@@ -150,6 +150,14 @@ in {
 
           # don't do git status after every command for theese repos
           zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
+
+          bindkey -v # vim mode
+          bindkey '^?' backward-delete-char # backspace work as usual
+          bindkey '^H' backward-delete-char # backspace work as usual
+
+          # Prefix search with arrow keys
+          bindkey "^[[A" up-line-or-search    # Up arrow
+          bindkey "^[[B" down-line-or-search  # Down arrow
         '';
       in
         lib.mkMerge [early normal beforeCompinit];
