@@ -13,6 +13,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 ## Code Conventions
 - We use alejandra for formatting
 - Write "set -euo pipefail" at the beginning of every bash script
+- Before using options or packages ensure they exists
 
 ## Project Structure
 - flake.nix - file describing flake
