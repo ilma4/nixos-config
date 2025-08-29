@@ -113,6 +113,7 @@ in {
       enable = true;
       enableCompletion = true;
       shellAliases = {
+        ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=tty"; # use GNU ls on macOS, it has better colors
         dirsize = "${pkgs.ncdu}/bin/ncdu";
       };
 
@@ -191,6 +192,8 @@ in {
     home.file = lib.mkIf (!config.isRootless) {
       ".screenrc".source = "${flake-location}/dotfiles/screenrc";
     };
+
+    programs.dircolors.enable = true;
 
     # Home Manager can also manage your environment variables through
     # 'home.sessionVariables'. These will be explicitly sourced when using a
