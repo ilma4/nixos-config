@@ -130,12 +130,16 @@ in {
           fi
         '';
 
-        beforeCompinit = lib.mkOrder 550 ''
-          zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-          setopt NO_CASE_GLOB
-        '';
+        beforeCompinit =
+          lib.mkOrder 550 ''
+          '';
 
         normal = lib.mkOrder 1000 ''
+          autoload -Uz compinit && compinit
+          zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+          zstyle ':completion:*' menu select
+          setopt NO_CASE_GLOB
+
           # don't do git status after every command for theese repos
           zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
         '';
