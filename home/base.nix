@@ -93,6 +93,7 @@ in {
       '')
 
       (pkgs.writeShellScriptBin "nix-rebuild" config.rebuild-script)
+      zsh-powerlevel10k
     ];
 
     programs.git = {
@@ -115,19 +116,18 @@ in {
         dirsize = "${pkgs.ncdu}/bin/ncdu";
       };
 
-      oh-my-zsh = {
-        enable = true;
-        plugins = [
-          "git"
-          "vi-mode"
-          "extract"
-        ];
-        theme = "apple";
-        extraConfig = ''
-          # don't do git status after every command for theese repos
-          zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
-        '';
-      };
+      initExtra = ''
+        # Powerlevel10k theme
+        source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+
+        # Load user Powerlevel10k config if present
+        if [ -f "$HOME/.p10k.zsh" ]; then
+          source "$HOME/.p10k.zsh"
+        fi
+
+        # don't do git status after every command for theese repos
+        zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
+      '';
 
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =

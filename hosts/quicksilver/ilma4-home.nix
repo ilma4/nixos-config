@@ -65,6 +65,7 @@
       texlab
       sops # for managing secrets
       age # for age key management
+      meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
 
       (pkgs.writeShellScriptBin "system-upgrade" ''
         nix flake update --flake ${config.flake-location}
