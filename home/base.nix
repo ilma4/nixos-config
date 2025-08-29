@@ -102,7 +102,7 @@ in {
           autocrlf = "input"; # do not change line separators
         };
         alias = {
-          sfpush = "push --force-with-lease --force-if-includes"; # aka "safe force push"
+          push-force-safe = "push --force-with-lease --force-if-includes";
         };
       };
       enable = true;
@@ -119,18 +119,28 @@ in {
         ll = "ls -lh";
       };
 
-      initExtra = ''
-        # Powerlevel10k theme
-        source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+      initContent = let
+        early = lib.mkOrder 500 ''
+          # Powerlevel10k theme
+          source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
 
-        # Load user Powerlevel10k config if present
-        if [ -f "$HOME/.p10k.zsh" ]; then
-          source "$HOME/.p10k.zsh"
-        fi
+          # Load user Powerlevel10k config if present
+          if [ -f "$HOME/.p10k.zsh" ]; then
+            source "$HOME/.p10k.zsh"
+          fi
+        '';
 
-        # don't do git status after every command for theese repos
-        zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
-      '';
+        beforeCompinit = lib.mkOrder 550 ''
+          zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+          setopt NO_CASE_GLOB
+        '';
+
+        normal = lib.mkOrder 1000 ''
+          # don't do git status after every command for theese repos
+          zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
+        '';
+      in
+        lib.mkMerge [early normal beforeCompinit];
 
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
