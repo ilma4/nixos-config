@@ -135,10 +135,18 @@ in {
           '';
 
         normal = lib.mkOrder 1000 ''
+          # enable case-insensitive completion
           autoload -Uz compinit && compinit
           zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-          zstyle ':completion:*' menu select
           setopt NO_CASE_GLOB
+
+
+          # Select completion items
+          zstyle ':completion:*' menu select
+
+          # Enable colors in completion
+          autoload -U colors && colors
+          zstyle ':completion:*' list-colors "$\{s.:. LS_COLORS\}"
 
           # don't do git status after every command for theese repos
           zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
