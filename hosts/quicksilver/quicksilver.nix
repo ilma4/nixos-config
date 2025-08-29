@@ -113,6 +113,7 @@
       "firefox"
       "vivaldi"
       "thunderbird@esr" # esr is default for thunderbird
+      "mailspring" # email client
       "anki"
       "obs"
       # "bitwarden"
