@@ -177,10 +177,6 @@ in {
     programs.ssh = lib.mkIf config.configure-ssh {
       enable = true;
       addKeysToAgent = "yes";
-
-      matchBlocks = {
-        "nvc00731.amt.labs.intellij.net" = {forwardAgent = true;};
-      };
     };
 
     programs.atuin = {
