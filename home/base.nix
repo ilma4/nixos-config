@@ -113,7 +113,7 @@ in {
       enable = true;
       enableCompletion = true;
       shellAliases = {
-        ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=tty"; # use GNU ls on macOS, it has better colors
+        ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
         # dirsize = "${pkgs.ncdu}/bin/ncdu";
         l = "ls -lah";
         ll = "ls -lh";
@@ -145,8 +145,8 @@ in {
           zstyle ':completion:*' menu select
 
           # Enable colors in completion
-          autoload -U colors && colors
-          zstyle ':completion:*' list-colors "$\{s.:. LS_COLORS\}"
+          # autoload -U colors && colors
+          zstyle ':completion:*' list-colors "{\$}{s.:. $LS_COLORS}"
 
           # don't do git status after every command for theese repos
           zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
