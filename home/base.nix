@@ -114,7 +114,7 @@ in {
       enableCompletion = true;
       shellAliases = {
         ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=tty"; # use GNU ls on macOS, it has better colors
-        dirsize = "${pkgs.ncdu}/bin/ncdu";
+        # dirsize = "${pkgs.ncdu}/bin/ncdu";
         l = "ls -lah";
         ll = "ls -lh";
       };
