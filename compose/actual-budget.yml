@@ -1,0 +1,21 @@
+# Actual Budget - Docker Compose
+# Expects an environment variable UID_GID (format: "<uid>:<gid>") to run the container as a specific user.
+# Example: export UID_GID="800:800"
+
+name: actual-budget
+services:
+  actual-budget:
+    container_name: actual-budget
+    image: docker.io/actualbudget/actual-server:25.8.0-alpine
+    user: "${UID_GID}"
+    ports:
+      - "5006:5006"
+    volumes:
+      - /srv/actual-budget:/data:rw
+    healthcheck:
+      test: ["CMD", "node", "src/scripts/health-check.js"]
+      interval: 1m0s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
