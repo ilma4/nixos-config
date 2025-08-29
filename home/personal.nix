@@ -3,7 +3,6 @@
   isDarwin = pkgs.stdenv.isDarwin;
 in {
   home.packages = with pkgs; [
-    screen
     resticprofile
 
     /*
