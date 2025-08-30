@@ -76,14 +76,15 @@
   nginxConf = pkgs.writeText "reverse_proxy.conf" nginxServerConfs;
   composeYaml = ''
     services:
-      reverse_proxy:
+      nginx-reverse-proxy:
         image: docker.io/library/nginx:stable-alpine
-        container_name: reverse_proxy
+        container_name: nginx-reverse-proxy
         restart: always
         volumes:
           - ${nginxConf}:/etc/nginx/conf.d/reverse_proxy.conf:ro
         networks:
-          - reverse_proxy
+          reverse_proxy:
+            ipv4_address: 10.20.0.10
         ports:
           - "80:80"
 
@@ -109,7 +110,7 @@ in {
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
-          ExecStart = "${pkgs.bash}/bin/bash -euo pipefail -c '${pkgs.podman}/bin/podman network exists reverse_proxy || ${pkgs.podman}/bin/podman network create reverse_proxy'";
+          ExecStart = "${pkgs.bash}/bin/bash -euo pipefail -c '${pkgs.podman}/bin/podman network exists reverse_proxy || ${pkgs.podman}/bin/podman network create --subnet=10.20.0.0/24 --gateway=10.20.0.1 --ip-range=10.20.0.32/27 reverse_proxy'";
         };
       };
 
