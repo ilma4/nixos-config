@@ -32,6 +32,8 @@ args @ {
     "${modules}/grafana.nix"
     "${modules}/prometheus.nix"
     "${modules}/node-exporter.nix"
+
+    "${modules}/nginx-reverse-proxy.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.
