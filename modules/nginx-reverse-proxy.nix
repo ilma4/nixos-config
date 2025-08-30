@@ -183,7 +183,7 @@ in {
       # Nginx reverse proxy as a dockerCompose service
       dockerCompose."reverse-proxy" = {
         enable = true;
-        composeFile = composeYaml;
+        composeFile = "${composeYaml}";
       };
 
       # Make the compose service depend on config and network
@@ -192,7 +192,7 @@ in {
         requires = ["reverse-proxy-config.service" "podman-network-reverse-proxy.service"];
       };
 
-      networking.firewall.allowedTcpPorts = [80 443];
+      networking.firewall.allowedTCPPorts = [80 443];
 
       # home.packages = [
       #   pkgs.writeShellScriptBin
