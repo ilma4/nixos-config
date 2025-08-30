@@ -27,9 +27,6 @@
   cfg = config.nginxReverseProxy or {};
 
   enabledCompose = filterAttrs (_: v: (v.enable or true)) (config.dockerCompose or {});
-  composeFiles = map (v: v.composeFile) (attrValues enabledCompose);
-
-  confDir = "/var/lib/nginx-reverse-proxy/conf";
 
   # listOf {name: str, port: int};
   containers = lib.pipe enabledCompose [
@@ -50,10 +47,10 @@
         image: docker.io/library/nginx:stable-alpine
         container_name: reverse-proxy
         restart: always
+        volumes:
+          - TODO
         networks:
           - reverse_proxy
-        # volumes:
-          # - ${confDir}:/etc/nginx/conf.d:ro
         ports:
           - "80:80"
 
