@@ -12,7 +12,7 @@
     "${flake-location}/modules/home-manager.nix"
 
     inputs.home-manager.darwinModules.home-manager
-    # inputs.nix-rosetta-builder.darwinModules.default
+    inputs.nix-rosetta-builder.darwinModules.default
   ];
 
   # environment.systemPackages = with pkgs; [
@@ -229,10 +229,10 @@
   */
 
   # uncomment on clean nix-darwin
-  nix.linux-builder.enable = false;
+  # nix.linux-builder.enable = true;
 
-  # nix-rosetta-builder.enable = false;
-  # nix-rosetta-builder.onDemand = false;
+  nix-rosetta-builder.enable = true;
+  nix-rosetta-builder.onDemand = true; # builder sleeps when not in use
 
   # VPN to access homelab
   services.tailscale.enable = true;
