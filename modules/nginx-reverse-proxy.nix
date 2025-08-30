@@ -1,6 +1,11 @@
-{ config, lib, pkgs, ... }:
-let
-  inherit (lib)
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  inherit
+    (lib)
     mkIf
     mkMerge
     mkOption
@@ -9,7 +14,11 @@ let
     attrValues
     concatStringsSep
     escapeShellArg
-  ;
+    getAttrFromPath
+    filter
+    map
+    fromYaml
+    ;
 
   cfg = config.nginxReverseProxy or {};
 
@@ -18,86 +27,91 @@ let
 
   confDir = "/var/lib/nginx-reverse-proxy/conf";
 
+  containers = lib.pipe enabledCompose [
+    (map (s: fromYaml s.composeFile))
+    (filter (s: getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
+  ];
+
   generatorScript = pkgs.writeShellScript "nginx-reverse-proxy-generate" ''
-    set -euo pipefail
+        set -euo pipefail
 
-    mkdir -p ${confDir}
+        mkdir -p ${confDir}
 
-    tmp="$(mktemp)"
-    trap 'rm -f "$tmp"' EXIT
+        tmp="$(mktemp)"
+        trap 'rm -f "$tmp"' EXIT
 
-    # Common Nginx configuration + server boilerplate
-    cat > "$tmp" <<'EOF'
-    map $http_upgrade $connection_upgrade {
-      default upgrade;
-      \'\' close;
-    }
+        # Common Nginx configuration + server boilerplate
+        cat > "$tmp" <<'EOF'
+        map $http_upgrade $connection_upgrade {
+          default upgrade;
+          \'\' close;
+        }
 
-    server {
-      listen 80 default_server;
-      server_name _;
+        server {
+          listen 80 default_server;
+          server_name _;
 
-      # Common proxy settings
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
+          # Common proxy settings
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
 
-      # Tuning
-      client_max_body_size 100m;
-      sendfile on;
+          # Tuning
+          client_max_body_size 100m;
+          sendfile on;
 
-      # Health check
-      location = /healthz {
-        return 200 "ok";
-        add_header Content-Type text/plain;
-      }
-    EOF
+          # Health check
+          location = /healthz {
+            return 200 "ok";
+            add_header Content-Type text/plain;
+          }
+        EOF
 
-    # Discover services from compose files that:
-    # - are connected to the reverse_proxy network
-    # - have an expose directive
-    for file in \
-      ${concatStringsSep " \\\n      " (map escapeShellArg composeFiles)}
-    ; do
-      [ -f "$file" ] || continue
+        # Discover services from compose files that:
+        # - are connected to the reverse_proxy network
+        # - have an expose directive
+        for file in \
+          ${concatStringsSep " \\\n      " (map escapeShellArg composeFiles)}
+        ; do
+          [ -f "$file" ] || continue
 
-      # TODO: use https://github.com/jim3692/yaml.nix to convert YAML to attrset during build-time
-      # Using yq (Go) to convert to JSON and jq to filter for matching services
-      yq -o=json '.' "$file" | jq -r '
-        .services // {} | to_entries[] |
-        select(
-          ((.value.networks? // [] | type) as $t |
-            if $t == "array" then (.value.networks | index("reverse_proxy") != null)
-            elif $t == "object" then (.value.networks | has("reverse_proxy"))
-            else false end
-          )
-          and ((.value.expose? // []) | length > 0)
-        ) |
-        [.key, (.value.expose[0] | tostring)] | @tsv
-      ' | while IFS=$'\t' read -r name port; do
-        # Normalize port (drop protocol suffixes like /tcp and ranges like 8080-8090)
-        port="${port%%/*}"
-        port="${port%%-*}"
+          # TODO: use https://github.com/jim3692/yaml.nix to convert YAML to attrset during build-time
+          # Using yq (Go) to convert to JSON and jq to filter for matching services
+          yq -o=json '.' "$file" | jq -r '
+            .services // {} | to_entries[] |
+            select(
+              ((.value.networks? // [] | type) as $t |
+                if $t == "array" then (.value.networks | index("reverse_proxy") != null)
+                elif $t == "object" then (.value.networks | has("reverse_proxy"))
+                else false end
+              )
+              and ((.value.expose? // []) | length > 0)
+            ) |
+            [.key, (.value.expose[0] | tostring)] | @tsv
+          ' | while IFS=$'\t' read -r name port; do
+            # Normalize port (drop protocol suffixes like /tcp and ranges like 8080-8090)
+            port="${"\$"}{port%%/*}"
+            port="${"\$"}{port%%-*}"
 
-        if [ -n "$name" ] && [ -n "$port" ]; then
-          cat >> "$tmp" <<EOF2
-      location /$name/ {
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection \$connection_upgrade;
-        proxy_pass http://$name:$port/;
-      }
-EOF2
-        fi
-      done
-    done
+            if [ -n "$name" ] && [ -n "$port" ]; then
+              cat >> "$tmp" <<EOF2
+          location /$name/ {
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Connection \$connection_upgrade;
+            proxy_pass http://$name:$port/;
+          }
+    EOF2
+            fi
+          done
+        done
 
-    # Close the server block
-    echo '}' >> "$tmp"
+        # Close the server block
+        echo '}' >> "$tmp"
 
-    # Atomically update generated config
-    install -D -m 0644 "$tmp" "${confDir}/generated.conf"
+        # Atomically update generated config
+        install -D -m 0644 "$tmp" "${confDir}/generated.conf"
   '';
 
   composeYaml = pkgs.writeText "reverse-proxy.compose.yml" ''
@@ -118,8 +132,7 @@ EOF2
       reverse_proxy:
         external: true
   '';
-in
-{
+in {
   options.nginxReverseProxy = {
     enable = mkOption {
       type = types.bool;
@@ -133,28 +146,27 @@ in
       # Ensure the reverse_proxy podman network exists
       systemd.services.podman-network-reverse-proxy = {
         description = "Ensure podman network reverse_proxy exists";
-        wantedBy = [ "multi-user.target" ];
+        wantedBy = ["multi-user.target"];
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
           ExecStart = "${pkgs.bash}/bin/bash -euo pipefail -c '${pkgs.podman}/bin/podman network exists reverse_proxy || ${pkgs.podman}/bin/podman network create reverse_proxy'";
         };
-        path = [ pkgs.podman ];
       };
 
       # Generate Nginx config from dockerCompose YAMLs
       systemd.services.reverse-proxy-config = {
         description = "Generate Nginx config for reverse_proxy-attached Compose services";
-        wantedBy = [ "multi-user.target" ];
-        after = [ "podman-network-reverse-proxy.service" ];
-        requires = [ "podman-network-reverse-proxy.service" ];
+        wantedBy = ["multi-user.target"];
+        after = ["podman-network-reverse-proxy.service"];
+        requires = ["podman-network-reverse-proxy.service"];
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${generatorScript}/bin/nginx-reverse-proxy-generate";
         };
-        path = [ pkgs.coreutils pkgs.jq pkgs.yq-go ];
+        path = [pkgs.coreutils pkgs.jq pkgs.yq-go];
         # Re-run generator when compose files change (on switch)
-        restartTriggers = (map (f: builtins.readFile f) composeFiles);
+        restartTriggers = map (f: builtins.readFile f) composeFiles;
       };
 
       # Nginx reverse proxy as a dockerCompose service
@@ -165,11 +177,11 @@ in
 
       # Make the compose service depend on config and network
       systemd.services."reverse-proxy" = {
-        after = [ "reverse-proxy-config.service" "podman-network-reverse-proxy.service" ];
-        requires = [ "reverse-proxy-config.service" "podman-network-reverse-proxy.service" ];
+        after = ["reverse-proxy-config.service" "podman-network-reverse-proxy.service"];
+        requires = ["reverse-proxy-config.service" "podman-network-reverse-proxy.service"];
       };
 
-      networking.firewall.allowedTcpPorts = [ 80 443 ];
+      networking.firewall.allowedTcpPorts = [80 443];
     }
   ]);
 }
