@@ -1,8 +1,8 @@
 version: "3.8"
 services:
-  homer:
+  dashboard:
     image: b4bz/homer:latest
-    container_name: homer
+    container_name: dashboard
     expose:
       - "8080"
 
