@@ -29,9 +29,10 @@ in {
     (name: svc: let
       compose = "${pkgs.podman}/bin/podman compose --file ${svc.composeFile}";
     in {
-      after = ["network-online.target" "podman.socket"];
+      # TODO: require pdoman-network-reverse-proxy.service only when needed
+      after = ["network-online.target" "podman.socket" "podman-network-reverse-proxy.service"];
       wants = ["network-online.target"];
-      requires = ["podman.socket"];
+      requires = ["podman.socket" "podman-network-reverse-proxy.service"];
 
       path = [pkgs.podman pkgs.podman-compose];
       restartTriggers = [
