@@ -1,0 +1,10 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    user: "${GRAFANA_UID}:${GRAFANA_GID}"
+    volumes:
+      - "/srv/grafana:/var/lib/grafana"
+    network_mode: host
+    restart: unless-stopped

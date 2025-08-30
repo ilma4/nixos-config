@@ -1,0 +1,28 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:${GLUETUN_VERSION}
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: wireguard
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${WG_CONF_PATH}:/gluetun/wireguard/wg0.conf:ro"
+    ports:
+      - "8080:8080"
+    hostname: gluetun
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+
+  qbittorrent:
+    image: linuxserver/qbittorrent:${QBITTORRENT_VERSION}
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/srv/qbittorrent/config:/config"
+      - "/mnt/hdd/torrent:/downloads"
+    network_mode: "container:gluetun"
+    depends_on:
+      - gluetun
+    restart: unless-stopped

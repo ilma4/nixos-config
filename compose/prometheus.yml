@@ -1,0 +1,11 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    user: "${PROMETHEUS_UID}:${PROMETHEUS_GID}"
+    volumes:
+      - "${CONFIG_FILE}:/etc/prometheus/prometheus.yml"
+      - "/srv/prometheus/data:/prometheus"
+    ports:
+      - "9090:9090"
+    network_mode: host
+    restart: unless-stopped

@@ -18,19 +18,13 @@
     "d /srv/prometheus/data 0700 ${config.users.users.prometheus.name} ${config.users.groups.prometheus.name} -"
   ];
 
-  virtualisation.oci-containers.containers.prometheus = {
-    image = "prom/prometheus:latest";
-    user = "${toString config.users.users.prometheus.uid}:${toString config.users.groups.prometheus.gid}";
-    volumes = [
-      "${flake-location}/dotfiles/prometheus.yml:/etc/prometheus/prometheus.yml"
-      "/srv/prometheus/data:/prometheus"
-    ];
-    ports = [
-      "9090:9090"
-    ];
-    extraOptions = [
-      "--network=host"
-    ];
+  dockerCompose.prometheus = {
+    composeFile = "${flake-location}/compose/prometheus.yml";
+    environment = {
+      PROMETHEUS_UID = toString config.users.users.prometheus.uid;
+      PROMETHEUS_GID = toString config.users.groups.prometheus.gid;
+      CONFIG_FILE = "${flake-location}/dotfiles/prometheus.yml";
+    };
   };
 
   networking.firewall.allowedTCPPorts = [

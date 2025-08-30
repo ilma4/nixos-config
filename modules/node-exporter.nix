@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake-location,
   ...
 }:
 with lib; let
@@ -39,7 +40,7 @@ in {
       default = [
         "--path.rootfs=/host"
       ];
-      description = "Extra arguments to pass to node-exporter";
+      description = "Extra arguments to pass to node-exporter (ignored when using dockerCompose)";
     };
 
     openFirewall = mkOption {
@@ -62,28 +63,15 @@ in {
       gid = cfg.uid;
     };
 
-    # Configure the OCI container
-    virtualisation.oci-containers.containers.node-exporter = {
-      image = cfg.image;
-      ports = ["${toString cfg.port}:9100"];
-      user = "${toString cfg.uid}:${toString cfg.uid}";
-
-      # Mount host filesystems for monitoring
-      volumes = [
-        "/:/host:ro,rslave"
-      ];
-
-      # Set command arguments
-      cmd = cfg.extraArgs;
-
-      # Security and networking options
-      extraOptions = [
-        "--pid=host"
-        "--network=host"
-        "--read-only"
-        "--cap-drop=ALL"
-        "--cap-add=SYS_TIME"
-      ];
+    # Configure docker-compose service
+    dockerCompose.node-exporter = {
+      composeFile = "${flake-location}/compose/node-exporter.yml";
+      environment = {
+        NODE_EXPORTER_IMAGE = cfg.image;
+        NODE_EXPORTER_PORT = toString cfg.port;
+        NODE_EXPORTER_UID = toString cfg.uid;
+        NODE_EXPORTER_GID = toString cfg.uid;
+      };
     };
 
     # Open firewall if requested
