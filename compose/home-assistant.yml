@@ -7,13 +7,6 @@ services:
       - ${CONFIG_DIR}:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
-    expose:
-      - "8123"
-    networks:
-      reverse_proxy:
+    network_mode: host
     restart: unless-stopped
     privileged: true
-
-networks:
-  reverse_proxy:
-    external: true
