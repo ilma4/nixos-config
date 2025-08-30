@@ -31,19 +31,18 @@
 
   confDir = "/var/lib/nginx-reverse-proxy/conf";
 
+  # listOf {name: str, port: int};
   containers = lib.pipe enabledCompose [
     (mapAttrs (_: s: fromYaml s.composeFile))
     (filter (s: getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
     (mapAttrs (_: s: filterAttrs (_: v: hasAttr "container_name" v && hasAttrByPath ["networks" "reverse_proxy"] v && hasAttr "expose" v) s))
     (s: lib.attrsets.mergeAttrsList (lib.attrValues s))
     (mapAttrs (_: s: {
-      # name = assert (match ".*_.*" s.container_name == null); s.container_name;
-      name = s.container_name;
+      name = assert (match ".*_.*" s.container_name == null); s.container_name;
       port = s.expose [0];
     }))
     attrValues
   ];
-
   composeYaml = ''
     version: "3.8"
     services:
