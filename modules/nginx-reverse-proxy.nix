@@ -13,33 +13,70 @@
     filterAttrs
     attrValues
     concatStringsSep
-    escapeShellArg
     getAttrFromPath
     filter
     map
-    fromYaml
     mapAttrs
     hasAttr
     hasAttrByPath
+    isList
+    isAttrs
     ;
-  inherit (builtins) match;
+  inherit (builtins) match elemAt toString;
 
   cfg = config.nginxReverseProxy or {};
 
-  enabledCompose = filterAttrs (_: v: (v.enable or true)) (config.dockerCompose or {});
+  enabledCompose = lib.filterAttrs (_: v: (v.enable or true)) (config.dockerCompose or {});
 
   # listOf {name: str, port: int};
   containers = lib.pipe enabledCompose [
-    (mapAttrs (_: s: fromYaml s.composeFile))
-    (filter (s: getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
-    (mapAttrs (_: s: filterAttrs (_: v: hasAttr "container_name" v && hasAttrByPath ["networks" "reverse_proxy"] v && hasAttr "expose" v) s))
-    (s: lib.attrsets.mergeAttrsList (lib.attrValues s))
+    (mapAttrs (_: s:
+      if s.composeFile != null
+      then lib.yaml.fromYaml s.composeFile
+      else {}))
+    (filterAttrs (_: s: hasAttrByPath ["networks" "reverse_proxy" "external"] s && getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
+    (mapAttrs (
+      _: s:
+        filterAttrs (
+          _: v:
+            hasAttr "container_name" v
+            && hasAttr "expose" v
+            && hasAttr "networks" v
+            && (
+              (isList v.networks && lib.elem "reverse_proxy" v.networks)
+              || (isAttrs v.networks && hasAttr "reverse_proxy" v.networks)
+            )
+        )
+        (s.services or {})
+    ))
+    (s: lib.trace s lib.attrsets.mergeAttrsList (lib.attrValues s))
     (mapAttrs (_: s: {
       name = assert (match ".*_.*" s.container_name == null); s.container_name;
-      port = s.expose [0];
+      port = let
+        pRaw = toString (elemAt s.expose 0);
+        m = match "([0-9]+).*" pRaw;
+      in
+        if m == null
+        then pRaw
+        else (elemAt m 0);
     }))
     attrValues
   ];
+  nginxServerConfs = concatStringsSep "\n" (map (c: ''
+      server {
+        listen 80;
+        server_name ${c.name}.ilma4.local;
+        location / {
+          proxy_pass http://${c.name}:${toString c.port};
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    '')
+    containers);
+  nginxConf = pkgs.writeText "reverse-proxy.conf" nginxServerConfs;
   composeYaml = ''
     version: "3.8"
     services:
@@ -48,7 +85,7 @@
         container_name: reverse-proxy
         restart: always
         volumes:
-          - TODO
+          - ${nginxConf}:/etc/nginx/conf.d/reverse-proxy.conf:ro
         networks:
           - reverse_proxy
         ports:
