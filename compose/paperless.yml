@@ -15,9 +15,10 @@ services:
       - tika
     ports:
       - "8000:8000"
-    # TODO: expose port 8000 and add `reverse_proxy` network for `paperless` container
-    # expose:
-    # - "8000"
+    expose:
+      - "8000"
+    networks:
+      - reverse_proxy
 
     volumes:
       # TODO pass `/srv/paperless-ngx` as env-var
@@ -49,3 +50,7 @@ volumes:
   data:
   media:
   redisdata:
+
+networks:
+  reverse_proxy:
+    external: true

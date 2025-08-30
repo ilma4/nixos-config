@@ -15,7 +15,7 @@ in {
   virtualisation.oci-containers.containers = {
     homer = {
       image = "b4bz/homer:${homer-version}";
-      ports = ["80:8080"];
+      # ports = ["80:8080"];
       volumes = ["${flake-location}/dotfiles/homer:/www/assets:ro"];
       autoStart = true;
       user = "${toString config.users.users.homer.uid}:${toString config.users.groups.homer.gid}";
