@@ -3,10 +3,7 @@
   lib,
   flake-location,
   ...
-}: let
-  # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite-tika.yml
-  a = "asdf";
-in {
+}: {
   # Containers
   dockerCompose.paperless.composeFile = "${flake-location}/compose/paperless.yml";
 
@@ -17,6 +14,4 @@ in {
     "d /srv/paperless-ngx/data 755 1000 1000 -"
     "d /srv/paperless-ngx/media 755 1000 1000 -"
   ];
-
-  networking.firewall.allowedTCPPorts = [8000];
 }

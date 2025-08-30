@@ -18,8 +18,4 @@
   systemd.tmpfiles.rules = [
     "d /srv/actual-budget 0755 actual-budget actual-budget -"
   ];
-
-  networking.firewall.allowedTCPPorts = [
-    5006
-  ];
 }
