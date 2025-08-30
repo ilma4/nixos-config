@@ -18,7 +18,11 @@
     filter
     map
     fromYaml
+    mapAttrs
+    hasAttr
+    hasAttrByPath
     ;
+  inherit (builtins) match;
 
   cfg = config.nginxReverseProxy or {};
 
@@ -28,8 +32,15 @@
   confDir = "/var/lib/nginx-reverse-proxy/conf";
 
   containers = lib.pipe enabledCompose [
-    (map (s: fromYaml s.composeFile))
+    (mapAttrs (_: s: fromYaml s.composeFile))
     (filter (s: getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
+    (mapAttrs (_: s: filterAttrs (_: v: hasAttr "container_name" v && hasAttrByPath ["networks" "reverse_proxy"] v && hasAttr "expose" v) s))
+    (s: lib.attrsets.mergeAttrsList (lib.attrValues s))
+    (mapAttrs (_: s: {
+      name = assert (match ".*_.*" s.container_name == null); s.container_name;
+      port = s.expose [0];
+    }))
+    attrValues
   ];
 
   generatorScript = pkgs.writeShellScript "nginx-reverse-proxy-generate" ''
@@ -182,6 +193,14 @@ in {
       };
 
       networking.firewall.allowedTcpPorts = [80 443];
+
+      # home.packages = [
+      #   pkgs.writeShellScriptBin
+      #   "debug-nginx-reverse-proxy"
+      #   ''
+      #     echo ${builtins.toJSON containers}
+      #   ''
+      # ];
     }
   ]);
 }
