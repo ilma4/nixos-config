@@ -2,7 +2,7 @@ version: "3.8"
 services:
   stirling-pdf:
     image: docker.io/stirlingtools/stirling-pdf:latest-ultra-lite
-    container_name: stirling-pdf
+    container_name: pdf-tools
     ports:
       - "8085:8080"
     expose:
