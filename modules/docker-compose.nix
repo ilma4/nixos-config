@@ -36,10 +36,10 @@ in {
         else (pkgs.writeText "${name}-compose.yaml" svc.composeStr);
       compose = "${pkgs.podman}/bin/podman compose --file ${composeFilePath}";
     in {
-      # TODO: require pdoman-network-reverse-proxy.service only when needed
-      after = ["network-online.target" "podman.socket" "podman-network-reverse-proxy.service"];
+      # TODO: require pdoman-network-reverse_proxy.service only when needed
+      after = ["network-online.target" "podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
       wants = ["network-online.target"];
-      requires = ["podman.socket" "podman-network-reverse-proxy.service"];
+      requires = ["podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
 
       path = [pkgs.podman pkgs.podman-compose];
       restartTriggers =

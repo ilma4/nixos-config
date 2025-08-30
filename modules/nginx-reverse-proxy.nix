@@ -26,7 +26,7 @@
 
   cfg = config.nginxReverseProxy or {};
 
-  enabledCompose = lib.filterAttrs (name: v: (name != "reverse-proxy" && v.enable or true)) (config.dockerCompose or {});
+  enabledCompose = lib.filterAttrs (name: v: (name != "reverse_proxy" && v.enable or true)) (config.dockerCompose or {});
 
   # listOf {name: str, port: int};
   containers = lib.pipe enabledCompose [
@@ -73,16 +73,15 @@
       }
     '')
     containers);
-  nginxConf = pkgs.writeText "reverse-proxy.conf" nginxServerConfs;
+  nginxConf = pkgs.writeText "reverse_proxy.conf" nginxServerConfs;
   composeYaml = ''
-    version: "3.8"
     services:
-      reverse-proxy:
+      reverse_proxy:
         image: docker.io/library/nginx:stable-alpine
-        container_name: reverse-proxy
+        container_name: reverse_proxy
         restart: always
         volumes:
-          - ${nginxConf}:/etc/nginx/conf.d/reverse-proxy.conf:ro
+          - ${nginxConf}:/etc/nginx/conf.d/reverse_proxy.conf:ro
         networks:
           - reverse_proxy
         ports:
@@ -104,7 +103,7 @@ in {
   config = mkIf cfg.enable (mkMerge [
     {
       # Ensure the reverse_proxy podman network exists
-      systemd.services.podman-network-reverse-proxy = {
+      systemd.services.podman-network-reverse_proxy = {
         description = "Ensure podman network reverse_proxy exists";
         wantedBy = ["multi-user.target"];
         serviceConfig = {
@@ -115,8 +114,8 @@ in {
       };
 
       # Nginx reverse proxy as a dockerCompose service
-      dockerCompose."reverse-proxy" = {
-        composeFile = "${pkgs.writeText "reverse-proxy-compose.yaml" composeYaml}";
+      dockerCompose."reverse_proxy" = {
+        composeFile = "${pkgs.writeText "reverse_proxy-compose.yaml" composeYaml}";
       };
 
       networking.firewall.allowedTCPPorts = [80 443];

@@ -10,6 +10,10 @@ services:
     user: "${UID_GID}"
     ports:
       - "5006:5006"
+    expose:
+      - "5006"
+    networks:
+      reverse_proxy:
     volumes:
       - /srv/actual-budget:/data:rw
     healthcheck:
@@ -19,3 +23,7 @@ services:
       retries: 3
       start_period: 20s
     restart: unless-stopped
+
+networks:
+  reverse_proxy:
+    external: true
