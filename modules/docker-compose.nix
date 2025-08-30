@@ -18,10 +18,6 @@ in {
           type = types.nullOr types.str;
           default = null;
         };
-        composeStr = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-        };
         environment = mkOption {
           type = types.attrsOf types.str;
           default = {};
@@ -30,14 +26,6 @@ in {
     }));
     default = {};
   };
-
-  config.assertions = lib.flatten (lib.mapAttrsToList (name: svc: [
-      {
-        assertion = (svc.composeFile != null) != (svc.composeStr != null);
-        message = "dockerCompose.${name}: specify either composeFile or composeStr (but not both)";
-      }
-    ])
-    cfg);
 
   config.systemd.services =
     mapAttrs

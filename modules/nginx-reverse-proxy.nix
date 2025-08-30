@@ -26,14 +26,11 @@
 
   cfg = config.nginxReverseProxy or {};
 
-  enabledCompose = lib.filterAttrs (_: v: (v.enable or true)) (config.dockerCompose or {});
+  enabledCompose = lib.filterAttrs (name: v: (name != "reverse-proxy" && v.enable or true)) (config.dockerCompose or {});
 
   # listOf {name: str, port: int};
   containers = lib.pipe enabledCompose [
-    (mapAttrs (_: s:
-      if s.composeFile != null
-      then lib.yaml.fromYaml s.composeFile
-      else {}))
+    (mapAttrs (_: s: lib.yaml.fromYaml s.composeFile))
     (filterAttrs (_: s: hasAttrByPath ["networks" "reverse_proxy" "external"] s && getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
     (mapAttrs (
       _: s:
@@ -119,7 +116,7 @@ in {
 
       # Nginx reverse proxy as a dockerCompose service
       dockerCompose."reverse-proxy" = {
-        composeStr = composeYaml;
+        composeFile = "${pkgs.writeText "reverse-proxy-compose.yaml" composeYaml}";
       };
 
       networking.firewall.allowedTCPPorts = [80 443];
