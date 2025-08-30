@@ -44,7 +44,7 @@
     attrValues
   ];
 
-  composeYaml = pkgs.writeText "reverse-proxy.compose.yml" ''
+  composeYaml = ''
     version: "3.8"
     services:
       reverse-proxy:
@@ -85,9 +85,9 @@ in {
       };
 
       # Nginx reverse proxy as a dockerCompose service
-      # dockerCompose."reverse-proxy" = {
-      #   composeFile = "${composeYaml}";
-      # };
+      dockerCompose."reverse-proxy" = {
+        composeStr = composeYaml;
+      };
 
       networking.firewall.allowedTCPPorts = [80 443];
     }

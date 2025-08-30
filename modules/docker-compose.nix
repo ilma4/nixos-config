@@ -14,7 +14,14 @@ in {
           type = types.bool;
           default = true;
         };
-        composeFile = mkOption {type = types.str;};
+        composeFile = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+        };
+        composeStr = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+        };
         environment = mkOption {
           type = types.attrsOf types.str;
           default = {};
@@ -24,10 +31,22 @@ in {
     default = {};
   };
 
+  config.assertions = lib.flatten (lib.mapAttrsToList (name: svc: [
+      {
+        assertion = (svc.composeFile != null) != (svc.composeStr != null);
+        message = "dockerCompose.${name}: specify either composeFile or composeStr (but not both)";
+      }
+    ])
+    cfg);
+
   config.systemd.services =
     mapAttrs
     (name: svc: let
-      compose = "${pkgs.podman}/bin/podman compose --file ${svc.composeFile}";
+      composeFilePath =
+        if svc.composeFile != null
+        then svc.composeFile
+        else (pkgs.writeText "${name}-compose.yaml" svc.composeStr);
+      compose = "${pkgs.podman}/bin/podman compose --file ${composeFilePath}";
     in {
       # TODO: require pdoman-network-reverse-proxy.service only when needed
       after = ["network-online.target" "podman.socket" "podman-network-reverse-proxy.service"];
@@ -35,11 +54,16 @@ in {
       requires = ["podman.socket" "podman-network-reverse-proxy.service"];
 
       path = [pkgs.podman pkgs.podman-compose];
-      restartTriggers = [
-        pkgs.podman
-        pkgs.podman-compose
-        (builtins.readFile svc.composeFile)
-      ];
+      restartTriggers =
+        [
+          pkgs.podman
+          pkgs.podman-compose
+        ]
+        ++ (
+          if svc.composeFile != null
+          then [(builtins.readFile svc.composeFile)]
+          else [composeFilePath]
+        );
 
       environment = svc.environment;
 
