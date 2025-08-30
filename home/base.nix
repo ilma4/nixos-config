@@ -148,6 +148,9 @@ in {
           # autoload -U colors && colors
           zstyle ':completion:*' list-colors "{\$}{s.:. $LS_COLORS}"
 
+          # fix completion for sudo
+          compdef _sudo sudo
+
           # don't do git status after every command for theese repos
           zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
 
