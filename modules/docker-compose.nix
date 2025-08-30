@@ -15,8 +15,7 @@ in {
           default = true;
         };
         composeFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
+          type = types.str;
         };
         environment = mkOption {
           type = types.attrsOf types.str;
@@ -30,11 +29,9 @@ in {
   config.systemd.services =
     mapAttrs
     (name: svc: let
-      composeFilePath =
-        if svc.composeFile != null
-        then svc.composeFile
-        else (pkgs.writeText "${name}-compose.yaml" svc.composeStr);
-      compose = "${pkgs.podman}/bin/podman compose --file ${composeFilePath}";
+      # pkgs.writeText creates a derivation, so services won't be restarted often unlike with readFile
+      composeFile = pkgs.writeText "${name}-compose.yml" (builtins.readFile svc.composeFile);
+      compose = "${pkgs.podman}/bin/podman compose --file ${composeFile}";
     in {
       # TODO: require pdoman-network-reverse_proxy.service only when needed
       after = ["network-online.target" "podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
@@ -42,16 +39,11 @@ in {
       requires = ["podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
 
       path = [pkgs.podman pkgs.podman-compose];
-      restartTriggers =
-        [
-          pkgs.podman
-          pkgs.podman-compose
-        ]
-        ++ (
-          if svc.composeFile != null
-          then [(builtins.readFile svc.composeFile)]
-          else [composeFilePath]
-        );
+      restartTriggers = [
+        pkgs.podman
+        pkgs.podman-compose
+        composeFile
+      ];
 
       environment = svc.environment;
 
