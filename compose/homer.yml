@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  homer:
+    image: b4bz/homer:latest
+    container_name: homer
+    expose:
+      - "8080"
+
+    networks:
+      reverse_proxy:
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../dotfiles/homer:/www/assets:ro
+
+    user: "${UID_GID}"
+    restart: unless-stopped
+
+networks:
+  reverse_proxy:
+    external: true
