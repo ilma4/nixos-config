@@ -2,10 +2,16 @@ services:
   prometheus:
     image: prom/prometheus:latest
     user: "${PROMETHEUS_UID}:${PROMETHEUS_GID}"
+    container_name: prometheus
     volumes:
       - "${CONFIG_FILE}:/etc/prometheus/prometheus.yml"
       - "/srv/prometheus/data:/prometheus"
-    ports:
-      - "9090:9090"
-    network_mode: host
+    expose:
+      - "9090"
+    networks:
+      reverse_proxy:
     restart: unless-stopped
+
+networks:
+  reverse_proxy:
+    external: true

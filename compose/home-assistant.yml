@@ -1,16 +1,19 @@
 name: home-assistant
 services:
-  homeassistant:
-    container_name: homeassistant
+  home-assistant:
+    container_name: home-assistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
     volumes:
       - ${CONFIG_DIR}:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
-    ports:
-      - "8123:8123"
     expose:
       - "8123"
+    networks:
+      reverse_proxy:
     restart: unless-stopped
     privileged: true
-    network_mode: host
+
+networks:
+  reverse_proxy:
+    external: true
