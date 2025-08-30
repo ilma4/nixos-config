@@ -8,8 +8,6 @@ services:
     container_name: actual-budget
     image: docker.io/actualbudget/actual-server:25.8.0-alpine
     user: "${UID_GID}"
-    ports:
-      - "5006:5006"
     expose:
       - "5006"
     networks:
