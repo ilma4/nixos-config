@@ -112,7 +112,7 @@
   genScript = pkgs.writeShellScript "nginx-rp-gen-certs.sh" ''
         set -euo pipefail
         umask 077
-        FORCE="${FORCE:-0}"
+        FORCE="${"\$"}{FORCE:-0}"
         CERTS_DIR=${certsDir}
         PRIVATE_DIR=${privateDir}
         CA_KEY=$PRIVATE_DIR/ca.key.pem

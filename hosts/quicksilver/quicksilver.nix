@@ -68,6 +68,15 @@
     # Dragging = true; # enable when Apple fix input lag caused by it
   };
 
+  # Enable certificate management
+  # security.pki.enable = true;
+
+  # Add your .pem CA certificate
+  security.pki.certificateFiles = [
+    "${flake-location}/certs/ca.cert.pem"
+    # You can add more certificates here
+  ];
+
   system.defaults.NSGlobalDomain = {
     "com.apple.trackpad.scaling" = 2.0;
     "com.apple.keyboard.fnState" = true; # enable fn lock
@@ -209,6 +218,43 @@
   # TODO: use homebrew path from config
   system.activationScripts.aerospace-config.text = ''
     sudo --user=ilma4 -- /opt/homebrew/bin/aerospace reload-config
+  '';
+
+  system.activationScripts.trust-reverse-proxy-ca.text = ''
+        set -euo pipefail
+        CERT="${flake-location}/certs/ca.cert.pem"
+        KEYCHAIN="/Library/Keychains/System.keychain"
+
+        if [ ! -f "$CERT" ]; then
+          echo "CA certificate not found: $CERT" >&2
+          exit 0
+        fi
+
+        # Determine CN and new certificate SHA-1 fingerprint
+        CN="$(${pkgs.openssl}/bin/openssl x509 -noout -subject -in "$CERT" | sed -n 's/.*CN[ =]*//p' | sed 's/,.*//')"
+        NEW_SHA1="$(${pkgs.openssl}/bin/openssl x509 -noout -fingerprint -sha1 -in "$CERT" | cut -d'=' -f2 | tr -d ':\r' | tr '[:lower:]' '[:upper:]')"
+
+        # Remove any existing certs with same CN but different fingerprint
+        EXISTING_SHA1S="$(/usr/bin/security find-certificate -a -Z -c "$CN" "$KEYCHAIN" | awk '/SHA-1 hash:/ {print $3}' | tr -d '\r' | tr '[:lower:]' '[:upper:]')"
+        if [ -n "$EXISTING_SHA1S" ]; then
+          while read -r H; do
+            [ -z "$H" ] && continue
+            if [ "$H" != "$NEW_SHA1" ]; then
+              /usr/bin/security delete-certificate -Z "$H" "$KEYCHAIN" || true
+              echo "Removed old reverse-proxy CA from System keychain (SHA1=$H)"
+            fi
+          done <<EOF
+    $EXISTING_SHA1S
+    EOF
+        fi
+
+        # Install if exact cert is not already present
+        if echo "$EXISTING_SHA1S" | grep -q "$NEW_SHA1"; then
+          echo "Reverse-proxy CA already trusted in System keychain"
+        else
+          /usr/bin/security add-trusted-cert -d -r trustRoot -k "$KEYCHAIN" "$CERT"
+          echo "Reverse-proxy CA installed into System keychain"
+        fi
   '';
 
   /*
