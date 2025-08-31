@@ -161,6 +161,18 @@ in {
           # Prefix search with arrow keys
           bindkey "^[[A" up-line-or-search    # Up arrow
           bindkey "^[[B" down-line-or-search  # Down arrow
+
+
+          # expand ".." to "cd .."
+          function ..() {
+            cd ..
+          }
+          function ...() {
+            cd ../..
+          }
+          function ....() {
+            cd ../../..
+          }
         '';
       in
         lib.mkMerge [early normal beforeCompinit];
