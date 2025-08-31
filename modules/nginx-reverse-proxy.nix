@@ -111,6 +111,7 @@
   genScript = pkgs.writeShellScript "nginx-rp-gen-certs.sh" ''
         set -euo pipefail
         umask 077
+        FORCE="${FORCE:-0}"
         CERTS_DIR=${certsDir}
         PRIVATE_DIR=${privateDir}
         CA_KEY=$PRIVATE_DIR/ca.key.pem
@@ -121,6 +122,9 @@
         chmod 700 "$PRIVATE_DIR"
         chmod 755 "$CERTS_DIR"
 
+        if [ "$FORCE" = "1" ]; then
+          rm -f "$CA_KEY" "$CA_CERT" "$CA_SERIAL"
+        fi
         if [ ! -f "$CA_KEY" ] || [ ! -f "$CA_CERT" ]; then
           ${pkgs.openssl}/bin/openssl genrsa -out "$CA_KEY" 4096
           chmod 600 "$CA_KEY"
@@ -156,7 +160,7 @@
           CSR="$PRIVATE_DIR/$DOMAIN.csr.pem"
           CERT="$CERTS_DIR/$DOMAIN.cert.pem"
           CONF="$PRIVATE_DIR/$DOMAIN.openssl.cnf"
-          if [ ! -f "$KEY" ] || [ ! -f "$CERT" ]; then
+          if [ ! -f "$KEY" ] || [ ! -f "$CERT" ] || [ "$FORCE" = "1" ]; then
             ${pkgs.openssl}/bin/openssl genrsa -out "$KEY" 2048
             chmod 600 "$KEY"
             cat > "$CONF" <<EOF
@@ -246,6 +250,13 @@ in {
       };
 
       networking.firewall.allowedTCPPorts = [80 443];
+
+      environment.systemPackages = [
+        (pkgs.writeShellScriptBin "nginx-rp-gen-certs.sh" ''
+          set -euo pipefail
+          exec ${genScript} "$@"
+        '')
+      ];
 
       systemd.tmpfiles.rules = [
         "d ${certsDir} 0755 root root -"
