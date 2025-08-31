@@ -112,6 +112,7 @@ in {
     programs.zsh = {
       enable = true;
       enableCompletion = true;
+
       shellAliases = {
         ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
         # dirsize = "${pkgs.ncdu}/bin/ncdu";
@@ -122,6 +123,8 @@ in {
       initContent = let
         early = lib.mkOrder 500 ''
           # Powerlevel10k theme
+          fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
+
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
           source ${flake-location}/dotfiles/p10k.zsh # Powerlevel10k config
         '';
