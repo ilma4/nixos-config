@@ -59,11 +59,22 @@
     }))
     attrValues
   ];
+  domainNames = (map (c: "${c.name}.ilma4.local") containers) ++ ["home-assistant.ilma4.local"];
+  pkiDir = "/var/lib/nginx-reverse-proxy/pki";
   nginxServerConfs =
     (concatStringsSep "\n" (map (c: ''
         server {
           listen 80;
           server_name ${c.name}.ilma4.local;
+          return 301 https://$host$request_uri;
+        }
+        server {
+          listen 443 ssl;
+          server_name ${c.name}.ilma4.local;
+
+          ssl_certificate /etc/nginx/pki/certs/${c.name}.ilma4.local.cert.pem;
+          ssl_certificate_key /etc/nginx/pki/private/${c.name}.ilma4.local.key.pem;
+
           location / {
             proxy_pass http://${c.name}:${toString c.port};
             proxy_set_header Host $host;
@@ -78,6 +89,15 @@
       server {
         listen 80;
         server_name home-assistant.ilma4.local;
+        return 301 https://$host$request_uri;
+      }
+      server {
+        listen 443 ssl;
+        server_name home-assistant.ilma4.local;
+
+        ssl_certificate /etc/nginx/pki/certs/home-assistant.ilma4.local.cert.pem;
+        ssl_certificate_key /etc/nginx/pki/private/home-assistant.ilma4.local.key.pem;
+
         location / {
             proxy_pass http://127.0.0.1:8123;
             proxy_set_header Host $host;
@@ -87,6 +107,95 @@
         }
       }
     '';
+  genScript = pkgs.writeShellScript "nginx-rp-gen-certs.sh" ''
+        set -euo pipefail
+        umask 077
+        PKI_DIR=${pkiDir}
+        CERTS_DIR=$PKI_DIR/certs
+        PRIVATE_DIR=$PKI_DIR/private
+        CA_KEY=$PRIVATE_DIR/ca.key.pem
+        CA_CERT=$CERTS_DIR/ca.cert.pem
+        CA_CONF=$PRIVATE_DIR/ca.openssl.cnf
+        CA_SERIAL=$PKI_DIR/ca.srl
+        mkdir -p "$CERTS_DIR" "$PRIVATE_DIR"
+        chmod 700 "$PRIVATE_DIR"
+        chmod 755 "$CERTS_DIR"
+
+        if [ ! -f "$CA_KEY" ] || [ ! -f "$CA_CERT" ]; then
+          ${pkgs.openssl}/bin/openssl genrsa -out "$CA_KEY" 4096
+          chmod 600 "$CA_KEY"
+          cat > "$CA_CONF" <<EOF
+    [ req ]
+    default_bits = 4096
+    prompt = no
+    default_md = sha256
+    x509_extensions = v3_ca
+    distinguished_name = dn
+
+    [ dn ]
+    C = US
+    O = ilma4
+    CN = ilma4 local CA
+
+    [ v3_ca ]
+    subjectKeyIdentifier = hash
+    authorityKeyIdentifier = keyid:always,issuer
+    basicConstraints = critical, CA:true, pathlen:0
+    keyUsage = critical, keyCertSign, cRLSign
+    EOF
+          ${pkgs.openssl}/bin/openssl req -x509 -new -key "$CA_KEY" -days 3650 -sha256 -out "$CA_CERT" -config "$CA_CONF" -extensions v3_ca
+          chmod 644 "$CA_CERT"
+          if [ ! -f "$CA_SERIAL" ]; then
+            echo 1000 > "$CA_SERIAL"
+            chmod 644 "$CA_SERIAL"
+          fi
+        fi
+
+        for DOMAIN in ${lib.concatStringsSep " " domainNames}; do
+          KEY="$PRIVATE_DIR/$DOMAIN.key.pem"
+          CSR="$PRIVATE_DIR/$DOMAIN.csr.pem"
+          CERT="$CERTS_DIR/$DOMAIN.cert.pem"
+          CONF="$PRIVATE_DIR/$DOMAIN.openssl.cnf"
+          if [ ! -f "$KEY" ] || [ ! -f "$CERT" ]; then
+            ${pkgs.openssl}/bin/openssl genrsa -out "$KEY" 2048
+            chmod 600 "$KEY"
+            cat > "$CONF" <<EOF
+    [ req ]
+    default_bits = 2048
+    prompt = no
+    default_md = sha256
+    req_extensions = req_ext
+    distinguished_name = dn
+
+    [ dn ]
+    C = US
+    O = ilma4
+    CN = $DOMAIN
+
+    [ req_ext ]
+    subjectAltName = @alt_names
+
+    [ alt_names ]
+    DNS.1 = $DOMAIN
+    EOF
+            ${pkgs.openssl}/bin/openssl req -new -key "$KEY" -out "$CSR" -config "$CONF"
+            V3CONF="$PRIVATE_DIR/$DOMAIN.v3.ext"
+            cat > "$V3CONF" <<EOF
+    authorityKeyIdentifier=keyid,issuer
+    basicConstraints=CA:FALSE
+    keyUsage = digitalSignature, keyEncipherment
+    extendedKeyUsage = serverAuth
+    subjectAltName = @alt_names
+    [alt_names]
+    DNS.1 = $DOMAIN
+    EOF
+            ${pkgs.openssl}/bin/openssl x509 -req -in "$CSR" -CA "$CA_CERT" -CAkey "$CA_KEY" -CAserial "$CA_SERIAL" -out "$CERT" -days 825 -sha256 -extfile "$V3CONF"
+            chmod 644 "$CERT"
+            rm -f "$CSR" "$CONF" "$V3CONF"
+          fi
+        done
+  '';
+
   nginxConf = pkgs.writeText "reverse_proxy.conf" (lib.trace nginxServerConfs nginxServerConfs);
   composeYaml = ''
     services:
@@ -96,11 +205,13 @@
         restart: always
         volumes:
           - ${nginxConf}:/etc/nginx/conf.d/reverse_proxy.conf:ro
+          - ${pkiDir}:/etc/nginx/pki:ro
         networks:
           reverse_proxy:
             ipv4_address: 10.20.0.10
         ports:
           - "80:80"
+          - "443:443"
 
     networks:
       reverse_proxy:
@@ -134,6 +245,14 @@ in {
       };
 
       networking.firewall.allowedTCPPorts = [80 443];
+
+      systemd.tmpfiles.rules = [
+        "d ${pkiDir} 0700 root root -"
+        "d ${pkiDir}/certs 0755 root root -"
+        "d ${pkiDir}/private 0700 root root -"
+      ];
+
+      system.activationScripts.nginxReverseProxyPki.text = "${genScript}";
     }
   ]);
 }
