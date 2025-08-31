@@ -123,11 +123,7 @@ in {
         early = lib.mkOrder 500 ''
           # Powerlevel10k theme
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-
-          # Load user Powerlevel10k config if present
-          if [ -f "$HOME/.p10k.zsh" ]; then
-            source "$HOME/.p10k.zsh"
-          fi
+          source ${flake-location}/dotfiles/p10k.zsh # Powerlevel10k config
         '';
 
         beforeCompinit =
