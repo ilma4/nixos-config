@@ -97,6 +97,10 @@
     GloballyEnabled = false; # disable Stage Manager
   };
 
+  fonts.packages = with pkgs; [
+    meslo-lgs-nf
+  ];
+
   homebrew = {
     enable = true;
     onActivation = {
