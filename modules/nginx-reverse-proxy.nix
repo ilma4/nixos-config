@@ -60,6 +60,7 @@
     attrValues
   ];
   domainNames = (map (c: "${c.name}.ilma4.local") containers) ++ ["home-assistant.ilma4.local"];
+  baseCertDir = "/var/lib/nginx-reverse-proxy";
   certsDir = "/var/lib/nginx-reverse-proxy/certs";
   privateDir = "/var/lib/nginx-reverse-proxy/private";
   nginxServerConfs =
@@ -259,6 +260,7 @@ in {
       ];
 
       systemd.tmpfiles.rules = [
+        "d ${baseCertDir} 0755 root root -"
         "d ${certsDir} 0755 root root -"
         "d ${privateDir} 0700 root root -"
       ];
