@@ -109,6 +109,10 @@ in {
       # config to commit located in `dev.nix`
     };
 
+    programs.fish = {
+      enable = true;
+    };
+
     programs.zsh = {
       enable = true;
       enableCompletion = true;
