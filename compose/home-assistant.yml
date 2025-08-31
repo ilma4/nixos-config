@@ -7,6 +7,8 @@ services:
       - ${CONFIG_DIR}:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
+    labels:
+      - "local.ilma4.customResolve=10.20.0.1:8123" # reverse-proxy will use this IP address to resolve container instead of the container's hostname
     network_mode: host
     restart: unless-stopped
     privileged: true

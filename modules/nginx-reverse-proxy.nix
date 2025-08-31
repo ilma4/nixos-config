@@ -28,87 +28,111 @@
 
   enabledCompose = lib.filterAttrs (name: v: (name != "reverse_proxy" && v.enable or true)) (config.dockerCompose or {});
 
-  # listOf {name: str, port: int};
+  # listOf {name: str, upstream: str};
   containers = lib.pipe enabledCompose [
     (mapAttrs (_: s: lib.yaml.fromYaml s.composeFile))
-    (filterAttrs (_: s: hasAttrByPath ["networks" "reverse_proxy" "external"] s && getAttrFromPath ["networks" "reverse_proxy" "external"] s == true))
-    (mapAttrs (
-      _: s:
-        filterAttrs (
-          _: v:
-            hasAttr "container_name" v
-            && hasAttr "expose" v
-            && hasAttr "networks" v
-            && (
-              (isList v.networks && lib.elem "reverse_proxy" v.networks)
-              || (isAttrs v.networks && hasAttr "reverse_proxy" v.networks)
-            )
-        )
-        (s.services or {})
-    ))
+    (mapAttrs (_: s: s.services or {}))
     (s: lib.trace s lib.attrsets.mergeAttrsList (lib.attrValues s))
-    (mapAttrs (_: s: {
-      name = assert (match ".*_.*" s.container_name == null); s.container_name;
-      port = let
-        pRaw = toString (elemAt s.expose 0);
-        m = match "([0-9]+).*" pRaw;
-      in
-        if m == null
-        then pRaw
-        else (elemAt m 0);
-    }))
+    (filterAttrs (
+      _: v:
+        hasAttr "container_name" v
+        && (
+          let
+            hasCustomResolve =
+              if hasAttr "labels" v
+              then
+                if isList v.labels
+                then (filter (l: (match "local\\.ilma4\\.customResolve=.*" l) != null) v.labels) != []
+                else if isAttrs v.labels
+                then hasAttr "local.ilma4.customResolve" v.labels
+                else false
+              else false;
+            attachedReverseProxy =
+              hasAttr "networks" v
+              && (
+                (isList v.networks && lib.elem "reverse_proxy" v.networks)
+                || (isAttrs v.networks && hasAttr "reverse_proxy" v.networks)
+              );
+            hasExpose = hasAttr "expose" v;
+          in
+            hasCustomResolve || (attachedReverseProxy && hasExpose)
+        )
+    ))
+    (mapAttrs (
+      _: v: let
+        name = assert (match ".*_.*" v.container_name == null); v.container_name;
+        customResolve =
+          if hasAttr "labels" v
+          then
+            if isList v.labels
+            then let
+              candidates = filter (l: (match "local\\.ilma4\\.customResolve=(.+)" l) != null) v.labels;
+            in
+              if candidates == []
+              then null
+              else let
+                m = match "local\\.ilma4\\.customResolve=(.+)" (elemAt candidates 0);
+              in
+                if m == null
+                then null
+                else elemAt m 0
+            else if isAttrs v.labels
+            then
+              (
+                if hasAttr "local.ilma4.customResolve" v.labels
+                then v.labels."local.ilma4.customResolve"
+                else null
+              )
+            else null
+          else null;
+        port = let
+          pRaw = toString (elemAt v.expose 0);
+          m = match "([0-9]+).*" pRaw;
+        in
+          if m == null
+          then pRaw
+          else (elemAt m 0);
+        upstream =
+          if customResolve != null
+          then
+            # Allow scheme to be included; default to http if missing
+            if match "https?://.*" customResolve != null
+            then customResolve
+            else "http://${customResolve}"
+          else "http://${name}:${toString port}";
+      in {
+        inherit name upstream;
+      }
+    ))
     attrValues
   ];
-  domainNames = (map (c: "${c.name}.ilma4.local") containers) ++ ["home-assistant.ilma4.local"];
+  domainNames = map (c: "${c.name}.ilma4.local") containers;
   baseCertDir = "/var/lib/nginx-reverse-proxy";
   certsDir = "/var/lib/nginx-reverse-proxy/certs";
   privateDir = "/var/lib/nginx-reverse-proxy/private";
-  nginxServerConfs =
-    (concatStringsSep "\n" (map (c: ''
-        server {
-          listen 80;
-          server_name ${c.name}.ilma4.local;
-          return 301 https://$host$request_uri;
-        }
-        server {
-          listen 443 ssl;
-          server_name ${c.name}.ilma4.local;
-
-          ssl_certificate /etc/nginx/pki/certs/${c.name}.ilma4.local.cert.pem;
-          ssl_certificate_key /etc/nginx/pki/private/${c.name}.ilma4.local.key.pem;
-
-          location / {
-            proxy_pass http://${c.name}:${toString c.port};
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-          }
-        }
-      '')
-      containers))
-    + ''
+  nginxServerConfs = concatStringsSep "\n" (map (c: ''
       server {
         listen 80;
-        server_name home-assistant.ilma4.local;
+        server_name ${c.name}.ilma4.local;
         return 301 https://$host$request_uri;
       }
       server {
         listen 443 ssl;
-        server_name home-assistant.ilma4.local;
+        server_name ${c.name}.ilma4.local;
 
-        ssl_certificate /etc/nginx/pki/certs/home-assistant.ilma4.local.cert.pem;
-        ssl_certificate_key /etc/nginx/pki/private/home-assistant.ilma4.local.key.pem;
+        ssl_certificate /etc/nginx/pki/certs/${c.name}.ilma4.local.cert.pem;
+        ssl_certificate_key /etc/nginx/pki/private/${c.name}.ilma4.local.key.pem;
 
         location / {
-            proxy_pass http://10.20.0.1:8123;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_pass ${c.upstream};
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
         }
       }
-    '';
+    '')
+    containers);
   genScript = pkgs.writeShellScript "nginx-rp-gen-certs.sh" ''
         set -euo pipefail
         umask 077
@@ -228,7 +252,7 @@ in {
     enable = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable automatic Nginx reverse proxy for Compose services attached to reverse_proxy network with expose defined.";
+      description = "Enable automatic Nginx reverse proxy for Compose services attached to reverse_proxy network with expose defined, or services that specify the 'local.ilma4.customResolve' label.";
     };
   };
 
