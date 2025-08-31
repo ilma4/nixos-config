@@ -3,10 +3,7 @@
   lib,
   flake-location,
   ...
-}: let
-  gluetun-version = "v3.40.0";
-  qbittorrent-version = "5.0.4-r0-ls388";
-in {
+}: {
   options = {
     torrent = {
       wg-conf = lib.mkOption {
@@ -29,8 +26,6 @@ in {
     dockerCompose.qbittorrent = {
       composeFile = "${flake-location}/compose/qbittorrent.yml";
       environment = {
-        GLUETUN_VERSION = gluetun-version;
-        QBITTORRENT_VERSION = qbittorrent-version;
         WG_CONF_PATH = config.sops.secrets.${wg-conf}.path;
       };
     };

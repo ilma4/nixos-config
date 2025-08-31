@@ -1,6 +1,6 @@
 services:
   gluetun:
-    image: qmcgaw/gluetun:${GLUETUN_VERSION}
+    image: qmcgaw/gluetun:latest
     environment:
       VPN_SERVICE_PROVIDER: custom
       VPN_TYPE: wireguard
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   qbittorrent:
-    image: linuxserver/qbittorrent:${QBITTORRENT_VERSION}
+    image: linuxserver/qbittorrent:latest
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/srv/qbittorrent/config:/config"
