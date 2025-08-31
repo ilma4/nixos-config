@@ -196,7 +196,7 @@
         done
   '';
 
-  nginxConf = pkgs.writeText "reverse_proxy.conf" (lib.trace nginxServerConfs nginxServerConfs);
+  nginxConf = pkgs.writeText "reverse_proxy.conf" nginxServerConfs;
   composeYaml = ''
     services:
       nginx-reverse-proxy:
