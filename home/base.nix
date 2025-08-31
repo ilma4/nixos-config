@@ -147,9 +147,6 @@ in {
           # fix completion for sudo
           compdef _sudo sudo
 
-          # don't do git status after every command for theese repos
-          zstyle ':vcs_info:*' disable-patterns "$HOME/Projects/JetBrains/*"
-
           bindkey -v # vim mode
           bindkey '^?' backward-delete-char # backspace work as usual
           bindkey '^H' backward-delete-char # backspace work as usual
