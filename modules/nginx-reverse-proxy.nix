@@ -60,7 +60,8 @@
     attrValues
   ];
   domainNames = (map (c: "${c.name}.ilma4.local") containers) ++ ["home-assistant.ilma4.local"];
-  pkiDir = "/var/lib/nginx-reverse-proxy/pki";
+  certsDir = "/var/lib/nginx-reverse-proxy/certs";
+  privateDir = "/var/lib/nginx-reverse-proxy/private";
   nginxServerConfs =
     (concatStringsSep "\n" (map (c: ''
         server {
@@ -110,13 +111,12 @@
   genScript = pkgs.writeShellScript "nginx-rp-gen-certs.sh" ''
         set -euo pipefail
         umask 077
-        PKI_DIR=${pkiDir}
-        CERTS_DIR=$PKI_DIR/certs
-        PRIVATE_DIR=$PKI_DIR/private
+        CERTS_DIR=${certsDir}
+        PRIVATE_DIR=${privateDir}
         CA_KEY=$PRIVATE_DIR/ca.key.pem
         CA_CERT=$CERTS_DIR/ca.cert.pem
         CA_CONF=$PRIVATE_DIR/ca.openssl.cnf
-        CA_SERIAL=$PKI_DIR/ca.srl
+        CA_SERIAL=$PRIVATE_DIR/ca.srl
         mkdir -p "$CERTS_DIR" "$PRIVATE_DIR"
         chmod 700 "$PRIVATE_DIR"
         chmod 755 "$CERTS_DIR"
@@ -205,7 +205,8 @@
         restart: always
         volumes:
           - ${nginxConf}:/etc/nginx/conf.d/reverse_proxy.conf:ro
-          - ${pkiDir}:/etc/nginx/pki:ro
+          - ${certsDir}:/etc/nginx/pki/certs:ro
+          - ${privateDir}:/etc/nginx/pki/private:ro
         networks:
           reverse_proxy:
             ipv4_address: 10.20.0.10
@@ -247,9 +248,8 @@ in {
       networking.firewall.allowedTCPPorts = [80 443];
 
       systemd.tmpfiles.rules = [
-        "d ${pkiDir} 0700 root root -"
-        "d ${pkiDir}/certs 0755 root root -"
-        "d ${pkiDir}/private 0700 root root -"
+        "d ${certsDir} 0755 root root -"
+        "d ${privateDir} 0700 root root -"
       ];
 
       system.activationScripts.nginxReverseProxyPki.text = "${genScript}";
