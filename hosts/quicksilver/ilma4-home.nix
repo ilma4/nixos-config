@@ -112,16 +112,6 @@
     };
     # programs.mpv.enable = true; # fixed in 24.11
 
-    home.activation = {
-      resticprofile-reschedule = let
-        resticprofile = "${pkgs.resticprofile}/bin/resticprofile";
-      in
-        lib.hm.dag.entryAfter ["writeBoundary"] ''
-          /usr/bin/sudo -u ilma4 ${resticprofile} unschedule --all
-          /usr/bin/sudo -u ilma4 ${resticprofile} schedule --all
-        '';
-    };
-
     # RW symlinks, so apps can edits their configs
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
