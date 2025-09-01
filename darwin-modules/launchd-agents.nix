@@ -83,4 +83,34 @@
       StandardErrorPath = "/tmp/obsidian-auto-commit.log";
     };
   };
+
+  launchd.user.agents.resticprofile-backup = {
+    path = [pkgs.restic];
+    serviceConfig = let
+      resticprofile = "${pkgs.resticprofile}/bin/resticprofile -c ${lib.flake-location}/dotfiles/resticprofile.toml";
+    in {
+      ProgramArguments = [
+        "${pkgs.bash}/bin/bash"
+        "-c"
+        ''
+          # set -euo pipefail # TODO workraound that if some files are unavailable to read, restic fails with exit code 3
+
+          echo "$(${pkgs.coreutils}/bin/date): Starting resticprofile backups"
+
+          ${resticprofile} backup
+          ${resticprofile} hdd.copy
+
+          echo "$(${pkgs.coreutils}/bin/date): resticprofile backups completed successfully"
+        ''
+      ];
+      StartCalendarInterval = [
+        {
+          Hour = 4;
+          Minute = 0;
+        }
+      ];
+      StandardOutPath = "/tmp/resticprofile-backups.log";
+      StandardErrorPath = "/tmp/resticprofile-backups.log";
+    };
+  };
 }
