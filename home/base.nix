@@ -134,18 +134,30 @@ in {
       enable = true;
       enableCompletion = true;
 
+      oh-my-zsh = {
+        enable = true;
+        theme = ""; # powerlevel10k/powerlevel10k";
+        plugins = [
+          "git"
+          "vim"
+          # "zsh-autosuggestions"
+          # "zsh-syntax-highlighting"
+        ];
+      };
+
+      # Add Powerlevel10k theme and your custom config as plugins
       shellAliases = {
         ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
         # dirsize = "${pkgs.ncdu}/bin/ncdu";
-        l = "ls -lah";
-        ll = "ls -lh";
+        # l = "ls -lah";
+        # ll = "ls -lh";
       };
 
       initContent = let
         early = lib.mkOrder 500 ''
-          # Powerlevel10k theme
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
 
+          # Powerlevel10k theme
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
           source ${flake-location}/dotfiles/p10k.zsh # Powerlevel10k config
         '';
@@ -156,40 +168,40 @@ in {
 
         normal = lib.mkOrder 1000 ''
           # enable case-insensitive completion
-          autoload -Uz compinit && compinit
-          zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-          setopt NO_CASE_GLOB
+          # autoload -Uz compinit && compinit
+          # zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+          # setopt NO_CASE_GLOB
 
 
           # Select completion items
-          zstyle ':completion:*' menu select
+          # zstyle ':completion:*' menu select
 
           # Enable colors in completion
           # autoload -U colors && colors
-          zstyle ':completion:*' list-colors "{\$}{s.:. $LS_COLORS}"
+          # zstyle ':completion:*' list-colors "{\$}{s.:. $LS_COLORS}"
 
           # fix completion for sudo
-          compdef _sudo sudo
+          # compdef _sudo sudo
 
-          bindkey -v # vim mode
-          bindkey '^?' backward-delete-char # backspace work as usual
-          bindkey '^H' backward-delete-char # backspace work as usual
+          # bindkey -v # vim mode
+          # bindkey '^?' backward-delete-char # backspace work as usual
+          # bindkey '^H' backward-delete-char # backspace work as usual
 
           # Prefix search with arrow keys
-          bindkey "^[[A" up-line-or-search    # Up arrow
-          bindkey "^[[B" down-line-or-search  # Down arrow
+          # bindkey "^[[A" up-line-or-search    # Up arrow
+          # bindkey "^[[B" down-line-or-search  # Down arrow
 
 
           # expand ".." to "cd .."
-          function ..() {
-            cd ..
-          }
-          function ...() {
-            cd ../..
-          }
-          function ....() {
-            cd ../../..
-          }
+          # function ..() {
+            # cd ..
+          # }
+          # function ...() {
+            # cd ../..
+          # }
+          # function ....() {
+            # cd ../../..
+          # }
         '';
       in
         lib.mkMerge [early normal beforeCompinit];
