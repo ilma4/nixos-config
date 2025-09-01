@@ -138,7 +138,6 @@ in {
         enable = true;
         theme = ""; # powerlevel10k/powerlevel10k";
         plugins = [
-          "git"
           "vi-mode"
           "extract"
           # "zsh-autosuggestions"
