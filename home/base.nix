@@ -135,8 +135,8 @@ in {
       enableCompletion = true;
 
       oh-my-zsh = {
-        enable = true;
-        theme = ""; # powerlevel10k/powerlevel10k";
+        enable = lib.mkDefault true;
+        theme = "";
         plugins = [
           "vi-mode"
           "extract"
