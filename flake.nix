@@ -109,7 +109,7 @@
     builders = {
       nixos = nixpkgs.lib.nixosSystem;
       darwin = nix-darwin.lib.darwinSystem;
-      home = home-manager.lib.homeManagerSystem;
+      home = home-manager.lib.homeManagerConfiguration;
       system-manager = inputs.system-manager.lib.makeSystemConfig; # for system-manager
     };
 
@@ -202,7 +202,7 @@
     homeConfigurations = {
       anakin = mkHomeConfig {
         system = systems.x86-linux;
-        module = ./hosts/anakin/home.nix;
+        module = ./hosts/anakin/anakin.nix;
       };
     };
 

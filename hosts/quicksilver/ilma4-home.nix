@@ -108,7 +108,7 @@
 
     # RW symlinks, so apps can edits their configs
     home.file = let
-      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/${x}";
+      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/nixos-config/dotfiles/${x}";
     in {
       # TODO: move those options to some common module
       ".config/rclone".source = symlink "rclone";
