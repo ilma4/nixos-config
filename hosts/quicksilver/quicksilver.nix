@@ -40,7 +40,7 @@
   users.users = {
     ilma4 = {
       home = "/Users/ilma4";
-      shell = pkgs.fish;
+      shell = pkgs.zsh;
     };
   };
 
@@ -48,7 +48,7 @@
     ilma4 = import ./ilma4-home.nix;
   };
 
-  environment.shells = [pkgs.zsh pkgs.fish];
+  environment.shells = [pkgs.zsh];
 
   /*
   remmapings are done in Karabiner-Elements
@@ -290,8 +290,6 @@
 
   # Create /etc/zshrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
-
-  programs.fish.enable = true;
 
   # Set Git commit hash for darwin-version.
   system.configurationRevision = config.rev or config.dirtyRev or null;

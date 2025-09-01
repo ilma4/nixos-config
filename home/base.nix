@@ -88,46 +88,17 @@ in {
       tree
       ncdu
 
-      (pkgs.writeShellScriptBin "check-im-alive" ''
-        echo yay
-      '')
-
       (pkgs.writeShellScriptBin "nix-rebuild" config.rebuild-script)
     ];
 
     programs.git = {
+      enable = true;
       extraConfig = {
         core = {
           autocrlf = "input"; # do not change line separators
         };
-        alias = {
-          push-force-safe = "push --force-with-lease --force-if-includes";
-        };
       };
-      enable = true;
       # config to commit located in `dev.nix`
-    };
-
-    programs.fish = {
-      enable = true;
-      interactiveShellInit = ''
-        function fish_user_key_bindings
-            # Load the default bindings (emacs style) into insert mode
-            for mode in insert default
-                fish_default_key_bindings -M $mode
-            end
-
-            fish_vi_key_bindings --no-erase
-
-            bind -M visual y 'commandline -s | fish_clipboard_copy; commandline -f end-selection repaint-mode'
-            bind -M default yy fish_clipboard_copy
-            bind -M default p fish_clipboard_paste
-        end
-      '';
-      shellAliases = {
-        ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
-        l = "ls -lah";
-      };
     };
 
     programs.zsh = {
