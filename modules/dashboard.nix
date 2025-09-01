@@ -1,6 +1,6 @@
 {
   config,
-  flake-location,
+  lib,
   ...
 }: {
   users.users.homer = {
@@ -12,7 +12,7 @@
 
   dockerCompose.homer = {
     enable = true;
-    composeFile = "${flake-location}/compose/homer.yml";
+    composeFile = "${lib.flake-location}/compose/homer.yml";
     environment = {
       UID_GID = "${toString config.users.users.homer.uid}:${toString config.users.groups.homer.gid}";
     };

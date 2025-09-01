@@ -1,16 +1,15 @@
 {
   config,
   pkgs,
-  flake-location,
+  lib,
   ...
 }: {
   imports = [
-    "${flake-location}/home/base.nix"
-    "${flake-location}/home/personal.nix"
+    "${lib.flake-location}/home/base.nix"
+    "${lib.flake-location}/home/personal.nix"
   ];
 
   home.username = "ilma4";
-  flake-location = "${config.home.homeDirectory}/nixos";
 
   # Initialize tmux session on SSH connection
   programs.zsh.initContent = ''
@@ -30,6 +29,6 @@
   home.packages = with pkgs; [
     (writers.writePython3Bin "set-power" {
       doCheck = false; # disable PEP style checks
-    } (builtins.readFile "${flake-location}/dotfiles/set-power.py"))
+    } (builtins.readFile "${lib.flake-location}/dotfiles/set-power.py"))
   ];
 }

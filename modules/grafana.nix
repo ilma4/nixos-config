@@ -1,6 +1,6 @@
 {
   config,
-  flake-location,
+  lib,
   ...
 }: {
   users.users.grafana = {
@@ -13,7 +13,7 @@
   };
 
   dockerCompose.grafana = {
-    composeFile = "${flake-location}/compose/grafana.yml";
+    composeFile = "${lib.flake-location}/compose/grafana.yml";
     environment = {
       GRAFANA_UID = toString config.users.users.grafana.uid;
       GRAFANA_GID = toString config.users.groups.grafana.gid;

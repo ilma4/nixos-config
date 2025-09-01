@@ -3,13 +3,12 @@
   lib,
   pkgs,
   inputs,
-  flake-location,
   ...
 }: {
   imports = [
-    "${flake-location}/darwin-modules/nix-settings.nix"
-    "${flake-location}/darwin-modules/launchd-agents.nix"
-    "${flake-location}/modules/home-manager.nix"
+    "${lib.flake-location}/darwin-modules/nix-settings.nix"
+    "${lib.flake-location}/darwin-modules/launchd-agents.nix"
+    "${lib.flake-location}/modules/home-manager.nix"
 
     inputs.home-manager.darwinModules.home-manager
     inputs.nix-rosetta-builder.darwinModules.default
@@ -74,7 +73,7 @@
 
   # Add your .pem CA certificate
   security.pki.certificateFiles = [
-    "${flake-location}/certs/ca.cert.pem"
+    "${lib.flake-location}/certs/ca.cert.pem"
     # You can add more certificates here
   ];
 
@@ -223,7 +222,7 @@
 
   system.activationScripts.trust-reverse-proxy-ca.text = ''
         set -euo pipefail
-        CERT="${flake-location}/certs/ca.cert.pem"
+        CERT="${lib.flake-location}/certs/ca.cert.pem"
         KEYCHAIN="/Library/Keychains/System.keychain"
 
         if [ ! -f "$CERT" ]; then

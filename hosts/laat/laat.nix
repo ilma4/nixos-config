@@ -1,11 +1,11 @@
 args @ {
   config,
   pkgs,
-  flake-location,
+  lib,
   ...
 }: {
   imports = let
-    modules = "${flake-location}/modules";
+    modules = "${lib.flake-location}/modules";
   in [
     ./hardware-configuration.nix
     ./hdd.nix
@@ -163,7 +163,7 @@ args @ {
   };
 
   dockerCompose = {
-    pihole.composeFile = "${flake-location}/compose/pihole.yml";
+    pihole.composeFile = "${lib.flake-location}/compose/pihole.yml";
   };
 
   # programs.nix-ld.enable = true;

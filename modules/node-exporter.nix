@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  flake-location,
   ...
 }:
 with lib; let
@@ -65,7 +64,7 @@ in {
 
     # Configure docker-compose service
     dockerCompose.node-exporter = {
-      composeFile = "${flake-location}/compose/node-exporter.yml";
+      composeFile = "${lib.flake-location}/compose/node-exporter.yml";
       environment = {
         NODE_EXPORTER_IMAGE = cfg.image;
         NODE_EXPORTER_PORT = toString cfg.port;

@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  flake-location,
   ...
 }: {
   options = {
@@ -24,7 +23,7 @@
     i4-encrypted-files = [wg-conf];
 
     dockerCompose.qbittorrent = {
-      composeFile = "${flake-location}/compose/qbittorrent.yml";
+      composeFile = "${lib.flake-location}/compose/qbittorrent.yml";
       environment = {
         WG_CONF_PATH = config.sops.secrets.${wg-conf}.path;
       };

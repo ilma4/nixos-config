@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  flake-location,
   ...
 }: {
   options = {
@@ -13,7 +12,7 @@
     };
   };
   config = {
-    sops.defaultSopsFile = "${flake-location}/secrets/example.yaml";
+    sops.defaultSopsFile = "${lib.flake-location}/secrets/example.yaml";
     sops.defaultSopsFormat = "yaml";
     # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
     sops.age.keyFile =
@@ -27,7 +26,7 @@
         name = name;
         value = {
           format = lib.mkDefault "binary";
-          sopsFile = "${flake-location}/secrets/${name}";
+          sopsFile = "${lib.flake-location}/secrets/${name}";
         };
       }))
       lib.listToAttrs

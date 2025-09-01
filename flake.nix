@@ -104,7 +104,6 @@
     # Base special arguments shared across all configurations
     baseSpecialArgs = {
       inherit inputs;
-      flake-location = "${self}";
     };
 
     builders = {

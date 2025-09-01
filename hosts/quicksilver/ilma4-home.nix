@@ -3,12 +3,11 @@
   lib,
   pkgs,
   pkgs-unstable,
-  flake-location,
   inputs,
   ...
 }: {
   imports = let
-    home = x: "${flake-location}/home/${x}.nix";
+    home = x: "${lib.flake-location}/home/${x}.nix";
   in [
     (home "base")
     (home "macos")
@@ -17,30 +16,22 @@
     (home "graphics")
     (home "zed")
     (home "raycast")
-    "${flake-location}/modules/sops.nix"
+    "${lib.flake-location}/modules/sops.nix"
     inputs.sops-nix.homeManagerModules.sops
   ];
 
   options = {
-    dotfiles = lib.mkOption {
-      type = lib.types.str;
-      apply = toString;
-      default = "${config.home.homeDirectory}/.config/nixos-config/dotfiles";
-      example = "${config.home.homeDirectory}/.config/nixos-config/dotfiles";
-      description = "Location of the dotfiles working copy";
-    };
   };
 
   config = {
     home.username = "ilma4";
 
-    flake-location = "${config.home.homeDirectory}/.config/nixos-config";
-    rebuild-script = "sudo darwin-rebuild switch --flake ${config.flake-location}#quicksilver";
+    rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
 
     # sops-nix configuration
     sops = {
       secrets."wg.conf" = {
-        sopsFile = "${flake-location}/secrets/ru-torrent-nixos-vm-wg.conf";
+        sopsFile = "${lib.flake-location}/secrets/ru-torrent-nixos-vm-wg.conf";
         format = "binary";
       };
     };
@@ -67,12 +58,14 @@
       age # for age key management
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
 
+      /*
       (pkgs.writeShellScriptBin "system-upgrade" ''
         nix flake update --flake ${config.flake-location}
         nix-rebuild
         /opt/homebrew/bin/brew update -f
         /opt/homebrew/bin/brew upgrade --greedy
       '')
+      */
 
       # FIXME: Remove this hack when issue is fixed: https://github.com/NixOS/nixpkgs/issues/339576
       (let
@@ -93,7 +86,7 @@
           cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
           export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
 
-          ${pkgs.podman}/bin/podman compose -f "${flake-location}/docker-compose/qbittorrent-compose.yaml" up --force-recreate --remove-orphans --detach --pull
+          ${pkgs.podman}/bin/podman compose -f "${lib.flake-location}/docker-compose/qbittorrent-compose.yaml" up --force-recreate --remove-orphans --detach --pull
         '')
       )
     ];
@@ -114,7 +107,7 @@
 
     # RW symlinks, so apps can edits their configs
     home.file = let
-      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.dotfiles}/${x}";
+      symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/${x}";
     in {
       # TODO: move those options to some common module
       ".config/rclone".source = symlink "rclone";
@@ -122,8 +115,8 @@
       ".config/zed".source = symlink "zed";
       ".gemini/settings.json".source = symlink "gemini_cli_settings.json";
 
-      ".config/aerospace/aerospace.toml".source = "${flake-location}/dotfiles/aerospace.toml";
-      ".config/resticprofile/profiles.toml".source = "${flake-location}/dotfiles/resticprofile.toml";
+      ".config/aerospace/aerospace.toml".source = "${lib.flake-location}/dotfiles/aerospace.toml";
+      ".config/resticprofile/profiles.toml".source = "${lib.flake-location}/dotfiles/resticprofile.toml";
     };
   };
 }

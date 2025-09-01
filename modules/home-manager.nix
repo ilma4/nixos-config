@@ -7,6 +7,5 @@ args @ {
   home-manager.extraSpecialArgs = {
     inherit inputs;
     inherit pkgs-unstable;
-    flake-location = args.flake-location or "/etc/nixos";
   };
 }

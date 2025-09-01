@@ -1,6 +1,6 @@
 {
   config,
-  flake-location,
+  lib,
   ...
 }: {
   users.users.prometheus = {
@@ -19,11 +19,11 @@
   ];
 
   dockerCompose.prometheus = {
-    composeFile = "${flake-location}/compose/prometheus.yml";
+    composeFile = "${lib.flake-location}/compose/prometheus.yml";
     environment = {
       PROMETHEUS_UID = toString config.users.users.prometheus.uid;
       PROMETHEUS_GID = toString config.users.groups.prometheus.gid;
-      CONFIG_FILE = "${flake-location}/dotfiles/prometheus.yml";
+      CONFIG_FILE = "${lib.flake-location}/dotfiles/prometheus.yml";
     };
   };
 

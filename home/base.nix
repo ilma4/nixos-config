@@ -13,13 +13,6 @@ in {
   ];
 
   options = {
-    flake-location = lib.mkOption {
-      type = lib.types.str;
-      example = "/home/ilma4/.config/nixos-config";
-      description = "Location of the flake";
-      default = "none"; # TODO null
-    };
-
     configure-ssh = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -45,7 +38,7 @@ in {
           then "home-manager switch"
           else ""
         )
-        + " --flake ${config.flake-location}#\"$(uname -n)\"";
+        + " --flake ${config.home.homeDirectory}/.config/nixos-config#\"$(uname -n)\"";
 
       description = "nix-rebuild script";
     };

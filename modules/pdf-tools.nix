@@ -1,6 +1,6 @@
-{flake-location, ...}: {
+{lib, ...}: {
   dockerCompose.stirling-pdf = {
     enable = true;
-    composeFile = "${flake-location}/compose/stirling-pdf.yml";
+    composeFile = "${lib.flake-location}/compose/stirling-pdf.yml";
   };
 }

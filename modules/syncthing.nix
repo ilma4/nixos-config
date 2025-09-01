@@ -1,6 +1,6 @@
-{flake-location, ...}: {
+{lib, ...}: {
   dockerCompose.syncthing = {
-    composeFile = "${flake-location}/compose/syncthing.yml";
+    composeFile = "${lib.flake-location}/compose/syncthing.yml";
   };
   networking.firewall.allowedTCPPorts = [
     8334 # web interface

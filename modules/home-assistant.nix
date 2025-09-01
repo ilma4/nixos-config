@@ -1,4 +1,4 @@
-{flake-location, ...}: {
+{lib, ...}: {
   users.users.homeassistant = {
     isSystemUser = true;
     uid = 990;
@@ -6,7 +6,7 @@
   };
   users.groups.homeassistant.gid = 986;
 
-  dockerCompose.home-assistant.composeFile = "${flake-location}/compose/home-assistant.yml";
+  dockerCompose.home-assistant.composeFile = "${lib.flake-location}/compose/home-assistant.yml";
   dockerCompose.home-assistant.environment = {
     CONFIG_DIR = "/srv/homeassistant";
   };

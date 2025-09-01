@@ -1,18 +1,18 @@
 args @ {
   config,
   pkgs,
-  flake-location,
+  lib,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
 
-    "${flake-location}/modules/base.nix"
-    "${flake-location}/modules/avahi.nix"
-    "${flake-location}/modules/zram.nix"
-    "${flake-location}/modules/sops.nix"
+    "${lib.flake-location}/modules/base.nix"
+    "${lib.flake-location}/modules/avahi.nix"
+    "${lib.flake-location}/modules/zram.nix"
+    "${lib.flake-location}/modules/sops.nix"
 
-    "${flake-location}/modules/server.nix"
+    "${lib.flake-location}/modules/server.nix"
   ];
 
   boot.loader = {

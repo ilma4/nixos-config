@@ -3,7 +3,6 @@ args @ {
   inputs,
   config,
   pkgs-unstable,
-  flake-location,
   ...
 }: {
   options = {
@@ -19,8 +18,8 @@ args @ {
     inputs.sops-nix.nixosModules.sops # secrets
     inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
 
-    "${flake-location}/modules/home-manager.nix"
-    "${flake-location}/modules/nix-settings.nix"
+    "${lib.flake-location}/modules/home-manager.nix"
+    "${lib.flake-location}/modules/nix-settings.nix"
   ];
 
   config = {

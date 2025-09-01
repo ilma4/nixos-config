@@ -1,11 +1,10 @@
 {
   pkgs,
   lib,
-  flake-location,
   ...
 }: {
   # Containers
-  dockerCompose.paperless.composeFile = "${flake-location}/compose/paperless.yml";
+  dockerCompose.paperless.composeFile = "${lib.flake-location}/compose/paperless.yml";
 
   systemd.tmpfiles.rules = [
     "d /srv/paperless-ngx 755 ilma4 1000 -"

@@ -1,6 +1,6 @@
 {
-  flake-location,
   config,
+  lib,
   ...
 }: {
   users.users.actual-budget = {
@@ -10,7 +10,7 @@
   };
   users.groups.actual-budget.gid = config.users.users.actual-budget.uid;
 
-  dockerCompose.actual-budget.composeFile = "${flake-location}/compose/actual-budget.yml";
+  dockerCompose.actual-budget.composeFile = "${lib.flake-location}/compose/actual-budget.yml";
   dockerCompose.actual-budget.environment = {
     UID_GID = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
   };
