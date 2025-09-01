@@ -140,6 +140,7 @@ in {
         plugins = [
           "git"
           "vi-mode"
+          "extract"
           # "zsh-autosuggestions"
           # "zsh-syntax-highlighting"
         ];
