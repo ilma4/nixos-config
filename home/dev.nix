@@ -49,12 +49,13 @@ in {
       else []
     );
 
-  programs.zsh.shellAliases = lib.mkIf isNotNixOS {
-    bazel = "${pkgs.bazelisk}/bin/bazelisk";
+  programs.zsh.shellAliases = {
+    bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
     gw = "./gradlew";
   };
+
   programs.bash.shellAliases = lib.mkIf isNotNixOS {
-    bazel = "${pkgs.bazelisk}/bin/bazelisk";
+    bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
   };
 
   programs.direnv = {
@@ -63,6 +64,7 @@ in {
     enableZshIntegration = true;
     nix-direnv.enable = true;
   };
+
   programs.bash.enable = true;
   programs.zsh.enable = true;
 
