@@ -150,6 +150,15 @@
           modules = [
             baseModule.${type} or {}
             module
+            ({lib, ...}: {
+              options.flake-source = lib.mkOption {
+                type = lib.types.nullOr lib.types.singleLineStr;
+                description = "The source of the flake";
+                example = "/home/user/flake-directory";
+                default = null;
+              };
+              config = {};
+            })
           ];
         }
         // specialArgs);

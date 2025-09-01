@@ -42,6 +42,13 @@ in {
 
       description = "nix-rebuild script";
     };
+
+    flake-source = lib.mkOption {
+      type = lib.types.nullOr lib.types.singleLineStr;
+      description = "The source of the flake";
+      example = "/home/user/flake-directory";
+      default = null;
+    };
   };
 
   config = {

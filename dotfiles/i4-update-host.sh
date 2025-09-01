@@ -6,7 +6,7 @@
 #
 # Env:
 #   CONFIG         Nix flake output/host to apply (defaults to <targetHost>)
-#   FLAKE_LOCATION Path/URL to flake (defaults to "$HOME/.config/nixos-config")
+#   FLAKE_SOURCE Path/URL to flake
 #
 # Notes:
 # - Uses `nix shell nixpkgs#nixos-rebuild` so it works on macOS/Linux without nixos-rebuild pre-installed.
@@ -22,10 +22,10 @@ fi
 
 targetHost="$1"
 config="${CONFIG:-$targetHost}"
-FLAKE_LOCATION="${FLAKE_LOCATION:-$HOME/.config/nixos-config}"
+FLAKE_SOURCE="${FLAKE_SOURCE}"
 
 nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
-  --flake "${FLAKE_LOCATION}#${config}" \
+  --flake "${FLAKE_SOURCE}#${config}" \
   --target-host "root@${targetHost}" \
   --build-host "root@${targetHost}" \
   --fast

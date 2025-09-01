@@ -27,6 +27,7 @@
     home.username = "ilma4";
 
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
+    flake-source = "${config.home.homeDirectory}/.config/nixos-config";
 
     # sops-nix configuration
     sops = {

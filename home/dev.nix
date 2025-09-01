@@ -5,49 +5,41 @@
   pkgs-unstable,
   ...
 }: let
-  isNotNixOS = pkgs.stdenv.isDarwin || config.targets.genericLinux.enable;
+  isDarwin = pkgs.stdenv.isDarwin;
+  isNotNixOS = isDarwin || config.targets.genericLinux.enable;
 in {
-  home.packages = with pkgs;
-    [
-      docker # docker cli
-      podman # podman cli
-      podman-compose # podman-compose is not bundled with podman
+  home.packages = with pkgs; [
+    docker # docker cli
+    podman # podman cli
+    podman-compose # podman-compose is not bundled with podman
 
-      nixd
-      nil
-      alejandra
-      tex-fmt
-      sops
+    nixd
+    nil
+    alejandra
+    tex-fmt
+    sops
 
-      haskell-language-server
+    haskell-language-server
 
-      (pkgs.rust-bin.stable.latest.default.override {
-        extensions = ["rust-src"];
-      })
+    (pkgs.rust-bin.stable.latest.default.override {
+      extensions = ["rust-src"];
+    })
 
-      (
+    (
+      lib.mkIf (config.flake-source != null) (
         pkgs.writeShellScriptBin "i4-update-host" ''
-          # Wrapper around external script to set default FLAKE_LOCATION
-          export FLAKE_LOCATION="${"\$"}{FLAKE_LOCATION:-${lib.flake-location}}"
+          # Wrapper around external script to set default FLAKE_SOURCE
+          export FLAKE_SOURCE="${"\$"}{FLAKE_SOURCE:-${config.flake-source}}"
           exec "${lib.flake-location}/dotfiles/i4-update-host.sh" "$@"
         ''
       )
-    ]
-    ++ (
-      if pkgs.stdenv.isDarwin
-      then [pkgs.darwin.libiconv]
-      else []
     )
-    ++ (
-      if isNotNixOS
-      then [
-        pkgs-unstable.bazelisk
-        (pkgs.writeShellScriptBin "bazel" ''
-          exec ${pkgs.bazelisk}/bin/bazelisk "$@"
-        '')
-      ]
-      else []
-    );
+
+    (lib.mkIf isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
+
+    (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
+    (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazel}/bin/bazelisk \"$@\""))
+  ];
 
   programs.zsh.shellAliases = {
     bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
