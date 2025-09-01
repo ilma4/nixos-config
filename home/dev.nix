@@ -28,8 +28,8 @@ in {
       (
         pkgs.writeShellScriptBin "i4-update-host" ''
           # Wrapper around external script to set default FLAKE_LOCATION
-          export FLAKE_LOCATION="${"\$"}{FLAKE_LOCATION:-${config.flake-location}}"
-          exec "${config.flake-location}/dotfiles/i4-update-host.sh" "$@"
+          export FLAKE_LOCATION="${"\$"}{FLAKE_LOCATION:-${lib.flake-location}}"
+          exec "${lib.flake-location}/dotfiles/i4-update-host.sh" "$@"
         ''
       )
     ]
