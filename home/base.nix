@@ -137,43 +137,9 @@ in {
           lib.mkOrder 550 ''
           '';
 
-        normal = lib.mkOrder 1000 ''
-          # enable case-insensitive completion
-          # autoload -Uz compinit && compinit
-          # zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-          # setopt NO_CASE_GLOB
-
-
-          # Select completion items
-          # zstyle ':completion:*' menu select
-
-          # Enable colors in completion
-          # autoload -U colors && colors
-          # zstyle ':completion:*' list-colors "{\$}{s.:. $LS_COLORS}"
-
-          # fix completion for sudo
-          # compdef _sudo sudo
-
-          # bindkey -v # vim mode
-          # bindkey '^?' backward-delete-char # backspace work as usual
-          # bindkey '^H' backward-delete-char # backspace work as usual
-
-          # Prefix search with arrow keys
-          # bindkey "^[[A" up-line-or-search    # Up arrow
-          # bindkey "^[[B" down-line-or-search  # Down arrow
-
-
-          # expand ".." to "cd .."
-          # function ..() {
-            # cd ..
-          # }
-          # function ...() {
-            # cd ../..
-          # }
-          # function ....() {
-            # cd ../../..
-          # }
-        '';
+        normal =
+          lib.mkOrder 1000 ''
+          '';
       in
         lib.mkMerge [early normal beforeCompinit];
 
