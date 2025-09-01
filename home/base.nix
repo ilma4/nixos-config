@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  flake-location,
   ...
 }: let
   HOME = config.home.homeDirectory;
@@ -130,7 +129,7 @@ in {
 
           # Powerlevel10k theme
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-          source ${flake-location}/dotfiles/p10k.zsh # Powerlevel10k config
+          source ${lib.flake-location}/dotfiles/p10k.zsh # Powerlevel10k config
         '';
 
         beforeCompinit =
@@ -199,7 +198,7 @@ in {
     };
 
     home.file = lib.mkIf (!config.isRootless) {
-      ".screenrc".source = "${flake-location}/dotfiles/screenrc";
+      ".screenrc".source = "${lib.flake-location}/dotfiles/screenrc";
     };
 
     programs.dircolors.enable = true;

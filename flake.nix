@@ -137,7 +137,10 @@
         // {pkgs-unstable = (pkgsSets system).unstable;}
         // {
           lib = nixpkgs.lib.extend (
-            final: prev: {yaml = inputs.yaml.lib.${system};}
+            final: prev: {
+              yaml = inputs.yaml.lib.${system};
+              flake-location = self;
+            }
           );
         }
         // extraSpecialArgs
