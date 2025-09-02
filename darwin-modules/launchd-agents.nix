@@ -41,7 +41,6 @@
         "-c"
         ''
           set -e
-          export SSH_AUTH_SOCK="$(launchctl getenv SSH_AUTH_SOCK)"
 
           echo "$(${pkgs.coreutils}/bin/date): Starting Obsidian auto-commit"
 
@@ -87,15 +86,16 @@
   };
 
   launchd.user.agents.resticprofile-backup = {
-    path = [pkgs.restic];
+    path = [pkgs.restic "/usr/bin"];
     serviceConfig = let
       resticprofile = "${pkgs.resticprofile}/bin/resticprofile -c ${lib.flake-location}/dotfiles/resticprofile.toml";
     in {
       ProgramArguments = [
-        "/bin/bash" # do not changes, so wont loose permissions
+        "/bin/bash" # do not changes, so wont lose permissions
         "-c"
         ''
           # set -euo pipefail # TODO workraound that if some files are unavailable to read, restic fails with exit code 3
+          export SSH_AUTH_SOCK="$(launchctl getenv SSH_AUTH_SOCK)"
 
           echo "$(${pkgs.coreutils}/bin/date): Starting resticprofile backups"
 
