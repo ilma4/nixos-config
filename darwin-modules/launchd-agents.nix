@@ -90,7 +90,7 @@
       resticprofile = "${pkgs.resticprofile}/bin/resticprofile -c ${lib.flake-location}/dotfiles/resticprofile.toml";
     in {
       ProgramArguments = [
-        "${pkgs.bash}/bin/bash"
+        "/bin/bash" # do not changes, so wont loose permissions
         "-c"
         ''
           # set -euo pipefail # TODO workraound that if some files are unavailable to read, restic fails with exit code 3
