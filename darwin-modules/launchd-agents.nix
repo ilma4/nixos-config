@@ -41,6 +41,8 @@
         "-c"
         ''
           set -e
+          export SSH_AUTH_SOCK="$(launchctl getenv SSH_AUTH_SOCK)"
+
           echo "$(${pkgs.coreutils}/bin/date): Starting Obsidian auto-commit"
 
           if [ ! -d ~/Obsidian ]; then
