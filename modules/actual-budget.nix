@@ -16,6 +16,6 @@
   };
 
   systemd.tmpfiles.rules = [
-    "d /srv/actual-budget 0755 actual-budget actual-budget -"
+    "d /srv/actual-budget 0750 actual-budget actual-budget -"
   ];
 }
