@@ -5,9 +5,6 @@ version = "1"
 prevent-sleep = true # note: https://creativeprojects.github.io/resticprofile/configuration/sleep/index.html
 priority = "low"
 
-# TODO use systemd on linux
-# scheduler = "crond:/usr/bin/crontab" # replaces launchd (default on MacOS) because it sucks
-
 
 [default]
 repository = "local:/Users/ilma4/NoBackup/restic"
