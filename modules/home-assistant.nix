@@ -14,7 +14,4 @@
   systemd.tmpfiles.rules = [
     "/srv/homeassistant 0755 root root -"
   ];
-  networking.firewall.allowedTCPPorts = [
-    8123 # home-assistant
-  ];
 }
