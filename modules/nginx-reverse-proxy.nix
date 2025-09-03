@@ -114,11 +114,13 @@
       server {
         listen 80;
         server_name ${c.name}.ilma4.local;
+        client_max_body_size 10M;
         return 301 https://$host$request_uri;
       }
       server {
         listen 443 ssl;
         server_name ${c.name}.ilma4.local;
+        client_max_body_size 10M;
 
         ssl_certificate /etc/nginx/pki/certs/${c.name}.ilma4.local.cert.pem;
         ssl_certificate_key /etc/nginx/pki/private/${c.name}.ilma4.local.key.pem;
@@ -126,8 +128,9 @@
         location / {
           proxy_pass ${c.upstream};
           proxy_http_version 1.1;
+
          	proxy_set_header Upgrade $http_upgrade;
-         	proxy_set_header Connection $connection_upgrade;
+         	proxy_set_header Connection "upgrade";
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
