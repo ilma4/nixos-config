@@ -28,6 +28,9 @@ args @ {
     time.timeZone = "Europe/Berlin";
     i18n.defaultLocale = "en_US.UTF-8";
 
+    programs.neovim.enable = true;
+    programs.nano.enable = true;
+
     /*
     nixpkgs.config = {
       allowUnfree = true;
