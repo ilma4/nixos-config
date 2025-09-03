@@ -5,6 +5,8 @@
 }: {
   # Containers
   dockerCompose.paperless.composeFile = "${lib.flake-location}/compose/paperless.yml";
+  dockerCompose.paperless.environment = {
+  };
 
   systemd.tmpfiles.rules = [
     "d /srv/paperless-ngx 750 ilma4 1000 -"
