@@ -97,6 +97,9 @@
           # set -euo pipefail # TODO workraound that if some files are unavailable to read, restic fails with exit code 3
           export SSH_AUTH_SOCK="$(launchctl getenv SSH_AUTH_SOCK)"
 
+          echo "environment is:"
+          env
+
           echo "$(${pkgs.coreutils}/bin/date): Starting resticprofile backups"
 
           ${resticprofile} backup
