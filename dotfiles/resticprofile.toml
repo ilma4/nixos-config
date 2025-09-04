@@ -29,6 +29,9 @@ exclude = [
     "/Users/ilma4/Library/Java",       # jdk's binaries
     "/Users/ilma4/Library/Logs",
 
+    "/Users/ilma4/Library/DuetExpertCenter", # https://apple.stackexchange.com/questions/476332/what-is-duetexpertcentre
+    "/Users/ilma4/Library/Metadata/CoreSpotlight",
+
     "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
 
     "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
