@@ -34,6 +34,8 @@ args @ {
     "${modules}/node-exporter.nix"
 
     "${modules}/nginx-reverse-proxy.nix"
+
+    "${modules}/backup.nix"
   ];
 
   # Use the systemd-boot EFI boot loader.
