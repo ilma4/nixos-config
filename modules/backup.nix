@@ -11,8 +11,11 @@
     };
     users.groups.backup = {};
 
-    systemd.tmpfiles.rules = ''
-      d /persist/restic 0750 backup backup - -
-    '';
+    systemd.tmpfiles.rules = let
+      backup-user = config.users.users.backup;
+      backup-group = config.users.groups.backup;
+    in [
+      "d /var/restic 0750 ${backup-user} ${backup-group} -"
+    ];
   };
 }
