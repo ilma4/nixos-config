@@ -11,6 +11,8 @@
     CONFIG_DIR = "/srv/homeassistant";
   };
 
+  networking.firewall.allowedTCPPorts = [8123];
+
   systemd.tmpfiles.rules = [
     "/srv/homeassistant 0755 root root -"
   ];
