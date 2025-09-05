@@ -100,6 +100,14 @@
       extraPackages = tpkgs: {inherit (tpkgs) scheme-full;};
     };
 
+    programs.ssh.matchBlocks = {
+      "hetzer-storage" = {
+        host = "u478838.your-storagebox.de";
+        identityFile = "~/.ssh/jb-mac-to-hetzer-storage";
+        user = "u478838";
+      };
+    };
+
     # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
     home.sessionVariables = {
       PATH = "$PATH:/opt/homebrew/bin";
