@@ -197,8 +197,9 @@ in {
       '';
     };
 
-    home.file = lib.mkIf (!config.isRootless) {
-      ".screenrc".source = "${lib.flake-location}/dotfiles/screenrc";
+    home.file = {
+      ".screenrc".source = lib.mkIf (!config.isRootless) "${lib.flake-location}/dotfiles/screenrc";
+      ".config/htop/htoprc".source = "${lib.flake-location}/dotfiles/htoprc";
     };
 
     programs.dircolors.enable = true;
