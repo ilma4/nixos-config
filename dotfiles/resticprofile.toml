@@ -31,6 +31,7 @@ exclude = [
 
     "/Users/ilma4/Library/DuetExpertCenter", # https://apple.stackexchange.com/questions/476332/what-is-duetexpertcentre
     "/Users/ilma4/Library/Metadata/CoreSpotlight",
+    "/Users/ilma4/Library/Daemon Containers/*/Data/com.apple.milod",
 
     "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
 
