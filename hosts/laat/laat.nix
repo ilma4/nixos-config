@@ -100,6 +100,7 @@ args @ {
 
   services.tailscale = {
     enable = true;
+    package = args.pkgs-unstable.tailscale;
     openFirewall = true;
   };
 
