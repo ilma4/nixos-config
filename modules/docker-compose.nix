@@ -33,13 +33,12 @@ in {
   config.systemd.services =
     mapAttrs
     (name: svc: let
-      # pkgs.writeText creates a derivation, so services won't be restarted often unlike with readFile
-      composeFile = pkgs.copyPathToStore svc.composeFile;
+      composeFile = svc.composeFile;
       compose =
         "${pkgs.podman}/bin/podman compose --file ${composeFile}"
         + (
           if (svc.envFile != null)
-          then "--env-file ${pkgs.copyPathToStore svc.envFile}"
+          then " --env-file '${svc.envFile}'"
           else ""
         );
     in {

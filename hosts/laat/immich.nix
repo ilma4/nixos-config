@@ -3,11 +3,15 @@
   config,
   lib,
   ...
-}: {
+}: let
+  dir = pkgs.copyPathToStore ./immich;
+in {
   dockerCompose.immich = {
-    composeFile = ./immich/docker-compose.yml;
-    envFile = ./immich/.env;
+    composeFile = "${dir}/docker-compose.yml";
+    envFile = "${dir}/.env";
   };
+
+  systemd.services.immich.serviceConfig.WorkingDirectory = dir; # ./immich;
 
   systemd.tmpfiles.rules = [
     "d /srv/immich/library 700 root root -"
