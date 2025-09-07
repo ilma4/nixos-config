@@ -15,9 +15,11 @@
     sops.defaultSopsFile = "${lib.flake-location}/secrets/example.yaml";
     sops.defaultSopsFormat = "yaml";
     # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
+    # This will generate a new key if the key specified above does not exist
+    sops.age.generateKey = true;
     sops.age.keyFile =
       if (builtins.hasAttr "users" config) # true if NixOS/Nix-darwin
-      then "${config.users.users.ilma4.home}/.config/sops/age/keys.txt"
+      then "/var/lib/sops-nix/keys.txt"
       else "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
     # map i4-encrypted-files

@@ -9,9 +9,11 @@
     "${lib.flake-location}/darwin-modules/nix-settings.nix"
     "${lib.flake-location}/darwin-modules/launchd-agents.nix"
     "${lib.flake-location}/modules/home-manager.nix"
+    "${lib.flake-location}/modules/sops.nix"
 
     inputs.home-manager.darwinModules.home-manager
     inputs.nix-rosetta-builder.darwinModules.default
+    inputs.sops-nix.darwinModules.sops
   ];
 
   # environment.systemPackages = with pkgs; [
@@ -41,7 +43,20 @@
       home = "/Users/ilma4";
       shell = pkgs.zsh;
     };
+    backup = {
+      uid = 505;
+      gid = 505;
+      # shell = pkgs.zsh;
+    };
   };
+
+  users.groups.backup = {
+    gid = 505;
+    members = [config.users.users.backup.name];
+  };
+
+  users.knownUsers = [config.users.users.backup.name];
+  users.knownGroups = [config.users.groups.backup.name];
 
   home-manager.users = {
     ilma4 = import ./ilma4-home.nix;
