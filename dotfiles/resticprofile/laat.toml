@@ -7,11 +7,12 @@ priority = "low"
 
 [default]
 repository = "/mnt/hdd/restic-server"
+password-file = "/run/secrets/restic/server"
 
 [default.backup]
-init = true
+initialize = true
 
-include = [
+source = [
   "/srv",
 ]
 

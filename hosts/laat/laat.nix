@@ -78,11 +78,17 @@ args @ {
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
+  # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
   sops.secrets."ssh/jb-mac/ilma4-nas/pub" = {
     owner = "ilma4";
     group = "users";
   };
+
+  sops.secrets."restic/server" = {
+    owner = "root";
+    group = "root";
+  };
+  environment.etc."resticprofile/profiles.toml".source = "${lib.flake-location}/dotfiles/resticprofile/laat.toml";
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
