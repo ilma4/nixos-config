@@ -15,11 +15,15 @@ in {
           default = true;
         };
         composeFile = mkOption {
-          type = types.str;
+          type = lib.types.path;
         };
         environment = mkOption {
           type = types.attrsOf types.str;
           default = {};
+        };
+        envFile = mkOption {
+          type = lib.types.nullOr lib.types.path;
+          default = null;
         };
       };
     }));
@@ -30,8 +34,14 @@ in {
     mapAttrs
     (name: svc: let
       # pkgs.writeText creates a derivation, so services won't be restarted often unlike with readFile
-      composeFile = pkgs.writeText "${name}-compose.yml" (builtins.readFile svc.composeFile);
-      compose = "${pkgs.podman}/bin/podman compose --file ${composeFile}";
+      composeFile = pkgs.copyPathToStore svc.composeFile;
+      compose =
+        "${pkgs.podman}/bin/podman compose --file ${composeFile}"
+        + (
+          if (svc.envFile != null)
+          then "--env-file ${pkgs.copyPathToStore svc.envFile}"
+          else ""
+        );
     in {
       # TODO: require pdoman-network-reverse_proxy.service only when needed
       after = ["network-online.target" "podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
