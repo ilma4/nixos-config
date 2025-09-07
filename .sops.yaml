@@ -2,14 +2,16 @@
 
 keys:
   - &primary age1y0rfvrvhwraualay2kwv0ungf3m97pp8pkz5xe9hz40pgre26enqd7s6u4
-  - &quicksilver age1w8qd7w00umznswy0afvyzz6d7h7kw9j9nm28cgha96wxz5fc959sag995g
+  - &quicksilver-home age1w8qd7w00umznswy0afvyzz6d7h7kw9j9nm28cgha96wxz5fc959sag995g
   - &laat age1r5fwhua33esm2rxlav754cpfna5ek4ataed3res8pmhf3jzlzcpqtgmza2
+  - &quicksilver age1c9dtgx24j73tga3m24e8mk634uzs6gun6sgvsrsqrrc7jxa8cazsp5xneu
   - &i4-torrent-vm age1mws4zc90dpjln5hw6zm9kvxa6z5kpjppwglph30xseplwxhjmpfq2ewu8x
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini|txt|bin|conf|crt|key)$
     key_groups:
       - age:
-          - *primary
           - *quicksilver
+          - *primary
+          - *quicksilver-home
           - *laat
           - *i4-torrent-vm
