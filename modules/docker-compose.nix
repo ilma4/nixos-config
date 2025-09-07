@@ -33,7 +33,10 @@ in {
   config.systemd.services =
     mapAttrs
     (name: svc: let
-      composeFile = svc.composeFile;
+      composeFile =
+        if (lib.strings.hasPrefix "${lib.flake-location}" svc.composeFile)
+        then pkgs.copyPathToStore svc.composeFile
+        else svc.composeFile;
       compose =
         "${pkgs.podman}/bin/podman compose --file ${composeFile}"
         + (

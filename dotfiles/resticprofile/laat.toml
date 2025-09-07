@@ -1,0 +1,18 @@
+#:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+
+version = "1"
+[global]
+prevent-sleep = true # note: https://creativeprojects.github.io/resticprofile/configuration/sleep/index.html
+priority = "low"
+
+[default]
+repository = "/mnt/hdd/restic-server"
+
+[default.backup]
+init = true
+
+include = [
+  "/srv",
+]
+
+# TODO
