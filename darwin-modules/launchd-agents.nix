@@ -86,27 +86,13 @@
   };
 
   launchd.user.agents.resticprofile-backup = {
-    path = [pkgs.restic "/usr/bin"];
-    serviceConfig = let
-      resticprofile = "${pkgs.resticprofile}/bin/resticprofile -c ${lib.flake-location}/dotfiles/resticprofile.toml";
-    in {
+    path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
+    serviceConfig = {
       ProgramArguments = [
-        "/bin/bash" # do not changes, so wont lose permissions
+        "${pkgs.resticprofile}/bin/resticprofile" # do not changes, so wont lose permissions
         "-c"
-        ''
-          # set -euo pipefail # TODO workraound that if some files are unavailable to read, restic fails with exit code 3
-          export SSH_AUTH_SOCK="$(launchctl getenv SSH_AUTH_SOCK)"
-
-          echo "environment is:"
-          env
-
-          echo "$(${pkgs.coreutils}/bin/date): Starting resticprofile backups"
-
-          ${resticprofile} backup
-          ${resticprofile} hdd.copy
-
-          echo "$(${pkgs.coreutils}/bin/date): resticprofile backups completed successfully"
-        ''
+        "${lib.flake-location}/dotfiles/resticprofile.toml"
+        "backup"
       ];
       StartCalendarInterval = [
         {
@@ -116,6 +102,26 @@
       ];
       StandardOutPath = "/tmp/resticprofile-backups.log";
       StandardErrorPath = "/tmp/resticprofile-backups.log";
+    };
+  };
+
+  launchd.user.agents.resticprofile-hddcopy = {
+    path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
+    serviceConfig = {
+      ProgramArguments = [
+        "${pkgs.resticprofile}/bin/resticprofile" # do not changes, so wont lose permissions
+        "-c"
+        "${lib.flake-location}/dotfiles/resticprofile.toml"
+        "hdd.copy"
+      ];
+      StartCalendarInterval = [
+        {
+          Hour = 4;
+          Minute = 10;
+        }
+      ];
+      StandardOutPath = "/tmp/resticprofile-hddcopy.log";
+      StandardErrorPath = "/tmp/resticprofile-hddcopy.log";
     };
   };
 }
