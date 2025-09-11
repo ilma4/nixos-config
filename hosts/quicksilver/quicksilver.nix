@@ -153,7 +153,6 @@
       "activitywatch"
       "gitbutler"
       "dolphin" # Wii emulator
-      "spotify"
       "cloudflare-warp" # corporate JetBrains VPN
 
       # Docker Desktop for Mac: vm to run docker containers
