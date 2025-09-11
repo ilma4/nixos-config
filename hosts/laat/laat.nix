@@ -38,6 +38,7 @@ args @ {
     "${modules}/backup.nix"
 
     ./immich.nix
+    ./lidarr.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
