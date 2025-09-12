@@ -61,7 +61,7 @@ in {
 
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${pkgs.bash}/bin/bash -c '${compose} pull ; ${compose} up --pull'";
+        ExecStart = "${compose} up --pull";
         ExecStop = "${compose} down";
         Restart = "always";
       };
