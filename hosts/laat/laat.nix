@@ -156,6 +156,7 @@ args @ {
   environment.systemPackages = with pkgs; [
     config.boot.kernelPackages.x86_energy_perf_policy
     hdparm
+    resticprofile
     smartmontools
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
@@ -172,6 +173,23 @@ args @ {
     extraOptions = [
       "--interval=10800" # run checks every 3 hours # TODO reset to default when noise wont be issue
     ];
+  };
+
+  systemd.timers.restic-backup = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "*-*-* 00:04:00";
+      Persistent = true;
+    };
+  };
+
+  systemd.services.restic-backup = {
+    path = [pkgs.resticprofile pkgs.restic];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${lib.flake-location}/dotfiles/resticprofile/laat.toml\" backup";
+      User = "root";
+    };
   };
 
   dockerCompose = {
