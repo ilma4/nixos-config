@@ -6,7 +6,7 @@ name: actual-budget
 services:
   actual-budget:
     container_name: actual-budget
-    image: docker.io/actualbudget/actual-server:25.8.0-alpine
+    image: "ghcr.io/actualbudget/actual:latest-alpine"
     user: "${UID_GID}"
     expose:
       - "5006"
