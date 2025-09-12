@@ -4,7 +4,68 @@
   ...
 }: {
   # Containers
-  dockerCompose.paperless.composeFile = "${lib.flake-location}/compose/paperless.yml";
+  dockerCompose.paperless.composeFile = pkgs.writeText "docker-compose.yml" ''
+    name: paperless-ngx
+    services:
+      broker:
+        image: docker.io/library/redis:8
+        restart: unless-stopped
+        volumes:
+          - redisdata:/data
+      webserver:
+        image: ghcr.io/paperless-ngx/paperless-ngx:latest
+        restart: unless-stopped
+        container_name: paperless
+        depends_on:
+          - broker
+          - gotenberg
+          - tika
+        expose:
+          - "8000"
+        networks:
+          reverse_proxy:
+
+        volumes:
+          # TODO pass `/srv/paperless-ngx` as env-var
+          - /srv/paperless-ngx/data:/usr/src/paperless/data
+          - /srv/paperless-ngx/media:/usr/src/paperless/media
+          - /srv/paperless-ngx/export:/usr/src/paperless/export
+          - /srv/paperless-ngx/consume:/usr/src/paperless/consume
+        # env_file: docker-compose.env # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.env
+        environment:
+          PAPERLESS_OCR_LANGUAGES: "eng deu rus"
+
+          PAPERLESS_REDIS: redis://broker:6379
+          PAPERLESS_TIKA_ENABLED: 1
+          PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+          PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+
+          PAPERLESS_URL: "https://paperless.ilma4.local"
+          PAPERLESS_USE_X_FORWARD_PORT: "true"
+          PAPERLESS_USE_X_FORWARD_HOST: "true"
+          PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      gotenberg:
+        image: docker.io/gotenberg/gotenberg:8.20
+        restart: unless-stopped
+        # The gotenberg chromium route is used to convert .eml files. We do not
+        # want to allow external content like tracking pixels or even javascript.
+        command:
+          - "gotenberg"
+          - "--chromium-disable-javascript=true"
+          - "--chromium-allow-list=file:///tmp/.*"
+      tika:
+        image: docker.io/apache/tika:latest
+        restart: unless-stopped
+    volumes:
+      data:
+      media:
+      redisdata:
+
+    networks:
+      reverse_proxy:
+        external: true
+  '';
+
   dockerCompose.paperless.environment = {
   };
 
