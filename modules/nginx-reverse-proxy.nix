@@ -114,13 +114,13 @@
       server {
         listen 80;
         server_name ${c.name}.ilma4.local;
-        client_max_body_size 10M;
+        client_max_body_size 100M;
         return 301 https://$host$request_uri;
       }
       server {
         listen 443 ssl;
         server_name ${c.name}.ilma4.local;
-        client_max_body_size 10M;
+        client_max_body_size 100M;
 
         ssl_certificate /etc/nginx/pki/certs/${c.name}.ilma4.local.cert.pem;
         ssl_certificate_key /etc/nginx/pki/private/${c.name}.ilma4.local.key.pem;
@@ -235,7 +235,7 @@
         done
   '';
 
-  nginxConf = pkgs.writeText "reverse_proxy.conf" nginxServerConfs;
+  nginxConf = pkgs.writeText "reverse_proxy.conf" ("resolver 10.20.0.1 valid=10s;\n\n" + nginxServerConfs);
   composeYaml = ''
     services:
       nginx-reverse-proxy:
