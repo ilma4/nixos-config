@@ -38,6 +38,7 @@ args @ {
     "${modules}/backup.nix"
 
     ./immich.nix
+    ./pihole.nix
     # ./lidarr.nix
   ];
 
@@ -190,10 +191,6 @@ args @ {
       ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${lib.flake-location}/dotfiles/resticprofile/laat.toml\" backup";
       User = "root";
     };
-  };
-
-  dockerCompose = {
-    pihole.composeFile = "${lib.flake-location}/compose/pihole.yml";
   };
 
   # programs.nix-ld.enable = true;
