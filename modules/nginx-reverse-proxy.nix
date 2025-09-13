@@ -121,12 +121,14 @@
         listen 443 ssl;
         server_name ${c.name}.ilma4.local;
         client_max_body_size 100M;
+        resolver 10.20.0.1 valid=10s ipv6=off;
+        set $upstream_target ${c.upstream};
 
         ssl_certificate /etc/nginx/pki/certs/${c.name}.ilma4.local.cert.pem;
         ssl_certificate_key /etc/nginx/pki/private/${c.name}.ilma4.local.key.pem;
 
         location / {
-          proxy_pass ${c.upstream};
+          proxy_pass $upstream_target;
 
           # These configuration options are required for WebSockets to work
           proxy_http_version 1.1;
@@ -235,7 +237,7 @@
         done
   '';
 
-  nginxConf = pkgs.writeText "reverse_proxy.conf" ("resolver 10.20.0.1 valid=10s;\n\n" + nginxServerConfs);
+  nginxConf = pkgs.writeText "reverse_proxy.conf" nginxServerConfs;
   composeYaml = ''
     services:
       nginx-reverse-proxy:
