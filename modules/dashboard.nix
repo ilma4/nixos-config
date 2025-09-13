@@ -16,11 +16,11 @@
   in {
     enable = true;
     composeFile = pkgs.writeText "docker-compose.yml" ''
-      version: "3.8"
+      name: "homer"
       services:
-        dashboard:
+        homer:
           image: b4bz/homer:latest
-          container_name: dashboard
+          container_name: homer
           expose:
             - "8080"
 
