@@ -35,7 +35,7 @@ args @ {
 
     "${modules}/backup.nix"
 
-    ./dashboard.nix
+    # ./dashboard.nix
     ./immich.nix
     ./pihole.nix
     # ./lidarr.nix
