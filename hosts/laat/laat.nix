@@ -27,7 +27,6 @@ args @ {
     "${modules}/paperless.nix"
 
     # "${modules}/immich.nix"
-    "${modules}/syncthing.nix"
 
     "${modules}/grafana.nix"
     "${modules}/prometheus.nix"
