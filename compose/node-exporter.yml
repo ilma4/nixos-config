@@ -4,6 +4,7 @@ services:
     ports:
       - "${NODE_EXPORTER_PORT}:9100"
     user: "${NODE_EXPORTER_UID}:${NODE_EXPORTER_GID}"
+    container_name: "node-exporter"
     volumes:
       - "/:/host:ro,rslave"
     command: ["/bin/node_exporter", "--path.rootfs=/host"]
