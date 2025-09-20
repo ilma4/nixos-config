@@ -15,6 +15,9 @@
     uidGid = "${toString config.users.users.homer.uid}:${toString config.users.groups.homer.gid}";
   in {
     enable = true;
+    environment = {
+      ASSETS = "${./homer}";
+    };
     composeFile = pkgs.writeText "docker-compose.yml" ''
       name: "homer"
       services:
@@ -29,7 +32,7 @@
 
           volumes:
             - /etc/localtime:/etc/localtime:ro
-            # - ${lib.flake-location}/dotfiles/homer:/www/assets:ro
+            - $ASSETS:/www/assets:ro
 
           user: "${uidGid}"
           restart: unless-stopped

@@ -19,7 +19,6 @@ args @ {
     "${modules}/server.nix"
     "${modules}/qbittorrent.nix"
 
-    "${modules}/dashboard.nix"
     "${modules}/home-assistant.nix"
     "${modules}/pdf-tools.nix"
 
@@ -36,6 +35,7 @@ args @ {
 
     "${modules}/backup.nix"
 
+    ./dashboard.nix
     ./immich.nix
     ./pihole.nix
     # ./lidarr.nix
