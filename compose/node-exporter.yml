@@ -1,13 +1,12 @@
 services:
   node-exporter:
     image: ${NODE_EXPORTER_IMAGE}
-    ports:
-      - "${NODE_EXPORTER_PORT}:9100"
     user: "${NODE_EXPORTER_UID}:${NODE_EXPORTER_GID}"
     container_name: "node-exporter"
     volumes:
       - "/:/host:ro,rslave"
-    command: ["/bin/node_exporter", "--path.rootfs=/host"]
+    command:
+      - "--path.rootfs=/host"
     pid: host
     network_mode: host
     read_only: true
