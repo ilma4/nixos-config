@@ -28,7 +28,6 @@ args @ {
     # "${modules}/immich.nix"
 
     "${modules}/grafana.nix"
-    "${modules}/prometheus.nix"
     "${modules}/node-exporter.nix"
 
     "${modules}/nginx-reverse-proxy.nix"
@@ -36,6 +35,7 @@ args @ {
     "${modules}/backup.nix"
 
     # ./dashboard.nix
+    "${./prometheus}/prometheus.nix"
     ./immich.nix
     ./pihole.nix
     # ./lidarr.nix

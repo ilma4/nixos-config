@@ -1,8 +1,29 @@
 {
   config,
   lib,
+  pkgs,
   ...
-}: {
+}: let
+  prometheusCompose = pkgs.writeText "prometheus.yml" ''
+    services:
+      prometheus:
+        image: prom/prometheus:latest
+        user: "${toString config.users.users.prometheus.uid}:${toString config.users.groups.prometheus.gid}"
+        container_name: prometheus
+        volumes:
+          - "$CONFIG_FILE:/etc/prometheus/prometheus.yml:ro"
+          - "/srv/prometheus/data:/prometheus"
+        expose:
+          - "9090"
+        networks:
+          reverse_proxy:
+        restart: unless-stopped
+
+    networks:
+      reverse_proxy:
+        external: true
+  '';
+in {
   users.users.prometheus = {
     isSystemUser = true;
     uid = 802;
@@ -19,11 +40,9 @@
   ];
 
   dockerCompose.prometheus = {
-    composeFile = "${lib.flake-location}/compose/prometheus.yml";
+    composeFile = prometheusCompose;
     environment = {
-      PROMETHEUS_UID = toString config.users.users.prometheus.uid;
-      PROMETHEUS_GID = toString config.users.groups.prometheus.gid;
-      CONFIG_FILE = "${lib.flake-location}/dotfiles/prometheus.yml";
+      CONFIG_FILE = "${./config.yml}";
     };
   };
 
