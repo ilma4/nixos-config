@@ -292,6 +292,9 @@
   '';
   */
 
+  # Prometheus node exporter: monitoring
+  services.prometheus.exporters.node.enable = true;
+
   # uncomment on clean nix-darwin
   # nix.linux-builder.enable = true;
 
