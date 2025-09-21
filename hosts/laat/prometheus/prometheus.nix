@@ -13,15 +13,20 @@
         volumes:
           - "$CONFIG_FILE:/etc/prometheus/prometheus.yml:ro"
           - "/srv/prometheus/data:/prometheus"
-        expose:
-          - "9090"
-        networks:
-          reverse_proxy:
+
+        labels:
+          - "local.ilma4.customResolve=10.20.0.1:9090" # reverse-proxy will use this IP address to resolve container instead of the container's hostname
+
+        network_mode: host
+        # expose:
+        #   - "9090"
+        # networks:
+        #   reverse_proxy:
         restart: unless-stopped
 
-    networks:
-      reverse_proxy:
-        external: true
+    # networks:
+    #   reverse_proxy:
+    #     external: true
   '';
 in {
   users.users.prometheus = {
