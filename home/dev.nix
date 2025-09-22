@@ -19,6 +19,8 @@ in {
     tex-fmt
     sops
 
+    android-tools # adb
+
     haskell-language-server
 
     (pkgs.rust-bin.stable.latest.default.override {
