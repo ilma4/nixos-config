@@ -139,7 +139,6 @@
     casks = [
       # Could be replaced by nix packages in future
       "firefox"
-      "vivaldi"
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
@@ -182,6 +181,9 @@
       "zed" # very fast text editor
       "vial" # configure my split keyboard
       "warp" # terminal with AI agent
+
+      "vivaldi"
+      "brave-browser"
       # "todoist"
 
       # Mac specific, most probably remain brew casks
