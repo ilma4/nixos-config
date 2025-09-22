@@ -28,6 +28,6 @@ in {
   networking.firewall.allowedTCPPorts = [8123];
 
   systemd.tmpfiles.rules = [
-    "/srv/homeassistant 0755 root root -"
+    "d /srv/homeassistant 0755 root root -"
   ];
 }
