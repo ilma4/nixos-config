@@ -22,6 +22,8 @@
           - tika
         expose:
           - "8000"
+        ports:
+          - "8000:8000"
         networks:
           reverse_proxy:
 
@@ -68,6 +70,8 @@
 
   dockerCompose.paperless.environment = {
   };
+
+  networking.firewall.allowedTCPPorts = [8000];
 
   systemd.tmpfiles.rules = [
     "d /srv/paperless-ngx 750 ilma4 1000 -"
