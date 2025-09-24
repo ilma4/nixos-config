@@ -9,7 +9,6 @@ with lib; let
 in {
   options.services.prometheus.node-exporter-docker = {
     enable = mkEnableOption "Prometheus Node Exporter in Docker";
-
     port = mkOption {
       type = types.port;
       default = 9100;
@@ -64,13 +63,26 @@ in {
 
     # Configure docker-compose service
     dockerCompose.node-exporter = {
-      composeFile = "${lib.flake-location}/compose/node-exporter.yml";
-      environment = {
-        NODE_EXPORTER_IMAGE = cfg.image;
-        NODE_EXPORTER_PORT = toString cfg.port;
-        NODE_EXPORTER_UID = toString cfg.uid;
-        NODE_EXPORTER_GID = toString cfg.uid;
-      };
+      composeFile = pkgs.writeText "node-exporter.yml" ''
+        services:
+          node-exporter:
+            image: "prom/node-exporter:latest"
+            user: "${toString cfg.uid}:${toString cfg.uid}"
+            container_name: "node-exporter"
+            volumes:
+              - "/:/host:ro,rslave"
+            command:
+              - "--path.rootfs=/host"
+              - "--path.udev.data=/host/run/udev/data"
+            pid: host
+            network_mode: host
+            read_only: true
+            cap_drop:
+              - ALL
+            cap_add:
+              - SYS_TIME
+            restart: unless-stopped
+      '';
     };
 
     # Open firewall if requested
