@@ -11,7 +11,7 @@
         user: "${toString config.users.users.prometheus.uid}:${toString config.users.groups.prometheus.gid}"
         container_name: prometheus
         volumes:
-          - "$CONFIG_FILE:/etc/prometheus/prometheus.yml:ro"
+          - "${"$"}{CONFIG_FILE:-/aaa}:/etc/prometheus/prometheus.yml:ro"
           - "/srv/prometheus/data:/prometheus"
 
         labels:
