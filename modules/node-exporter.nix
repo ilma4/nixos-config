@@ -9,55 +9,18 @@ with lib; let
 in {
   options.services.prometheus.node-exporter-docker = {
     enable = mkEnableOption "Prometheus Node Exporter in Docker";
-    port = mkOption {
-      type = types.port;
-      default = 9100;
-      description = "Port to expose node-exporter on";
-    };
-
-    image = mkOption {
-      type = types.str;
-      default = "prom/node-exporter:latest";
-      description = "Docker image to use for node-exporter";
-    };
-
-    user = mkOption {
-      type = types.str;
-      default = "node-exporter";
-      description = "User to run the container as";
-    };
-
-    uid = mkOption {
-      type = types.int;
-      default = 803;
-      description = "UID for the node-exporter user";
-    };
-
-    extraArgs = mkOption {
-      type = types.listOf types.str;
-      default = [
-        "--path.rootfs=/host"
-      ];
-      description = "Extra arguments to pass to node-exporter (ignored when using dockerCompose)";
-    };
-
-    openFirewall = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Whether to open the firewall for the node-exporter port";
-    };
   };
 
   config = mkIf cfg.enable {
     # Create user and group for node-exporter
-    users.users.${cfg.user} = {
+    users.users.node-exporter = {
       isSystemUser = true;
-      uid = cfg.uid;
-      group = cfg.user;
+      uid = 803;
+      group = "node-exporter";
       description = "Prometheus Node Exporter user";
     };
 
-    users.groups.${cfg.user} = {
+    users.groups.node-exporter = {
       gid = cfg.uid;
     };
 
@@ -67,7 +30,7 @@ in {
         services:
           node-exporter:
             image: "prom/node-exporter:latest"
-            user: "${toString cfg.uid}:${toString cfg.uid}"
+            user: "${toString config.users.users.node-exporter.uid}:${toString config.users.groups.node-exporter.uid}"
             container_name: "node-exporter"
             volumes:
               - "/:/host:ro,rslave"
