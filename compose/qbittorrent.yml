@@ -6,7 +6,7 @@ services:
       VPN_TYPE: wireguard
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "${WG_CONF_PATH}:/gluetun/wireguard/wg0.conf:ro"
+      - "${WG_CONF_PATH:-/aaa}:/gluetun/wireguard/wg0.conf:ro"
     ports:
       - "8080:8080"
     hostname: gluetun
