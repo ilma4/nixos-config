@@ -21,7 +21,7 @@ in {
     };
 
     users.groups.node-exporter = {
-      gid = cfg.uid;
+      gid = config.users.users.node-exporter.uid;
     };
 
     # Configure docker-compose service
@@ -49,6 +49,6 @@ in {
     };
 
     # Open firewall if requested
-    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [cfg.port];
+    networking.firewall.allowedTCPPorts = [8100];
   };
 }
