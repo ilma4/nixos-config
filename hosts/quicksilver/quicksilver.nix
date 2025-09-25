@@ -161,7 +161,6 @@
       "zulu@21"
 
       #avaliable in nix, but nix has troubles with gui apps
-      "telegram-desktop"
       "iterm2"
       "itermai"
       "obsidian"
