@@ -294,7 +294,9 @@
   */
 
   # Prometheus node exporter: monitoring
-  services.prometheus.exporters.node.enable = true;
+  # services.prometheus.exporters.node.enable = true;
+  # TODO fix issue with user
+  # users.users._prometheus-node-exporter.home = "/private/var/lib/prometheus-node-exporter";
 
   # uncomment on clean nix-darwin
   # nix.linux-builder.enable = true;
