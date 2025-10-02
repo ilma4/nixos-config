@@ -80,7 +80,7 @@ in {
             exit 1
         fi
 
-        # Auto-generated from dockerCompose config. Lists enabled services and pulls their images.
+        # Auto-generated from dockerCompose config. Pulls images for services and restarts them if new images were found.
         # Usage:
         #   podman-compose-pull <service-name>
         #   podman-compose-pull --all
@@ -90,6 +90,8 @@ in {
 
         usage() {
           echo "Usage: podman-compose-pull <service-name>|--all"
+          echo ""
+          echo "Pulls images for docker-compose services and restarts them if new images were found."
           echo ""
           echo "Available services:"
           if [ -n "$SERVICES" ]; then
@@ -116,7 +118,15 @@ in {
               else "";
           in "${name})
               echo \"Pulling images for ${name}...\"
-              ${pkgs.podman}/bin/podman compose --file ${composeFile}${envArg} pull
+              pull_output=$(${pkgs.podman}/bin/podman compose --file ${composeFile}${envArg} pull 2>&1)
+              echo \"$pull_output\"
+              if echo \"$pull_output\" | grep -q -E \"(Pulling|Downloaded|digest:|newer image)\"; then
+                echo \"New images detected for ${name}, restarting service...\"
+                systemctl restart \"${name}.service\"
+                echo \"Service ${name} restarted successfully\"
+              else
+                echo \"No new images for ${name}\"
+              fi
               ;;"
         ) (lib.filterAttrs (_: svc: svc.enable) cfg))}
             *)
@@ -149,6 +159,5 @@ in {
       '')
     ];
   };
-  # TODO: script to update images (and restart if needed)
   # TODO: systemd-timer checking for image updates and restarting services
 }
