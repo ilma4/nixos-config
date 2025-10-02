@@ -30,7 +30,7 @@ in {
         services:
           node-exporter:
             image: "prom/node-exporter:latest"
-            user: "${toString config.users.users.node-exporter.uid}:${toString config.users.groups.node-exporter.uid}"
+            user: "${toString config.users.users.node-exporter.uid}:${toString config.users.groups.node-exporter.gid}"
             container_name: "node-exporter"
             volumes:
               - "/:/host:ro,rslave"
