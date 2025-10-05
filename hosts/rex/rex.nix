@@ -28,7 +28,7 @@ args @ {
     };
   };
 
-  sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
+  # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
 
   sops.secrets.ilma4-passwd = {
     neededForUsers = true;
