@@ -12,6 +12,7 @@ with lib; let
     "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
     "nix-rebuild.applescript" = ./raycast-scripts/nix-rebuild.applescript;
     "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;
+    "chrome.applescript" = ./raycast-scripts/chrome.applescript;
   };
 in {
   options = {
