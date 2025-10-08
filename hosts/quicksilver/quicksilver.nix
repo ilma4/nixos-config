@@ -159,6 +159,7 @@
       # "podman-desktop" # I use "podman machine" directly
 
       "zulu@21"
+      "zulu@25"
 
       #avaliable in nix, but nix has troubles with gui apps
       "iterm2"
