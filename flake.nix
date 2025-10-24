@@ -139,9 +139,19 @@
             final: prev: {
               yaml = inputs.yaml.lib.${system};
               flake-location = self;
-              isDarwin = type == "darwin";
-              isNixos = type == "nixos";
-              isHomeManager = type == "home";
+              unifiedModules = let
+                checkers = {
+                  isDarwin = type == "darwin";
+                  isNixos = type == "nixos";
+                  isHomeManager = type == "home";
+                };
+              in {
+                enableForConfigurations = types: configuration:
+                  if builtins.any (x: checkers."${x}") types
+                  then configuration
+                  else {};
+                inherit checkers;
+              };
             }
           );
         }

@@ -6,7 +6,7 @@
   ...
 }: {
   imports = [
-    "${lib.flake-location}/darwin-modules/nix-settings.nix"
+    "${lib.flake-location}/modules/nix-settings.nix"
     "${lib.flake-location}/darwin-modules/launchd-agents.nix"
     "${lib.flake-location}/modules/home-manager.nix"
     "${lib.flake-location}/modules/sops.nix"
