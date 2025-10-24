@@ -139,6 +139,9 @@
             final: prev: {
               yaml = inputs.yaml.lib.${system};
               flake-location = self;
+              isDarwin = type == "darwin";
+              isNixos = type == "nixos";
+              isHomeManager = type == "home";
             }
           );
         }
