@@ -1,10 +1,20 @@
 {
-  "selectedAuthType": "oauth-personal",
-  "preferredEditor": "zed",
-  "theme": "Default Light",
-  "vimMode": false,
-  "showMemoryUsage": true,
-  "hideBanner": false,
-  "hideTips": false,
-  "contextFileName": "AGENTS.md"
+  "context": {
+    "fileName": "AGENTS.md"
+  },
+  "ui": {
+    "hideTips": false,
+    "hideBanner": false,
+    "showMemoryUsage": true,
+    "theme": "Default Light"
+  },
+  "general": {
+    "preferredEditor": "zed",
+    "vimMode": false
+  },
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  }
 }
