@@ -191,6 +191,8 @@
 
       "skim" # pdf viewer
 
+      "lm-studio" # run LLMs locally
+
       # fuse for macos, no kernel-extension, probably became better in the future
       # "macos-fuse-t/homebrew-cask/fuse-t"
 
