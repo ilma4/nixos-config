@@ -111,6 +111,7 @@
     # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
     home.sessionVariables = {
       PATH = "$PATH:/opt/homebrew/bin";
+      JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
     # programs.mpv.enable = true; # fixed in 24.11
 
