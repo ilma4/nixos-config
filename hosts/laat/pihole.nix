@@ -4,7 +4,8 @@
     services:
       pihole:
         container_name: pihole
-        image: pihole/pihole:latest
+        # TODO: update version
+        image: pihole/pihole:2025.08.0
         environment:
           TZ: "Europe/Berlin"
           FTLCONF_webserver_api_password: "correct horse battery staple"
