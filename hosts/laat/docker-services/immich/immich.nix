@@ -4,15 +4,14 @@
   lib,
   ...
 }: let
-  dir = pkgs.copyPathToStore ./immich;
+  dir = pkgs.copyPathToStore ./.;
 in {
   dockerCompose.immich = {
     composeFile = "${dir}/docker-compose.yml";
     envFile = "${dir}/.env";
   };
 
-  systemd.services.immich.serviceConfig.WorkingDirectory = dir; # ./immich;
-
+  systemd.services.immich.serviceConfig.WorkingDirectory = dir; # ./.
   networking.firewall.allowedTCPPorts = [2283];
 
   # TODO: setup proper UID and GID for postgres, currently it runs as 999:999, but directory is mounted as root:root causing permission issues

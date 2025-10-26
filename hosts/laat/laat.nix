@@ -24,8 +24,7 @@ args @ {
 
     ./docker-services/actual-budget.nix
     ./docker-services/paperless.nix
-
-    # "${modules}/immich.nix"
+    ./docker-services/immich/immich.nix
 
     ./docker-services/grafana.nix
     ./docker-services/node-exporter.nix
@@ -36,7 +35,6 @@ args @ {
 
     # ./dashboard.nix
     "${./prometheus}/prometheus.nix"
-    ./immich.nix
     ./pihole.nix
     # ./lidarr.nix
   ];
