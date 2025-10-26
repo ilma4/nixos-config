@@ -140,18 +140,10 @@
 
     casks = [
       # Could be replaced by nix packages in future
-      "anki"
-      "obs"
       # "bitwarden"
-      "calibre"
       "1password-cli"
-      "vlc"
       "iina" # player with HDR support
-      "prismlauncher" # minecraft
-      "heroic" # Epic Games/GOG launcher
       "activitywatch"
-      "gitbutler"
-      "dolphin" # Wii emulator
       "cloudflare-warp" # corporate JetBrains VPN
 
       # Docker Desktop for Mac: vm to run docker containers
@@ -164,13 +156,8 @@
       #avaliable in nix, but nix has troubles with gui apps
       "iterm2"
       "itermai"
-      "obsidian"
       "slack"
-      "visual-studio-code"
       "karabiner-elements" # keyboard remapping
-      "discord"
-      "browsers-software/tap/browsers"
-      "utm" # qemu
       "raycast" # cmd+space : search apps and commands
       "caffeine"
       "monitorcontrol" # control external monitor brightness
@@ -178,20 +165,11 @@
       "nikitabobko/tap/aerospace" # tiling window manager
       "jordanbaird-ice" # edit menu bar
       "zoom"
-      "zed" # very fast text editor
       "vial" # configure my split keyboard
-      "warp" # terminal with AI agent
-
-      "vivaldi"
-      "brave-browser"
-      # "todoist"
 
       # Mac specific, most probably remain brew casks
-      "macfuse" # FUSE for macOS, uses kernel extension
 
       "skim" # pdf viewer
-
-      "lm-studio" # run LLMs locally
 
       # fuse for macos, no kernel-extension, probably became better in the future
       # "macos-fuse-t/homebrew-cask/fuse-t"
@@ -199,13 +177,10 @@
       # "whisky" # wine for macos
       "eqmac" # equalizer for macos
 
-      "android-file-transfer" # transfer files from android (and Kindle) to mac via usb
-
       "linearmouse"
       # "middleclick" # can't open link in new tab in firefox with this
       "deskpad"
       "easydict"
-      "steam"
       "alt-tab"
 
       "blackhole-2ch"
@@ -216,9 +191,7 @@
     ];
 
     brews = [
-      "displayplacer" # cli to configure displays
       "swiftly"
-      "gemini-cli"
 
       # FIXME: replace with nixpkgs version, when issue is resolved: https://github.com/NixOS/nixpkgs/issues/339576
       "bitwarden-cli"
