@@ -69,6 +69,7 @@ in
 
     home.sessionPath = ["$HOME/.local/bin"];
 
+    # also check `work.nix` for work-specific options
     programs.git = {
       userName = "Ilia Malakhov";
       userEmail = "ilya.malakhov4@gmail.com";
@@ -84,21 +85,6 @@ in
 
       aliases = {
         push-force-safe = "push --force-with-lease --force-if-includes";
-      };
-
-      includes = [
-        {
-          contents.user.email = "ilia.malakhov@jetbrains.com";
-          condition = "gitdir:~/Projects/JetBrains/";
-        }
-      ];
-    };
-
-    programs.ssh.matchBlocks = {
-      "git.jetbrains.team" = {
-        extraOptions = {
-          "IdentityAgent" = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""; # 1password ssh-agent
-        };
       };
     };
 

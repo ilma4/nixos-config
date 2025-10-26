@@ -16,6 +16,8 @@
     (home "graphics")
     (home "zed")
     (home "raycast")
+    "${lib.flake-location}/modules/work.nix"
+
     "${lib.flake-location}/modules/sops.nix"
     inputs.sops-nix.homeManagerModules.sops
   ];
