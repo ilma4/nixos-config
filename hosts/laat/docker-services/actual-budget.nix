@@ -4,6 +4,7 @@
   ...
 }: let
   UID_GID = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
+  actual-version = "25.10.0";
 in {
   users.users.actual-budget = {
     isSystemUser = true;
@@ -21,7 +22,7 @@ in {
     services:
       actual-budget:
         container_name: actual-budget
-        image: "ghcr.io/actualbudget/actual:latest-alpine"
+        image: "ghcr.io/actualbudget/actual:${actual-version}-alpine"
         user: "${UID_GID}"
         expose:
           - "5006"

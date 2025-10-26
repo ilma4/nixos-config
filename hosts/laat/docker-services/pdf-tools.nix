@@ -5,7 +5,7 @@
       name: stirling-pdf
       services:
         stirling-pdf:
-          image: docker.io/stirlingtools/stirling-pdf:latest-ultra-lite
+          image: docker.io/stirlingtools/stirling-pdf:1.5.0-ultra-lite
           container_name: pdf-tools
           expose:
             - "8080"

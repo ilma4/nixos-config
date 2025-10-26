@@ -2,18 +2,22 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  redis-version = "8";
+  paperless-version = "2.19.2";
+  tika-version = "3.2.3.0-full";
+in {
   # Containers
   dockerCompose.paperless.composeFile = pkgs.writeText "docker-compose.yml" ''
     name: paperless-ngx
     services:
       broker:
-        image: docker.io/library/redis:8
+        image: docker.io/library/redis:${redis-version}
         restart: unless-stopped
         volumes:
           - redisdata:/data
       webserver:
-        image: ghcr.io/paperless-ngx/paperless-ngx:latest
+        image: ghcr.io/paperless-ngx/paperless-ngx:${paperless-version}
         restart: unless-stopped
         container_name: paperless
         depends_on:
@@ -56,7 +60,7 @@
           - "--chromium-disable-javascript=true"
           - "--chromium-allow-list=file:///tmp/.*"
       tika:
-        image: docker.io/apache/tika:latest
+        image: docker.io/apache/tika:${tika-version}
         restart: unless-stopped
     volumes:
       data:

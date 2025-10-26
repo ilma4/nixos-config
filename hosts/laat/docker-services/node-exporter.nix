@@ -6,6 +6,7 @@
 }:
 with lib; let
   cfg = config.services.prometheus.node-exporter-docker;
+  node-exporter-version = "v1.10.2";
 in {
   options.services.prometheus.node-exporter-docker = {
     enable = mkEnableOption "Prometheus Node Exporter in Docker";
@@ -29,7 +30,7 @@ in {
       composeFile = pkgs.writeText "node-exporter.yml" ''
         services:
           node-exporter:
-            image: "prom/node-exporter:latest"
+            image: "prom/node-exporter:${node-exporter-version}"
             user: "${toString config.users.users.node-exporter.uid}:${toString config.users.groups.node-exporter.gid}"
             container_name: "node-exporter"
             volumes:
