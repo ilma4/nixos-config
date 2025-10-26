@@ -17,6 +17,12 @@
       linuxInstallation = null;
       macInstallation = "brew";
     };
+  linuxOnlyProgram = x:
+    x
+    // {
+      linuxInstallation = "program";
+      macInstallation = null;
+    };
 in {
   imports = [
     ./universall-apps.nix
@@ -89,10 +95,8 @@ in {
 
     qbittorrent = asLinuxPackage {};
 
-    # cli video player for linux
-    mpv = {
-      macInstallation = null; # use iina instead
-    };
+    # cli video player for linux. Use iina on mac
+    mpv = linuxOnlyProgram {};
 
     gemini-cli = asLinuxPackage {
       macInstallation = "brew";
