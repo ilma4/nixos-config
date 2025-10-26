@@ -144,6 +144,7 @@
                   isDarwin = type == "darwin";
                   isNixos = type == "nixos";
                   isHomeManager = type == "home";
+                  isLinux = type == "nixos" || type == "home";
                 };
               in {
                 enableForConfigurations = types: configuration:

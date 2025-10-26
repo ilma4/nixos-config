@@ -11,6 +11,8 @@
     "${lib.flake-location}/modules/home-manager.nix"
     "${lib.flake-location}/modules/sops.nix"
 
+    "${lib.flake-location}/modules/apps.nix"
+
     inputs.home-manager.darwinModules.home-manager
     inputs.nix-rosetta-builder.darwinModules.default
     inputs.sops-nix.darwinModules.sops
@@ -138,7 +140,7 @@
 
     casks = [
       # Could be replaced by nix packages in future
-      "firefox"
+      # "firefox"
       "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
