@@ -5,7 +5,6 @@
   ];
 
   home.packages = with pkgs; [
-    browsers
     # Drivers for non-nixos
     #nixgl.nixGLIntel
     #nixgl.nixVulkanIntel

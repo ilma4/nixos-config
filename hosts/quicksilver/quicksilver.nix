@@ -139,62 +139,9 @@
     # greedyCasks = true; # always upgrade casks
 
     casks = [
-      # Could be replaced by nix packages in future
-      # "bitwarden"
-      "1password-cli"
-      "iina" # player with HDR support
-      "activitywatch"
-      "cloudflare-warp" # corporate JetBrains VPN
-
-      # Docker Desktop for Mac: vm to run docker containers
-      # "docker" # I use podman (including docker compatibility) instead
-      # "podman-desktop" # I use "podman machine" directly
-
-      "zulu@21"
-      "zulu@25"
-
-      #avaliable in nix, but nix has troubles with gui apps
-      "iterm2"
-      "itermai"
-      "slack"
-      "karabiner-elements" # keyboard remapping
-      "raycast" # cmd+space : search apps and commands
-      "caffeine"
-      "monitorcontrol" # control external monitor brightness
-      "far2l"
-      "nikitabobko/tap/aerospace" # tiling window manager
-      "jordanbaird-ice" # edit menu bar
-      "zoom"
-      "vial" # configure my split keyboard
-
-      # Mac specific, most probably remain brew casks
-
-      "skim" # pdf viewer
-
-      # fuse for macos, no kernel-extension, probably became better in the future
-      # "macos-fuse-t/homebrew-cask/fuse-t"
-
-      # "whisky" # wine for macos
-      "eqmac" # equalizer for macos
-
-      "linearmouse"
-      # "middleclick" # can't open link in new tab in firefox with this
-      "deskpad"
-      "easydict"
-      "alt-tab"
-
-      "blackhole-2ch"
-
-      # Jetbrains ides, may be replaced by nix packages but I'm not sure if i want to
-      "jetbrains-toolbox"
-      # "intellij-idea@eap" # as an IntelliJ developer, I use nightly builds from toolbox
     ];
 
     brews = [
-      "swiftly"
-
-      # FIXME: replace with nixpkgs version, when issue is resolved: https://github.com/NixOS/nixpkgs/issues/339576
-      "bitwarden-cli"
     ];
 
     masApps = {
