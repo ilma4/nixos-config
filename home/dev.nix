@@ -5,8 +5,7 @@
   pkgs-unstable,
   ...
 }: let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNotNixOS = isDarwin || config.targets.genericLinux.enable;
+  isNotNixOS = pkgs.stdenv.isDarwin || config.targets.genericLinux.enable;
 in
   lib.mkIf (config ? home) {
     home.packages = with pkgs; [
@@ -38,7 +37,7 @@ in
         )
       )
 
-      (lib.mkIf isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
+      (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
