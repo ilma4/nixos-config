@@ -17,20 +17,20 @@ args @ {
     # ./samba.nix
 
     "${modules}/server.nix"
-    "${modules}/qbittorrent.nix"
+    ./docker-services/qbittorrent.nix
 
-    "${modules}/home-assistant.nix"
-    "${modules}/pdf-tools.nix"
+    ./docker-services/home-assistant.nix
+    ./docker-services/pdf-tools.nix
 
-    "${modules}/actual-budget.nix"
-    "${modules}/paperless.nix"
+    ./docker-services/actual-budget.nix
+    ./docker-services/paperless.nix
 
     # "${modules}/immich.nix"
 
-    "${modules}/grafana.nix"
-    "${modules}/node-exporter.nix"
+    ./docker-services/grafana.nix
+    ./docker-services/node-exporter.nix
 
-    "${modules}/nginx-reverse-proxy.nix"
+    ./docker-services/nginx-reverse-proxy.nix
 
     "${modules}/backup.nix"
 
