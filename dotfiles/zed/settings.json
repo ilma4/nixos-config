@@ -1,5 +1,10 @@
 {
+  "edit_predictions": {
+    "mode": "eager"
+  },
   "agent": {
+    "notify_when_agent_waiting": "all_screens",
+    "default_profile": "write",
     "always_allow_tool_actions": true,
     "default_model": {
       "model": "gpt-5",
