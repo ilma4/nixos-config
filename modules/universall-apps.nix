@@ -5,11 +5,11 @@
   ...
 }: let
   inherit (lib) types mkOption;
-  inherit (lib.unifiedModules.checkers) isLinux isDarwin isHome;
+  inherit (lib.unifiedModules.checkers) isLinux isDarwin isHomeManager;
 in {
   options = {
     i4-apps = {
-      apps = {
+      apps = mkOption {
         type = types.attrsOf (types.submodule (name: {
           options = {
             enable = mkOption {
@@ -17,21 +17,21 @@ in {
               default = true;
             };
             linuxName = mkOption {
-              type = types.str;
-              default = name;
+              type = types.nullOr types.str;
+              default = null;
             };
             macName = mkOption {
-              type = types.str;
-              default = name;
+              type = types.nullOr types.str;
+              default = null;
             };
             linuxInstallation = mkOption {
               type = types.nullOr (
                 types.enum [
-                  "programm"
+                  "program"
                   "package"
                 ]
               );
-              default = "programm";
+              default = "program";
             };
             macInstallation = mkOption {
               type = types.nullOr (
@@ -45,50 +45,78 @@ in {
             };
           };
         }));
+        default = {};
+      };
+
+      enable = mkOption {
+        type = types.bool;
+        default = true;
       };
     };
-    enable = mkOption {
-      type = types.bool;
-      default = true;
-    };
   };
-  config = lib.mkIf config.i4-apps.enable (let
-    packageList = lib.concatMap (
-      app:
-        if app.enable && ((isLinux && app.linuxInstallation == "package") || (isDarwin && app.macInstallation == "package"))
-        then let
-          pkgName =
-            if isLinux
-            then app.linuxName
-            else app.macName;
-        in [(lib.getAttr pkgName pkgs)]
-        else []
-    ) (lib.attrValues config.i4-apps.apps);
-  in {
-    programs = lib.mkIf isLinux (lib.mkMerge (lib.mapAttrsToList (
-        _: app:
-          lib.mkIf (app.enable && app.linuxInstallation == "programm") {
-            ${app.linuxName}.enable = true;
-          }
-      )
-      config.i4-apps.apps));
-
-    homebrew = lib.mkIf isDarwin {
-      casks = lib.concatMap (
-        app:
-          if app.enable && app.macInstallation == "cask"
-          then [app.macName]
-          else []
-      ) (lib.attrValues config.i4-apps.apps);
-      brews = lib.concatMap (
-        app:
-          if app.enable && app.macInstallation == "brew"
-          then [app.macName]
-          else []
-      ) (lib.attrValues config.i4-apps.apps);
-    };
-
-    environment.systemPackages = lib.mkIf (!isHome) packageList;
-    home.packages = lib.mkIf isHome packageList;
-  });
+  config = lib.mkIf config.i4-apps.enable (
+    let
+      packageList = lib.concatLists (
+        lib.mapAttrsToList (
+          name: app:
+            if app.enable && ((isLinux && app.linuxInstallation == "package") || (isDarwin && app.macInstallation == "package"))
+            then [
+              (lib.getAttr name pkgs)
+            ]
+            else []
+        )
+        config.i4-apps.apps
+      );
+    in
+      {}
+      // lib.optionalAttrs (!isHomeManager) {
+        environment.systemPackages = packageList;
+      }
+      // lib.optionalAttrs isHomeManager {
+        home.packages = packageList;
+      }
+      // lib.optionalAttrs (!isDarwin) {
+        programs = lib.mkIf isLinux (lib.mkMerge (lib.mapAttrsToList (
+            name: app:
+              lib.mkIf (app.enable && app.linuxInstallation == "program") {
+                ${name}.enable = true;
+              }
+          )
+          config.i4-apps.apps));
+      }
+      // lib.optionalAttrs isDarwin {
+        homebrew = lib.mkIf isDarwin {
+          casks = lib.concatLists (
+            lib.mapAttrsToList (
+              name: app:
+                if app.enable && app.macInstallation == "cask"
+                then [
+                  (
+                    if app.macName != null
+                    then app.macName
+                    else name
+                  )
+                ]
+                else []
+            )
+            config.i4-apps.apps
+          );
+          brews = lib.concatLists (
+            lib.mapAttrsToList (
+              name: app:
+                if app.enable && app.macInstallation == "brew"
+                then [
+                  (
+                    if app.macName != null
+                    then app.macName
+                    else name
+                  )
+                ]
+                else []
+            )
+            config.i4-apps.apps
+          );
+        };
+      }
+  );
 }

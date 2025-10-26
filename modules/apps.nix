@@ -10,5 +10,8 @@
 
   i4-apps.apps = {
     firefox = {};
+    thunderbird = {
+      macName = "thunderbird@esr";
+    };
   };
 }

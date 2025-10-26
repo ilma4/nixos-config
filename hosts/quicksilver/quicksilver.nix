@@ -140,8 +140,6 @@
 
     casks = [
       # Could be replaced by nix packages in future
-      # "firefox"
-      "thunderbird@esr" # esr is default for thunderbird
       "anki"
       "obs"
       # "bitwarden"
