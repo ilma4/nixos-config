@@ -138,11 +138,9 @@
     # TODO: enable with 25.11 release
     # greedyCasks = true; # always upgrade casks
 
-    casks = [
-    ];
-
-    brews = [
-    ];
+    # common apps are configured in `modules/apps.nix`
+    casks = [];
+    brews = [];
 
     masApps = {
       Xcode = 497799835;
