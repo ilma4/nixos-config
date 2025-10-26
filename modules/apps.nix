@@ -29,94 +29,47 @@ in {
   ];
 
   i4-apps.apps = {
-    firefox = {};
-    thunderbird = {
-      macName = "thunderbird@esr";
-    };
+    thunderbird = {macName = "thunderbird@esr";};
+    obs-studio = {macName = "obs";};
 
-    obs-studio = {
-      macName = "obs";
-    };
     vlc = {};
+    mpv = linuxOnlyProgram {}; # cli video player for linux. Use iina on mac
+    iina = macOnlyCask {}; # good video play for mac with HDR support
 
     obsidian = asLinuxPackage {};
+    todoist-electron = {macName = "todoist";};
 
-    zed-editor = {
-      macName = "zed";
-    };
-
-    vivaldi = asLinuxPackage {};
-
-    # git client with virtual branches
-    gitbutler = asLinuxPackage {};
-
+    zed-editor = {macName = "zed";};
     visual-studio-code = {};
+    warp-terminal = {macName = "warp";}; # terminal with AI agent
+    gemini-cli = asLinuxPackage {macInstallation = "brew";};
+    gitbutler = asLinuxPackage {}; # git client with virtual branches
+    lm-studio = asLinuxPackage {}; # run LLMs locally
 
-    # terminal with AI agent
-    warp-terminal = {
-      macName = "warp";
-    };
+    firefox = {};
+    vivaldi = asLinuxPackage {};
+    browsers = asLinuxPackage {macName = "browsers-software/tap/browsers";}; # select browser when open link
 
-    todoist-electron = {
-      macName = "todoist";
-    };
-
-    # image editor
-    krita = asLinuxPackage {};
-
-    # run llms locally
-    lm-studio = asLinuxPackage {};
-
-    # learn word app
-    anki = asLinuxPackage {};
-
-    # book managment app
-    calibre = asLinuxPackage {};
-
-    # select browser when open link
-    browsers = asLinuxPackage {
-      macName = "browsers-software/tap/browsers";
-    };
+    krita = asLinuxPackage {}; # image editor
+    anki = asLinuxPackage {}; # learn word app
+    calibre = asLinuxPackage {}; # book managment app
 
     discord = asLinuxPackage {};
-
     steam = {};
-
-    # GOG / Epic Games launcher
-    heroic = asLinuxPackage {};
-
-    # minecraft launcher
-    prismlauncher = asLinuxPackage {};
-
-    # Wii emulator
-    dolphin-emu = asLinuxPackage {
-      macName = "dolphin";
-    };
+    heroic = asLinuxPackage {}; # GOG / Epic Games launcher
+    prismlauncher = asLinuxPackage {}; # minecraft launcher
+    dolphin-emu = asLinuxPackage {macName = "dolphin";}; # Wii emulator
 
     qbittorrent = asLinuxPackage {};
-
-    # cli video player for linux. Use iina on mac
-    mpv = linuxOnlyProgram {};
-
-    gemini-cli = asLinuxPackage {
-      macInstallation = "brew";
-    };
-
-    bitwarden-cli = asLinuxPackage {
-      macInstallation = "package";
-    };
-
-    iina = macOnlyCask {}; # good video play for mac with HDR support
+    bitwarden-cli = asLinuxPackage {macInstallation = "package";};
     android-file-transfer = macOnlyCask {}; # app to transfer files between android and mac via usb
     utm = macOnlyCask {}; # qemu for mac
-
     macfuse = macOnlyCask {}; # FUSE for macOS, uses kernel extension
     # fuse for macos, no kernel-extension, probably became better in the future
     # "macos-fuse-t/homebrew-cask/fuse-t"
 
     displayplacer = macOnlyBrew {}; # cli to configure display resolution
 
-    # Could be replaced by nix packages in future
     "1password-cli" = macOnlyCask {};
     activitywatch = macOnlyCask {};
     cloudflare-warp = macOnlyCask {}; # corporate JetBrains VPN
