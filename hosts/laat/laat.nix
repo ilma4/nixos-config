@@ -35,7 +35,7 @@ args @ {
 
     # ./dashboard.nix
     "${./prometheus}/prometheus.nix"
-    ./pihole.nix
+    ./docker-services/pihole.nix
     # ./lidarr.nix
   ];
 
