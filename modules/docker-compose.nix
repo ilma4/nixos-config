@@ -36,6 +36,23 @@ in {
     systemd.tmpfiles.rules = [
       "d /var/compose-logs 0755 root root -"
     ];
+
+    services.logrotate = {
+      enable = true;
+      settings.composeLogs = {
+        files = "/var/compose-logs/*.log";
+        frequency = "monthly";
+        rotate = 999999;
+        compress = true;
+        dateext = true;
+        delaycompress = true;
+        missingok = true;
+        copytruncate = true;
+        compresscmd = "${pkgs.zstd}/bin/zstd";
+        compressext = ".zst";
+      };
+    };
+
     systemd.services =
       mapAttrs
       (name: svc: let
