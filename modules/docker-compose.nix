@@ -33,6 +33,9 @@ in {
   };
 
   config = {
+    systemd.tmpfiles.rules = [
+      "d /var/compose-logs 0755 root root -"
+    ];
     systemd.services =
       mapAttrs
       (name: svc: let
@@ -67,6 +70,8 @@ in {
           ExecStart = "${compose} up --pull";
           ExecStop = "${compose} down";
           Restart = "always";
+          StandardOutput = "append:/var/compose-logs/${name}.log";
+          StandardError = "append:/var/compose-logs/${name}.log";
         };
 
         wantedBy = ["multi-user.target"];
