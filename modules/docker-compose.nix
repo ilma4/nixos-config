@@ -40,7 +40,7 @@ in {
     services.logrotate = {
       enable = true;
       settings.composeLogs = {
-        files = "/var/compose-logs/*.log";
+        files = "/var/compose-logs/*/*.log";
         frequency = "monthly";
         rotate = 999999;
         compress = true;
@@ -82,13 +82,18 @@ in {
 
         environment = svc.environment;
 
+        preStart = ''
+          mkdir -p /var/compose-logs/${name}
+          chmod 0755 /var/compose-logs/${name}
+        '';
+
         serviceConfig = {
           Type = "simple";
           ExecStart = "${compose} up --pull";
           ExecStop = "${compose} down";
           Restart = "always";
-          StandardOutput = "append:/var/compose-logs/${name}.log";
-          StandardError = "append:/var/compose-logs/${name}.log";
+          StandardOutput = "append:/var/compose-logs/${name}/${name}.log";
+          StandardError = "append:/var/compose-logs/${name}/${name}.log";
         };
 
         wantedBy = ["multi-user.target"];
