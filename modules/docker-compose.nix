@@ -33,9 +33,11 @@ in {
   };
 
   config = {
-    systemd.tmpfiles.rules = [
-      "d /var/compose-logs 0755 root root -"
-    ];
+    systemd.tmpfiles.rules =
+      [
+        "d /var/compose-logs 0755 root root -"
+      ]
+      ++ lib.mapAttrsToList (name: _: "d /var/compose-logs/${name} 0755 root root -") (lib.filterAttrs (_: svc: svc.enable) cfg);
 
     services.logrotate = {
       enable = true;
@@ -81,11 +83,6 @@ in {
         ];
 
         environment = svc.environment;
-
-        preStart = ''
-          mkdir -p /var/compose-logs/${name}
-          chmod 0755 /var/compose-logs/${name}
-        '';
 
         serviceConfig = {
           Type = "simple";
