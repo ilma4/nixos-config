@@ -19,6 +19,8 @@
           - SYS_TIME
           - SYS_NICE
         restart: unless-stopped
+        logging:
+          driver: none
         networks:
           pihole_net:
             ipv4_address: 192.168.1.200 # <-- pick a free static IP on your LAN

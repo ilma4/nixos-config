@@ -15,6 +15,8 @@ services:
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
+    logging:
+      driver: none
 
   qbittorrent:
     image: linuxserver/qbittorrent:latest
@@ -26,3 +28,5 @@ services:
     depends_on:
       - gluetun
     restart: unless-stopped
+    logging:
+      driver: none

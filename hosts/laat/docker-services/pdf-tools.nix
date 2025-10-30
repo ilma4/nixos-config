@@ -19,6 +19,8 @@
             - /srv/stirling-pdf/extraConfigs:/configs
             - /srv/stirling-pdf/logs:/logs
             - /srv/stirling-pdf/pipeline:/pipeline
+          logging:
+            driver: none
           restart: unless-stopped
 
       networks:

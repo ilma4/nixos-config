@@ -243,6 +243,8 @@
       nginx-reverse-proxy:
         image: docker.io/library/nginx:stable-alpine
         container_name: nginx-reverse-proxy
+        logging:
+          driver: none
         restart: always
         volumes:
           - ${nginxConf}:/etc/nginx/conf.d/reverse_proxy.conf:ro
