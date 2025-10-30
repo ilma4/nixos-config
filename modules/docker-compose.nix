@@ -90,7 +90,7 @@ in {
           ExecStop = "${compose} down";
           Restart = "always";
           StandardOutput = "append:/var/compose-logs/${name}/${name}.log";
-          StandardError = "append:/var/compose-logs/${name}/${name}.log";
+          StandardError = "inherit";
         };
 
         wantedBy = ["multi-user.target"];
