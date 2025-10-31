@@ -16,13 +16,8 @@ with lib; let
   };
 in {
   options = {
-    programs.raycast = {
-      enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable Raycast AppleScript commands";
-      };
-
+    i4.raycast = {
+      enable = lib.mkEnableOption "Enable Raycast AppleScript commands";
       scriptsPath = mkOption {
         type = types.str;
         default = "Scripts";

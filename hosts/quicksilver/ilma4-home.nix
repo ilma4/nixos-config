@@ -30,6 +30,10 @@
     i4.personal.enable = true;
     i4.zed.enable = true;
     i4.work.enable = true;
+    i4.raycast = {
+      enable = true;
+      scriptsPath = "Scripts";
+    };
 
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
@@ -44,11 +48,6 @@
 
     services.syncthing = {
       enable = true;
-    };
-
-    programs.raycast = {
-      enable = true;
-      scriptsPath = "Scripts";
     };
 
     home.packages = with pkgs; [
