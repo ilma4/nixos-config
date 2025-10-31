@@ -9,7 +9,7 @@
   inherit (myLib.unifiedModules.checkers) isLinux isDarwin isHomeManager;
 in {
   options = {
-    i4-apps = {
+    i4.apps = {
       apps = mkOption {
         type = types.attrsOf (types.submodule (name: {
           options = {
@@ -57,7 +57,7 @@ in {
   };
 
   # universall module
-  config = lib.mkIf config.i4-apps.enable (
+  config = lib.mkIf config.i4.apps.enable (
     let
       packageList = lib.concatLists (
         lib.mapAttrsToList (
@@ -68,7 +68,7 @@ in {
             ]
             else []
         )
-        config.i4-apps.apps
+        config.i4.apps.apps
       );
     in
       {}
@@ -85,7 +85,7 @@ in {
                 ${name}.enable = true;
               }
           )
-          config.i4-apps.apps));
+          config.i4.apps.apps));
       }
       // lib.optionalAttrs isDarwin {
         homebrew = lib.mkIf isDarwin {
@@ -102,7 +102,7 @@ in {
                 ]
                 else []
             )
-            config.i4-apps.apps
+            config.i4.apps.apps
           );
           brews = lib.concatLists (
             lib.mapAttrsToList (
@@ -117,7 +117,7 @@ in {
                 ]
                 else []
             )
-            config.i4-apps.apps
+            config.i4.apps.apps
           );
         };
       }

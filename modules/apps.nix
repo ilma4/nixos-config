@@ -29,7 +29,7 @@ in {
     ./universall-apps.nix
   ];
 
-  i4-apps.apps = {
+  i4.apps.apps = {
     thunderbird = {macName = "thunderbird@esr";};
     obs-studio = {macName = "obs";};
 
