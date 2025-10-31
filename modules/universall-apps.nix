@@ -1,11 +1,12 @@
 {
   config,
   lib,
+  myLib,
   pkgs,
   ...
 }: let
   inherit (lib) types mkOption;
-  inherit (lib.unifiedModules.checkers) isLinux isDarwin isHomeManager;
+  inherit (myLib.unifiedModules.checkers) isLinux isDarwin isHomeManager;
 in {
   options = {
     i4-apps = {
