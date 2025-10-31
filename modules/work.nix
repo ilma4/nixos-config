@@ -5,12 +5,13 @@
   ...
 }: {
   options = {
-    work = {
+    i4.work = {
       enable-gui-apps = lib.mkEnableOption "Enable GUI apps";
+      enable = lib.mkEnableOption "configure for work";
     };
   };
 
-  config = {
+  config = lib.mkIf config.i4.work.enable {
     # use ssh key from 1password for jetbrains git
     programs.ssh.matchBlocks = {
       "git.jetbrains.team" = {
