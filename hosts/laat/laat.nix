@@ -39,6 +39,8 @@ args @ {
     # ./lidarr.nix
   ];
 
+  i4.zram.enable = true;
+
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
     efi = {

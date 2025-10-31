@@ -1,9 +1,9 @@
 {
   pkgs,
-  lib,
+  myLib,
   ...
 }:
-lib.unifiedModules.enableForConfigurations [
+myLib.unifiedModules.enableForConfigurations [
   "isDarwin"
   "isNixos"
   "isHome"

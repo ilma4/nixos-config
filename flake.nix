@@ -135,24 +135,28 @@
         baseSpecialArgs
         // {pkgs-unstable = (pkgsSets system).unstable;}
         // {
+          myLib = {
+            unifiedModules = let
+              checkers = {
+                isDarwin = type == "darwin";
+                isNixos = type == "nixos";
+                isHomeManager = type == "home";
+                isLinux = type == "nixos" || type == "home";
+              };
+            in {
+              enableForConfigurations = types: configuration:
+                if builtins.any (x: checkers."${x}") types
+                then configuration
+                else {};
+              inherit checkers;
+            };
+          };
+        }
+        // {
           lib = nixpkgs.lib.extend (
             final: prev: {
               yaml = inputs.yaml.lib.${system};
               flake-location = self;
-              unifiedModules = let
-                checkers = {
-                  isDarwin = type == "darwin";
-                  isNixos = type == "nixos";
-                  isHomeManager = type == "home";
-                  isLinux = type == "nixos" || type == "home";
-                };
-              in {
-                enableForConfigurations = types: configuration:
-                  if builtins.any (x: checkers."${x}") types
-                  then configuration
-                  else {};
-                inherit checkers;
-              };
             }
           );
         }

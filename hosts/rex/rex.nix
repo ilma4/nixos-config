@@ -15,6 +15,8 @@ args @ {
     "${lib.flake-location}/modules/server.nix"
   ];
 
+  i4.zram.enable = true;
+
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
