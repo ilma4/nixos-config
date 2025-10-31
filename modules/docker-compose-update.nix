@@ -93,7 +93,10 @@
     main "$@"
   '';
 in {
-  config = {
+  options = {
+    i4.dockerCompose.autoupdate.enable = lib.mkEnableOption "Enable automatic podman compose image updates";
+  };
+  config = lib.mkIf config.i4.dockerCompose.autoupdate.enable {
     systemd.services.podman-compose-pull-all = {
       description = "Daily podman compose image pull for all dockerCompose services";
       after = ["network-online.target" "podman.socket"];
