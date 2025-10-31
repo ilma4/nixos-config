@@ -54,6 +54,8 @@ in {
       };
     };
   };
+
+  # universall module
   config = lib.mkIf config.i4-apps.enable (
     let
       packageList = lib.concatLists (

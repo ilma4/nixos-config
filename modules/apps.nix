@@ -23,6 +23,7 @@
       linuxInstallation = "program";
       macInstallation = null;
     };
+  # universal module
 in {
   imports = [
     ./universall-apps.nix
