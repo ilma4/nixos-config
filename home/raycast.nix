@@ -4,7 +4,7 @@
   ...
 }:
 with lib; let
-  cfg = config.programs.raycast;
+  cfg = config.i4.raycast;
 
   # AppleScript files
   scriptFiles = {
