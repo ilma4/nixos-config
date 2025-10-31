@@ -12,7 +12,7 @@
     (home "base")
     (home "personal")
     (home "dev")
-    (home "graphics")
+    (home "fonts")
     (home "zed")
     (home "raycast")
     "${lib.flake-location}/modules/work.nix"
