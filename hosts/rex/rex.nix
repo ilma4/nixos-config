@@ -16,6 +16,7 @@ args @ {
   ];
 
   i4.zram.enable = true;
+  i4.avahi.enable = true;
 
   boot.loader = {
     efi = {
