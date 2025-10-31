@@ -10,7 +10,6 @@
     home = x: "${lib.flake-location}/home/${x}.nix";
   in [
     (home "base")
-    (home "macos")
     (home "personal")
     (home "dev")
     (home "graphics")
