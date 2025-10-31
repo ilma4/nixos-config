@@ -95,9 +95,9 @@
     # Centralized package sets
     pkgsSets = system: {
       stable =
-        if system != "darwin"
-        then mkPkgs nixpkgs system commonOverlays
-        else mkPkgs nixpkgs-darwin system commonOverlays;
+        if nixpkgs.lib.hasSuffix "darwin" system
+        then mkPkgs nixpkgs-darwin system commonOverlays
+        else mkPkgs nixpkgs system commonOverlays;
       unstable = mkPkgs nixpkgs-unstable system [];
     };
 
