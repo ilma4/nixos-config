@@ -10,6 +10,7 @@
   ];
 
   home.username = "ilma4";
+  i4.personal.enable = true;
 
   # Initialize tmux session on SSH connection
   programs.zsh.initContent = ''

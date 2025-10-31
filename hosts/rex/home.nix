@@ -7,12 +7,11 @@
   imports = [
     "${lib.flake-location}/home/base.nix"
     "${lib.flake-location}/home/personal.nix"
-    "${lib.flake-location}/home/gui-apps.nix"
-    "${lib.flake-location}/home/jetbrains.nix"
     "${lib.flake-location}/home/dev.nix"
   ];
 
   home.username = "ilma4";
+  i4.personal.enable = true;
 
   # The home.packages option allows you to install Nix packages into your
   # environment.

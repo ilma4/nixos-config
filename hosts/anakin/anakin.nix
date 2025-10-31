@@ -7,7 +7,6 @@
   imports = [
     "${lib.flake-location}/home/base.nix"
     "${lib.flake-location}/home/personal.nix"
-    "${lib.flake-location}/home/gui-apps.nix"
     "${lib.flake-location}/home/dev.nix"
     "${lib.flake-location}/home/zed.nix"
 
@@ -19,6 +18,9 @@
   nixpkgs.config.allowUnfree = true;
 
   home.username = "ilma4";
+
+  i4.personal.enable = true;
+  i4.zed.enable = true;
 
   targets.genericLinux.enable = true;
 

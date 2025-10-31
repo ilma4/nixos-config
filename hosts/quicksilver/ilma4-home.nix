@@ -27,6 +27,8 @@
 
   config = {
     home.username = "ilma4";
+    i4.personal.enable = true;
+    i4.zed.enable = true;
 
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
