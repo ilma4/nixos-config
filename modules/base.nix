@@ -18,8 +18,8 @@ args @ {
     inputs.sops-nix.nixosModules.sops # secrets
     inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
 
-    "${lib.flake-location}/modules/home-manager.nix"
-    "${lib.flake-location}/modules/nix-settings.nix"
+    ./home-manager.nix
+    ./nix-settings.nix
   ];
 
   config = {
