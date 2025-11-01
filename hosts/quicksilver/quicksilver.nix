@@ -38,6 +38,8 @@
   '';
   */
 
+  i4.launchd-agents.enable = true;
+
   networking.hostName = "DE-UNIT-1832";
 
   users.users = {
