@@ -20,6 +20,7 @@
 
   i4.zram.enable = true;
   i4.avahi.enable = true;
+  i4.sops.enable = true;
 
   boot.loader = {
     efi = {

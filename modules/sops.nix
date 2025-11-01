@@ -4,6 +4,8 @@
   ...
 }: {
   options = {
+    i4.sops.enable = lib.mkEnableOption "enable sops options";
+
     i4-encrypted-files = lib.mkOption {
       type = lib.types.listOf lib.types.singleLineStr;
       default = [];
@@ -11,7 +13,7 @@
       example = "TODO";
     };
   };
-  config = {
+  config = lib.mkIf config.i4.sops.enable {
     sops.defaultSopsFile = "${lib.flake-location}/secrets/example.yaml";
     sops.defaultSopsFormat = "yaml";
     # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
