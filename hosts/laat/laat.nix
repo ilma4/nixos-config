@@ -2,11 +2,14 @@ args @ {
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }: {
   imports = let
     modules = "${lib.flake-location}/modules";
   in [
+    inputs.home-manager.nixosModules.home-manager
+
     ./hardware-configuration.nix
     ./hdd.nix
 

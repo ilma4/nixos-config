@@ -1,9 +1,12 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
 }: {
   imports = [
+    inputs.home-manager.nixosModules.home-manager
+
     ./hardware-configuration.nix
     "${lib.flake-location}/modules/base.nix"
   ];

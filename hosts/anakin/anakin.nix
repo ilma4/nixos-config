@@ -2,9 +2,12 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }: {
   imports = [
+    inputs.home-manager.nixosModules.home-manager
+
     "${lib.flake-location}/home/base.nix"
     "${lib.flake-location}/home/personal.nix"
     "${lib.flake-location}/home/dev.nix"
