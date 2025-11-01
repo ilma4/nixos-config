@@ -19,12 +19,6 @@ in {
       description = "Configure ssh";
     };
 
-    isRootless = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Whether the nix installation is in rootless chroot";
-    };
-
     rebuild-script = lib.mkOption {
       type = lib.types.str;
       example = "nixos-rebuild switch";
@@ -173,7 +167,7 @@ in {
     programs.bat.enable = true;
     programs.htop.enable = true;
     programs.fzf.enable = true;
-    programs.tmux = lib.mkIf (!config.isRootless) {
+    programs.tmux = {
       enable = true;
       keyMode = "vi";
       baseIndex = 1; # enumerate windows from 1 instead of 0
@@ -198,7 +192,6 @@ in {
     };
 
     home.file = {
-      ".screenrc".source = lib.mkIf (!config.isRootless) "${lib.flake-location}/dotfiles/screenrc";
       ".config/htop/htoprc".source = "${lib.flake-location}/dotfiles/htoprc";
     };
 
