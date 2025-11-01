@@ -1,9 +1,4 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
-}: let
+{pkgs, ...}: let
   dir = pkgs.copyPathToStore ./.;
 in {
   dockerCompose.immich = {

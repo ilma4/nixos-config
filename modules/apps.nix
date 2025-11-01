@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{...}: let
   asLinuxPackage = x: x // {linuxInstallation = "package";};
   macOnlyCask = x:
     x

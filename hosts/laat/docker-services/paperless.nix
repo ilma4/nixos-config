@@ -1,8 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: let
+{pkgs, ...}: let
   redis-version = "8";
   paperless-version = "2.19.2";
   tika-version = "3.2.3.0-full";

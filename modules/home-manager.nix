@@ -1,4 +1,4 @@
-args @ {
+{
   inputs,
   pkgs-unstable,
   ...

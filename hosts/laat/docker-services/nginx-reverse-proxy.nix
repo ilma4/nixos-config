@@ -13,12 +13,10 @@
     filterAttrs
     attrValues
     concatStringsSep
-    getAttrFromPath
     filter
     map
     mapAttrs
     hasAttr
-    hasAttrByPath
     isList
     isAttrs
     ;

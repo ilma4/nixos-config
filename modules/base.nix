@@ -1,8 +1,6 @@
-args @ {
+{
   lib,
   inputs,
-  config,
-  pkgs-unstable,
   ...
 }: {
   options = {
@@ -30,13 +28,5 @@ args @ {
 
     programs.neovim.enable = true;
     programs.nano.enable = true;
-
-    /*
-    nixpkgs.config = {
-      allowUnfree = true;
-    };
-    */
-
-    # inputs.nixpkgs-unstable.config = config.nixpkgs.config;
   };
 }
