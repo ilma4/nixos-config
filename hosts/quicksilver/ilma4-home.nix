@@ -30,6 +30,7 @@
     i4.fonts.enable = true;
     i4.zed.enable = true;
     i4.work.enable = true;
+    i4.dev.enable = true;
     i4.raycast = {
       enable = true;
       scriptsPath = "Scripts";

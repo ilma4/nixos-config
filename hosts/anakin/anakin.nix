@@ -21,6 +21,7 @@
 
   i4.personal.enable = true;
   i4.zed.enable = true;
+  i4.dev.enable = true;
 
   targets.genericLinux.enable = true;
 

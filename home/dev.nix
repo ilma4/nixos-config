@@ -1,13 +1,15 @@
 {
   config,
   lib,
+  options,
   pkgs,
   pkgs-unstable,
   ...
 }: let
   isNotNixOS = pkgs.stdenv.isDarwin || config.targets.genericLinux.enable;
-in
-  lib.mkIf (config ? home) {
+in {
+  options.i4.dev.enable = lib.mkEnableOption "development tools";
+  config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
     home.packages = with pkgs; [
       docker # docker cli
       podman # podman cli
@@ -90,4 +92,5 @@ in
     home.sessionVariables = {
       LIBRARY_PATH = "$LIBRARY_PATH:${config.home.profileDirectory}/lib";
     };
-  }
+  };
+}

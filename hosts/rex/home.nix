@@ -12,6 +12,7 @@
 
   home.username = "ilma4";
   i4.personal.enable = true;
+  i4.dev.enable = true;
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
