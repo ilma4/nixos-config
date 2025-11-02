@@ -1,9 +1,11 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }: {
-  config = {
+  options.i4.backup.enable = lib.mkEnableOption "Enable my backup";
+  config = lib.mkIf config.i4.backup.enable {
     users.users.backup = {
       isSystemUser = true;
       group = config.users.groups.backup.name;

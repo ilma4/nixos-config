@@ -47,6 +47,7 @@ args @ {
   i4.avahi.enable = true;
   i4.sops.enable = true;
   i4.dockerComposeEnable = true;
+  i4.backup.enable = true;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
