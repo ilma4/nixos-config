@@ -12,8 +12,6 @@
   };
 
   imports = [
-    inputs.hoopsnake.nixosModules.default # ssh via tailscale in initrd
-
     ./home-manager.nix
     ./nix-settings.nix
   ];
