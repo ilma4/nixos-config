@@ -9,30 +9,34 @@
 in {
   imports = [./docker-compose-update.nix];
 
-  options.dockerCompose = mkOption {
-    type = types.attrsOf (types.submodule (_: {
-      options = {
-        enable = mkOption {
-          type = types.bool;
-          default = true;
+  options = {
+    i4.dockerComposeEnable = lib.mkEnableOption "Enable my docker compose services";
+
+    dockerCompose = mkOption {
+      type = types.attrsOf (types.submodule (_: {
+        options = {
+          enable = mkOption {
+            type = types.bool;
+            default = true;
+          };
+          composeFile = mkOption {
+            type = lib.types.path;
+          };
+          environment = mkOption {
+            type = types.attrsOf types.str;
+            default = {};
+          };
+          envFile = mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+          };
         };
-        composeFile = mkOption {
-          type = lib.types.path;
-        };
-        environment = mkOption {
-          type = types.attrsOf types.str;
-          default = {};
-        };
-        envFile = mkOption {
-          type = lib.types.nullOr lib.types.path;
-          default = null;
-        };
-      };
-    }));
-    default = {};
+      }));
+      default = {};
+    };
   };
 
-  config = {
+  config = lib.mkIf config.i4.dockerComposeEnable {
     systemd.tmpfiles.rules =
       [
         "d /var/compose-logs 0755 root root -"
