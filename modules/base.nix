@@ -1,8 +1,4 @@
-{
-  lib,
-  inputs,
-  ...
-}: {
+{lib, ...}: {
   options = {
     isServer = lib.mkOption {
       type = lib.types.bool;
