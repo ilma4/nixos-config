@@ -5,19 +5,12 @@
   inputs,
   ...
 }: {
-  imports = let
-    home = x: "${lib.flake-location}/home/${x}.nix";
-  in [
+  imports = [
     inputs.sops-nix.homeManagerModules.sops
 
-    (home "base")
-    (home "personal")
-    (home "dev")
-    (home "fonts")
-    (home "zed")
-    (home "raycast")
-    "${lib.flake-location}/modules/work.nix"
+    "${lib.flake-location}/home/base.nix"
 
+    "${lib.flake-location}/modules/work.nix"
     "${lib.flake-location}/modules/sops.nix"
   ];
 

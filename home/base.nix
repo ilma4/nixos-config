@@ -10,6 +10,11 @@
   isNixos = stdenv.isLinux && !config.targets.genericLinux.enable;
 in {
   imports = [
+    ./dev.nix
+    ./fonts.nix
+    ./personal.nix
+    ./raycast.nix
+    ./zed.nix
   ];
 
   options = {
