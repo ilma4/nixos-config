@@ -13,6 +13,12 @@ in {
   ];
 
   options = {
+    i4.base.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Enable base configuration";
+    };
+
     configure-ssh = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -45,7 +51,7 @@ in {
     };
   };
 
-  config = {
+  config = lib.mkIf config.i4.base.enable {
     home.homeDirectory = "${
       if isDarwin
       then "/Users/"
