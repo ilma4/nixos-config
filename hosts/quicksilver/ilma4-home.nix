@@ -8,10 +8,10 @@
   imports = [
     inputs.sops-nix.homeManagerModules.sops
 
-    "${lib.flake-location}/home/base.nix"
+    ../../home/base.nix
 
-    "${lib.flake-location}/modules/work.nix"
-    "${lib.flake-location}/modules/sops.nix"
+    ../../modules/work.nix
+    ../../modules/sops.nix
   ];
 
   options = {
