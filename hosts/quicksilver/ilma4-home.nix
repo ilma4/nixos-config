@@ -8,6 +8,8 @@
   imports = let
     home = x: "${lib.flake-location}/home/${x}.nix";
   in [
+    inputs.sops-nix.homeManagerModules.sops
+
     (home "base")
     (home "personal")
     (home "dev")
@@ -17,7 +19,6 @@
     "${lib.flake-location}/modules/work.nix"
 
     "${lib.flake-location}/modules/sops.nix"
-    inputs.sops-nix.homeManagerModules.sops
   ];
 
   options = {
@@ -30,6 +31,7 @@
     i4.zed.enable = true;
     i4.work.enable = true;
     i4.dev.enable = true;
+    i4.sops.enable = true;
     i4.raycast = {
       enable = true;
       scriptsPath = "Scripts";

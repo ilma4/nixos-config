@@ -49,10 +49,7 @@ in {
         default = {};
       };
 
-      enable = mkOption {
-        type = types.bool;
-        default = true;
-      };
+      enable = lib.mkEnableOption "Enable my apps";
     };
   };
 

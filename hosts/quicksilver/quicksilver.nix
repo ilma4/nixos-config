@@ -39,6 +39,8 @@
   */
 
   i4.launchd-agents.enable = true;
+  i4.sops.enable = true;
+  i4.apps.enable = true;
 
   networking.hostName = "DE-UNIT-1832";
 
