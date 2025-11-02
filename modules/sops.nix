@@ -13,6 +13,7 @@
       example = "TODO";
     };
   };
+
   config = lib.mkIf config.i4.sops.enable {
     sops.defaultSopsFile = "${lib.flake-location}/secrets/example.yaml";
     sops.defaultSopsFormat = "yaml";
