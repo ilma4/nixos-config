@@ -67,7 +67,13 @@ in {
       common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
     '';
 
-    home.sessionPath = ["$HOME/.local/bin"];
+    home.sessionPath =
+      ["$HOME/.local/bin"]
+      ++ (
+        if pkgs.stdenv.isDarwin
+        then ["$HOME/Library/Application Support/JetBrains/Toolbox/scripts"]
+        else []
+      );
 
     # also check `work.nix` for work-specific options
     programs.git = {
