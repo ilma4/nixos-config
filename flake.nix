@@ -137,6 +137,7 @@
         // {
           myLib = {
             secrets = ./secrets;
+            yaml = inputs.yaml.lib.${system};
             unifiedModules = let
               checkers = {
                 isDarwin = type == "darwin";
@@ -152,13 +153,6 @@
               inherit checkers;
             };
           };
-        }
-        // {
-          lib = nixpkgs.lib.extend (
-            final: prev: {
-              yaml = inputs.yaml.lib.${system};
-            }
-          );
         }
         // extraSpecialArgs
       );

@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  myLib,
   pkgs,
   ...
 }: let
@@ -28,7 +29,7 @@
 
   # listOf {name: str, upstream: str};
   containers = lib.pipe enabledCompose [
-    (mapAttrs (_: s: lib.yaml.fromYaml s.composeFile))
+    (mapAttrs (_: s: myLib.yaml.fromYaml s.composeFile))
     (mapAttrs (_: s: s.services or {}))
     (s: lib.trace s lib.attrsets.mergeAttrsList (lib.attrValues s))
     (filterAttrs (
