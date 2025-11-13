@@ -6,7 +6,7 @@
   options = {
     torrent = {
       wg-conf = lib.mkOption {
-        type = lib.types.singleLineStr;
+        type = lib.types.path;
         description = "TODO";
         example = "ru-torrent-wg.conf";
       };
@@ -23,9 +23,11 @@
     i4-encrypted-files = [wg-conf];
 
     dockerCompose.qbittorrent = {
-      composeFile = "${lib.flake-location}/compose/qbittorrent.yml";
+      composeFile = ../../../compose/qbittorrent.yml;
+      enable = false;
       environment = {
-        WG_CONF_PATH = config.sops.secrets.${wg-conf}.path;
+        # TODO: fix
+        # WG_CONF_PATH = config.sops.secrets.${wg-conf}.path;
       };
     };
 

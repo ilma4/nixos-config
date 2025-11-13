@@ -44,7 +44,7 @@
         ${lib.concatStringsSep "\n        " (lib.mapAttrsToList (
       name: svc: let
         composeFile =
-          if (lib.strings.hasPrefix "${lib.flake-location}" svc.composeFile)
+          if (builtins.typeOf svc.composeFile == "path")
           then pkgs.copyPathToStore svc.composeFile
           else svc.composeFile;
         envArg =

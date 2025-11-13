@@ -8,10 +8,10 @@
   imports = [
     inputs.home-manager.nixosModules.home-manager
 
-    "${lib.flake-location}/home/base.nix"
-    "${lib.flake-location}/home/personal.nix"
-    "${lib.flake-location}/home/dev.nix"
-    "${lib.flake-location}/home/zed.nix"
+    ../../home/base.nix
+    ../../home/personal.nix
+    ../../home/dev.nix
+    ../../home/zed.nix
 
     ./gui-tweaks.nix
     ./sway.nix
@@ -32,8 +32,8 @@
   services.easyeffects.enable = true;
 
   home.file = {
-    ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = "${lib.flake-location}/dotfiles/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs";
-    ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = "${lib.flake-location}/dotfiles/easyeffects/Sony MDR-7506 no bass boost.json";
+    ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = ../../dotfiles/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs;
+    ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = ../../dotfiles/easyeffects/Sony MDR-7506 no bass boost.json;
   };
 
   top-commands.commands = lib.mkOptionDefault {

@@ -11,12 +11,12 @@
 
     ./hardware-configuration.nix
 
-    "${lib.flake-location}/modules/base.nix"
-    "${lib.flake-location}/modules/avahi.nix"
-    "${lib.flake-location}/modules/zram.nix"
-    "${lib.flake-location}/modules/sops.nix"
+    ../../modules/base.nix
+    ../../modules/avahi.nix
+    ../../modules/zram.nix
+    ../../modules/sops.nix
 
-    "${lib.flake-location}/modules/server.nix"
+    ../../modules/server.nix
   ];
 
   i4.zram.enable = true;

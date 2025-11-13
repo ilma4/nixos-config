@@ -134,7 +134,7 @@ in {
 
           # Powerlevel10k theme
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-          source ${lib.flake-location}/dotfiles/p10k.zsh # Powerlevel10k config
+          source ${../dotfiles/p10k.zsh} # Powerlevel10k config
         '';
 
         beforeCompinit =
@@ -203,7 +203,7 @@ in {
     };
 
     home.file = {
-      ".config/htop/htoprc".source = "${lib.flake-location}/dotfiles/htoprc";
+      ".config/htop/htoprc".source = ../dotfiles/htoprc;
     };
 
     programs.dircolors.enable = true;

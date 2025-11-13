@@ -33,7 +33,7 @@ in {
           pkgs.writeShellScriptBin "i4-update-host" ''
             # Wrapper around external script to set default FLAKE_SOURCE
             export FLAKE_SOURCE="${"\$"}{FLAKE_SOURCE:-${config.flake-source}}"
-            exec "${lib.flake-location}/dotfiles/i4-update-host.sh" "$@"
+            exec "${../dotfiles/i4-update-host.sh}" "$@"
           ''
         )
       )

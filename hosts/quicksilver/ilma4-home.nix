@@ -36,7 +36,7 @@
     # sops-nix configuration
     sops = {
       secrets."wg.conf" = {
-        sopsFile = "${lib.flake-location}/secrets/ru-torrent-nixos-vm-wg.conf";
+        sopsFile = ../../secrets/ru-torrent-nixos-vm-wg.conf;
         format = "binary";
       };
     };
@@ -86,7 +86,7 @@
           cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
           export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
 
-          ${pkgs.podman}/bin/podman compose -f "${lib.flake-location}/docker-compose/qbittorrent-compose.yaml" up --force-recreate --remove-orphans --detach --pull
+          ${pkgs.podman}/bin/podman compose -f "${../../docker-compose/qbittorrent-compose.yaml}" up --force-recreate --remove-orphans --detach --pull
         '')
       )
     ];
@@ -124,8 +124,8 @@
       ".config/zed".source = symlink "zed";
       ".gemini/settings.json".source = symlink "gemini_cli_settings.json";
 
-      ".config/aerospace/aerospace.toml".source = "${lib.flake-location}/dotfiles/aerospace.toml";
-      ".config/resticprofile/profiles.toml".source = "${lib.flake-location}/dotfiles/resticprofile.toml";
+      ".config/aerospace/aerospace.toml".source = ../../dotfiles/aerospace.toml;
+      ".config/resticprofile/profiles.toml".source = ../../dotfiles/resticprofile.toml;
     };
   };
 }

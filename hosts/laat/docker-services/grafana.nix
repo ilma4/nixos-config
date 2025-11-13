@@ -13,7 +13,7 @@
   };
 
   dockerCompose.grafana = {
-    composeFile = "${lib.flake-location}/compose/grafana.yml";
+    composeFile = ../../../compose/grafana.yml;
     environment = {
       GRAFANA_UID = toString config.users.users.grafana.uid;
       GRAFANA_GID = toString config.users.groups.grafana.gid;

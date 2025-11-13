@@ -6,7 +6,7 @@ args @ {
   ...
 }: {
   imports = let
-    modules = "${lib.flake-location}/modules";
+    modules = ../../modules;
   in [
     inputs.home-manager.nixosModules.home-manager
     inputs.sops-nix.nixosModules.sops
@@ -21,7 +21,7 @@ args @ {
     # ./samba.nix
 
     "${modules}/server.nix"
-    ./docker-services/qbittorrent.nix
+    # ./docker-services/qbittorrent.nix
 
     ./docker-services/home-assistant.nix
     ./docker-services/pdf-tools.nix
@@ -97,7 +97,7 @@ args @ {
     owner = "root";
     group = "root";
   };
-  environment.etc."resticprofile/profiles.toml".source = "${lib.flake-location}/dotfiles/resticprofile/laat.toml";
+  environment.etc."resticprofile/profiles.toml".source = ../../dotfiles/resticprofile/laat.toml;
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
@@ -105,7 +105,7 @@ args @ {
     ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
   '';
 
-  torrent.wg-conf = "ru-torrent-wg.conf";
+  # torrent.wg-conf = ../../secrets/ru-torrent-wg.conf;
 
   services.prometheus.node-exporter-docker.enable = true;
 
@@ -195,7 +195,7 @@ args @ {
     path = [pkgs.resticprofile pkgs.restic];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${lib.flake-location}/dotfiles/resticprofile/laat.toml\" backup";
+      ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${../../dotfiles/resticprofile/laat.toml}\" backup";
       User = "root";
     };
   };

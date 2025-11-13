@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  myLib,
   ...
 }: {
   options = {
@@ -15,7 +16,7 @@
   };
 
   config = lib.mkIf config.i4.sops.enable {
-    sops.defaultSopsFile = "${lib.flake-location}/secrets/example.yaml";
+    sops.defaultSopsFile = "${myLib.secrets}/example.yaml";
     sops.defaultSopsFormat = "yaml";
     # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
     # This will generate a new key if the key specified above does not exist
@@ -27,11 +28,11 @@
 
     # map i4-encrypted-files
     sops.secrets = lib.pipe config.i4-encrypted-files [
-      (map (name: {
-        name = name;
+      (map (file: {
+        name = file;
         value = {
           format = lib.mkDefault "binary";
-          sopsFile = "${lib.flake-location}/secrets/${name}";
+          sopsFile = file;
         };
       }))
       lib.listToAttrs

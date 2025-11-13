@@ -4,8 +4,8 @@
   ...
 }: {
   imports = [
-    "${lib.flake-location}/home/base.nix"
-    "${lib.flake-location}/home/personal.nix"
+    ../../home/base.nix
+    ../../home/personal.nix
   ];
 
   home.username = "ilma4";
@@ -29,6 +29,6 @@
   home.packages = with pkgs; [
     (writers.writePython3Bin "set-power" {
       doCheck = false; # disable PEP style checks
-    } (builtins.readFile "${lib.flake-location}/dotfiles/set-power.py"))
+    } (builtins.readFile ../../dotfiles/set-power.py))
   ];
 }

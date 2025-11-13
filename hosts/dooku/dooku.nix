@@ -8,7 +8,7 @@
     inputs.home-manager.nixosModules.home-manager
 
     ./hardware-configuration.nix
-    "${lib.flake-location}/modules/base.nix"
+    ../../modules/base.nix
   ];
 
   boot.loader.systemd-boot.enable = true;

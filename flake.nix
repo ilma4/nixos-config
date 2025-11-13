@@ -136,6 +136,7 @@
         // {pkgs-unstable = (pkgsSets system).unstable;}
         // {
           myLib = {
+            secrets = ./secrets;
             unifiedModules = let
               checkers = {
                 isDarwin = type == "darwin";
@@ -156,7 +157,6 @@
           lib = nixpkgs.lib.extend (
             final: prev: {
               yaml = inputs.yaml.lib.${system};
-              flake-location = self;
             }
           );
         }

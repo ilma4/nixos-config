@@ -94,7 +94,7 @@
         ProgramArguments = [
           "${pkgs.resticprofile}/bin/resticprofile" # do not changes, so wont lose permissions
           "-c"
-          "${lib.flake-location}/dotfiles/resticprofile.toml"
+          "${../dotfiles/resticprofile.toml}"
           "backup"
         ];
         StartCalendarInterval = [
@@ -114,7 +114,7 @@
         ProgramArguments = [
           "${pkgs.resticprofile}/bin/resticprofile" # do not changes, so wont lose permissions
           "-c"
-          "${lib.flake-location}/dotfiles/resticprofile.toml"
+          "${../dotfiles/resticprofile.toml}"
           "hdd.copy"
         ];
         StartCalendarInterval = [
