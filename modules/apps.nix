@@ -63,6 +63,7 @@ in {
     macfuse = macOnlyCask {}; # FUSE for macOS, uses kernel extension
 
     displayplacer = macOnlyBrew {}; # cli to configure display resolution
+    junie = macOnlyBrew {};
 
     "1password-cli" = macOnlyCask {};
     activitywatch = macOnlyCask {};
