@@ -31,10 +31,10 @@
   services.playerctld.enable = true;
   services.easyeffects.enable = true;
 
-  home.file = {
-    ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = ../../dotfiles/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs;
-    ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = ../../dotfiles/easyeffects/Sony MDR-7506 no bass boost.json;
-  };
+  # home.file = {
+  #   # ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = ../../dotfiles/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs;
+  #   # ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = ../../dotfiles/easyeffects/Sony MDR-7506 no bass boost.json;
+  # };
 
   top-commands.commands = lib.mkOptionDefault {
     suspend = "systemctl suspend";
