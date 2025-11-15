@@ -61,6 +61,7 @@
       url = "github:soupglasses/nix-system-graphics";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    deploy-rs.url = "github:serokell/deploy-rs";
   };
 
   outputs = inputs @ {
@@ -70,6 +71,7 @@
     nixpkgs-unstable,
     home-manager,
     nix-darwin,
+    deploy-rs,
     ...
   }: let
     # System aliases for readability
@@ -217,6 +219,17 @@
         module = ./hosts/anakin/anakin.nix;
       };
     };
+
+    deploy.nodes.laat = {
+      hostname = "laat.local";
+      profiles.system = {
+        user = "root";
+        sshUser = "root";
+        path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.laat;
+      };
+    };
+
+    checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
 
     # System Manager Configuration
     systemConfigs = {
