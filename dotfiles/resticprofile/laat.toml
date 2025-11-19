@@ -16,4 +16,12 @@ source = [
   "/srv",
 ]
 
+[hetzer-storage]
+repository = "sftp:u478838@u478838.your-storagebox.de"
+password-file = "TODO"
+
+[hetzer-storage.copy]
+from-repo = "/mnt/hdd/restic-server"
+from-password-file = "/run/secrets/restic/server"
+
 # TODO
