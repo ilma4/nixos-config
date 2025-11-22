@@ -4,10 +4,10 @@
   },
   "agent": {
     "notify_when_agent_waiting": "all_screens",
-    "default_profile": "ask",
+    "default_profile": "write",
     "always_allow_tool_actions": true,
     "default_model": {
-      "model": "gpt-5-codex",
+      "model": "gpt-5.1-codex",
       "provider": "copilot_chat"
     }
   },

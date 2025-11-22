@@ -2,11 +2,10 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }: {
   imports = [
-    inputs.home-manager.nixosModules.home-manager
+    # inputs.home-manager.nixosModules.home-manager
 
     ../../home/base.nix
     ../../home/personal.nix

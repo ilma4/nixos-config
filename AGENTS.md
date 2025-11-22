@@ -18,9 +18,9 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 ## Project Structure
 - flake.nix - file describing flake
 - hosts - device-specific configurations
-  - bkp - ilma4-bkp: my old laptop, used as personal device, when other are unavailable. Runs on NixOS
   - quicksilver - macbook from jetbrains, used both as personal and work device. Runs on macOS with nix-darwin. - /nas - ugreen nassync: NAS device used as homelab. Runs on NixOS
   - laat - my home nas, also used as homelab. Runs on NixOS
+  - msi-modern - laptop running on Ubuntu with home-manager
 
   - usually filename ending with `home.nix` is home-manager configuration
   - usually filename ending with `configuration.nix` is main NixOS/Nix-darwin configuration file

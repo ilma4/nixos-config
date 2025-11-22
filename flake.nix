@@ -214,9 +214,9 @@
 
     # Standalone Home Manager Configuration (kept for compatibility)
     homeConfigurations = {
-      anakin = mkHomeConfig {
+      msi-modern = mkHomeConfig {
         system = systems.x86-linux;
-        module = ./hosts/anakin/anakin.nix;
+        module = ./hosts/msi-modern/msi-modern.nix;
       };
     };
 
