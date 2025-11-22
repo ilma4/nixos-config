@@ -40,7 +40,7 @@ in {
     warp-terminal = {macName = "warp";}; # terminal with AI agent
     gemini-cli = asLinuxPackage {macInstallation = "brew";};
     gitbutler = asLinuxPackage {}; # git client with virtual branches
-    lm-studio = asLinuxPackage {}; # run LLMs locally
+    lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
 
     firefox = {};
     vivaldi = asLinuxPackage {};
