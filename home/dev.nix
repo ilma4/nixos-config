@@ -28,16 +28,6 @@ in {
         extensions = ["rust-src"];
       })
 
-      (
-        lib.mkIf (config.flake-source != null) (
-          pkgs.writeShellScriptBin "i4-update-host" ''
-            # Wrapper around external script to set default FLAKE_SOURCE
-            export FLAKE_SOURCE="${"\$"}{FLAKE_SOURCE:-${config.flake-source}}"
-            exec "${../dotfiles/i4-update-host.sh}" "$@"
-          ''
-        )
-      )
-
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
