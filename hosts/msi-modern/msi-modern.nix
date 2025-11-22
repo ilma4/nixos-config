@@ -8,9 +8,9 @@
     # inputs.home-manager.nixosModules.home-manager
 
     ../../home/base.nix
-    ../../home/personal.nix
-    ../../home/dev.nix
-    ../../home/zed.nix
+    # ../../home/personal.nix
+    # ../../home/dev.nix
+    # ../../home/zed.nix
 
     ./gui-tweaks.nix
     ./sway.nix

@@ -220,12 +220,22 @@
       };
     };
 
-    deploy.nodes.laat = {
-      hostname = "laat.local";
-      profiles.system = {
-        user = "root";
-        sshUser = "root";
-        path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.laat;
+    deploy.nodes = {
+      laat = {
+        hostname = "laat.local";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.laat;
+        };
+      };
+      msi-modern = {
+        hostname = "msi-modern.local";
+        profiles.home-manager = {
+          user = "ilma4";
+          sshUser = "ilma4";
+          path = deploy-rs.lib.x86_64-linux.activate.home-manager self.homeConfigurations.msi-modern;
+        };
       };
     };
 
