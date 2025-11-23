@@ -19,6 +19,7 @@ in {
       alejandra
       tex-fmt
       sops
+      deploy-rs
 
       android-tools # adb
 
