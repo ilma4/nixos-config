@@ -3,13 +3,13 @@
 
   inputs = {
     # Core Nixpkgs inputs
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-25.05-darwin";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-25.11-darwin";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # System-specific inputs
     nix-darwin = {
-      url = "github:LnL7/nix-darwin/nix-darwin-25.05";
+      url = "github:LnL7/nix-darwin/nix-darwin-25.11";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     nixos-wsl = {
@@ -19,7 +19,7 @@
 
     # Home and user management
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     system-manager = {
@@ -54,7 +54,7 @@
     # Platform-specific utilities
     nix-rosetta-builder = {
       url = "github:cpick/nix-rosetta-builder";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     nix-system-graphics = {
@@ -231,9 +231,9 @@
       };
       msi-modern = {
         hostname = "msi-modern.local";
-        profiles.home-manager = {
+        profiles.aaaa = {
           user = "ilma4";
-          sshUser = "ilma4";
+          sshUser = "root";
           path = deploy-rs.lib.x86_64-linux.activate.home-manager self.homeConfigurations.msi-modern;
         };
       };
