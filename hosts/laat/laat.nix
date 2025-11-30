@@ -2,6 +2,7 @@ args @ {
   config,
   pkgs,
   lib,
+  myLib,
   inputs,
   ...
 }: {
@@ -21,7 +22,7 @@ args @ {
     # ./samba.nix
 
     "${modules}/server.nix"
-    # ./docker-services/qbittorrent.nix
+    ./docker-services/qbittorrent.nix
 
     ./docker-services/home-assistant.nix
     ./docker-services/pdf-tools.nix
@@ -105,7 +106,11 @@ args @ {
     ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
   '';
 
-  # torrent.wg-conf = ../../secrets/ru-torrent-wg.conf;
+  # torrent.wg-conf = "${myLib.secrets}/ru-torrent-wg.conf";
+  sops.secrets.wg-conf = {
+    sopsFile = "${myLib.secrets}/ru-torrent-wg.conf";
+    format = "binary";
+  };
 
   services.prometheus.node-exporter-docker.enable = true;
 

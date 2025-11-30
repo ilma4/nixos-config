@@ -1,12 +1,15 @@
 services:
   gluetun:
+    container_name: gluetun
     image: qmcgaw/gluetun:latest
     environment:
       VPN_SERVICE_PROVIDER: custom
       VPN_TYPE: wireguard
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "${WG_CONF_PATH:-/aaa}:/gluetun/wireguard/wg0.conf:ro"
+      # TODO: do not hardcode wg.conf path
+      # - "${WG_CONF_PATH:-/aaa}:/gluetun/wireguard/wg0.conf:ro"
+      - "/home/ilma4/.config/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
     ports:
       - "8080:8080"
     hostname: gluetun
@@ -19,11 +22,13 @@ services:
       driver: none
 
   qbittorrent:
+    container_name: qbittorrent
     image: linuxserver/qbittorrent:latest
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/srv/qbittorrent/config:/config"
       - "/mnt/hdd/torrent:/downloads"
+      - "/home/ilma4/torrents:/ssd-downloads"
     network_mode: "container:gluetun"
     depends_on:
       - gluetun

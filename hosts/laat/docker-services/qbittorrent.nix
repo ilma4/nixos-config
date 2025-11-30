@@ -20,11 +20,11 @@
   config = let
     wg-conf = config.torrent.wg-conf;
   in {
-    i4-encrypted-files = [wg-conf];
+    # i4-encrypted-files = [wg-conf];
 
     dockerCompose.qbittorrent = {
       composeFile = ../../../compose/qbittorrent.yml;
-      enable = false;
+      # enable = false;
       environment = {
         # TODO: fix
         # WG_CONF_PATH = config.sops.secrets.${wg-conf}.path;
