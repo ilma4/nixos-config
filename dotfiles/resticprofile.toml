@@ -37,6 +37,9 @@ exclude = [
     "/Users/ilma4/Library/Group Containers/group.com.apple.secure-control-center-preferences",
     "/Users/ilma4/Library/Group Containers/*.groups.com.apple.podcasts",
 
+    "/Users/ilma4/Google Drive",
+    "/Users/ilma4/Library/CloudStorage",
+
     "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
 
     "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
