@@ -79,6 +79,7 @@ in {
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
     far2l = macOnlyCask {};
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
+    marta = macOnlyCask {}; # file manager
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
     zoom = macOnlyCask {};
     vial = macOnlyCask {}; # configure my split keyboard
