@@ -52,7 +52,7 @@ in {
     calibre = asLinuxPackage {}; # book managment app
 
     discord = asLinuxPackage {};
-    steam = {};
+    steam = {macInstallation = null;};
     heroic = asLinuxPackage {}; # GOG / Epic Games launcher
     prismlauncher = asLinuxPackage {}; # minecraft launcher
     dolphin-emu = asLinuxPackage {macName = "dolphin";}; # Wii emulator
