@@ -91,7 +91,9 @@
       )
     ];
 
-    # programs.zsh.profileExtra = "export JAVA_HOME=$(/usr/libexec/java_home)";
+    programs.zsh.initContent = lib.mkOrder 1000 ''
+      source "${config.home.homeDirectory}/NoBackup/antropic-keys.sh"
+    '';
 
     programs.pandoc.enable = true;
     programs.texlive = {
