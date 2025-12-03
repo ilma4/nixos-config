@@ -65,6 +65,7 @@ in {
 
     displayplacer = macOnlyBrew {}; # cli to configure display resolution
     junie = macOnlyBrew {};
+    shottr = macOnlyCask {};
 
     "1password-cli" = macOnlyCask {};
     activitywatch = macOnlyCask {};
