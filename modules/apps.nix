@@ -53,7 +53,7 @@ in {
 
     discord = asLinuxPackage {};
     steam = {};
-    heroic = asLinuxPackage {macInstallation = null;}; # GOG / Epic Games launcher
+    heroic = asLinuxPackage {}; # GOG / Epic Games launcher
     prismlauncher = asLinuxPackage {}; # minecraft launcher
     dolphin-emu = asLinuxPackage {macName = "dolphin";}; # Wii emulator
 
