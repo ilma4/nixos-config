@@ -136,7 +136,7 @@
     onActivation = {
       autoUpdate = true;
       upgrade = true;
-      cleanup = "uninstall";
+      cleanup = "zap";
     };
 
     # TODO: enable with 25.11 release
