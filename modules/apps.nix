@@ -1,23 +1,23 @@
 {...}: let
-  asLinuxPackage = x: x // {linuxInstallation = "package";};
+  asLinuxPackage = x: {linuxInstallation = "package";} // x;
   macOnlyCask = x:
-    x
-    // {
+    {
       linuxInstallation = null;
       macInstallation = "cask";
-    };
+    }
+    // x;
   macOnlyBrew = x:
-    x
-    // {
+    {
       linuxInstallation = null;
       macInstallation = "brew";
-    };
+    }
+    // x;
   linuxOnlyProgram = x:
-    x
-    // {
+    {
       linuxInstallation = "program";
       macInstallation = null;
-    };
+    }
+    // x;
   # universal module
 in {
   imports = [
