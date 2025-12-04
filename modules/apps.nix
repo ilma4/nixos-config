@@ -54,7 +54,7 @@ in {
     discord = asLinuxPackage {};
     steam = {macInstallation = null;};
     heroic = asLinuxPackage {}; # GOG / Epic Games launcher
-    prismlauncher = asLinuxPackage {}; # minecraft launcher
+    prismlauncher = asLinuxPackage {macInstallation = null;}; # minecraft launcher
     dolphin-emu = asLinuxPackage {macName = "dolphin";}; # Wii emulator
 
     qbittorrent = asLinuxPackage {};
@@ -82,7 +82,7 @@ in {
     far2l = macOnlyCask {};
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
     marta = macOnlyCask {}; # file manager
-    google-drive = macOnlyCask {};
+    google-drive = macOnlyCask {macInstallation = null;};
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
     zoom = macOnlyCask {};
     vial = macOnlyCask {}; # configure my split keyboard
