@@ -103,6 +103,7 @@
 
     programs.ssh.matchBlocks = {
       "hetzer-storage" = {
+        port = 23;
         host = "u478838.your-storagebox.de";
         identityFile = "~/.ssh/jb-mac-to-hetzer-storage";
         user = "u478838";
