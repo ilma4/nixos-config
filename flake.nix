@@ -53,7 +53,7 @@
 
     # Platform-specific utilities
     nix-rosetta-builder = {
-      url = "github:cpick/nix-rosetta-builder";
+      url = "git+https://nossa.ee/~talya/nix-rosetta-builder";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
@@ -199,6 +199,11 @@
       jailbreak = mkNixosSystem {
         system = systems.x86-linux;
         module = ./hosts/jailbreak/jailbreak.nix;
+      };
+
+      nixos-test = mkNixosSystem {
+        system = systems.arm64-linux;
+        module = ./hosts/nixos-test/nixos-test.nix;
       };
     };
 
