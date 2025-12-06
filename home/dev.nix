@@ -30,6 +30,10 @@ in {
 
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
+      (
+        pkgs.writeShellScriptBin "i4-update-host"
+        (builtins.readFile ../dotfiles/i4-update-host.sh)
+      )
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
     ];
