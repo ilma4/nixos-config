@@ -30,6 +30,10 @@ in {
             type = lib.types.nullOr lib.types.path;
             default = null;
           };
+          maxBodySize = mkOption {
+            type = types.str;
+            default = "100M";
+          };
         };
       }));
       default = {};

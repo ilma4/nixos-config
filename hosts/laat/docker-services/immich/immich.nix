@@ -4,6 +4,7 @@ in {
   dockerCompose.immich = {
     composeFile = "${dir}/docker-compose.yml";
     envFile = "${dir}/.env";
+    maxBodySize = "100000M";
   };
 
   systemd.services.immich.serviceConfig.WorkingDirectory = dir; # ./.

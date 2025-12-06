@@ -29,8 +29,10 @@
 
   # listOf {name: str, upstream: str};
   containers = lib.pipe enabledCompose [
-    (mapAttrs (_: s: myLib.yaml.fromYaml s.composeFile))
-    (mapAttrs (_: s: s.services or {}))
+    (mapAttrs (_: s:
+      mapAttrs
+      (_: svc: svc // {inherit (s) maxBodySize;})
+      ((myLib.yaml.fromYaml s.composeFile).services or {})))
     (s: lib.trace s lib.attrsets.mergeAttrsList (lib.attrValues s))
     (filterAttrs (
       _: v:
@@ -101,6 +103,7 @@
           else "http://${name}:${toString port}";
       in {
         inherit name upstream;
+        inherit (v) maxBodySize;
       }
     ))
     attrValues
@@ -113,13 +116,13 @@
       server {
         listen 80;
         server_name ${c.name}.ilma4.local;
-        client_max_body_size 100M;
+        client_max_body_size ${c.maxBodySize};
         return 301 https://$host$request_uri;
       }
       server {
         listen 443 ssl;
         server_name ${c.name}.ilma4.local;
-        client_max_body_size 100M;
+        client_max_body_size ${c.maxBodySize};
         resolver 10.20.0.1 valid=10s ipv6=off;
         set $upstream_target ${c.upstream};
 
