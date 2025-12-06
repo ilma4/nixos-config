@@ -40,8 +40,7 @@
     "mcp-nixos": {
       "args": ["--"],
       "command": "/nix/store/nsimbc2cf02ilvcmvx6p1im3na8bh99g-mcp-nixos-1.0.0/bin/mcp-nixos",
-      "env": {},
-      "source": "custom"
+      "env": {}
     }
   },
   "languages": {
