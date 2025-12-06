@@ -2,30 +2,47 @@
 # i4-update-host: Switch a remote NixOS host to the specified flake configuration.
 #
 # Usage:
-#   i4-update-host <targetHost>
+#   i4-update-host <flake-location>#<configuration> [targetHost]
 #
-# Env:
-#   CONFIG         Nix flake output/host to apply (defaults to <targetHost>)
-#   FLAKE_SOURCE Path/URL to flake
+# Arguments:
+#   <flake-location>#<configuration>  Flake reference (e.g., .#laat or /path/to/flake#nas)
+#   [targetHost]                      Optional SSH target host (defaults to <configuration>)
 #
 # Notes:
 # - Uses `nix shell nixpkgs#nixos-rebuild` so it works on macOS/Linux without nixos-rebuild pre-installed.
 # - Connects to the remote host as root via SSH.
+# - Tries <targetHost>.local first, falls back to <targetHost> if unreachable.
 
 set -euo pipefail
 
 if [[ ${1-} == "" ]]; then
-  echo "Error: No 'targetHost' provided."
-  echo "Usage: i4-update-host <targetHost>"
+  echo "Error: No flake reference provided."
+  echo "Usage: i4-update-host <flake-location>#<configuration> [targetHost]"
   exit 1
 fi
 
-targetHost="$1"
-config="${CONFIG:-$targetHost}"
-FLAKE_SOURCE="${FLAKE_SOURCE}"
+flakeRef="$1"
+
+# Extract configuration name from flake reference (part after #)
+if [[ "$flakeRef" != *"#"* ]]; then
+  echo "Error: Flake reference must contain '#' (e.g., .#laat)"
+  exit 1
+fi
+
+config="${flakeRef##*#}"
+targetHost="${2:-$config}"
+
+# Check if targetHost.local is reachable (ping with 1 second timeout, 1 packet)
+if ping -c 1 -W 1 "${targetHost}.local" &>/dev/null; then
+  echo "Using ${targetHost}.local (mDNS)"
+  sshTarget="${targetHost}.local"
+else
+  echo "Using ${targetHost}"
+  sshTarget="${targetHost}"
+fi
 
 nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
-  --flake "${FLAKE_SOURCE}#${config}" \
-  --target-host "root@${targetHost}" \
-  --build-host "root@${targetHost}" \
+  --flake "${flakeRef}" \
+  --target-host "root@${sshTarget}" \
   --fast
+  # --build-host "root@${sshTarget}" \
