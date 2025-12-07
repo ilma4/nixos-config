@@ -82,7 +82,7 @@ in {
     far2l = macOnlyCask {};
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
     marta = macOnlyCask {}; # file manager
-    google-drive = macOnlyCask {macInstallation = null;};
+    google-drive = macOnlyCask {};
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
     zoom = macOnlyCask {};
     vial = macOnlyCask {}; # configure my split keyboard
