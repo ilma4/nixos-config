@@ -42,6 +42,7 @@ in {
     claude-code = asLinuxPackage {};
     gitbutler = asLinuxPackage {}; # git client with virtual branches
     lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
+    comfyui = macOnlyCask {};
 
     firefox = {};
     vivaldi = asLinuxPackage {};
