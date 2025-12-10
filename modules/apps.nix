@@ -42,7 +42,8 @@ in {
     claude-code = asLinuxPackage {};
     gitbutler = asLinuxPackage {}; # git client with virtual branches
     lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
-    comfyui = macOnlyCask {};
+    comfyui = macOnlyCask {}; # tool for generating images/videos
+    cherry-studio = {}; # tool for LLMs
 
     firefox = {};
     vivaldi = asLinuxPackage {};
@@ -74,6 +75,7 @@ in {
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
     iterm2 = macOnlyCask {};
+    windows-app = macOnlyCask {};
     itermai = macOnlyCask {};
     slack = macOnlyCask {};
     karabiner-elements = macOnlyCask {}; # keyboard remapping
