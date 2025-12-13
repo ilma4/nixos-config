@@ -94,7 +94,7 @@ from-repo = "local:/Users/ilma4/NoBackup/restic"
 from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 
 options = [
-  "sftp.command=ssh -i /Users/ilma4/.ssh/jb-mac-to-hetzer-storage -s sftp"
+  "sftp.command='/usr/bin/ssh -s sftp'"
 ]
 
 schedule = "*-*-* 03:00:00"

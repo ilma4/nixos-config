@@ -95,11 +95,13 @@
       source "${config.home.homeDirectory}/NoBackup/antropic-keys.sh"
     '';
 
+    /*
     programs.pandoc.enable = true;
     programs.texlive = {
       enable = true;
       extraPackages = tpkgs: {inherit (tpkgs) scheme-full;};
     };
+    */
 
     programs.ssh.matchBlocks = {
       "hetzer-storage" = {
