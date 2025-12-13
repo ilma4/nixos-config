@@ -49,11 +49,12 @@
       # clang
       # lldb
 
-      ghc
-      stack
-      haskell-language-server
+      # ghc
+      # stack
+      # haskell-language-server
 
-      texlab
+      # texlab
+
       sops # for managing secrets
       age # for age key management
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
@@ -67,12 +68,8 @@
       '')
       */
 
-      # FIXME: Remove this hack when issue is fixed: https://github.com/NixOS/nixpkgs/issues/339576
       (let
-        bw =
-          if pkgs.stdenv.isDarwin
-          then "/opt/homebrew/bin/bw"
-          else "${pkgs.bitwarden-cli}/bin/bw";
+        bw = "${pkgs.bitwarden-cli}/bin/bw";
       in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
       (
