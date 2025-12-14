@@ -17,16 +17,18 @@ in {
       nixd
       nil
       alejandra
-      tex-fmt
       sops
 
       android-tools # adb
 
-      haskell-language-server
+      # tex-fmt # latex formatting
+      # haskell-language-server
 
+      /*
       (pkgs.rust-bin.stable.latest.default.override {
         extensions = ["rust-src"];
       })
+      */
 
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
