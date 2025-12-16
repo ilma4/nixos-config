@@ -77,7 +77,7 @@ in {
     iterm2 = macOnlyCask {};
     windows-app = macOnlyCask {};
     itermai = macOnlyCask {};
-    slack = macOnlyCask {};
+    # slack = macOnlyCask {};
     karabiner-elements = macOnlyCask {}; # keyboard remapping
     raycast = macOnlyCask {}; # cmd+space : search apps and commands
     caffeine = macOnlyCask {};
