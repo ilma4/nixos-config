@@ -1,13 +1,4 @@
-{
-  pkgs,
-  myLib,
-  ...
-}:
-myLib.unifiedModules.enableForConfigurations [
-  "isDarwin"
-  "isNixos"
-  "isHome"
-] {
+{pkgs, ...}: {
   nix = {
     package = pkgs.nix;
     gc.automatic = true;
