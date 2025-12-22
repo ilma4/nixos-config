@@ -15,6 +15,7 @@ services:
     environment:
       - "VPN_SERVICE_PROVIDER=custom"
       - "VPN_TYPE=wireguard"
+      - "VPN_PORT_FORWARDING=on"
     networks:
       qbt:
         ipv4_address: 10.5.0.5
