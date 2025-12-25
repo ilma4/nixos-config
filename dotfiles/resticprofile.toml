@@ -32,6 +32,9 @@ exclude = [
     "/Users/ilma4/Library/Logs",
 
     "/Users/ilma4/Library/Application Support/JetBrains/*/plugins", # do not backup plugins for JetBrains IDEs
+    "/Users/ilma4/Library/Application Support/Google", # do not backup google's apps
+
+    "/Users/ilma4/Library/Application Support/Slack",
 
     "/Users/ilma4/Library/DuetExpertCenter", # https://apple.stackexchange.com/questions/476332/what-is-duetexpertcentre
     "/Users/ilma4/Library/Metadata/CoreSpotlight",
