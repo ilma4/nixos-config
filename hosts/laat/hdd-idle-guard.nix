@@ -2,11 +2,11 @@
   script = pkgs.writeShellScript "hdd-idle-guard.sh" ''
     set -eu
 
-    DISK_A="/dev/sda"
-    DISK_B="/dev/sdb"
+    DISK_A="/dev/disk/by-id/ata-ST4000DM004-2U9104_ZW62WG3D" # segate
+    DISK_B="/dev/disk/by-id/ata-WDC_WD40EFPX-68C6CN0_WD-WX42D44C18S3" # WD
     STATE_DIR="/run/hdd-idle-guard"
-    STATE_A="$STATE_DIR/sda.count"
-    STATE_B="$STATE_DIR/sdb.count"
+    STATE_A="$STATE_DIR/segate.count"
+    STATE_B="$STATE_DIR/wd.count"
 
     mkdir -p "$STATE_DIR"
 
