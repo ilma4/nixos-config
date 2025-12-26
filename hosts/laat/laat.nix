@@ -21,6 +21,8 @@ args @ {
     "${modules}/docker-compose.nix"
     # ./samba.nix
 
+    ./hdd-idle-guard.nix
+
     "${modules}/server.nix"
     ./docker-services/qbittorrent.nix
 
