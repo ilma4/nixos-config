@@ -10,7 +10,8 @@
   },
   "general": {
     "preferredEditor": "zed",
-    "vimMode": false
+    "vimMode": false,
+    "previewFeatures": true
   },
   "security": {
     "auth": {
