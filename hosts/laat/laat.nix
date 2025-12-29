@@ -19,7 +19,7 @@ args @ {
     "${modules}/zram.nix"
     "${modules}/sops.nix"
     "${modules}/docker-compose.nix"
-    # ./samba.nix
+    ./samba.nix
 
     ./hdd-idle-guard.nix
 
@@ -37,7 +37,8 @@ args @ {
     ./docker-services/node-exporter.nix
 
     ./docker-services/nginx-reverse-proxy.nix
-    ./docker-services/rssalchemy.nix
+
+    # ./docker-services/rssalchemy.nix
 
     "${modules}/backup.nix"
 
