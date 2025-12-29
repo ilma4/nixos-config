@@ -1,7 +1,11 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  lib,
+  ...
+}: {
   nix = {
     package = pkgs.nix;
-    gc.automatic = true;
+    gc.automatic = lib.mkDefault true;
     optimise.automatic = true;
     settings = {
       # allowed-users = [ "ilma4" ];
