@@ -42,6 +42,8 @@
   i4.sops.enable = true;
   i4.apps.enable = true;
 
+  nix.gc.automatic = false;
+
   networking.hostName = "DE-UNIT-1832";
 
   users.users = {
