@@ -37,6 +37,7 @@ args @ {
     ./docker-services/node-exporter.nix
 
     ./docker-services/nginx-reverse-proxy.nix
+    ./docker-services/rssalchemy.nix
 
     "${modules}/backup.nix"
 
