@@ -188,7 +188,7 @@ args @ {
   services.smartd = {
     enable = true;
     extraOptions = [
-      "--interval=10800" # run checks every 3 hours # TODO reset to default when noise wont be issue
+      "--interval=86400" # run checks every 24 hours # TODO reset to default when switch to SSD
     ];
   };
 
