@@ -33,7 +33,7 @@ in {
 
     programs.ssh.matchBlocks = {
       "github.com" = {
-        identityFile = "~/.ssh/github";
+        extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       };
       "ilma4-bkp.local" = {
         identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
