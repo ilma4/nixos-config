@@ -3,7 +3,9 @@
   lib,
   pkgs,
   ...
-}: {
+}: let
+  mkDefault = lib.mkDefault;
+in {
   options = {
     isServer = lib.mkOption {
       type = lib.types.bool;
@@ -43,17 +45,20 @@
 
     services.dbus.implementation = "broker"; # better dbus, also required for home-assistant bluetooth integration
 
-    services.fstrim.enable = lib.mkDefault true; # Enable background periodic TRIM
-    services.printing.enable = lib.mkDefault true; # Enable CUPS to print documents.
+    services.fstrim.enable = mkDefault true; # Enable background periodic TRIM
+    services.printing.enable = mkDefault true; # Enable CUPS to print documents.
 
     services.smartd = {
       enable = true;
     };
 
+    # TODO detect btrfs usage in `fileSystems` or in `services.btrfs.autoScrub.fileSystems` to enable automatically
+    services.btrfs.autoScrub.interval = mkDefault "*-*-01 03:00:00"; # monthly at 03 am
+
     services.openssh = {
-      enable = lib.mkDefault true;
+      enable = mkDefault true;
       settings = {
-        PasswordAuthentication = lib.mkDefault false;
+        PasswordAuthentication = mkDefault false;
 
         # disable rsa algorithms
         HostKeyAlgorithms = "-rsa-sha2-512,-rsa-sha2-256";
@@ -61,7 +66,7 @@
       };
     };
 
-    security.rtkit.enable = lib.mkDefault true; # realtime privileges
+    security.rtkit.enable = mkDefault true; # realtime privileges
 
     users.users.ilma4 = lib.mkIf config.i4.user-ilma4.enable {
       isNormalUser = true;

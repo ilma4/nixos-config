@@ -113,15 +113,11 @@ args @ {
   # accept all incoming connections from tailscale
   networking.firewall.trustedInterfaces = ["tailscale0"];
 
-  # Check btrfs automatically
-  services.btrfs.autoScrub = {
-    enable = true;
-    interval = "*-*-01 03:00:00"; # monthly at 03 am
-    fileSystems = [
-      "/"
-      "/mnt/hdd"
-    ];
-  };
+  services.btrfs.autoScrub.enable = true;
+  services.btrfs.autoScrub.fileSystems = [
+    "/"
+    "/mnt/hdd"
+  ];
 
   home-manager.users = {
     "ilma4" = import ./home.nix;
