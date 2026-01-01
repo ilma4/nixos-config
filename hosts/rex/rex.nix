@@ -92,12 +92,6 @@
   networking.hostName = "ilma4-bkp";
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
