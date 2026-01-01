@@ -38,6 +38,8 @@ args @ {
 
     ./docker-services/nginx-reverse-proxy.nix
 
+    ./docker-services/audiobookshelf.nix
+
     # ./docker-services/rssalchemy.nix
 
     "${modules}/backup.nix"
