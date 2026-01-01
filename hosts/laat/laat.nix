@@ -149,7 +149,6 @@ args @ {
 
   services.swapspace.enable = true; # auto swap files when needed
 
-  programs.zsh.enable = true; # configured via home-manager
   environment.pathsToLink = ["/share/zsh"];
 
   environment.systemPackages = with pkgs; [

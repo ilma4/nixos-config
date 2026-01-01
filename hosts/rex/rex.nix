@@ -168,7 +168,6 @@
 
   # List packages installed in system profile. To search, run:
   programs.screen.enable = true;
-  programs.zsh.enable = true; # configured via home-manager
 
   programs.virt-manager.enable = true;
   programs.gnome-terminal.enable = true;
