@@ -25,14 +25,6 @@
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  users.users.ilma4 = {
-    isNormalUser = true;
-    extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
-      tree
-    ];
-  };
-
   services.openssh.enable = true;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
