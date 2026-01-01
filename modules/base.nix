@@ -55,6 +55,11 @@ in {
     # TODO detect btrfs usage in `fileSystems` or in `services.btrfs.autoScrub.fileSystems` to enable automatically
     services.btrfs.autoScrub.interval = mkDefault "*-*-01 03:00:00"; # monthly at 03 am
 
+    services.tailscale = {
+      enable = mkDefault true;
+      openFirewall = config.services.tailscale.enable;
+    };
+
     services.openssh = {
       enable = mkDefault true;
       settings = {

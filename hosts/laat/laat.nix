@@ -104,12 +104,6 @@ args @ {
   services.prometheus.node-exporter-docker.enable = true;
   services.printing.enable = false;
 
-  services.tailscale = {
-    enable = true;
-    package = args.pkgs-unstable.tailscale;
-    openFirewall = true;
-  };
-
   # accept all incoming connections from tailscale
   networking.firewall.trustedInterfaces = ["tailscale0"];
 
