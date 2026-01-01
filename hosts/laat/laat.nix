@@ -137,12 +137,7 @@ args @ {
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
-  services.smartd = {
-    enable = true;
-    extraOptions = [
-      "--interval=86400" # run checks every 24 hours # TODO reset to default when switch to SSD
-    ];
-  };
+  services.smartd.extraOptions = ["--interval=86400"]; # run checks every 24 hours # TODO reset to default when switch to SSD
 
   systemd.timers.restic-backup = {
     wantedBy = ["timers.target"];

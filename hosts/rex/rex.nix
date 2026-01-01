@@ -162,11 +162,6 @@
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
-  services.smartd = {
-    enable = true;
-    autodetect = true;
-  };
-
   programs.nix-ld.enable = true; # allows to run programs not from nix
 
   # This option defines the first version of NixOS you have installed on this particular machine,

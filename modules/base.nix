@@ -46,6 +46,10 @@
     services.fstrim.enable = lib.mkDefault true; # Enable background periodic TRIM
     services.printing.enable = lib.mkDefault true; # Enable CUPS to print documents.
 
+    services.smartd = {
+      enable = true;
+    };
+
     services.openssh = {
       enable = lib.mkDefault true;
       settings = {
