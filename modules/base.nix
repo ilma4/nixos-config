@@ -1,9 +1,26 @@
-{lib, ...}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   options = {
     isServer = lib.mkOption {
       type = lib.types.bool;
       default = false;
       description = "Is this machine a server. Configure podman for containers";
+    };
+
+    i4.user-ilma4.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to create the \"ilma4\" user";
+    };
+
+    i4.my-ssh-key.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to add main SSH public key to the ilma4 user";
     };
   };
 
@@ -22,5 +39,16 @@
 
     programs.neovim.enable = true;
     programs.nano.enable = true;
+    programs.zsh.enable = true;
+
+    users.users.ilma4 = lib.mkIf config.i4.user-ilma4.enable {
+      isNormalUser = true;
+      shell = pkgs.zsh;
+      extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
+
+      openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
+      ];
+    };
   };
 }

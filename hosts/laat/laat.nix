@@ -143,24 +143,6 @@ args @ {
     ];
   };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.ilma4 = {
-    isNormalUser = true;
-    shell = pkgs.zsh;
-    extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
-    #openssh.authorizedKeys.keyFiles = [
-    #  config.sops.secrets."/etc/ssh/jb-mac/ilma4-nas/pub".path
-    #];
-  };
-
-  # Create .ssh/authorized_keys with right content
-  systemd.tmpfiles.rules = let
-    ilma4Home = config.users.users.ilma4.home;
-  in [
-    "d ${ilma4Home}/.ssh 0700 ilma4 users -"
-    "L ${ilma4Home}/.ssh/authorized_keys - - - - ${config.sops.secrets."ssh/jb-mac/ilma4-nas/pub".path}"
-  ];
-
   home-manager.users = {
     "ilma4" = import ./home.nix;
   };

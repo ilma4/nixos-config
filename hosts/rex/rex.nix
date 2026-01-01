@@ -36,12 +36,6 @@
     };
   };
 
-  # sops.age.keyFile = "/home/ilma4/.config/sops/age/keys.txt";
-
-  sops.secrets.ilma4-passwd = {
-    neededForUsers = true;
-  };
-
   boot.initrd.systemd.enable = true;
   boot.initrd.network.enable = true;
   boot.initrd.availableKernelModules = [
@@ -150,13 +144,6 @@
     fileSystems = [
       "/"
     ];
-  };
-
-  users.users.ilma4 = {
-    isNormalUser = true;
-    shell = pkgs.zsh;
-    hashedPasswordFile = config.sops.secrets.ilma4-passwd.path;
-    extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
   };
 
   home-manager.users = {
