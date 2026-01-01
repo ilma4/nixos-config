@@ -53,6 +53,8 @@ in {
     anki = asLinuxPackage {}; # learn word app
     calibre = asLinuxPackage {}; # book managment app
 
+    telegram-desktop = {};
+
     discord = asLinuxPackage {};
     steam = {};
     heroic = asLinuxPackage {macInstallation = null;}; # GOG / Epic Games launcher
