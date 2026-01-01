@@ -43,7 +43,13 @@
 
     services.openssh = {
       enable = lib.mkDefault true;
-      settings.PasswordAuthentication = lib.mkDefault false;
+      settings = {
+        PasswordAuthentication = lib.mkDefault false;
+
+        # disable rsa algorithms
+        HostKeyAlgorithms = "-rsa-sha2-512,-rsa-sha2-256";
+        PubkeyAcceptedAlgorithms = "-rsa-sha2-512,-rsa-sha2-256,-ssh-rsa";
+      };
     };
 
     users.users.ilma4 = lib.mkIf config.i4.user-ilma4.enable {
