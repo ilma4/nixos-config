@@ -70,7 +70,6 @@ args @ {
 
   hardware.bluetooth.enable = true; # enables support for Bluetooth
   hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
-  services.dbus.implementation = "broker"; # required for home-assistant bluetooth integration
 
   networking.hostName = "laat"; # Define your hostname.
 

@@ -41,6 +41,8 @@
     programs.nano.enable = true;
     programs.zsh.enable = true;
 
+    services.dbus.implementation = "broker"; # better dbus, also required for home-assistant bluetooth integration
+
     services.openssh = {
       enable = lib.mkDefault true;
       settings = {
