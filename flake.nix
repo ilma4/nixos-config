@@ -17,6 +17,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    deploy-rs.url = "github:serokell/deploy-rs";
+
     # Home and user management
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
@@ -237,5 +239,17 @@
         ];
       };
     };
+
+    deploy.nodes.laat = {
+      hostname = "laat.local";
+      profiles.system = {
+        sshUser = "root";
+        user = "root";
+        path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.laat;
+      };
+    };
+
+    # This is highly advised, and will prevent many possible mistakes
+    checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
   };
 }
