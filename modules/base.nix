@@ -52,6 +52,8 @@
       };
     };
 
+    security.rtkit.enable = lib.mkDefault true; # realtime privileges
+
     users.users.ilma4 = lib.mkIf config.i4.user-ilma4.enable {
       isNormalUser = true;
       shell = pkgs.zsh;

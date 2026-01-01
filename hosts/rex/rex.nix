@@ -89,8 +89,6 @@
 
   # boot.initrd.systemd.services.hoopsnake.before = [ "systemd-cryptsetup@root.service" ];
 
-  security.rtkit.enable = true; # enable realtime kit (process can have different priorities)
-
   networking.hostName = "ilma4-bkp";
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 

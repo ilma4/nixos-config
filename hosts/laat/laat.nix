@@ -72,8 +72,6 @@ args @ {
   hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
   services.dbus.implementation = "broker"; # required for home-assistant bluetooth integration
 
-  security.rtkit.enable = true; # realtime privileges
-
   networking.hostName = "laat"; # Define your hostname.
 
   boot.initrd.systemd.enable = true;
