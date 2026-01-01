@@ -40,11 +40,13 @@ in {
       };
       "laat.local" = {
         # TODO remove after switching to bitwarden ssh agent by default
-        extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
       };
       "laat" = {
         # TODO remove after switching to bitwarden ssh agent by default
-        extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
       };
       "laat-init" = {
         identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
