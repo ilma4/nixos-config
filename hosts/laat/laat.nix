@@ -108,9 +108,7 @@ args @ {
   };
 
   services.prometheus.node-exporter-docker.enable = true;
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+  services.printing.enable = false;
 
   services.tailscale = {
     enable = true;

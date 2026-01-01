@@ -44,6 +44,7 @@
     services.dbus.implementation = "broker"; # better dbus, also required for home-assistant bluetooth integration
 
     services.fstrim.enable = lib.mkDefault true; # Enable background periodic TRIM
+    services.printing.enable = lib.mkDefault true; # Enable CUPS to print documents.
 
     services.openssh = {
       enable = lib.mkDefault true;
