@@ -147,8 +147,6 @@ args @ {
     "ilma4" = import ./home.nix;
   };
 
-  services.swapspace.enable = true; # auto swap files when needed
-
   environment.pathsToLink = ["/share/zsh"];
 
   environment.systemPackages = with pkgs; [
