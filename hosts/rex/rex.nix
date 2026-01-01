@@ -165,8 +165,6 @@
   };
 
   # List packages installed in system profile. To search, run:
-  programs.screen.enable = true;
-
   programs.virt-manager.enable = true;
   programs.gnome-terminal.enable = true;
 
