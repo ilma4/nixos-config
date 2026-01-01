@@ -83,6 +83,10 @@ args @ {
     # authorizedKeyFiles = [ config.sops.secrets.ssh-jb-mac-to-ilma4-pub.path ];
   };
 
+  users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
+  ];
+
   sops.secrets."restic/server" = {
     owner = "root";
     group = "root";
@@ -145,6 +149,18 @@ args @ {
       User = "root";
     };
   };
+
+  security.sudo.extraRules = [
+    {
+      users = [config.users.users.ilma4.name];
+      commands = [
+        {
+          command = "ALL";
+          options = ["NOPASSWD"];
+        }
+      ];
+    }
+  ];
 
   # programs.nix-ld.enable = true;
 
