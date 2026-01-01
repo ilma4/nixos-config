@@ -41,6 +41,11 @@
     programs.nano.enable = true;
     programs.zsh.enable = true;
 
+    services.openssh = {
+      enable = lib.mkDefault true;
+      settings.PasswordAuthentication = lib.mkDefault false;
+    };
+
     users.users.ilma4 = lib.mkIf config.i4.user-ilma4.enable {
       isNormalUser = true;
       shell = pkgs.zsh;

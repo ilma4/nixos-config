@@ -181,13 +181,6 @@
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
-  # Enable the OpenSSH daemon.
-  services.openssh = {
-    enable = true;
-    openFirewall = true;
-    settings.PasswordAuthentication = false;
-  };
-
   services.smartd = {
     enable = true;
     autodetect = true;
