@@ -109,9 +109,6 @@ args @ {
 
   services.prometheus.node-exporter-docker.enable = true;
 
-  # Enable background periodic TRIM
-  services.fstrim.enable = true;
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
