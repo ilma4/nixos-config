@@ -35,9 +35,6 @@ in {
       "github.com" = {
         extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       };
-      "ilma4-bkp.local" = {
-        identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
-      };
       "laat.local" = {
         # TODO remove after switching to bitwarden ssh agent by default
         # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
@@ -49,7 +46,6 @@ in {
         identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
       };
       "laat-init" = {
-        identityFile = "~/.ssh/jb-macbook-to-ilma4-bkp";
         hostname = "192.168.1.33";
         user = "root";
       };
