@@ -72,8 +72,13 @@ in {
 
     # also check `work.nix` for work-specific options
     programs.git = {
-      userName = "Ilia Malakhov";
-      userEmail = "ilya.malakhov4@gmail.com";
+      settings = {
+        user.name = "Ilia Malakhov";
+        user.email = "ilya.malakhov4@gmail.com";
+        aliases = {
+          push-force-safe = "push --force-with-lease --force-if-includes";
+        };
+      };
 
       /*
       signing = {
@@ -83,10 +88,6 @@ in {
       */
 
       lfs.enable = true;
-
-      aliases = {
-        push-force-safe = "push --force-with-lease --force-if-includes";
-      };
     };
 
     home.sessionVariables = {

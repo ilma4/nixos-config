@@ -97,7 +97,7 @@ in {
 
     programs.git = {
       enable = true;
-      extraConfig = {
+      settings = {
         core = {
           autocrlf = "input"; # do not change line separators
         };
