@@ -105,6 +105,11 @@
           lockFile = "${inputs.monitor-input-rs}/Cargo.lock";
         };
 
+        # runtime dependencies
+        buildInputs = final.lib.optionals final.stdenv.isLinux [
+          final.systemd
+        ];
+
         meta = with final.lib; {
           description = "Control monitor input sources";
           homepage = "https://github.com/kojiishi/monitor-input-rs";
