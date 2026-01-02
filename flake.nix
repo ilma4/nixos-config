@@ -53,6 +53,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    monitor-input-rs = {
+      url = "github:kojiishi/monitor-input-rs";
+      flake = false;
+    };
+
     # Platform-specific utilities
     nix-rosetta-builder = {
       url = "git+https://nossa.ee/~talya/nix-rosetta-builder";
@@ -89,9 +94,31 @@
         inherit overlays;
       };
 
+    monitorInputOverlay = final: prev: {
+      monitor-input = final.rustPlatform.buildRustPackage {
+        pname = "monitor-input";
+        version = "unstable";
+
+        src = inputs.monitor-input-rs;
+
+        cargoLock = {
+          lockFile = "${inputs.monitor-input-rs}/Cargo.lock";
+        };
+
+        meta = with final.lib; {
+          description = "Control monitor input sources";
+          homepage = "https://github.com/kojiishi/monitor-input-rs";
+          license = licenses.mit;
+          mainProgram = "monitor-input";
+          platforms = platforms.all;
+        };
+      };
+    };
+
     # Common overlays
     commonOverlays = [
       inputs.rust-overlay.overlays.default
+      monitorInputOverlay
     ];
 
     # Centralized package sets
@@ -181,6 +208,17 @@
     mkDarwinSystem = mkAny "darwin";
     mkHomeConfig = mkAny "home";
   in {
+    # use `nix run .#<package-name>` to run one of those packages
+    # e.g. `nix run .#monitor-input`
+    packages = builtins.listToAttrs (builtins.map (system: {
+      name = system;
+      value = let
+        pkgs = (pkgsSets system).stable;
+      in {
+        inherit (pkgs) monitor-input;
+      };
+    }) (builtins.attrValues systems));
+
     # NixOS Configurations
     nixosConfigurations = {
       rex = mkNixosSystem {

@@ -55,6 +55,8 @@
 
       # texlab
 
+      monitor-input
+
       sops # for managing secrets
       age # for age key management
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
@@ -87,7 +89,6 @@
         '')
       )
     ];
-
 
     /*
     programs.pandoc.enable = true;
