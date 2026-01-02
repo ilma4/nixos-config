@@ -55,6 +55,7 @@ args @ {
   i4.sops.enable = true;
   i4.dockerComposeEnable = true;
   i4.backup.enable = true;
+  i4.initrd-ssh.enable = true;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
@@ -75,17 +76,8 @@ args @ {
 
   networking.hostName = "laat"; # Define your hostname.
 
-  boot.initrd.systemd.enable = true;
-  boot.initrd.network.enable = true;
-
-  boot.initrd.network.ssh = {
-    enable = true;
-    hostKeys = ["/etc/secrets/initrd/ssh_host_ed25519_key"];
-    authorizedKeys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"];
-  };
-
   users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
+    config.i4.my-ssh-key.publicKey
   ];
 
   sops.secrets."restic/server" = {

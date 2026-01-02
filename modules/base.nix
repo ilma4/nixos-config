@@ -12,23 +12,32 @@ in {
       default = false;
       description = "Is this machine a server. Configure podman for containers";
     };
-
     i4.user-ilma4.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
       description = "Whether to create the \"ilma4\" user";
     };
-
     i4.my-ssh-key.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
       description = "Whether to add main SSH public key to the ilma4 user";
+    };
+    i4.my-ssh-key.publicKey = lib.mkOption {
+      type = lib.types.str;
+      default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A";
+      description = "Public SSH key for the ilma4 user";
+    };
+    i4.initrd-ssh.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Enable SSH in initrd (includes initrd systemd + networking)";
     };
   };
 
   imports = [
     ./home-manager.nix
     ./nix-settings.nix
+    ./initrd-ssh.nix
   ];
 
   config = {
@@ -79,7 +88,7 @@ in {
       extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
 
       openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
+        config.i4.my-ssh-key.publicKey
       ];
     };
   };
