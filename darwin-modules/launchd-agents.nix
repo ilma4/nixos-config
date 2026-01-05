@@ -14,7 +14,7 @@
           "-c"
           ''
             set -euo pipefail
-            export PATH="$PATH:${pkgs.docker}/bin"
+            # export PATH="$PATH:${pkgs.docker}/bin"
             echo $(whoami)
 
             echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine"
@@ -26,7 +26,7 @@
             fi
 
             echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine..."
-            # ${pkgs.podman}/bin/podman machine start
+            ${pkgs.podman}/bin/podman machine start
 
             echo "$(${pkgs.coreutils}/bin/date): Podman-machine started successfully"
           ''
