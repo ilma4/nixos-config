@@ -28,7 +28,6 @@ in {
     thunderbird = {macName = "thunderbird@esr";};
     obs-studio = {macName = "obs";};
 
-    vlc = {};
     mpv = linuxOnlyProgram {}; # cli video player for linux. Use iina on mac
     iina = macOnlyCask {}; # good video play for mac with HDR support
 
