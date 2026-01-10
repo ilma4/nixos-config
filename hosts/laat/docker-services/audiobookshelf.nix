@@ -25,6 +25,8 @@
         # nginx-reverse-proxy module discovers services on reverse_proxy with `expose`
         expose:
           - "80"
+        ports:
+          - "8222:80"
 
         environment:
           - TZ=Europe/Berlin
