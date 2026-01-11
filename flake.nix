@@ -124,6 +124,7 @@
     commonOverlays = [
       inputs.rust-overlay.overlays.default
       monitorInputOverlay
+      (import ./overlays/beads-ui-overlay.nix)
     ];
 
     # Centralized package sets
@@ -220,7 +221,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
-        inherit (pkgs) monitor-input;
+        inherit (pkgs) monitor-input beads-ui;
       };
     }) (builtins.attrValues systems));
 

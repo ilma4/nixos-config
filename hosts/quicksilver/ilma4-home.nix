@@ -54,6 +54,7 @@
       # haskell-language-server
 
       # texlab
+      beads-ui
 
       monitor-input
 
