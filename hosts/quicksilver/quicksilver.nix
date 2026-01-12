@@ -146,7 +146,9 @@
 
     # common apps are configured in `modules/apps.nix`
     casks = [];
-    brews = [];
+    brews = [
+      "steveyegge/beads/bd"
+    ];
 
     masApps = {
       Xcode = 497799835;
