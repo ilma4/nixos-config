@@ -102,6 +102,9 @@
     };
     */
 
+    programs.fish = {
+      enable = true;
+    };
     programs.ssh.matchBlocks = {
       "hetzer-storage" = {
         port = 23;
