@@ -37,7 +37,7 @@ in {
     zed-editor = {macName = "zed";};
     visual-studio-code = {};
     warp-terminal = {macName = "warp";}; # terminal with AI agent
-    gemini-cli = asLinuxPackage {macInstallation = "brew";};
+    # gemini-cli = asLinuxPackage {macInstallation = "brew";};
     claude-code = asLinuxPackage {};
     gitbutler = asLinuxPackage {}; # git client with virtual branches
     lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally

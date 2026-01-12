@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   inputs,
   ...
 }: {
@@ -45,51 +46,53 @@
       enable = true;
     };
 
-    home.packages = with pkgs; [
-      # clang
-      # lldb
+    home.packages = with pkgs;
+      [
+        # clang
+        # lldb
 
-      # ghc
-      # stack
-      # haskell-language-server
+        # ghc
+        # stack
+        # haskell-language-server
 
-      # texlab
-      beads-ui
+        # texlab
+        beads-ui
 
-      monitor-input
+        monitor-input
 
-      sops # for managing secrets
-      age # for age key management
-      meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
+        sops # for managing secrets
+        age # for age key management
+        meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
 
-      /*
-      (pkgs.writeShellScriptBin "system-upgrade" ''
-        nix flake update --flake ${config.flake-location}
-        nix-rebuild
-        /opt/homebrew/bin/brew update -f
-        /opt/homebrew/bin/brew upgrade --greedy
-      '')
-      */
-
-      (let
-        bw = "${pkgs.bitwarden-cli}/bin/bw";
-      in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
-
-      (
-        let
-          CONFIG_LOCATION = "${config.home.homeDirectory}/.local/share/qbittorrent-container";
-        in (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
-          set -euo pipefail
-          export PATH="${pkgs.podman-compose}/bin:${pkgs.podman}/bin:$PATH"
-
-          mkdir -p "${CONFIG_LOCATION}"
-          cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
-          export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
-
-          ${pkgs.podman}/bin/podman compose -f "${../../docker-compose/qbittorrent-compose.yaml}" up --force-recreate --remove-orphans --detach --pull
+        /*
+        (pkgs.writeShellScriptBin "system-upgrade" ''
+          nix flake update --flake ${config.flake-location}
+          nix-rebuild
+          /opt/homebrew/bin/brew update -f
+          /opt/homebrew/bin/brew upgrade --greedy
         '')
-      )
-    ];
+        */
+
+        (let
+          bw = "${pkgs.bitwarden-cli}/bin/bw";
+        in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
+
+        (
+          let
+            CONFIG_LOCATION = "${config.home.homeDirectory}/.local/share/qbittorrent-container";
+          in (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
+            set -euo pipefail
+            export PATH="${pkgs.podman-compose}/bin:${pkgs.podman}/bin:$PATH"
+
+            mkdir -p "${CONFIG_LOCATION}"
+            cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
+            export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
+
+            ${pkgs.podman}/bin/podman compose -f "${../../docker-compose/qbittorrent-compose.yaml}" up --force-recreate --remove-orphans --detach --pull
+          '')
+        )
+      ]
+      ++ (with pkgs-unstable; [gemini-cli]);
 
     /*
     programs.pandoc.enable = true;
