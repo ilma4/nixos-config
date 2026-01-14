@@ -55,6 +55,8 @@
         # stack
         # haskell-language-server
 
+        rustup
+
         # texlab
         beads-ui
 
