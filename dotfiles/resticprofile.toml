@@ -49,6 +49,10 @@ exclude = [
     "/Users/ilma4/Library/Group Containers/group.com.apple.secure-control-center-preferences",
     "/Users/ilma4/Library/Group Containers/*.groups.com.apple.podcasts",
 
+
+    "/Users/ilma4/Library/Application Support/MobileSync",
+    "/Users/ilma4/Library/Group Containers/*.group.com.apple.configurator",
+
     "/Users/ilma4/Google Drive",
     "/Users/ilma4/Library/CloudStorage",
 
