@@ -77,6 +77,8 @@ in {
       rclone
       rsync
 
+      patool # archive universal extract utility
+
       curl
       wget
 
