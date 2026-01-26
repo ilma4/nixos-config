@@ -1,13 +1,13 @@
 final: prev: {
   beads-ui = final.buildNpmPackage rec {
     pname = "beads-ui";
-    version = "0.9.1";
+    version = "0.9.3";
 
     src = final.fetchFromGitHub {
       owner = "mantoni";
       repo = "beads-ui";
       rev = "v${version}";
-      hash = "sha256-EDa6b77h6yFfukpioKaPtHrUZyAfeTHPJ4lmJTygyZ0=";
+      hash = "sha256-mgNnDDsp4gfCiRobXLMqMzzsdjrAQOwdwJYgnYyxRBI=";
     };
 
     # Fix lockfile before npm vendoring/build.
@@ -17,7 +17,7 @@ final: prev: {
 
     npmLockfile = "${src}/package-lock.json";
 
-    npmDepsHash = "sha256-piSqGc0F0V/tEG16A/eL3BrzJBHFCAqQqBk4XA52PVI=";
+    npmDepsHash = "sha256-n9nN4Jlz2BgCycMNi4A7Yl45RFqkE/nCgu++yESU5e4=";
 
     # Fix
     npmPackFlags = ["--ignore-scripts"];
