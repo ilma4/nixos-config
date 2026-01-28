@@ -36,7 +36,6 @@ in {
 
     zed-editor = {macName = "zed";};
     visual-studio-code = {};
-    warp-terminal = {macName = "warp";}; # terminal with AI agent
     # gemini-cli = asLinuxPackage {macInstallation = "brew";};
     claude-code = asLinuxPackage {};
     gitbutler = asLinuxPackage {}; # git client with virtual branches
