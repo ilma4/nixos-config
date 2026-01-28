@@ -55,6 +55,8 @@
         # stack
         # haskell-language-server
 
+        nodejs_24
+
         rustup
 
         # texlab
