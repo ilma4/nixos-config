@@ -77,6 +77,7 @@ in {
         user.email = "ilya.malakhov4@gmail.com";
         alias = {
           push-force-safe = "push --force-with-lease --force-if-includes";
+          nuke = "!git reset --hard && git clean -fdx"; # clean everything
         };
       };
 
