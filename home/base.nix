@@ -127,7 +127,6 @@ in {
         theme = "";
         plugins = [
           "vi-mode"
-          "extract"
           # "zsh-autosuggestions"
           # "zsh-syntax-highlighting"
         ];
