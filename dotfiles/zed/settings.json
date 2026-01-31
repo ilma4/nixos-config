@@ -1,15 +1,15 @@
 {
   "edit_predictions": {
-    "mode": "eager"
+    "mode": "eager",
   },
   "agent": {
     "notify_when_agent_waiting": "all_screens",
     "default_profile": "write",
     "always_allow_tool_actions": true,
     "default_model": {
-      "model": "gpt-5.2",
-      "provider": "openai"
-    }
+      "model": "claude-haiku-4.5",
+      "provider": "copilot_chat",
+    },
   },
   "auto_install_extensions": {
     "activitiwatch": true,
@@ -26,59 +26,59 @@
     "nix": true,
     "swift": true,
     "toml": true,
-    "xml": true
+    "xml": true,
   },
   "auto_update": false,
   "autosave": "on_focus_change",
   "base_keymap": "JetBrains",
   "buffer_font_family": "JetBrains Mono",
   "buffer_font_features": {
-    "calt": false
+    "calt": false,
   },
   "buffer_font_size": 13,
   "context_servers": {
     "mcp-nixos": {
-      "args": ["--"],
-      "command": "/nix/store/nsimbc2cf02ilvcmvx6p1im3na8bh99g-mcp-nixos-1.0.0/bin/mcp-nixos",
-      "env": {}
-    }
+      "command": "nix",
+      "args": ["run", "github:utensils/mcp-nixos", "--"],
+      "env": {},
+    },
   },
   "languages": {
     "Nix": {
       "formatter": {
         "external": {
           "arguments": ["--quiet", "--"],
-          "command": "alejandra"
-        }
-      }
-    }
+          "command": "alejandra",
+        },
+      },
+    },
   },
   "lsp": {
     "nil": {
       "settings": {
         "diagnostics": {
-          "ignored": ["unused_binding"]
+          "ignored": ["unused_binding"],
         },
         "nix": {
           "flake": {
-            "autoArchive": true
-          }
-        }
-      }
+            "autoArchive": true,
+          },
+        },
+      },
     },
     "nixd": {
       "settings": {
         "diagnostic": {
-          "suppress": ["sema-extra-with"]
-        }
-      }
-    }
+          "suppress": ["sema-extra-with"],
+        },
+      },
+    },
   },
   "theme": {
     "dark": "One Dark",
     "light": "One Light",
-    "mode": "system"
+    "mode": "system",
   },
   "ui_font_size": 14,
-  "vim_mode": true
+  "vim_mode": true,
 }
