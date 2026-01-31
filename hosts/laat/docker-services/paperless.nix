@@ -1,7 +1,8 @@
 {pkgs, ...}: let
   redis-version = "8";
-  paperless-version = "2.19.2";
+  paperless-version = "2.20.6";
   tika-version = "3.2.3.0-full";
+  gotenberg-version = "8.25";
 in {
   # Containers
   dockerCompose.paperless.composeFile = pkgs.writeText "docker-compose.yml" ''
@@ -51,7 +52,7 @@ in {
           PAPERLESS_USE_X_FORWARD_HOST: "true"
           PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
       gotenberg:
-        image: docker.io/gotenberg/gotenberg:8.20
+        image: docker.io/gotenberg/gotenberg:${gotenberg-version}
         restart: unless-stopped
         logging:
           driver: none
