@@ -1,6 +1,6 @@
 {
   config,
-  lib,
+  pkgs,
   ...
 }: {
   users.users.grafana = {
@@ -13,7 +13,20 @@
   };
 
   dockerCompose.grafana = {
-    composeFile = ../../../compose/grafana.yml;
+    composeFile = pkgs.writeText "docker-compose.yml" ''
+      services:
+        grafana:
+          image: grafana/grafana:latest
+          ports:
+            - "3000:3000"
+          user: "''${GRAFANA_UID}:''${GRAFANA_GID}"
+          volumes:
+            - "/srv/grafana:/var/lib/grafana"
+          network_mode: host
+          logging:
+            driver: none
+          restart: unless-stopped
+    '';
     environment = {
       GRAFANA_UID = toString config.users.users.grafana.uid;
       GRAFANA_GID = toString config.users.groups.grafana.gid;
