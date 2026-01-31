@@ -110,6 +110,9 @@
       enable = true;
     };
     programs.ssh.matchBlocks = {
+      "*" = {
+        extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+      };
       "hetzer-storage" = {
         port = 23;
         host = "u478838.your-storagebox.de";

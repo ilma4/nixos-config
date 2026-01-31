@@ -174,7 +174,7 @@ in {
 
     programs.ssh = lib.mkIf config.configure-ssh {
       enable = true;
-      addKeysToAgent = "yes";
+      # addKeysToAgent = "yes";
     };
 
     programs.atuin = {

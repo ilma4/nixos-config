@@ -32,19 +32,19 @@ in {
     ];
 
     programs.ssh.matchBlocks = {
-      "github.com" = {
-        extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
-      };
-      "laat.local" = {
-        # TODO remove after switching to bitwarden ssh agent by default
-        # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
-        identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
-      };
-      "laat" = {
-        # TODO remove after switching to bitwarden ssh agent by default
-        # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
-        identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
-      };
+      # "github.com" = {
+      #   extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+      # };
+      # "laat.local" = {
+      # TODO remove after switching to bitwarden ssh agent by default
+      # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+      # identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
+      # };
+      # "laat" = {
+      # TODO remove after switching to bitwarden ssh agent by default
+      # extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+      # identityFile = "~/.ssh/jb-mac-to-ilma4-nas";
+      # };
       "laat-init" = {
         hostname = "192.168.1.33";
         user = "root";
