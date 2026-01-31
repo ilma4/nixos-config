@@ -1,11 +1,13 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  version = "2025.11.1";
+in {
   dockerCompose.pihole.composeFile = pkgs.writeText "docker-compose.yml" ''
     name: pihole
     services:
       pihole:
         container_name: pihole
         # TODO: update version
-        image: pihole/pihole:2025.08.0
+        image: pihole/pihole:${version}
         environment:
           TZ: "Europe/Berlin"
           FTLCONF_webserver_api_password: "correct horse battery staple"
