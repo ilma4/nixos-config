@@ -1,11 +1,13 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  version = "2.4.2";
+in {
   dockerCompose.stirling-pdf = {
     enable = true;
     composeFile = pkgs.writeText "docker-compose.yml" ''
       name: stirling-pdf
       services:
         stirling-pdf:
-          image: docker.io/stirlingtools/stirling-pdf:1.5.0-ultra-lite
+          image: docker.io/stirlingtools/stirling-pdf:${version}-ultra-lite
           container_name: pdf-tools
           expose:
             - "8080"
