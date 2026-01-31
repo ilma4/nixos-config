@@ -228,9 +228,6 @@
 
   programs.fish.enable = true;
 
-  # TODO fix issue with user
-  # users.users._prometheus-node-exporter.home = "/private/var/lib/prometheus-node-exporter";
-
   # uncomment on clean nix-darwin
   nix.linux-builder.enable = false;
   nix.linux-builder.config.virtualisation.cores = 8;

@@ -32,7 +32,7 @@ in {
     iina = macOnlyCask {}; # good video play for mac with HDR support
 
     obsidian = asLinuxPackage {};
-    todoist-electron = {macName = "todoist";};
+    todoist-electron = {macName = "todoist-app";};
 
     zed-editor = {macName = "zed";};
     visual-studio-code = {};

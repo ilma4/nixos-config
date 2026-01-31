@@ -6,7 +6,6 @@ in {
     services:
       pihole:
         container_name: pihole
-        # TODO: update version
         image: pihole/pihole:${version}
         environment:
           TZ: "Europe/Berlin"
