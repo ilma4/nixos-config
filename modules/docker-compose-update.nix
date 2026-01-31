@@ -10,7 +10,7 @@
   podmanComposePullScript = pkgs.writeShellScriptBin "podman-compose-pull" ''
     set -euo pipefail
 
-    if [ "$EUID" -ne 0 ] && [ "${"$"}{NOROOT:-0}" != "1" ]; then
+    if [ "$EUID" -ne 0 ] && [ "''${NOROOT:-0}" != "1" ]; then
         echo "This script must be run as root or with NOROOT=1" >&2
         exit 1
     fi
@@ -74,7 +74,7 @@
     }
 
     main() {
-        if [ "${"$"}{1:-}" = "--all" ]; then
+        if [ "''${1:-}" = "--all" ]; then
         if [ -z "$SERVICES" ]; then
           echo "No services configured."
           exit 0

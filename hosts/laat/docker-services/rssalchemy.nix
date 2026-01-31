@@ -14,9 +14,9 @@
     services:
       webserver:
         build:
-          context: "${"$"}{SOURCE_PATH}"
+          context: "''${SOURCE_PATH}"
           dockerfile: deploy/Dockerfile_webserver
-        env_file: "${"$"}{SOURCE_PATH}/deploy/.env"
+        env_file: "''${SOURCE_PATH}/deploy/.env"
         depends_on:
           - nats
         networks:
@@ -30,16 +30,16 @@
 
       worker:
         build:
-          context: "${"$"}{SOURCE_PATH}"
+          context: "''${SOURCE_PATH}"
           dockerfile: deploy/Dockerfile_worker
-        env_file: "${"$"}{SOURCE_PATH}/deploy/.env"
+        env_file: "''${SOURCE_PATH}/deploy/.env"
         depends_on:
           - nats
           - redis
         ipc: host
         user: pwuser
         security_opt:
-          - seccomp: "${"$"}{SOURCE_PATH}/deploy/seccomp_profile.json"
+          - seccomp: "''${SOURCE_PATH}/deploy/seccomp_profile.json"
         deploy:
           replicas: 2
         restart: unless-stopped
@@ -48,7 +48,7 @@
         image: docker.io/library/nats:2.10
         command: "-config /nats_config.conf"
         volumes:
-          - "${"$"}{SOURCE_PATH}/deploy/nats_config.conf:/nats_config.conf:ro"
+          - "''${SOURCE_PATH}/deploy/nats_config.conf:/nats_config.conf:ro"
           - natsdata:/data
         restart: unless-stopped
 
