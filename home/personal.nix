@@ -50,10 +50,5 @@ in {
         user = "root";
       };
     };
-
-    programs.ssh.extraConfig =
-      if isDarwin
-      then "UseKeychain yes"
-      else "";
   };
 }
