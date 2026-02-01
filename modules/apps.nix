@@ -36,8 +36,16 @@ in {
 
     zed-editor = {macName = "zed";};
     visual-studio-code = {};
-    # gemini-cli = asLinuxPackage {macInstallation = "brew";};
+
+    # coding agents
+    gemini-cli = asLinuxPackage {macInstallation = "brew";};
     claude-code = asLinuxPackage {};
+    codex = asLinuxPackage {};
+    opencode = asLinuxPackage {
+      macInstallation = "brew";
+      macName = "anomalyco/tap/opencode";
+    };
+
     gitbutler = asLinuxPackage {}; # git client with virtual branches
     lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
     comfyui = macOnlyCask {}; # tool for generating images/videos
