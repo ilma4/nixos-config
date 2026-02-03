@@ -16,3 +16,6 @@ Note, that old private key must be backed up (i.e. rename keys.txt to keys.txt.o
 Names of all those scripts should start with `i4-sops-`
 
 Keep in mind `modules/sops.nix`
+
+
+# Enable signing git commits with ssh keys
