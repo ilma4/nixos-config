@@ -75,6 +75,9 @@ in {
       settings = {
         user.name = "Ilia Malakhov";
         user.email = "ilya.malakhov4@gmail.com";
+        gpg.format = "ssh";
+        commit.gpgsign = true;
+        user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7";
         alias = {
           push-force-safe = "push --force-with-lease --force-if-includes";
           nuke = "!git reset --hard && git clean -fdx"; # clean everything

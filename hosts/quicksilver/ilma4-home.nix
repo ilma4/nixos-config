@@ -126,6 +126,11 @@
       JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
     # programs.mpv.enable = true; # fixed in 24.11
+    #
+
+    home.sessionVariables = {
+      SSH_AUTH_SOCK = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+    };
 
     # RW symlinks, so apps can edits their configs
     home.file = let
