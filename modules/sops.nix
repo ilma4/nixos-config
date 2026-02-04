@@ -23,7 +23,7 @@
     sops.age.generateKey = true;
     sops.age.keyFile =
       if (builtins.hasAttr "users" config) # true if NixOS/Nix-darwin
-      then "/var/lib/sops-nix/keys.txt"
+      then "/var/lib/sops-nix/age/keys.txt"
       else "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
     # map i4-encrypted-files
