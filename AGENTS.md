@@ -12,7 +12,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 ## Code Conventions
 - Write `set -euo pipefail` at the beginning of every bash script
-- Before using options or packages ensure they exists using nix-mcp
+- Before using options or packages ensure they exists using mcp-nixos
 
 ## Project Structure
 - `flake.nix` - file describing flake
