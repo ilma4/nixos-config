@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# i4-sops-sudo: Run sops with sudo while passing SOPS_AGE_KEY_FILE.
+# Usage:
+#   i4-sops-sudo <sops args...>
+
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: i4-sops-sudo <sops args...>" >&2
+  exit 1
+fi
+
+if ! command -v sudo >/dev/null 2>&1; then
+  echo "Error: sudo not found in PATH." >&2
+  exit 1
+fi
+
+sops_bin="$(command -v sops || true)"
+if [[ -z "$sops_bin" ]]; then
+  echo "Error: sops not found in PATH." >&2
+  exit 1
+fi
+
+resolve_key_file() {
+  if [[ -n "${SOPS_AGE_KEY_FILE-}" ]]; then
+    echo "$SOPS_AGE_KEY_FILE"
+    return 0
+  fi
+
+  if [[ -d /var/lib/sops-nix/age ]]; then
+    echo "/var/lib/sops-nix/age/keys.txt"
+    return 0
+  fi
+
+  if [[ -n "${HOME-}" ]]; then
+    echo "$HOME/.config/sops/age/keys.txt"
+    return 0
+  fi
+
+  return 1
+}
+
+key_file="$(resolve_key_file)" || {
+  echo "Error: Unable to determine SOPS_AGE_KEY_FILE. Set it explicitly." >&2
+  exit 1
+}
+
+if [[ ! -e "$key_file" ]]; then
+  echo "Error: Key file not found at $key_file" >&2
+  exit 1
+fi
+
+exec sudo env "SOPS_AGE_KEY_FILE=$key_file" "$sops_bin" "$@"

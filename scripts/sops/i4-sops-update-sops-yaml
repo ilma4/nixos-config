@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# i4-sops-update-sops-yaml: Replace an old age public key with a new one in .sops.yaml.
+# Usage:
+#   i4-sops-update-sops-yaml <old-public-key> <new-public-key>
+
+set -euo pipefail
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: i4-sops-update-sops-yaml <old-public-key> <new-public-key>" >&2
+  exit 1
+fi
+
+old_key="$1"
+new_key="$2"
+
+if [[ "$old_key" == "$new_key" ]]; then
+  echo "Error: Old and new keys are identical." >&2
+  exit 1
+fi
+
+repo_root() {
+  local root
+  if root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"; then
+    echo "$root"
+    return 0
+  fi
+
+  local script_dir
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  echo "$(cd "$script_dir/.." && pwd)"
+}
+
+root="$(repo_root)"
+sops_yaml="$root/.sops.yaml"
+
+if [[ ! -f "$sops_yaml" ]]; then
+  echo "Error: .sops.yaml not found at $sops_yaml" >&2
+  exit 1
+fi
+
+text="$(cat "$sops_yaml")"
+if [[ "$text" != *"$old_key"* ]]; then
+  echo "Error: Old key not found in $sops_yaml" >&2
+  exit 1
+fi
+
+tmp_file="$(mktemp "${sops_yaml}.tmp.XXXXXX")"
+printf '%s' "${text//$old_key/$new_key}" > "$tmp_file"
+mv "$tmp_file" "$sops_yaml"

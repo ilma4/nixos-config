@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# i4-sops-generate-key-remote: Run i4-sops-generate-key on a remote host over SSH.
+# Usage:
+#   i4-sops-generate-key-remote <host>
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: i4-sops-generate-key-remote <host>" >&2
+  exit 1
+fi
+
+host="$1"
+
+if ! command -v ssh >/dev/null 2>&1; then
+  echo "Error: ssh not found in PATH." >&2
+  exit 1
+fi
+
+ssh "$host" -- i4-sops-generate-key

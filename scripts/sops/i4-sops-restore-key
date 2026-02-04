@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# i4-sops-restore-key: Restore the previous age key from keys.txt.old.
+# Usage:
+#   i4-sops-restore-key
+
+set -euo pipefail
+
+if ! command -v sudo >/dev/null 2>&1; then
+  echo "Error: sudo not found in PATH." >&2
+  exit 1
+fi
+
+resolve_key_file() {
+  if [[ -n "${SOPS_AGE_KEY_FILE-}" ]]; then
+    echo "$SOPS_AGE_KEY_FILE"
+    return 0
+  fi
+
+  if [[ -d /var/lib/sops-nix/age ]]; then
+    echo "/var/lib/sops-nix/age/keys.txt"
+    return 0
+  fi
+
+  if [[ -n "${HOME-}" ]]; then
+    echo "$HOME/.config/sops/age/keys.txt"
+    return 0
+  fi
+
+  return 1
+}
+
+needs_sudo_for_path() {
+  local path="$1"
+  if [[ -e "$path" ]]; then
+    [[ ! -w "$path" ]]
+    return
+  fi
+
+  local dir
+  dir="$(dirname "$path")"
+  [[ ! -w "$dir" ]]
+}
+
+run_maybe_sudo() {
+  local needs_sudo="$1"
+  shift
+  if [[ "$needs_sudo" -eq 1 ]]; then
+    sudo "$@"
+  else
+    "$@"
+  fi
+}
+
+key_file="$(resolve_key_file)" || {
+  echo "Error: Unable to determine SOPS_AGE_KEY_FILE. Set it explicitly." >&2
+  exit 1
+}
+backup_file="${key_file}.old"
+new_backup="${key_file}.new"
+
+if [[ ! -f "$backup_file" ]]; then
+  echo "Error: Backup key not found at $backup_file" >&2
+  exit 1
+fi
+
+if [[ -e "$new_backup" ]]; then
+  echo "Error: Refusing to overwrite $new_backup" >&2
+  exit 1
+fi
+
+needs_sudo=0
+if needs_sudo_for_path "$key_file"; then
+  needs_sudo=1
+fi
+
+moved=0
+cleanup() {
+  local exit_code=$?
+  if [[ $exit_code -ne 0 && $moved -eq 1 ]]; then
+    if [[ "$needs_sudo" -eq 1 ]]; then
+      if [[ -f "$new_backup" ]]; then
+        sudo mv "$new_backup" "$key_file"
+      fi
+    else
+      if [[ -f "$new_backup" ]]; then
+        mv "$new_backup" "$key_file"
+      fi
+    fi
+  fi
+}
+trap cleanup EXIT
+
+if [[ -f "$key_file" ]]; then
+  run_maybe_sudo "$needs_sudo" mv "$key_file" "$new_backup"
+  moved=1
+fi
+
+run_maybe_sudo "$needs_sudo" mv "$backup_file" "$key_file"

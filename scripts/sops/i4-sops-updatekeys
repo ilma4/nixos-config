@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# i4-sops-updatekey: Update keys for all secrets using .sops.yaml.
+# Usage:
+#   i4-sops-updatekey
+
+set -euo pipefail
+
+repo_root() {
+  local root
+  if root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"; then
+    echo "$root"
+    return 0
+  fi
+
+  local script_dir
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  echo "$(cd "$script_dir/.." && pwd)"
+}
+
+root="$(repo_root)"
+sops_yaml="$root/.sops.yaml"
+secrets_dir="$root/secrets"
+
+if [[ ! -f "$sops_yaml" ]]; then
+  echo "Error: .sops.yaml not found at $sops_yaml" >&2
+  exit 1
+fi
+
+if [[ ! -d "$secrets_dir" ]]; then
+  echo "Error: secrets directory not found at $secrets_dir" >&2
+  exit 1
+fi
+
+mapfile -d '' secret_files < <(
+  find "$secrets_dir" -maxdepth 1 -type f \( \
+    -name "*.yaml" -o -name "*.json" -o -name "*.env" -o -name "*.ini" \
+    -o -name "*.txt" -o -name "*.bin" -o -name "*.conf" -o -name "*.crt" -o -name "*.key" \
+  \) -print0
+)
+
+if [[ ${#secret_files[@]} -eq 0 ]]; then
+  echo "No secrets found in $secrets_dir" >&2
+  exit 0
+fi
+
+backup_dir="$(mktemp -d)"
+
+cleanup() {
+  local exit_code=$?
+  if [[ $exit_code -ne 0 ]]; then
+    for file in "${secret_files[@]}"; do
+      backup_file="$backup_dir/$(basename "$file")"
+      if [[ -f "$backup_file" ]]; then
+        cp -a "$backup_file" "$file"
+      fi
+    done
+  fi
+
+  rm -rf "$backup_dir"
+}
+trap cleanup EXIT
+
+for file in "${secret_files[@]}"; do
+  cp -a "$file" "$backup_dir/$(basename "$file")"
+done
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+pick_cmd() {
+  local name="$1"
+  if command -v "$name" >/dev/null 2>&1; then
+    echo "$name"
+  else
+    echo "$script_dir/$name"
+  fi
+}
+
+sops_sudo_cmd="$(pick_cmd i4-sops-sudo)"
+
+for file in "${secret_files[@]}"; do
+  "$sops_sudo_cmd" --config "$sops_yaml" updatekeys -y "$file"
+done

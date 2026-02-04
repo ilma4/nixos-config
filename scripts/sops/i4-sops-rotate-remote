@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# i4-sops-rotate-remote: Rotate a remote host key and re-encrypt local secrets.
+# Usage:
+#   i4-sops-rotate-remote <host>
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: i4-sops-rotate-remote <host>" >&2
+  exit 1
+fi
+
+host="$1"
+
+if ! command -v ssh >/dev/null 2>&1; then
+  echo "Error: ssh not found in PATH." >&2
+  exit 1
+fi
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+pick_cmd() {
+  local name="$1"
+  if command -v "$name" >/dev/null 2>&1; then
+    echo "$name"
+  else
+    echo "$script_dir/$name"
+  fi
+}
+
+cmd_remote_gen="$(pick_cmd i4-sops-generate-key-remote)"
+cmd_update_yaml="$(pick_cmd i4-sops-update-sops-yaml)"
+cmd_rotate_secrets="$(pick_cmd i4-sops-updatekey)"
+
+repo_root() {
+  local root
+  if root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"; then
+    echo "$root"
+    return 0
+  fi
+
+  echo "$(cd "$script_dir/.." && pwd)"
+}
+
+root="$(repo_root)"
+sops_yaml="$root/.sops.yaml"
+
+if [[ ! -f "$sops_yaml" ]]; then
+  echo "Error: .sops.yaml not found at $sops_yaml" >&2
+  exit 1
+fi
+
+backup_yaml="$(mktemp "${sops_yaml}.bak.XXXXXX")"
+cp -a "$sops_yaml" "$backup_yaml"
+
+remote_rotated=0
+
+cleanup() {
+  local exit_code=$?
+  if [[ $exit_code -ne 0 ]]; then
+    if [[ -f "$backup_yaml" ]]; then
+      cp -a "$backup_yaml" "$sops_yaml"
+    fi
+
+    if [[ $remote_rotated -eq 1 ]]; then
+      ssh "$host" -- i4-sops-restore-key || true
+    fi
+  fi
+
+  rm -f "$backup_yaml"
+}
+trap cleanup EXIT
+
+key_output="$($cmd_remote_gen "$host")"
+remote_rotated=1
+
+old_key="$(echo "$key_output" | awk -F= '/^OLD_PUBLIC_KEY=/{print $2}')"
+new_key="$(echo "$key_output" | awk -F= '/^NEW_PUBLIC_KEY=/{print $2}')"
+
+if [[ -z "$old_key" || -z "$new_key" ]]; then
+  echo "Error: Failed to parse keys from remote output." >&2
+  echo "$key_output" >&2
+  exit 1
+fi
+
+"$cmd_update_yaml" "$old_key" "$new_key"
+"$cmd_rotate_secrets"
+
+echo "OLD_PUBLIC_KEY=$old_key"
+echo "NEW_PUBLIC_KEY=$new_key"

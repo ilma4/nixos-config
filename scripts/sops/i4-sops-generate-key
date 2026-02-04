@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+# i4-sops-generate-key: Generate a new age key, backing up the old one.
+# Prints old and new public keys to stdout.
+# Usage:
+#   i4-sops-generate-key
+
+set -euo pipefail
+
+if ! command -v age-keygen >/dev/null 2>&1; then
+  echo "Error: age-keygen not found in PATH." >&2
+  exit 1
+fi
+
+if ! command -v sudo >/dev/null 2>&1; then
+  echo "Error: sudo not found in PATH." >&2
+  exit 1
+fi
+
+resolve_key_file() {
+  if [[ -n "${SOPS_AGE_KEY_FILE-}" ]]; then
+    echo "$SOPS_AGE_KEY_FILE"
+    return 0
+  fi
+
+  if [[ -d /var/lib/sops-nix/age ]]; then
+    echo "/var/lib/sops-nix/age/keys.txt"
+    return 0
+  fi
+
+  if [[ -n "${HOME-}" ]]; then
+    echo "$HOME/.config/sops/age/keys.txt"
+    return 0
+  fi
+
+  return 1
+}
+
+needs_sudo_for_path() {
+  local path="$1"
+  if [[ -e "$path" ]]; then
+    [[ ! -w "$path" ]]
+    return
+  fi
+
+  local dir
+  dir="$(dirname "$path")"
+  [[ ! -w "$dir" ]]
+}
+
+run_maybe_sudo() {
+  local needs_sudo="$1"
+  shift
+  if [[ "$needs_sudo" -eq 1 ]]; then
+    sudo "$@"
+  else
+    "$@"
+  fi
+}
+
+key_file="$(resolve_key_file)" || {
+  echo "Error: Unable to determine SOPS_AGE_KEY_FILE. Set it explicitly." >&2
+  exit 1
+}
+backup_file="${key_file}.old"
+
+if [[ ! -f "$key_file" ]]; then
+  echo "Error: Key file not found at $key_file" >&2
+  exit 1
+fi
+
+if [[ -e "$backup_file" ]]; then
+  echo "Error: Backup already exists at $backup_file" >&2
+  exit 1
+fi
+
+needs_sudo=0
+if needs_sudo_for_path "$key_file"; then
+  needs_sudo=1
+fi
+
+old_public_key=""
+if [[ "$needs_sudo" -eq 1 ]]; then
+  old_public_key="$(sudo cat "$key_file" | age-keygen -y)"
+else
+  old_public_key="$(age-keygen -y "$key_file")"
+fi
+
+moved=0
+cleanup() {
+  local exit_code=$?
+  if [[ $exit_code -ne 0 && $moved -eq 1 ]]; then
+    if [[ "$needs_sudo" -eq 1 ]]; then
+      if [[ -f "$key_file" ]]; then
+        sudo rm -f "$key_file"
+      fi
+      if [[ -f "$backup_file" ]]; then
+        sudo mv "$backup_file" "$key_file"
+      fi
+    else
+      if [[ -f "$key_file" ]]; then
+        rm -f "$key_file"
+      fi
+      if [[ -f "$backup_file" ]]; then
+        mv "$backup_file" "$key_file"
+      fi
+    fi
+  fi
+}
+trap cleanup EXIT
+
+run_maybe_sudo "$needs_sudo" mkdir -p "$(dirname "$key_file")"
+run_maybe_sudo "$needs_sudo" mv "$key_file" "$backup_file"
+moved=1
+
+err_file="$(mktemp)"
+if [[ "$needs_sudo" -eq 1 ]]; then
+  if ! sudo env PATH="$PATH" age-keygen -o "$key_file" 2>"$err_file"; then
+    cat "$err_file" >&2
+    rm -f "$err_file"
+    exit 1
+  fi
+else
+  if ! age-keygen -o "$key_file" 2>"$err_file"; then
+    cat "$err_file" >&2
+    rm -f "$err_file"
+    exit 1
+  fi
+fi
+rm -f "$err_file"
+
+new_public_key=""
+if [[ "$needs_sudo" -eq 1 ]]; then
+  new_public_key="$(sudo cat "$key_file" | age-keygen -y)"
+else
+  new_public_key="$(age-keygen -y "$key_file")"
+fi
+
+if [[ -z "$old_public_key" || -z "$new_public_key" ]]; then
+  echo "Error: Failed to read public keys." >&2
+  exit 1
+fi
+
+echo "OLD_PUBLIC_KEY=$old_public_key"
+echo "NEW_PUBLIC_KEY=$new_public_key"
