@@ -22,6 +22,7 @@ args @ {
     ./samba.nix
 
     ./hdd-idle-guard.nix
+    ./agent-dev-box.nix
 
     "${modules}/server.nix"
     ./docker-services/qbittorrent.nix
