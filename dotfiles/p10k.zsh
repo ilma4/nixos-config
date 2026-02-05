@@ -35,7 +35,7 @@
     os_icon                 # os identifier
     context                 # user@hostname
     dir                     # current directory
-    vcs                     # git status
+    git_branch_only         # git branch (fast, no gitstatusd)
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
@@ -485,7 +485,7 @@
   typeset -g POWERLEVEL9K_VCS_DISABLED_WORKDIR_PATTERN='~'
 
   # Disable the default Git status formatting.
-  typeset -g POWERLEVEL9K_VCS_DISABLE_GITSTATUS_FORMATTING=true
+  typeset -g POWERLEVEL9K_VCS_DISABLE_GITSTATUS_FORMATTING=false
   # Install our own Git status formatter.
   typeset -g POWERLEVEL9K_VCS_CONTENT_EXPANSION='${$((my_git_formatter(1)))+${my_git_format}}'
   typeset -g POWERLEVEL9K_VCS_LOADING_CONTENT_EXPANSION='${$((my_git_formatter(0)))+${my_git_format}}'
@@ -729,7 +729,7 @@
   typeset -g POWERLEVEL9K_RANGER_FOREGROUND=178
   # Custom icon.
   # typeset -g POWERLEVEL9K_RANGER_VISUAL_IDENTIFIER_EXPANSION='⭐'
-  
+
   ####################[ yazi: yazi shell (https://github.com/sxyazi/yazi) ]#####################
   # Yazi shell color.
   typeset -g POWERLEVEL9K_YAZI_FOREGROUND=178
@@ -1649,6 +1649,44 @@
   typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION=
   # Custom prefix.
   # typeset -g POWERLEVEL9K_TIME_PREFIX='%fat '
+
+  # --- Branch-only git segment (no gitstatusd, no repo scanning) ---
+  autoload -Uz add-zsh-hook
+
+  typeset -g P10K_GIT_BRANCH_ONLY=""
+
+  _p10k_update_git_branch_only() {
+    local head_path head
+
+    # If not in a git worktree, clear segment.
+    head_path=$(command git rev-parse --git-path HEAD 2>/dev/null) || {
+      P10K_GIT_BRANCH_ONLY=""
+      return
+    }
+
+    # Read HEAD without invoking "git status".
+    head=$(<"$head_path") || { P10K_GIT_BRANCH_ONLY=""; return }
+    head=${head//$'\n'/}
+
+    if [[ $head == ref:\ * ]]; then
+      # On a branch: "ref: refs/heads/main" -> "main"
+      P10K_GIT_BRANCH_ONLY=${head#ref: refs/heads/}
+    else
+      # Detached HEAD: show short SHA
+      P10K_GIT_BRANCH_ONLY=${head[1,8]}
+    fi
+  }
+
+  # Update on directory change and before each prompt.
+  add-zsh-hook chpwd  _p10k_update_git_branch_only
+  add-zsh-hook precmd _p10k_update_git_branch_only
+
+  prompt_git_branch_only() {
+    [[ -n $P10K_GIT_BRANCH_ONLY ]] || return
+    # Icon is optional; remove -i '' if you don't want it.
+    p10k segment -i '' -t "$P10K_GIT_BRANCH_ONLY"
+  }
+  # --- end ---
 
   # Example of a user-defined prompt segment. Function prompt_example will be called on every
   # prompt if `example` prompt segment is added to POWERLEVEL9K_LEFT_PROMPT_ELEMENTS or
