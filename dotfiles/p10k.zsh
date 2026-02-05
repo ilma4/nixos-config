@@ -1686,7 +1686,16 @@
     # Icon is optional; remove -i '' if you don't want it.
     p10k segment -i '' -t "$P10K_GIT_BRANCH_ONLY"
   }
-  # --- end ---
+
+  # Compute branch immediately for the current directory.
+  _p10k_update_git_branch_only
+
+  # If we're in ZLE (interactive prompt), redraw so the segment appears right away.
+  if [[ -n $ZLE ]]; then
+    zle reset-prompt
+  fi
+
+  # --- end of branch only ---
 
   # Example of a user-defined prompt segment. Function prompt_example will be called on every
   # prompt if `example` prompt segment is added to POWERLEVEL9K_LEFT_PROMPT_ELEMENTS or
