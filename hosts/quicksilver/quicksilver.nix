@@ -145,7 +145,9 @@
     # greedyCasks = true; # always upgrade casks
 
     # common apps are configured in `modules/apps.nix`
-    casks = [];
+    casks = [
+      "codex-app"
+    ];
     brews = [
       "steveyegge/beads/bd"
     ];
