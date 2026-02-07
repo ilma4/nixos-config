@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  constants,
   ...
 }: let
   mkDefault = lib.mkDefault;
@@ -88,7 +89,7 @@ in {
       extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
 
       openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
-        config.i4.my-ssh-key.publicKey
+        constants.main-pub-key
       ];
     };
   };

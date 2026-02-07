@@ -169,6 +169,7 @@
       specialArgs = mkSpecialArgs type (
         baseSpecialArgs
         // {pkgs-unstable = (pkgsSets system).unstable;}
+        // {constants = import ./constants.nix;}
         // {
           myLib = {
             secrets = ./secrets;
