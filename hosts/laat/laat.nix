@@ -43,8 +43,6 @@ args @ {
 
     # ./docker-services/rssalchemy.nix
 
-    "${modules}/backup.nix"
-
     # ./dashboard.nix
     "${./prometheus}/prometheus.nix"
     ./docker-services/pihole.nix
@@ -55,7 +53,6 @@ args @ {
   i4.avahi.enable = true;
   i4.sops.enable = true;
   i4.dockerComposeEnable = true;
-  i4.backup.enable = true;
   i4.initrd-ssh.enable = true;
 
   # Use the systemd-boot EFI boot loader.
