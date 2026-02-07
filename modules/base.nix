@@ -23,11 +23,6 @@ in {
       default = true;
       description = "Whether to add main SSH public key to the ilma4 user";
     };
-    i4.my-ssh-key.publicKey = lib.mkOption {
-      type = lib.types.str;
-      default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A";
-      description = "Public SSH key for the ilma4 user";
-    };
     i4.initrd-ssh.enable = lib.mkOption {
       type = lib.types.bool;
       default = false;

@@ -4,6 +4,7 @@ args @ {
   lib,
   myLib,
   inputs,
+  constants,
   ...
 }: {
   imports = let
@@ -75,7 +76,7 @@ args @ {
   networking.hostName = "laat"; # Define your hostname.
 
   users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
-    config.i4.my-ssh-key.publicKey
+    constants.main-pub-key
   ];
 
   sops.secrets."restic/server" = {
