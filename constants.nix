@@ -8,6 +8,11 @@
     old-password-file = null;
   };
 
+  quicksilver = {
+    # public ssh key to send backups to remote machines
+    backup-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMvrzYraYfx9T5iQOrsU19YvfdgUCZlANxdSjJTKaRBR qucksilver-backup-key";
+  };
+
   laat = {
     restic = {
       repo = "/mnt/hdd/restic";
