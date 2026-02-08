@@ -57,8 +57,9 @@ args @ {
   i4.initrd-ssh.enable = true;
   i4.restic.enable = true;
   i4.restic.repos = {
-    server = {
-      location = "/lib/aaa/test";
+    # repo to backup laat
+    restic-server = {
+      location = "/mnt/hdd/restic-server";
       password-file = "/run/secrets/${constants.laat.restic.password-file}";
       user = "root";
       group = "root";
