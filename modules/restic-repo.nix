@@ -164,11 +164,11 @@ in {
               type = types.singleLineStr;
               description = "Local restic repository directory.";
             };
-            "password-file" = mkOption {
+            password-file = mkOption {
               type = types.singleLineStr;
               description = "Path to current repository password file.";
             };
-            "old-password-file" = mkOption {
+            old-password-file = mkOption {
               type = types.nullOr types.singleLineStr;
               default = null;
               description = "Path to old repository password file used for key rotation.";
@@ -181,12 +181,12 @@ in {
             user = mkOption {
               type = types.nullOr types.singleLineStr;
               default = null;
-              description = "Owner user for the repository directory.";
+              description = "Owner user for the repository directory (support only NixOS and nix-darwin)";
             };
             group = mkOption {
               type = types.nullOr types.singleLineStr;
               default = null;
-              description = "Owner group for the repository directory.";
+              description = "Owner group for the repository directory (support only NixOS and nix-darwiln)";
             };
           };
         }));
