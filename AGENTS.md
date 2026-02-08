@@ -54,6 +54,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
   - `nix-settings.nix` - configures nix settings
   - `work.nix` - settings specific to work machine
   - `server.nix` - settings specific to server machines
+  - `restic-repo.nix` - configure local restic repositories and rotate their passwords
   
 - `dotfiles/` - dotfiles for programs. Usually deployed with home-manager
 - `secrets/` - secrets encrypted with sops-nix
