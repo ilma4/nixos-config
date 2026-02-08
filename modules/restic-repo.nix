@@ -18,118 +18,141 @@
 
   cfg = config.i4.restic;
 
-  repoCalls =
-    lib.concatStringsSep "\n"
-    (lib.mapAttrsToList (
-        name: repo: ''
-          manage_repo \
-            ${lib.escapeShellArg name} \
-            ${lib.escapeShellArg repo.location} \
-            ${lib.escapeShellArg repo."password-file"} \
-            ${lib.escapeShellArg (
-            if repo."old-password-file" == null
-            then ""
-            else repo."old-password-file"
-          )} \
-            ${lib.escapeShellArg repo.permissions} \
-            ${lib.escapeShellArg (
-            if isHomeManager
-            then ""
-            else repo.user
-          )} \
-            ${lib.escapeShellArg (
-            if isHomeManager
-            then ""
-            else repo.group
-          )}
-        ''
-      )
-      cfg.repos);
+  reposJsonFile = pkgs.writeText "i4-restic-repos.json" (builtins.toJSON (
+    lib.mapAttrsToList (
+      name: repo: {
+        inherit name;
+        inherit (repo) location permissions;
+        passwordFile = repo."password-file";
+        oldPasswordFile = repo."old-password-file";
+        user =
+          if isHomeManager
+          then null
+          else repo.user;
+        group =
+          if isHomeManager
+          then null
+          else repo.group;
+      }
+    )
+    cfg.repos
+  ));
 
-  activationScript = pkgs.writeShellScript "i4-restic-repo-activation.sh" ''
-    set -euo pipefail
+  activationScript = pkgs.writers.writePython3Bin "i4-restic-repo-activation" {doCheck = false;} ''
+    import json
+    import os
+    import subprocess
+    import sys
 
-    RESTIC_BIN="${pkgs.restic}/bin/restic"
-    JQ_BIN="${pkgs.jq}/bin/jq"
-    SUPPORTS_OWNER="${
+    RESTIC_BIN = "${pkgs.restic}/bin/restic"
+    SUPPORTS_OWNER = ${
       if isHomeManager
-      then "0"
-      else "1"
-    }"
-
-    manage_repo() {
-      local repo_name="$1"
-      local repo_location="$2"
-      local password_file="$3"
-      local old_password_file="$4"
-      local repo_permissions="$5"
-      local repo_user="$6"
-      local repo_group="$7"
-      local key_json
-      local key_count
-      local current_key_id
-      local key_id
-      local key_count_after
-
-      if [ ! -f "$password_file" ]; then
-        echo "restic-repo[$repo_name]: password file does not exist: $password_file" >&2
-        exit 1
-      fi
-
-      if [ -n "$old_password_file" ] && [ ! -f "$old_password_file" ]; then
-        echo "restic-repo[$repo_name]: old password file does not exist: $old_password_file" >&2
-        exit 1
-      fi
-
-      mkdir -p "$repo_location"
-      chmod "$repo_permissions" "$repo_location"
-
-      if [ "$SUPPORTS_OWNER" = "1" ] && [ -n "$repo_user" ] && [ -n "$repo_group" ]; then
-        chown "$repo_user:$repo_group" "$repo_location"
-      fi
-
-      if [ ! -f "$repo_location/config" ]; then
-        "$RESTIC_BIN" --repo "$repo_location" --password-file "$password_file" init
-      fi
-
-      if [ -n "$old_password_file" ]; then
-        if "$RESTIC_BIN" --repo "$repo_location" --password-file "$password_file" key list >/dev/null 2>&1; then
-          return 0
-        fi
-
-        "$RESTIC_BIN" --repo "$repo_location" --password-file "$old_password_file" key add --new-password-file "$password_file"
-        "$RESTIC_BIN" --repo "$repo_location" --password-file "$password_file" key list >/dev/null
-        return 0
-      fi
-
-      key_json="$("$RESTIC_BIN" --repo "$repo_location" --password-file "$password_file" key list --json)"
-      key_count="$(printf '%s' "$key_json" | "$JQ_BIN" 'length')"
-
-      if [ "$key_count" -le 1 ]; then
-        return 0
-      fi
-
-      current_key_id="$(printf '%s' "$key_json" | "$JQ_BIN" -r '.[] | select(.current == true) | .id' | head -n 1)"
-      if [ -z "$current_key_id" ] || [ "$current_key_id" = "null" ]; then
-        echo "restic-repo[$repo_name]: unable to determine current key id" >&2
-        exit 1
-      fi
-
-      printf '%s' "$key_json" | "$JQ_BIN" -r '.[].id' | while IFS= read -r key_id; do
-        if [ "$key_id" != "$current_key_id" ]; then
-          "$RESTIC_BIN" --repo "$repo_location" --password-file "$password_file" key remove "$key_id"
-        fi
-      done
-
-      key_count_after="$("$RESTIC_BIN" --repo "$repo_location" --password-file "$password_file" key list --json | "$JQ_BIN" 'length')"
-      if [ "$key_count_after" -ne 1 ]; then
-        echo "restic-repo[$repo_name]: expected one key after cleanup, found $key_count_after" >&2
-        exit 1
-      fi
+      then "False"
+      else "True"
     }
+    with open("${reposJsonFile}", "r", encoding="utf-8") as repos_file:
+      REPOS = json.load(repos_file)
 
-    ${repoCalls}
+
+    def repo_error(repo_name, message):
+      print(f"restic-repo[{repo_name}]: {message}", file=sys.stderr)
+      raise SystemExit(1)
+
+
+    def run(command, check=True, stdout=None, stderr=None, text=False):
+      return subprocess.run(command, check=check, stdout=stdout, stderr=stderr, text=text)
+
+
+    def restic_cmd(repo_location, password_file, *args):
+      return [RESTIC_BIN, "--no-cache=true", "--repo", repo_location, "--password-file", password_file, *args]
+
+
+    def list_keys(repo_location, password_file):
+      result = run(
+        restic_cmd(repo_location, password_file, "key", "list", "--json"),
+        text=True,
+        stdout=subprocess.PIPE,
+      )
+      return json.loads(result.stdout)
+
+
+    def manage_repo(repo):
+      repo_name = repo["name"]
+      repo_location = repo["location"]
+      password_file = repo["passwordFile"]
+      old_password_file = repo["oldPasswordFile"] or ""
+      repo_permissions = repo["permissions"]
+      repo_user = repo["user"] or ""
+      repo_group = repo["group"] or ""
+
+      if not os.path.isfile(password_file):
+        repo_error(repo_name, f"password file does not exist: {password_file}")
+
+      if old_password_file and not os.path.isfile(old_password_file):
+        repo_error(repo_name, f"old password file does not exist: {old_password_file}")
+
+      os.makedirs(repo_location, exist_ok=True)
+      os.chmod(repo_location, int(repo_permissions, 8))
+
+      if SUPPORTS_OWNER and repo_user and repo_group:
+        run(["chown", f"{repo_user}:{repo_group}", repo_location])
+
+      if not os.path.isfile(os.path.join(repo_location, "config")):
+        run(restic_cmd(repo_location, password_file, "init"))
+
+      if old_password_file:
+        auth_check = run(
+          restic_cmd(repo_location, password_file, "key", "list"),
+          check=False,
+          stdout=subprocess.DEVNULL,
+          stderr=subprocess.DEVNULL,
+        )
+        if auth_check.returncode == 0:
+          return
+
+        run(restic_cmd(repo_location, old_password_file, "key", "add", "--new-password-file", password_file))
+        run(restic_cmd(repo_location, password_file, "key", "list"), stdout=subprocess.DEVNULL)
+        return
+
+      keys = list_keys(repo_location, password_file)
+      if len(keys) <= 1:
+        return
+
+      current_key_id = None
+      for key in keys:
+        if key.get("current") is True:
+          current_key_id = key.get("id")
+          if current_key_id:
+            break
+
+      if not current_key_id:
+        repo_error(repo_name, "unable to determine current key id")
+
+      for key in keys:
+        key_id = key.get("id")
+        if key_id != current_key_id:
+          if not key_id:
+            repo_error(repo_name, "encountered key entry without id during cleanup")
+          run(restic_cmd(repo_location, password_file, "key", "remove", key_id))
+
+      key_count_after = len(list_keys(repo_location, password_file))
+      if key_count_after != 1:
+        repo_error(repo_name, f"expected one key after cleanup, found {key_count_after}")
+
+
+    def main():
+      for repo in REPOS:
+        manage_repo(repo)
+
+
+    if __name__ == "__main__":
+      try:
+        main()
+      except subprocess.CalledProcessError as error:
+        raise SystemExit(error.returncode) from None
   '';
+
+  activationScriptExe = "${activationScript}/bin/i4-restic-repo-activation";
 in {
   options = {
     i4.restic = {
@@ -204,7 +227,7 @@ in {
               ["writeBoundary"]
               ++ lib.optional hasSopsSecrets "sops-nix"
             ) ''
-              ${activationScript}
+              ${activationScriptExe}
             '';
         })
         (optionalAttrs (!isHomeManager && !isDarwin) {
@@ -212,12 +235,12 @@ in {
             lib.stringAfter
             (lib.optional hasSopsSecrets "setupSecrets")
             ''
-              ${activationScript}
+              ${activationScriptExe}
             '';
         })
         (optionalAttrs (!isHomeManager && isDarwin) {
           system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
-            ${activationScript}
+            ${activationScriptExe}
           '';
         })
       ]
