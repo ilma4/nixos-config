@@ -34,6 +34,7 @@ in {
     ./home-manager.nix
     ./nix-settings.nix
     ./initrd-ssh.nix
+    ./restic-repo.nix
   ];
 
   config = {

@@ -16,7 +16,7 @@
   laat = {
     restic = {
       repo = "/mnt/hdd/restic";
-      password-file = "/run/secrets/..."; # TODO
+      password-file = "restic/server";
       old-password-file = null; # used to update password on repo
     };
   };

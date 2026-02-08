@@ -55,6 +55,15 @@ args @ {
   i4.sops.enable = true;
   i4.dockerComposeEnable = true;
   i4.initrd-ssh.enable = true;
+  i4.restic.enable = true;
+  i4.restic.repos = {
+    server = {
+      location = "/lib/aaa/test";
+      password-file = "/run/secrets/${constants.laat.restic.password-file}";
+      user = "root";
+      group = "root";
+    };
+  };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
