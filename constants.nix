@@ -14,10 +14,15 @@
   };
 
   laat = {
+    restic-ilma4 = {
+      location = "/mnt/hdd/restic";
+      password-secret = "restic_password/ilma4_legacy";
+      old-password-secret = null; # used to migrate passwod on repo
+    };
     restic = {
       repo = "/mnt/hdd/restic";
       password-file = "restic/server";
-      old-password-file = null; # used to update password on repo
+      old-password-file = null; # used to migrate password on repo
     };
   };
 }

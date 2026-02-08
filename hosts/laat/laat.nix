@@ -64,6 +64,15 @@ args @ {
       user = "root";
       group = "root";
     };
+    restic-ilma4 = let
+      const = constants.laat.restic-ilma4;
+    in {
+      location = "/mnt/hdd/restic";
+      password-file = "/run/secrets/${const.password-secret}";
+      old-password-file = lib.mkIf (const.old-password-secret != null) "/run/secrets/${const.old-password-file}";
+      user = "ilma4";
+      group = "1000"; # TODO: fix this permission maybe
+    };
   };
 
   # Use the systemd-boot EFI boot loader.
@@ -90,6 +99,10 @@ args @ {
   ];
 
   sops.secrets."restic/server" = {
+    owner = "root";
+    group = "root";
+  };
+  sops.secrets."restic_password/ilma4_legacy" = {
     owner = "root";
     group = "root";
   };
