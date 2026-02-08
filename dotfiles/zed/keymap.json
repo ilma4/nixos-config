@@ -18,9 +18,14 @@
   {
     "bindings": {
       "cmd-9": "git_panel::Close",
-      "escape": "git_panel::ToggleFocus",
     },
     "context": "GitPanel",
+  },
+  {
+    "bindings": {
+      "escape": "git_panel::ToggleFocus",
+    },
+    "context": "(CommitEditor > Editor) && vim_mode==normal",
   },
   {
     "bindings": {
@@ -35,7 +40,7 @@
       "cmd-shift-[": "workspace::ActivatePreviousWindow",
       "cmd-shift-]": "workspace::ActivateNextWindow",
       "cmd-t": "workspace::NewTerminal",
-      "escape": "terminal_panel::ToggleFocus",
+      // "escape": "terminal_panel::ToggleFocus",
       "shift-escape": "workspace::ToggleBottomDock",
     },
     "context": "Terminal",
