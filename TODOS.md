@@ -13,3 +13,17 @@ Define more constants to simplify secrets/path/locations etc. management
 Create a slash command for codex/claude codex/gemini so that they can update my services. I.e.:
 
 They have to search for the newer version of the service, find the docker-compose.yml file or the docker container version and update my config to match them.
+
+
+# Create restic-chuncker-donor repo and use it to create every new restic repository
+
+- safe wrapper around `restic copy` which also check if repositories have the same chunker params
+
+# Switch docker-compose services logging back to journald, but write a script to see logs, without them
+
+# better restic-repos.nix
+
+- convert creation to systemd service so there will be error logs and faster activation
+- launchd on macos?
+
+# setup homebrew autoupdates
