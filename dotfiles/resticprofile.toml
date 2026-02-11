@@ -39,6 +39,13 @@ exclude = [
 
     "/Users/ilma4/Library/Application Support/Zed",
 
+    # Electron caches(?)
+    "/Users/ilma4/Library/Application Support/*/Cache",
+    "/Users/ilma4/Library/Application Support/*/Code Cache",
+
+
+    "/Users/ilma4/Library/Application Support/Code/CachedExtensionVSIXs",
+
     "/Users/ilma4/Library/Application Support/Vivaldi/*/File System", # do not backup Vivaldi's file system cache(?)
 
 
@@ -79,7 +86,11 @@ exclude = [
 
     "/Users/ilma4/.konan",  # c++
     "/Users/ilma4/.lldb",   # lldb
+
     "/Users/ilma4/.npm",    # javascript!
+    "/Users/ilma4/.yarn",   # javascript!
+    "/Users/ilma4/.bun",   # javascript!
+
     "/Users/ilma4/.swiftly",    # Swift!
     "/Users/ilma4/.gem",    # ruby(?)
     "/Users/ilma4/sdk",     # go
