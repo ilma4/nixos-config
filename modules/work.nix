@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: {
   options = {
@@ -19,6 +20,10 @@
         };
       };
     };
+
+    home.packages = with pkgs; [
+      bun
+    ];
 
     # use jetbrains email for work repos
     programs.git = {
