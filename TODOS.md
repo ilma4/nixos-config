@@ -27,3 +27,21 @@ They have to search for the newer version of the service, find the docker-compos
 - launchd on macos?
 
 # setup homebrew autoupdates
+
+# Configs for msi-moder Ubuntu
+
+## Autoinstall config
+
+- autoinstall like in ubuntu-vm
+- make it work with Ventoy
+- how to add secrets here?
+
+## Script to setup everything on ubuntu itself
+
+- swap
+- zswap
+- libvirt + qemu-kvm
+- packages
+  - ???
+- allow to use it as nix builder
+- wakeup-on-lan and autosleep
