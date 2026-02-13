@@ -27,6 +27,10 @@
     # This will generate a new key if the key specified above does not exist
     sops.age.generateKey = true;
 
+    # Do not import ssh keys, only my own
+    sops.age.sshKeyPaths = [];
+    sops.gnupg.sshKeyPaths = [];
+
     # map i4-encrypted-files
     sops.secrets = lib.pipe config.i4-encrypted-files [
       (map (file: {
