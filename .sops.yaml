@@ -1,5 +1,9 @@
 # .sops.yaml
-
+stores:
+  json:
+    indent: 2
+  json_binary:
+    indent: 2
 keys:
   - &backup-bitwarden age1j2lwuh9uk9fufuclqvperfx4p79dy7slclqh89cch4z89w670daqv9urkj
   - &quicksilver age1gyjjhhednqc6ev57rec2wk0lqg3kadgujge7lcuudezlkjq7yqys4zck7h
