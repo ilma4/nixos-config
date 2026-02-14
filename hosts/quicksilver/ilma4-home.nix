@@ -47,6 +47,7 @@
     };
 
     home.packages = with pkgs; [
+      (pkgs.writeShellScriptBin "bazel" "${pkgs.bazelisk}/bin/bazelisk \"$@\"")
       # clang
       # lldb
 
