@@ -52,6 +52,10 @@
       url = "github:folospior/yaml.arm64.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    quickemu = {
+      url = "github:quickemu-project/quickemu/4.9.9";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
 
     monitor-input-rs = {
       url = "github:kojiishi/monitor-input-rs";
@@ -127,11 +131,15 @@
       (import ./overlays/beads-ui-overlay.nix)
     ];
 
+    darwinOverlays = commonOverlays ++ [inputs.quickemu.overlays.default];
+
     # Centralized package sets
-    pkgsSets = system: {
+    pkgsSets = system: let
+      isDarwin = nixpkgs.lib.hasSuffix "darwin" system;
+    in {
       stable =
-        if nixpkgs.lib.hasSuffix "darwin" system
-        then mkPkgs nixpkgs-darwin system commonOverlays
+        if isDarwin
+        then mkPkgs nixpkgs-darwin system darwinOverlays
         else mkPkgs nixpkgs system commonOverlays;
       unstable = mkPkgs nixpkgs-unstable system [];
     };

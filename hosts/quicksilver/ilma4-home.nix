@@ -47,6 +47,8 @@
     };
 
     home.packages = with pkgs; [
+      quickemu # run vm's with qemu easily
+
       (pkgs.writeShellScriptBin "bazel" "${pkgs.bazelisk}/bin/bazelisk \"$@\"")
       # clang
       # lldb
