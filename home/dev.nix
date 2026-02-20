@@ -18,6 +18,7 @@ in {
       nil
       alejandra
       sops
+      pi-coding-agent
 
       android-tools # adb
 
