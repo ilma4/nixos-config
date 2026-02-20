@@ -16,6 +16,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 ## Project Structure
 - `flake.nix` - file describing flake
+- `constants.nix` - file with global constants
 - `hosts/` - device-specific configurations
   - `hosts/quicksilver/` - macbook from jetbrains, used both as personal and work device. Runs on macOS with nix-darwin. - /nas - ugreen nassync: NAS device used as homelab. Runs on NixOS
     - `quicksilver.nix`
@@ -64,6 +65,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - DO NOT switch to new configuration unless specifically asked to
 - When writing docker container tags, ensure that they exist
 - When adding packages from nixpkgs, ensure that they exist
+- If you want to introduce a constant, which is usefull in other nix module, define it in `constants.nix`
 
 
 ## Environment Setup
