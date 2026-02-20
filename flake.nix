@@ -129,6 +129,7 @@
       inputs.rust-overlay.overlays.default
       monitorInputOverlay
       (import ./overlays/beads-ui-overlay.nix)
+      (import ./overlays/pi-coding-agent-overlay.nix)
     ];
 
     darwinOverlays = commonOverlays ++ [inputs.quickemu.overlays.default];
@@ -230,7 +231,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
-        inherit (pkgs) monitor-input beads-ui;
+        inherit (pkgs) monitor-input beads-ui pi-coding-agent;
       };
     }) (builtins.attrValues systems));
 
