@@ -23,7 +23,7 @@ args @ {
     ./samba.nix
 
     ./hdd-idle-guard.nix
-    ./agent-dev-box.nix
+    # ./agent-dev-box.nix # issues with nixpkgs not having overlays in container unlike on host
 
     "${modules}/server.nix"
     ./docker-services/qbittorrent.nix
