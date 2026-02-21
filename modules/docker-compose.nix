@@ -6,8 +6,12 @@
 }: let
   inherit (lib) mkOption types mapAttrs;
   cfg = config.dockerCompose;
+  enabledComposeServices = lib.filterAttrs (_: svc: svc.enable) cfg;
 in {
-  imports = [./docker-compose-update.nix];
+  imports = [
+    ./docker-compose-journalctl.nix
+    ./docker-compose-update.nix
+  ];
 
   options = {
     i4.dockerComposeEnable = lib.mkEnableOption "Enable my docker compose services";
@@ -45,7 +49,7 @@ in {
       [
         "d /var/compose-logs 0755 root root -"
       ]
-      ++ lib.mapAttrsToList (name: _: "d /var/compose-logs/${name} 0755 root root -") (lib.filterAttrs (_: svc: svc.enable) cfg);
+      ++ lib.mapAttrsToList (name: _: "d /var/compose-logs/${name} 0755 root root -") enabledComposeServices;
 
     services.logrotate = {
       enable = true;
@@ -103,6 +107,6 @@ in {
 
         wantedBy = ["multi-user.target"];
       })
-      (lib.filterAttrs (name: svc: svc.enable) cfg);
+      enabledComposeServices;
   };
 }
