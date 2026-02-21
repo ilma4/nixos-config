@@ -59,8 +59,6 @@
 
       nodejs_24
 
-      rustup
-
       # texlab
       beads-ui
 
