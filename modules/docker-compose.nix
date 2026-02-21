@@ -45,28 +45,6 @@ in {
   };
 
   config = lib.mkIf config.i4.dockerComposeEnable {
-    systemd.tmpfiles.rules =
-      [
-        "d /var/compose-logs 0755 root root -"
-      ]
-      ++ lib.mapAttrsToList (name: _: "d /var/compose-logs/${name} 0755 root root -") enabledComposeServices;
-
-    services.logrotate = {
-      enable = true;
-      settings.composeLogs = {
-        files = "/var/compose-logs/*/*.log";
-        frequency = "monthly";
-        rotate = 999999;
-        compress = true;
-        dateext = true;
-        delaycompress = true;
-        missingok = true;
-        copytruncate = true;
-        compresscmd = "${pkgs.zstd}/bin/zstd";
-        compressext = ".zst";
-      };
-    };
-
     systemd.services =
       mapAttrs
       (name: svc: let
@@ -101,8 +79,6 @@ in {
           ExecStart = "${compose} up --pull";
           ExecStop = "${compose} down";
           Restart = "always";
-          StandardOutput = "append:/var/compose-logs/${name}/${name}.log";
-          StandardError = "inherit";
         };
 
         wantedBy = ["multi-user.target"];

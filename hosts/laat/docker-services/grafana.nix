@@ -23,8 +23,6 @@
           volumes:
             - "/srv/grafana:/var/lib/grafana"
           network_mode: host
-          logging:
-            driver: none
           restart: unless-stopped
     '';
     environment = {

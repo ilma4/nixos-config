@@ -18,8 +18,6 @@ services:
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
-    logging:
-      driver: none
 
   qbittorrent:
     container_name: qbittorrent
@@ -33,5 +31,3 @@ services:
     depends_on:
       - gluetun
     restart: unless-stopped
-    logging:
-      driver: none

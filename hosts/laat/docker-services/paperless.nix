@@ -11,15 +11,11 @@ in {
       broker:
         image: docker.io/library/redis:${redis-version}
         restart: unless-stopped
-        logging:
-          driver: none
         volumes:
           - redisdata:/data
       webserver:
         image: ghcr.io/paperless-ngx/paperless-ngx:${paperless-version}
         restart: unless-stopped
-        logging:
-          driver: none
         container_name: paperless
         depends_on:
           - broker
@@ -54,8 +50,6 @@ in {
       gotenberg:
         image: docker.io/gotenberg/gotenberg:${gotenberg-version}
         restart: unless-stopped
-        logging:
-          driver: none
         # The gotenberg chromium route is used to convert .eml files. We do not
         # want to allow external content like tracking pixels or even javascript.
         command:
@@ -65,8 +59,6 @@ in {
       tika:
         image: docker.io/apache/tika:${tika-version}
         restart: unless-stopped
-        logging:
-          driver: none
     volumes:
       data:
       media:

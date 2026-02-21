@@ -36,8 +36,6 @@ in {
           timeout: 10s
           retries: 3
           start_period: 20s
-        logging:
-          driver: none
         restart: unless-stopped
 
     networks:

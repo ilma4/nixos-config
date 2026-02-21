@@ -22,8 +22,6 @@ in {
         labels:
           - "local.ilma4.customResolve=10.20.0.1:8123" # reverse-proxy will use this IP address to resolve container instead of the container's hostname
         network_mode: host
-        logging:
-          driver: none
         restart: unless-stopped
         privileged: true
   '';

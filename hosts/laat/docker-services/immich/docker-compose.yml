@@ -35,8 +35,6 @@ services:
     depends_on:
       - redis
       - database
-    logging:
-      driver: none
     restart: always
     healthcheck:
       disable: false
@@ -53,8 +51,6 @@ services:
       - model-cache:/cache
     env_file:
       - .env
-    logging:
-      driver: none
     restart: always
     healthcheck:
       disable: false
@@ -64,8 +60,6 @@ services:
     image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
     healthcheck:
       test: redis-cli ping || exit 1
-    logging:
-      driver: none
     restart: always
 
   database:
@@ -82,8 +76,6 @@ services:
       # Do not edit the next line. If you want to change the database storage location on your system, edit the value of DB_DATA_LOCATION in the .env file
       - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
     shm_size: 128mb
-    logging:
-      driver: none
     restart: always
 
 volumes:

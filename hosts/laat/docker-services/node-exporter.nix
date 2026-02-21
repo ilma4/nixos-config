@@ -45,8 +45,6 @@ in {
               - ALL
             cap_add:
               - SYS_TIME
-            logging:
-              driver: none
             restart: unless-stopped
       '';
     };
