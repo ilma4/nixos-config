@@ -190,6 +190,11 @@ if.app-id = 'org.mozilla.firefox'
 if.window-title-regex-substring = 'Extension: \(Bitwarden Password Manager\) - Bitwarden'
 run = 'layout floating'
 
+[[on-window-detected]]
+if.app-id = 'com.vivaldi.Vivaldi'
+if.window-title-regex-substring = 'Bitwarden - Vivaldi'
+run = 'layout floating'
+
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
