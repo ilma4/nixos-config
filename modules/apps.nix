@@ -63,9 +63,9 @@ in {
     telegram-desktop = {};
 
     discord = asLinuxPackage {};
-    steam = {macInstallation = null;};
+    steam = {};
     heroic = asLinuxPackage {macInstallation = null;}; # GOG / Epic Games launcher
-    prismlauncher = asLinuxPackage {macInstallation=null;}; # minecraft launcher
+    prismlauncher = asLinuxPackage {}; # minecraft launcher
     dolphin-emu = asLinuxPackage {macName = "dolphin";}; # Wii emulator
 
     qbittorrent = asLinuxPackage {};
