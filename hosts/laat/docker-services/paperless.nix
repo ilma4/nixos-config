@@ -47,6 +47,7 @@ in {
           PAPERLESS_USE_X_FORWARD_PORT: "true"
           PAPERLESS_USE_X_FORWARD_HOST: "true"
           PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+          PAPERLESS_OCR_ROTATE_PAGES: "true"
       gotenberg:
         image: docker.io/gotenberg/gotenberg:${gotenberg-version}
         restart: unless-stopped
