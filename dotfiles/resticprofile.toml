@@ -67,6 +67,7 @@ exclude = [
     "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
 
     "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
+    "/Users/ilma4/JetBrains", # too heavy and contains NDA code
 
     "/Users/ilma4/Projects/tdesktop",
     "/Users/ilma4/Projects/telegram",
