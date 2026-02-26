@@ -19,6 +19,7 @@ args @ {
     "${modules}/avahi.nix"
     "${modules}/zram.nix"
     "${modules}/sops.nix"
+    "${modules}/notifications.nix"
     "${modules}/docker-compose.nix"
     ./samba.nix
 
@@ -53,6 +54,7 @@ args @ {
   i4.zram.enable = true;
   i4.avahi.enable = true;
   i4.sops.enable = true;
+  i4.notifications.enable = true;
   i4.dockerComposeEnable = true;
   i4.initrd-ssh.enable = true;
   i4.restic.enable = true;
