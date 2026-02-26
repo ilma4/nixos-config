@@ -14,7 +14,7 @@ in {
       readOnly = true;
       description = "Generate a shell command that sends a notification using apprise.";
       example = lib.literalExpression ''config.i4.notifications.notify "Can't create backup"'';
-      default = _: throw "i4.notifications.enable must be true to use notify.";
+      # default = _: throw "i4.notifications.enable must be true to use notify.";
     };
   };
 
