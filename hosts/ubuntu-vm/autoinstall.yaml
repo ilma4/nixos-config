@@ -1,0 +1,41 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  storage:
+    layout:
+      name: direct
+      sizing-policy: all
+  identity:
+    hostname: ubuntu-vm
+    username: ilma4
+    password: "$6$6BqHUFaYbHAkhkQP$eyzG6pxg6DhxC/Rixps6dVSs2oGpT4T2.P.B5Y/1GDOITBZoz6kNHnz2H9.G9Zl.spghGqZyNT/OcU0d1Tb0J/"
+  timezone: Europe/Berlin
+  ssh:
+    install-server: true
+    authorized-keys:
+      [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A",
+      ]
+    allow-pw: false
+  updates: all
+  shutdown: poweroff # so it won't endlessly autoinstall
+  refresh-installer:
+    update: true
+  packages:
+    - qemu-guest-agent # additional QEMU features
+    - spice-vdagent # clipboard sharing and dynamic display resolution
+    - git
+    - unzip
+    - patool
+    - neovim
+    - fuse3 # to run appimages
+  late-commands:
+    # enable virtio-fs file sharing
+    - curtin in-target --target=/target -- mkdir /mnt/utm
+    - echo "# UTM Shared Folder" >> /target/etc/fstab
+    - echo "share /mnt/utm 9p trans=virtio,version=9p2000.L,rw,_netdev,nofail,auto 0 0" >> /target/etc/fstab
+
+    - curtin in-target --target=/target -- systemctl disable NetworkManager-wait-online.service systemd-networkd-wait-online.service
