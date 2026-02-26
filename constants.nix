@@ -14,6 +14,10 @@
   };
 
   laat = {
+    restic-chunker-params-donor = {
+      location = "/var/restic-chunker-params-donor-repo";
+      password-secret = "restic_password/chunker_params_donor";
+    };
     restic-ilma4 = {
       location = "/mnt/hdd/restic";
       password-secret = "restic_password/ilma4_legacy";
