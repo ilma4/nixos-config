@@ -17,7 +17,8 @@
       exit 0
     fi
 
-    ${notify "Restic chunker params donor repository is missing or inaccessible at ${repoLocation}."}
+    # TODO: enable notifications
+    # ${notify "Restic chunker params donor repository is missing or inaccessible at ${repoLocation}."}
   '';
 in {
   sops.secrets.${const.password-secret} = {
