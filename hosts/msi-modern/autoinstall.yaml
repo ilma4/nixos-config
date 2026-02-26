@@ -1,0 +1,46 @@
+#cloud-config
+autoinstall:
+  version: 1
+  interactive-sections:
+    - identify
+    - network
+    - storage # I have to manually type encryption password
+  locale: en_US.UTF-8
+  keyboard:
+    #layout: "us,ru" # TODO setup ru layout, also have to configure variant and toggle
+    layout: "us"
+  storage:
+    layout:
+      name: direct
+      sizing-policy: all
+  identity:
+    # hostname: msi-modern
+    # username: ilma4
+    # please, type password manually
+    # password: "$6$6BqHUFaYbHAkhkQP$eyzG6pxg6DhxC/Rixps6dVSs2oGpT4T2.P.B5Y/1GDOITBZoz6kNHnz2H9.G9Zl.spghGqZyNT/OcU0d1Tb0J/"
+  timezone: Europe/Berlin
+  ssh:
+    install-server: true
+    authorized-keys:
+      [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A",
+      ]
+    allow-pw: false
+  updates: all
+  refresh-installer:
+    update: true
+
+  codecs:
+    install: true
+  drivers:
+    install: true
+
+  packages:
+    - git
+    - unzip
+    - patool
+    - neovim
+    - fuse3 # to run appimages
+    - curl
+  late-commands:
+    - curtin in-target --target=/target -- systemctl disable NetworkManager-wait-online.service systemd-networkd-wait-online.service
