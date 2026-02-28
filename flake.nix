@@ -129,6 +129,7 @@
       inputs.rust-overlay.overlays.default
       monitorInputOverlay
       (import ./overlays/beads-ui-overlay.nix)
+      (import ./overlays/paperless-mcp-overlay.nix)
       (import ./overlays/pi-coding-agent-overlay.nix)
     ];
 
@@ -231,7 +232,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
-        inherit (pkgs) monitor-input beads-ui pi-coding-agent;
+        inherit (pkgs) monitor-input beads-ui paperless-mcp pi-coding-agent;
       };
     }) (builtins.attrValues systems));
 
