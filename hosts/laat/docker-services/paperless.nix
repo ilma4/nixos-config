@@ -1,6 +1,6 @@
 {pkgs, ...}: let
   redis-version = "8";
-  paperless-version = "2.20.6";
+  paperless-version = "2.20.8";
   tika-version = "3.2.3.0-full";
   gotenberg-version = "8.25";
 in {
