@@ -48,7 +48,7 @@ in {
 
     gitbutler = asLinuxPackage {}; # git client with virtual branches
 
-    # lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
+    lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
     # comfyui = macOnlyCask {}; # tool for generating images/videos
     # cherry-studio = {}; # tool for LLMs
 
