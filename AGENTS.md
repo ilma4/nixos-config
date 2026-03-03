@@ -66,6 +66,9 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - When writing docker container tags, ensure that they exist
 - When adding packages from nixpkgs, ensure that they exist
 - If you want to introduce a constant, which is usefull in other nix module, define it in `constants.nix`
+- When working with secrets, check that they exists
+  - If it is not exists, write a script `create-secrets.sh` which adds it. Use `./scripts/sops/i4-sops-sudo set ...`
+  - If you remove secrets use `./scripts/sops/i4-sops-sudo unset ...`
 
 
 ## Environment Setup
