@@ -43,3 +43,14 @@ They have to search for the newer version of the service, find the docker-compos
   - ???
 - allow to use it as nix builder
 - wakeup-on-lan and autosleep
+
+# Better neovim config
+
+- lsp
+- tabs
+- formatting
+- search files by name
+- search text in files
+- comments
+- folding
+
