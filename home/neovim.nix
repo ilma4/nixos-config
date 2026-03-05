@@ -13,6 +13,23 @@ in {
       plugins = with pkgs.vimPlugins; [
         nvim-lspconfig
         conform-nvim
+
+        # tiny helper for builtin commenting
+        ts-comments-nvim
+
+        # syntax + AST
+        # (nvim-treesitter.withAllGrammars)
+        (nvim-treesitter.withPlugins (p: [
+          p.nix
+          p.lua
+          p.bash
+          p.yaml
+          p.json
+          p.toml
+          p.markdown
+          p.vim
+          p.python
+        ]))
       ];
 
       extraPackages = with pkgs; [
@@ -34,6 +51,15 @@ in {
         vim.opt.expandtab   = true
         vim.opt.shiftwidth  = 4
         vim.opt.softtabstop = -1
+
+        -- Treesitter
+        require("nvim-treesitter.configs").setup({
+          highlight = { enable = true },
+          indent = { enable = true },
+        })
+
+        -- tiny helper for builtin gc comments
+        require("ts-comments").setup()
 
         local conform = require("conform")
 
@@ -111,6 +137,12 @@ in {
         vim.keymap.set({ "n", "v" }, "<leader>r", function()
           conform.format({ async = true, lsp_fallback = true })
         end, { desc = "Format current buffer" })
+
+        -- Commenting keybindings
+        vim.keymap.set("n", "<C-/>", "gcc", { remap = true, silent = true, desc = "Toggle comment current line" })
+        vim.keymap.set("n", "<C-_>", "gcc", { remap = true, silent = true, desc = "Toggle comment current line" })
+        vim.keymap.set("v", "<C-/>", "gc", { remap = true, silent = true, desc = "Toggle comment selection" })
+        vim.keymap.set("v", "<C-_>", "gc", { remap = true, silent = true, desc = "Toggle comment selection" })
       '';
     };
   };
