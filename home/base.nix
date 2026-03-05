@@ -199,6 +199,9 @@ in {
 
     programs.neovim = {
       enable = true;
+      extraConfig = ''
+        set number
+      '';
       plugins = with pkgs.vimPlugins; [
         {
           plugin = vim-suda;
