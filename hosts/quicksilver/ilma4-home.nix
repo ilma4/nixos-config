@@ -25,6 +25,7 @@
     i4.zed.enable = true;
     i4.work.enable = true;
     i4.dev.enable = true;
+    i4.neovim.enable = true;
     i4.sops.enable = true;
     i4.raycast = {
       enable = true;
