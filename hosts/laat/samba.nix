@@ -11,6 +11,9 @@
         "security" = "user";
         "guest account" = "nobody";
         "map to guest" = "bad user"; # Allows guest access on failed login
+
+        # Restrict access to local network only (prevents external access)
+        "hosts allow" = "127.0.0.1 ::1 192.168.1.0/16 10.0.0.0/8 172.16.0.0/12";
       };
 
       # This is the share name (e.g., \\your-ip\myreadonlyshare)
@@ -22,6 +25,22 @@
         "comment" = "Read-only public share";
         # Optional: force all access as a specific user for permission consistency
         # "force user" = "yourunixuser";  # Must exist as a system user
+      };
+
+      # This is the share name (e.g., \\your-ip\myreadonlyshare)
+      ilma4-rw-share = {
+        path = "/mnt/hdd/ilma4"; # Replace with your actual directory
+        "browseable" = "yes";
+        "read only" = "no";
+        "writable" = "yes";
+        "guest ok" = "no";
+        "valid users" = "ilma4";
+        "comment" = "Writable share";
+
+        # Restrict access to local network only (prevents external access)
+        "hosts allow" = "127.0.0.1 ::1 192.168.1.0/16 10.0.0.0/8 172.16.0.0/12";
+        # Optional: force all access as a specific user for permission consistency
+        "force user" = "ilma4";
       };
     };
   };
