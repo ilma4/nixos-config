@@ -17,6 +17,7 @@ exclude-caches = true # not very helpful. https://bford.info/cachedir/
 exclude = [
     "/Users/ilma4/Games",
     "/Users/ilma4/Library/Application Support/Steam",
+    "/Users/ilma4/Library/Application Support/PrismLauncher",
 
     "/Users/ilma4/Downloads",
     "/Users/ilma4/NoBackup",
@@ -30,6 +31,7 @@ exclude = [
     "/Users/ilma4/Library/Containers", # docker, vms, wine bottles
     "/Users/ilma4/Library/Java",       # jdk's binaries
     "/Users/ilma4/Library/Logs",
+    "/Users/ilma4/Library/Thunderbird/Profiles/*/ImapMail",
     "/Users/ilma4/Library/Application Support/JetBrains",
 
     "/Users/ilma4/Library/Application Support/JetBrains/*/plugins", # do not backup plugins for JetBrains IDEs
@@ -43,6 +45,7 @@ exclude = [
     "/Users/ilma4/Library/Application Support/*/Cache",
     "/Users/ilma4/Library/Application Support/*/Code Cache",
 
+    "/Users/ilma4/IdeaProjects", # test projects
 
     "/Users/ilma4/Library/Application Support/Code/CachedExtensionVSIXs",
 
@@ -69,6 +72,7 @@ exclude = [
     "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
     "/Users/ilma4/JetBrains", # too heavy and contains NDA code
 
+    "/Users/ilma4/*/AeroSpace/.build",
     "/Users/ilma4/Projects/tdesktop",
     "/Users/ilma4/Projects/telegram",
     "/Users/ilma4/Projects/Telegram-Android",
@@ -76,7 +80,7 @@ exclude = [
 
     "/Users/ilma4/.android", # android emulator images
     "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
-    "/Users/ilma4/.local/share/containers", # podman local containers, vms etc.
+    "/Users/ilma4/.local/share",
     "/Users/ilma4/.vscode",  # vscode extensions
 
     # caches
@@ -103,6 +107,9 @@ exclude = [
     "/Users/ilma4/.rustup",  # rust
     "/Users/ilma4/.gradle",
     "/Users/ilma4/.m2",     # maven
+    "/Users/ilma4/.nuget", # .NET (?)
+    "/Users/ilma4/.jupyter_kotlin",
+    "/Users/ilma4/.bundle", # ruby(?)
 
 
     "/Users/ilma4/Applications",
