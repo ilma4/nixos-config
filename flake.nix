@@ -19,6 +19,11 @@
 
     deploy-rs.url = "github:serokell/deploy-rs";
 
+    disko = {
+      url = "github:nix-community/disko/latest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Home and user management
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
