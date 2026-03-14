@@ -60,15 +60,15 @@ args @ {
   i4.initrd-ssh.enable = true;
   i4.restic.enable = true;
   i4.restic.repos = {
-    # repo to backup laat
+    # repo to backup nas
     restic-server = {
       location = "/mnt/hdd/restic-server";
-      password-file = "/run/secrets/${constants.laat.restic.password-file}";
+      password-file = "/run/secrets/${constants.nas.restic.password-file}";
       user = "root";
       group = "root";
     };
     restic-ilma4 = let
-      const = constants.laat.restic-ilma4;
+      const = constants.nas.restic-ilma4;
     in {
       location = "/mnt/hdd/restic";
       password-file = "/run/secrets/${const.password-secret}";
@@ -95,7 +95,7 @@ args @ {
   hardware.bluetooth.enable = true; # enables support for Bluetooth
   hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
 
-  networking.hostName = "laat"; # Define your hostname.
+  networking.hostName = "nas"; # Define your hostname.
 
   users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
     constants.main-pub-key
@@ -109,7 +109,7 @@ args @ {
     owner = "root";
     group = "root";
   };
-  environment.etc."resticprofile/profiles.toml".source = ../../dotfiles/resticprofile/laat.toml;
+  environment.etc."resticprofile/profiles.toml".source = ../../dotfiles/resticprofile/nas.toml;
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
@@ -163,7 +163,7 @@ args @ {
     path = [pkgs.resticprofile pkgs.restic];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${../../dotfiles/resticprofile/laat.toml}\" backup";
+      ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${../../dotfiles/resticprofile/nas.toml}\" backup";
       User = "root";
     };
   };

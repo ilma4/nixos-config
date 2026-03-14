@@ -32,7 +32,7 @@ in {
     ];
 
     programs.ssh.matchBlocks = {
-      "laat-init" = {
+      "nas-init" = {
         hostname = "192.168.1.33";
         user = "root";
       };

@@ -13,7 +13,7 @@
     backup-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMvrzYraYfx9T5iQOrsU19YvfdgUCZlANxdSjJTKaRBR qucksilver-backup-key";
   };
 
-  laat = {
+  nas = {
     restic-chunker-params-donor = {
       location = "/var/restic-chunker-params-donor-repo";
       password-secret = "restic_password/chunker_params_donor";

@@ -15,104 +15,104 @@ password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 source = ["/Users/ilma4"]
 exclude-caches = true # not very helpful. https://bford.info/cachedir/
 exclude = [
-    "/Users/ilma4/Games",
-    "/Users/ilma4/Library/Application Support/Steam",
-    "/Users/ilma4/Library/Application Support/PrismLauncher",
+  "/Users/ilma4/Games",
+  "/Users/ilma4/Library/Application Support/Steam",
+  "/Users/ilma4/Library/Application Support/PrismLauncher",
 
-    "/Users/ilma4/Downloads",
-    "/Users/ilma4/NoBackup",
+  "/Users/ilma4/Downloads",
+  "/Users/ilma4/NoBackup",
 
-    "/Users/ilma4/.cache",
-    "/Users/ilma4/.Trash",
+  "/Users/ilma4/.cache",
+  "/Users/ilma4/.Trash",
 
-    "/Users/ilma4/Library/Caches",
-    "/Users/ilma4/Library/Android",    # android sdks
-    "/Users/ilma4/Library/Developer",  # xcode stuff
-    "/Users/ilma4/Library/Containers", # docker, vms, wine bottles
-    "/Users/ilma4/Library/Java",       # jdk's binaries
-    "/Users/ilma4/Library/Logs",
-    "/Users/ilma4/Library/Thunderbird/Profiles/*/ImapMail",
-    "/Users/ilma4/Library/Application Support/JetBrains",
+  "/Users/ilma4/Library/Caches",
+  "/Users/ilma4/Library/Android",                         # android sdks
+  "/Users/ilma4/Library/Developer",                       # xcode stuff
+  "/Users/ilma4/Library/Containers",                      # docker, vms, wine bottles
+  "/Users/ilma4/Library/Java",                            # jdk's binaries
+  "/Users/ilma4/Library/Logs",
+  "/Users/ilma4/Library/Thunderbird/Profiles/*/ImapMail",
+  "/Users/ilma4/Library/Application Support/JetBrains",
 
-    "/Users/ilma4/Library/Application Support/JetBrains/*/plugins", # do not backup plugins for JetBrains IDEs
-    "/Users/ilma4/Library/Application Support/Google", # do not backup google's apps
+  "/Users/ilma4/Library/Application Support/JetBrains/*/plugins", # do not backup plugins for JetBrains IDEs
+  "/Users/ilma4/Library/Application Support/Google",              # do not backup google's apps
 
-    "/Users/ilma4/Library/Application Support/Slack",
+  "/Users/ilma4/Library/Application Support/Slack",
 
-    "/Users/ilma4/Library/Application Support/Zed",
+  "/Users/ilma4/Library/Application Support/Zed",
 
-    # Electron caches(?)
-    "/Users/ilma4/Library/Application Support/*/Cache",
-    "/Users/ilma4/Library/Application Support/*/Code Cache",
+  # Electron caches(?)
+  "/Users/ilma4/Library/Application Support/*/Cache",
+  "/Users/ilma4/Library/Application Support/*/Code Cache",
 
-    "/Users/ilma4/IdeaProjects", # test projects
+  "/Users/ilma4/IdeaProjects", # test projects
 
-    "/Users/ilma4/Library/Application Support/Code/CachedExtensionVSIXs",
+  "/Users/ilma4/Library/Application Support/Code/CachedExtensionVSIXs",
 
-    "/Users/ilma4/Library/Application Support/Vivaldi/*/File System", # do not backup Vivaldi's file system cache(?)
-
-
-    "/Users/ilma4/Library/DuetExpertCenter", # https://apple.stackexchange.com/questions/476332/what-is-duetexpertcentre
-    "/Users/ilma4/Library/Metadata/CoreSpotlight",
-    "/Users/ilma4/Library/Daemon Containers/*/Data/com.apple.milod",
-    "/Users/ilma4/Library/Biome/streams/restricted/Safari.PageLoad",
-    "/Users/ilma4/Library/Application Support/FileProvider",
-    "/Users/ilma4/Library/Group Containers/group.com.apple.secure-control-center-preferences",
-    "/Users/ilma4/Library/Group Containers/*.groups.com.apple.podcasts",
+  "/Users/ilma4/Library/Application Support/Vivaldi/*/File System", # do not backup Vivaldi's file system cache(?)
 
 
-    "/Users/ilma4/Library/Application Support/MobileSync",
-    "/Users/ilma4/Library/Group Containers/*.group.com.apple.configurator",
-
-    "/Users/ilma4/Google Drive",
-    "/Users/ilma4/Library/CloudStorage",
-
-    "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
-
-    "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
-    "/Users/ilma4/JetBrains", # too heavy and contains NDA code
-
-    "/Users/ilma4/*/AeroSpace/.build",
-    "/Users/ilma4/Projects/tdesktop",
-    "/Users/ilma4/Projects/telegram",
-    "/Users/ilma4/Projects/Telegram-Android",
-    "/Users/ilma4/Projects/Nekogram",
-
-    "/Users/ilma4/.android", # android emulator images
-    "/Users/ilma4/.colima",  # colima vm images, alternative to DockerDesktop for Mac
-    "/Users/ilma4/.local/share",
-    "/Users/ilma4/.vscode",  # vscode extensions
-
-    # caches
-    "/Users/ilma4/.ollama", # LLMs
-    "/Users/ilma4/.lmstudio", # LLMs
-    "/Users/ilma4/.gemini", # oauth creds for gemini-cli
-    "/Users/ilma4/.junie",
-
-    "/Users/ilma4/.konan",  # c++
-    "/Users/ilma4/.lldb",   # lldb
-
-    "/Users/ilma4/.npm",    # javascript!
-    "/Users/ilma4/.yarn",   # javascript!
-    "/Users/ilma4/.bun",   # javascript!
-
-    "/Users/ilma4/.swiftly",    # Swift!
-    "/Users/ilma4/.gem",    # ruby(?)
-    "/Users/ilma4/sdk",     # go
-    "/Users/ilma4/go",     # go
-    "/Users/ilma4/.sbt",   # scala
-    "/Users/ilma4/golangci-lint",     # go
-    "/Users/ilma4/.skiko", # idk, just a guess, https://github.com/JetBrains/skiko
-    "/Users/ilma4/.cargo",  # rust
-    "/Users/ilma4/.rustup",  # rust
-    "/Users/ilma4/.gradle",
-    "/Users/ilma4/.m2",     # maven
-    "/Users/ilma4/.nuget", # .NET (?)
-    "/Users/ilma4/.jupyter_kotlin",
-    "/Users/ilma4/.bundle", # ruby(?)
+  "/Users/ilma4/Library/DuetExpertCenter",                                                   # https://apple.stackexchange.com/questions/476332/what-is-duetexpertcentre
+  "/Users/ilma4/Library/Metadata/CoreSpotlight",
+  "/Users/ilma4/Library/Daemon Containers/*/Data/com.apple.milod",
+  "/Users/ilma4/Library/Biome/streams/restricted/Safari.PageLoad",
+  "/Users/ilma4/Library/Application Support/FileProvider",
+  "/Users/ilma4/Library/Group Containers/group.com.apple.secure-control-center-preferences",
+  "/Users/ilma4/Library/Group Containers/*.groups.com.apple.podcasts",
 
 
-    "/Users/ilma4/Applications",
+  "/Users/ilma4/Library/Application Support/MobileSync",
+  "/Users/ilma4/Library/Group Containers/*.group.com.apple.configurator",
+
+  "/Users/ilma4/Google Drive",
+  "/Users/ilma4/Library/CloudStorage",
+
+  "/Users/ilma4/Virtual Machines.localized", # vmware-fusion VMs
+
+  "/Users/ilma4/Projects/JetBrains", # too heavy and contains NDA code
+  "/Users/ilma4/JetBrains",          # too heavy and contains NDA code
+
+  "/Users/ilma4/*/AeroSpace/.build",
+  "/Users/ilma4/Projects/tdesktop",
+  "/Users/ilma4/Projects/telegram",
+  "/Users/ilma4/Projects/Telegram-Android",
+  "/Users/ilma4/Projects/Nekogram",
+
+  "/Users/ilma4/.android",     # android emulator images
+  "/Users/ilma4/.colima",      # colima vm images, alternative to DockerDesktop for Mac
+  "/Users/ilma4/.local/share",
+  "/Users/ilma4/.vscode",      # vscode extensions
+
+  # caches
+  "/Users/ilma4/.ollama",   # LLMs
+  "/Users/ilma4/.lmstudio", # LLMs
+  "/Users/ilma4/.gemini",   # oauth creds for gemini-cli
+  "/Users/ilma4/.junie",
+
+  "/Users/ilma4/.konan", # c++
+  "/Users/ilma4/.lldb",  # lldb
+
+  "/Users/ilma4/.npm",  # javascript!
+  "/Users/ilma4/.yarn", # javascript!
+  "/Users/ilma4/.bun",  # javascript!
+
+  "/Users/ilma4/.swiftly",        # Swift!
+  "/Users/ilma4/.gem",            # ruby(?)
+  "/Users/ilma4/sdk",             # go
+  "/Users/ilma4/go",              # go
+  "/Users/ilma4/.sbt",            # scala
+  "/Users/ilma4/golangci-lint",   # go
+  "/Users/ilma4/.skiko",          # idk, just a guess, https://github.com/JetBrains/skiko
+  "/Users/ilma4/.cargo",          # rust
+  "/Users/ilma4/.rustup",         # rust
+  "/Users/ilma4/.gradle",
+  "/Users/ilma4/.m2",             # maven
+  "/Users/ilma4/.nuget",          # .NET (?)
+  "/Users/ilma4/.jupyter_kotlin",
+  "/Users/ilma4/.bundle",         # ruby(?)
+
+
+  "/Users/ilma4/Applications",
 ]
 
 schedule = "*-*-* 02:00:00"
@@ -123,15 +123,13 @@ schedule-lock-wait = "15m"
 [hdd]
 
 [hdd.copy]
-repository = "sftp:ilma4@laat.local:/mnt/hdd/restic"
+repository = "sftp:ilma4@nas.local:/mnt/hdd/restic"
 password-file = "/Users/ilma4/NoBackup/restic-ilma4-bkp.txt"
 
 from-repo = "local:/Users/ilma4/NoBackup/restic"
 from-password-file = "/Users/ilma4/NoBackup/restic-password.txt"
 
-options = [
-  "sftp.command='/usr/bin/ssh -s sftp'"
-]
+options = ["sftp.command='/usr/bin/ssh -s sftp'"]
 
 schedule = "*-*-* 03:00:00"
 schedule-permission = "user"

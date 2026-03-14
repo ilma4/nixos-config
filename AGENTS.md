@@ -21,8 +21,8 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
   - `hosts/quicksilver/` - macbook from jetbrains, used both as personal and work device. Runs on macOS with nix-darwin. - /nas - ugreen nassync: NAS device used as homelab. Runs on NixOS
     - `quicksilver.nix`
     - `ilma4-home.nix`
-  - `hosts/laat/` - my home nas, also used as homelab. Runs on NixOS
-    - `laat.nix`
+  - `hosts/nas/` - my home nas, also used as homelab. Runs on NixOS
+    - `nas.nix`
     - `home.nix`
     - `nas.nix`
     - `samba.nix` - configuration for samba
@@ -74,4 +74,4 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 ## Environment Setup
 - `nix flake check` - to check that the configuration is correct
 - `nix-rebuild` - to switch to the new configuration
-- `i4-update-host <hostname>` - to switch to the new configuration on selected host (supported hosts: "ilma4-bkp", "laat")
+- `i4-update-host <hostname>` - to switch to the new configuration on selected host (supported hosts: "ilma4-bkp", "nas")

@@ -5,7 +5,7 @@
   pkgs,
   ...
 }: let
-  const = constants.laat.restic-chunker-params-donor;
+  const = constants.nas.restic-chunker-params-donor;
   repoLocation = const.location;
   passwordFile = "/run/secrets/${const.password-secret}";
   restic = lib.getExe pkgs.restic;

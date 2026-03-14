@@ -5,7 +5,7 @@
 #   i4-update-host <flake-location>#<configuration> [targetHost]
 #
 # Arguments:
-#   <flake-location>#<configuration>  Flake reference (e.g., .#laat or /path/to/flake#nas)
+#   <flake-location>#<configuration>  Flake reference (e.g., .#nas or /path/to/flake#nas)
 #   [targetHost]                      Optional SSH target host (defaults to <configuration>)
 #
 # Notes:
@@ -25,7 +25,7 @@ flakeRef="$1"
 
 # Extract configuration name from flake reference (part after #)
 if [[ "$flakeRef" != *"#"* ]]; then
-  echo "Error: Flake reference must contain '#' (e.g., .#laat)"
+  echo "Error: Flake reference must contain '#' (e.g., .#nas)"
   exit 1
 fi
 

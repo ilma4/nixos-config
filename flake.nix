@@ -243,9 +243,9 @@
         module = ./hosts/rex/rex.nix;
       };
 
-      laat = mkNixosSystem {
+      nas = mkNixosSystem {
         system = systems.x86-linux;
-        module = ./hosts/laat/laat.nix;
+        module = ./hosts/nas/nas.nix;
       };
 
       dooku = mkNixosSystem {
@@ -295,12 +295,12 @@
       };
     };
 
-    deploy.nodes.laat = {
-      hostname = "laat.local";
+    deploy.nodes.nas = {
+      hostname = "nas.local";
       profiles.system = {
         sshUser = "root";
         user = "root";
-        path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.laat;
+        path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.nas;
       };
     };
 
