@@ -182,7 +182,7 @@
   composeYaml = ''
     services:
       nginx-reverse-proxy:
-        image: docker.io/library/nginx:stable-alpine
+        image: docker.io/library/nginx:1.29.6-alpine3.23
         container_name: nginx-reverse-proxy
         restart: always
         volumes:
