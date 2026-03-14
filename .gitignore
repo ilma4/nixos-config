@@ -3,3 +3,4 @@ hosts/bkp/docker-compose.env
 dotfiles/zed/prompts/prompts-library-db.0.mdb/lock.mdb
 
 .DS_Store
+.junie
