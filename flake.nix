@@ -252,21 +252,6 @@
         system = systems.x86-linux;
         module = ./hosts/nas/nas.nix;
       };
-
-      dooku = mkNixosSystem {
-        system = systems.arm64-linux;
-        module = ./hosts/dooku/dooku.nix;
-      };
-
-      jailbreak = mkNixosSystem {
-        system = systems.x86-linux;
-        module = ./hosts/jailbreak/jailbreak.nix;
-      };
-
-      nixos-test = mkNixosSystem {
-        system = systems.arm64-linux;
-        module = ./hosts/nixos-test/nixos-test.nix;
-      };
     };
 
     # Darwin Configurations
