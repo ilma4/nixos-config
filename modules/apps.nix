@@ -91,7 +91,6 @@ in {
     raycast = macOnlyCask {}; # cmd+space : search apps and commands
     caffeine = macOnlyCask {};
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
-    far2l = macOnlyCask {};
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
     marta = macOnlyCask {}; # file manager
     google-drive = macOnlyCask {};
