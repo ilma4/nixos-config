@@ -17,8 +17,6 @@
     ./top-commands.nix
   ];
 
-  nixpkgs.config.allowUnfree = true;
-
   home.username = "ilma4";
 
   i4.personal.enable = true;
@@ -41,14 +39,6 @@
     reboot = "systemctl reboot";
   };
 
-  /*
-  programs.gpg.enable = true;
-  services.gpg-agent = {
-    enable = true;
-    pinentryPackage = pkgs.pinentry-gnome3;
-  };
-  */
-
   # xdg.enable = true;
   # xdg.mime.enable = true; # .desktop entryes for apps
 
@@ -69,8 +59,5 @@
     enable = true;
   };
 
-  # Use gcr4 as ssh-agent
-  home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
-
-  home.sessionVariables.ELECTRON_OZONE_PLATFORM_HINT = "auto";
+  # home.sessionVariables.ELECTRON_OZONE_PLATFORM_HINT = "auto";
 }
