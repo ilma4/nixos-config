@@ -11,6 +11,8 @@ in {
           TZ: "Europe/Berlin"
           FTLCONF_webserver_api_password: "correct horse battery staple"
           FTLCONF_dns_listeningMode: "all"
+          FTLCONF_misc_dnsmasq_lines: |-
+            address=/ilma4.local/192.168.1.33
         volumes:
           - "/srv/pihole:/etc/pihole"
           # Uncomment if you’re migrating from v5 and need dnsmasq configs
