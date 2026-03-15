@@ -5,6 +5,7 @@
   ...
 }: let
   inherit (lib) mkIf mkMerge mkOption types;
+  version = "v3.6";
 
   cfg = config.traefikReverseProxy or {};
 
@@ -53,7 +54,7 @@
   composeYaml = ''
     services:
       traefik:
-        image: docker.io/library/traefik:v3.3
+        image: docker.io/library/traefik:${version}
         container_name: traefik
         restart: always
         command:
