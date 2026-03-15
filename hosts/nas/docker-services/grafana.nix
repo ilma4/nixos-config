@@ -1,8 +1,12 @@
 {
   config,
+  lib,
   pkgs,
   ...
-}: {
+}: let
+  version = "12.3.5";
+  port = "3000";
+in {
   users.users.grafana = {
     isSystemUser = true;
     uid = 801;
@@ -16,13 +20,19 @@
     composeFile = pkgs.writeText "docker-compose.yml" ''
       services:
         grafana:
-          image: grafana/grafana:latest
+          image: grafana/grafana:${version}
           ports:
-            - "3000:3000"
+            - "${port}:${port}"
           user: "''${GRAFANA_UID}:''${GRAFANA_GID}"
           volumes:
             - "/srv/grafana:/var/lib/grafana"
           network_mode: host
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.grafana.rule=Host(`grafana.ilma4.local`)"
+            - "traefik.http.routers.grafana.entrypoints=websecure"
+            - "traefik.http.routers.grafana.tls=true"
+            - "traefik.http.services.grafana.loadbalancer.server.port=${port}"
           restart: unless-stopped
     '';
     environment = {
@@ -35,6 +45,6 @@
   ];
 
   networking.firewall.allowedTCPPorts = [
-    3000 # grafana
+    (lib.toIntBase10 port)
   ];
 }
