@@ -41,6 +41,7 @@ args @ {
     ./docker-services/node-exporter.nix
 
     ./docker-services/traefik.nix
+    ./docker-services/error-page.nix
 
     ./docker-services/audiobookshelf.nix
 
