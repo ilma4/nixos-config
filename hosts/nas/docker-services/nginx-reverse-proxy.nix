@@ -191,7 +191,6 @@
           - ${privateDir}:/etc/nginx/pki/private:ro
         networks:
           reverse_proxy:
-            ipv4_address: 10.20.0.10
         ports:
           - "80:80"
           - "443:443"
