@@ -23,8 +23,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
-    ports:
-      - "2283:2283"
 
     expose:
       - "2283"

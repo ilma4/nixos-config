@@ -8,7 +8,7 @@ in {
   };
 
   systemd.services.immich.serviceConfig.WorkingDirectory = dir; # ./.
-  networking.firewall.allowedTCPPorts = [2283];
+  # networking.firewall.allowedTCPPorts = [2283];
 
   # TODO: setup proper UID and GID for postgres, currently it runs as 999:999, but directory is mounted as root:root causing permission issues
   systemd.tmpfiles.rules = [
