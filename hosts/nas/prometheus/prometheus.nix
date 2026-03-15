@@ -4,29 +4,29 @@
   pkgs,
   ...
 }: let
+  port = "9090";
+  version = "v3.10.0";
+in let
   prometheusCompose = pkgs.writeText "prometheus.yml" ''
     services:
       prometheus:
-        image: prom/prometheus:latest
+        image: prom/prometheus:${version}
         user: "${toString config.users.users.prometheus.uid}:${toString config.users.groups.prometheus.gid}"
         container_name: prometheus
         volumes:
           - "${"$"}{CONFIG_FILE:-/aaa}:/etc/prometheus/prometheus.yml:ro"
           - "/srv/prometheus/data:/prometheus"
 
-        labels:
-          - "local.ilma4.customResolve=10.20.0.1:9090" # reverse-proxy will use this IP address to resolve container instead of the container's hostname
-
         network_mode: host
-        # expose:
-        #   - "9090"
-        # networks:
-        #   reverse_proxy:
-        restart: unless-stopped
 
-    # networks:
-    #   reverse_proxy:
-    #     external: true
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.home-assistant.rule=Host(`prometheus.ilma4.local`)"
+          - "traefik.http.routers.home-assistant.entrypoints=websecure"
+          - "traefik.http.routers.home-assistant.tls=true"
+          - "traefik.http.services.home-assistant.loadbalancer.server.port=${port}"
+
+        restart: unless-stopped
   '';
 in {
   users.users.prometheus = {
@@ -52,6 +52,6 @@ in {
   };
 
   networking.firewall.allowedTCPPorts = [
-    9090
+    (lib.toIntBase10 port)
   ];
 }
