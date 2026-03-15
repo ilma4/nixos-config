@@ -20,7 +20,11 @@ in {
           - /etc/localtime:/etc/localtime:ro
           - /run/dbus:/run/dbus:ro
         labels:
-          - "local.ilma4.customResolve=10.20.0.1:8123" # reverse-proxy will use this IP address to resolve container instead of the container's hostname
+          - "traefik.enable=true"
+          - "traefik.http.routers.home-assistant.rule=Host(`home-assistant.ilma4.local`)"
+          - "traefik.http.routers.home-assistant.entrypoints=websecure"
+          - "traefik.http.routers.home-assistant.tls=true"
+          - "traefik.http.services.home-assistant.loadbalancer.server.port=8123"
         network_mode: host
         restart: unless-stopped
         privileged: true

@@ -17,6 +17,12 @@
       audiobookshelf:
         image: ghcr.io/advplyr/audiobookshelf:${version}
         container_name: audiobookshelf
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.ilma4.local`)"
+          - "traefik.http.routers.audiobookshelf.entrypoints=websecure"
+          - "traefik.http.routers.audiobookshelf.tls=true"
+          - "traefik.http.services.audiobookshelf.loadbalancer.server.port=80"
         restart: unless-stopped
 
         networks:

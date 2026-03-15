@@ -40,7 +40,7 @@ args @ {
     ./docker-services/grafana.nix
     ./docker-services/node-exporter.nix
 
-    ./docker-services/nginx-reverse-proxy.nix
+    ./docker-services/traefik.nix
 
     ./docker-services/audiobookshelf.nix
 

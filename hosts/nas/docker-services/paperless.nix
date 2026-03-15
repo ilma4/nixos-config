@@ -17,6 +17,12 @@ in {
         image: ghcr.io/paperless-ngx/paperless-ngx:${paperless-version}
         restart: unless-stopped
         container_name: paperless
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.paperless.rule=Host(`paperless.ilma4.local`)"
+          - "traefik.http.routers.paperless.entrypoints=websecure"
+          - "traefik.http.routers.paperless.tls=true"
+          - "traefik.http.services.paperless.loadbalancer.server.port=8000"
         depends_on:
           - broker
           - gotenberg

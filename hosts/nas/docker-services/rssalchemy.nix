@@ -24,6 +24,12 @@
         expose:
           - "8080"
         container_name: rssalchemy-webserver
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.rssalchemy-webserver.rule=Host(`rssalchemy-webserver.ilma4.local`)"
+          - "traefik.http.routers.rssalchemy-webserver.entrypoints=websecure"
+          - "traefik.http.routers.rssalchemy-webserver.tls=true"
+          - "traefik.http.services.rssalchemy-webserver.loadbalancer.server.port=8080"
         restart: unless-stopped
         environment:
           - WEBSERVER_ADDRESS=0.0.0.0:8080

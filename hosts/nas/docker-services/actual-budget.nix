@@ -22,6 +22,12 @@ in {
     services:
       actual-budget:
         container_name: actual-budget
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.actual-budget.rule=Host(`actual-budget.ilma4.local`)"
+          - "traefik.http.routers.actual-budget.entrypoints=websecure"
+          - "traefik.http.routers.actual-budget.tls=true"
+          - "traefik.http.services.actual-budget.loadbalancer.server.port=5006"
         image: "ghcr.io/actualbudget/actual:${actual-version}-alpine"
         user: "${UID_GID}"
         expose:
