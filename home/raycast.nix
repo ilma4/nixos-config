@@ -14,16 +14,29 @@ with lib; let
     "nix-rebuild.applescript" = ./raycast-scripts/nix-rebuild.applescript;
     "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;
     "chrome.applescript" = ./raycast-scripts/chrome.applescript;
-    "switch-monitor" = pkgs.writeText "aaa.applescript" ''
+
+    "switch-monitor" = pkgs.writeText "monitor-displayport.applescript" ''
       #!/usr/bin/osascript
 
       # Required parameters:
       # @raycast.schemaVersion 1
-      # @raycast.title Switch Monitor
+      # @raycast.title Monitor to DisplayPort
       # @raycast.mode silent
       # @raycast.packageName Monitors
 
       do shell script "${pkgs.monitor-input}/bin/monitor-input U2725QE=DP1"
+    '';
+
+    "monitor-hdmi.applescript" = pkgs.writeText "monitor-hdmi.applescript" ''
+      #!/usr/bin/osascript
+
+      # Required parameters:
+      # @raycast.schemaVersion 1
+      # @raycast.title Monitor to HDMI
+      # @raycast.mode silent
+      # @raycast.packageName Monitors
+
+      do shell script "${pkgs.monitor-input}/bin/monitor-input U2725QE=HDMI1"
     '';
   };
 in {
