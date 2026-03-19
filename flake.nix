@@ -250,6 +250,11 @@
         system = systems.x86-linux;
         module = ./hosts/nas/nas.nix;
       };
+
+      msi-modern = mkNixosSystem {
+        system = systems.x86-linux;
+        module = ./hosts/msi-modern/msi-modern.nix;
+      };
     };
 
     # Darwin Configurations

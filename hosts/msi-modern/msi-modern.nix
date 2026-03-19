@@ -1,63 +1,95 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
   ...
 }: {
-  imports = [
-    # inputs.home-manager.nixosModules.home-manager
+  imports = let
+    modules = ../../modules;
+  in [
+    inputs.home-manager.nixosModules.home-manager
+    inputs.sops-nix.nixosModules.sops
 
-    ../../home/base.nix
-    # ../../home/personal.nix
-    # ../../home/dev.nix
-    # ../../home/zed.nix
+    "${modules}/avahi.nix"
+    "${modules}/zram.nix"
+    "${modules}/sops.nix"
 
-    ./gui-tweaks.nix
-    ./sway.nix
-    ./top-commands.nix
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
   ];
 
-  home.username = "ilma4";
+  i4.zram.enable = true;
+  i4.avahi.enable = true;
 
-  i4.personal.enable = true;
-  i4.zed.enable = true;
-  i4.dev.enable = true;
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
-  targets.genericLinux.enable = true;
+  networking.hostName = "msi-modern"; # Define your hostname.
 
-  services.playerctld.enable = true;
-  services.easyeffects.enable = true;
+  # Configure network connections interactively with nmcli or nmtui.
+  networking.networkmanager.enable = true;
 
-  # home.file = {
-  #   # ".config/easyeffects/irs/Sony MDR-7506 minimum phase 48000 Hz.irs".source = ../../dotfiles/easyeffects/Sony MDR-7506 minimum phase 48000 Hz.irs;
-  #   # ".config/easyeffects/output/Sony MDR-7506 no bass boost.json".source = ../../dotfiles/easyeffects/Sony MDR-7506 no bass boost.json;
+  # Select internationalisation properties.
+  # i18n.defaultLocale = "en_US.UTF-8";
+  # console = {
+  #   font = "Lat2-Terminus16";
+  #   keyMap = "us";
+  #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  top-commands.commands = lib.mkOptionDefault {
-    suspend = "systemctl suspend";
-    sleep = "systemctl suspend";
-    reboot = "systemctl reboot";
-  };
+  # Enable the X11 windowing system.
+  services.xserver.enable = true;
 
-  # xdg.enable = true;
-  # xdg.mime.enable = true; # .desktop entryes for apps
+  # Enable the GNOME Desktop Environment.
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
-  home.sessionPath = let
-    HOME = config.home.homeDirectory;
-  in [
-    "${HOME}/.local/bin"
-    "${HOME}/.local/share/JetBrains/Toolbox/scripts"
-  ];
+  # Configure keymap in X11
+  # services.xserver.xkb.layout = "us";
+  # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
-  home.packages = with pkgs; [
-    playerctl
-    pkg-config
-    bitwarden-cli
-  ];
+  # Enable CUPS to print documents.
+  # services.printing.enable = true;
 
-  services.syncthing = {
+  services.pipewire = {
     enable = true;
+    pulse.enable = true;
   };
 
-  # home.sessionVariables.ELECTRON_OZONE_PLATFORM_HINT = "auto";
+  # Enable touchpad support (enabled default in most desktopManager).
+  services.libinput.enable = true;
+
+  programs.firefox.enable = true;
+
+  # List packages installed in system profile.
+  # You can use https://search.nixos.org/ to find more packages (and options).
+  environment.systemPackages = with pkgs; [
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+  ];
+
+  home-manager.users = {
+    "ilma4" = import ./home.nix;
+  };
+
+  # This option defines the first version of NixOS you have installed on this particular machine,
+  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
+  #
+  # Most users should NEVER change this value after the initial install, for any reason,
+  # even if you've upgraded your system to a new NixOS release.
+  #
+  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
+  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
+  # to actually do that.
+  #
+  # This value being lower than the current NixOS release does NOT mean your system is
+  # out of date, out of support, or vulnerable.
+  #
+  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
+  # and migrated your data accordingly.
+  #
+  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
+  system.stateVersion = "25.11"; # Did you read the comment?
 }

@@ -28,7 +28,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
     - `samba.nix` - configuration for samba
     - `hdd-idle-guard.nix` - spins down hard drives after a period of inactivity
     - `docker-services/` - directory containing nix modules with docker-compose services
-  - `hosts/msi-modern/` - laptop running on Ubuntu with home-manager
+  - `hosts/msi-modern/` - personal laptop running on NixOS
 
   - usually filename ending with `home.nix` is home-manager configuration
   - usually filename ending with `configuration.nix` is main NixOS/Nix-darwin configuration file
