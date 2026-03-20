@@ -13,7 +13,7 @@ in {
   };
   users.groups.actual-budget.gid = config.users.users.actual-budget.uid;
 
-  dockerCompose.actual-budget.composeFile = pkgs.writeText "docker-compose.yml" ''
+  dockerCompose.actual-budget.composeText = ''
     # Actual Budget - Docker Compose
     # Expects an environment variable UID_GID (format: "<uid>:<gid>") to run the container as a specific user.
     # Example: export UID_GID="800:800"

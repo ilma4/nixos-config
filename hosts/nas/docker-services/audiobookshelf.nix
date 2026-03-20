@@ -12,7 +12,7 @@
   audiobooksDir = "${srvDir}/audiobooks";
   podcastsDir = "${srvDir}/podcasts";
 
-  composeFile = pkgs.writeText "audiobookshelf.yml" ''
+  composeText = ''
     services:
       audiobookshelf:
         image: ghcr.io/advplyr/audiobookshelf:${version}
@@ -51,7 +51,7 @@
 in {
   config = {
     dockerCompose.audiobookshelf = {
-      composeFile = composeFile;
+      composeText = composeText;
       maxBodySize = "10240M";
     };
 

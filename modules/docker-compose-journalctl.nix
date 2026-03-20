@@ -15,7 +15,7 @@ on 2025-02-21 journalctl doesn't support "exclude" feature, so this script filte
     (lib.mapAttrsToList (name: svc: let
       composeForParse = builtins.toFile "docker-compose-journalctl-${name}.yml" (
         # safe, because later we only use container_name and serviceName
-        builtins.unsafeDiscardStringContext (builtins.readFile svc.composeFile)
+        builtins.unsafeDiscardStringContext svc.composeText
       );
       services = (myLib.yaml.fromYaml composeForParse).services or {};
     in (lib.mapAttrsToList (serviceName: service: service.container_name or serviceName) services)))

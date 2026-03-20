@@ -3,7 +3,7 @@
 in {
   dockerCompose.stirling-pdf = {
     enable = true;
-    composeFile = pkgs.writeText "docker-compose.yml" ''
+    composeText = ''
       name: stirling-pdf
       services:
         stirling-pdf:

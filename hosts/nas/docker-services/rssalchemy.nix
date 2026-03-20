@@ -74,6 +74,6 @@ in {
     environment = {
       SOURCE_PATH = "${src}";
     };
-    composeFile = composeYaml;
+    composeText = composeYaml;
   };
 }

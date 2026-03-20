@@ -1,7 +1,7 @@
 {pkgs, ...}: let
   version = "2026.02.0";
 in {
-  dockerCompose.pihole.composeFile = pkgs.writeText "docker-compose.yml" ''
+  dockerCompose.pihole.composeText = ''
     name: pihole
     services:
       pihole:

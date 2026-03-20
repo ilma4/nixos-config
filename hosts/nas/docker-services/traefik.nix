@@ -105,7 +105,7 @@ in {
       };
 
       dockerCompose."reverse_proxy" = {
-        composeFile = "${pkgs.writeText "reverse_proxy-compose.yaml" composeYaml}";
+        composeText = composeYaml;
       };
 
       networking.firewall.allowedTCPPorts = [80 443 8080];

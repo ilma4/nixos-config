@@ -17,7 +17,7 @@
     environment = {
       ASSETS = "${./homer}";
     };
-    composeFile = pkgs.writeText "docker-compose.yml" ''
+    composeText = ''
       name: "homer"
       services:
         homer:

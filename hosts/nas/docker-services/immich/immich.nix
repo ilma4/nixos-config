@@ -2,7 +2,7 @@
   dir = pkgs.copyPathToStore ./.;
 in {
   dockerCompose.immich = {
-    composeFile = "${dir}/docker-compose.yml";
+    composeText = builtins.readFile "${dir}/docker-compose.yml";
     envFile = "${dir}/.env";
     maxBodySize = "100000M";
   };

@@ -14,7 +14,7 @@
   };
 
   dockerCompose.lidarr = {
-    composeFile = pkgs.writeText "lidarr-compose.yml" ''
+    composeText = ''
       name: lidarr
       services:
         lidarr:

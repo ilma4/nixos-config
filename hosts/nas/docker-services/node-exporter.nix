@@ -27,7 +27,7 @@ in {
 
     # Configure docker-compose service
     dockerCompose.node-exporter = {
-      composeFile = pkgs.writeText "node-exporter.yml" ''
+      composeText = ''
         services:
           node-exporter:
             image: "prom/node-exporter:${node-exporter-version}"

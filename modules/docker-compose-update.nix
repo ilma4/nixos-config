@@ -43,10 +43,7 @@
       case "$name" in
         ${lib.concatStringsSep "\n        " (lib.mapAttrsToList (
       name: svc: let
-        composeFile =
-          if (builtins.typeOf svc.composeFile == "path")
-          then pkgs.copyPathToStore svc.composeFile
-          else svc.composeFile;
+        composeFile = pkgs.writeText "docker-compose-${name}.yml" svc.composeText;
         envArg =
           if (svc.envFile != null)
           then " --env-file '${svc.envFile}'"

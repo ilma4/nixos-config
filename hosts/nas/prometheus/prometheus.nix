@@ -7,7 +7,7 @@
   port = "9090";
   version = "v3.10.0";
 in let
-  prometheusCompose = pkgs.writeText "prometheus.yml" ''
+  prometheusCompose = ''
     services:
       prometheus:
         image: prom/prometheus:${version}
@@ -45,7 +45,7 @@ in {
   ];
 
   dockerCompose.prometheus = {
-    composeFile = prometheusCompose;
+    composeText = prometheusCompose;
     environment = {
       CONFIG_FILE = "${./config.yml}";
     };

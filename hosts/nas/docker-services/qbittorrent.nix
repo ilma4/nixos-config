@@ -23,7 +23,7 @@
     # i4-encrypted-files = [wg-conf];
 
     dockerCompose.qbittorrent = {
-      composeFile = ../../../compose/qbittorrent.yml;
+      composeText = builtins.readFile ../../../compose/qbittorrent.yml;
       # enable = false;
       environment = {
         # TODO: fix

@@ -9,7 +9,7 @@ in {
   };
   users.groups.homeassistant.gid = 986;
 
-  dockerCompose.home-assistant.composeFile = pkgs.writeText "docker-compose.yml" ''
+  dockerCompose.home-assistant.composeText = ''
     name: home-assistant
     services:
       home-assistant:

@@ -65,7 +65,7 @@ in {
   config = mkIf cfg.enable (mkMerge [
     {
       dockerCompose."error-page" = {
-        composeFile = "${pkgs.writeText "error-page-compose.yaml" composeYaml}";
+        composeText = composeYaml;
       };
     }
   ]);

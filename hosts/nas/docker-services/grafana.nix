@@ -17,7 +17,7 @@ in {
   };
 
   dockerCompose.grafana = {
-    composeFile = pkgs.writeText "docker-compose.yml" ''
+    composeText = ''
       services:
         grafana:
           image: grafana/grafana:${version}

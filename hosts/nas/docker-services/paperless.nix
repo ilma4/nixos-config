@@ -5,7 +5,7 @@
   gotenberg-version = "8.25";
 in {
   # Containers
-  dockerCompose.paperless.composeFile = pkgs.writeText "docker-compose.yml" ''
+  dockerCompose.paperless.composeText = ''
     name: paperless-ngx
     services:
       broker:
