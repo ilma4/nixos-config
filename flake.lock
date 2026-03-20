@@ -225,22 +225,6 @@
         "type": "github"
       }
     },
-    "monitor-input-rs": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1765633646,
-        "narHash": "sha256-CW++0VprTswB8o7wK32p3XC4xo064i7vCn0rSGNxOXA=",
-        "owner": "kojiishi",
-        "repo": "monitor-input-rs",
-        "rev": "4334fdd373a22d15c90908406f269a8d83871214",
-        "type": "github"
-      },
-      "original": {
-        "owner": "kojiishi",
-        "repo": "monitor-input-rs",
-        "type": "github"
-      }
-    },
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
@@ -461,7 +445,6 @@
         "home-manager": "home-manager",
         "hoopsnake": "hoopsnake",
         "mcp-nixos": "mcp-nixos",
-        "monitor-input-rs": "monitor-input-rs",
         "nix-darwin": "nix-darwin",
         "nix-homebrew": "nix-homebrew",
         "nix-system-graphics": "nix-system-graphics",

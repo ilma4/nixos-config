@@ -60,10 +60,6 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    monitor-input-rs = {
-      url = "github:kojiishi/monitor-input-rs";
-      flake = false;
-    };
 
     # Platform-specific utilities
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
@@ -97,36 +93,11 @@
         inherit overlays;
       };
 
-    monitorInputOverlay = final: prev: {
-      monitor-input = final.rustPlatform.buildRustPackage {
-        pname = "monitor-input";
-        version = "unstable";
-
-        src = inputs.monitor-input-rs;
-
-        cargoLock = {
-          lockFile = "${inputs.monitor-input-rs}/Cargo.lock";
-        };
-
-        # runtime dependencies
-        buildInputs = final.lib.optionals final.stdenv.isLinux [
-          final.systemd
-        ];
-
-        meta = with final.lib; {
-          description = "Control monitor input sources";
-          homepage = "https://github.com/kojiishi/monitor-input-rs";
-          license = licenses.mit;
-          mainProgram = "monitor-input";
-          platforms = platforms.all;
-        };
-      };
-    };
 
     # Common overlays
     commonOverlays = [
       inputs.rust-overlay.overlays.default
-      monitorInputOverlay
+      (import ./overlays/monitor-input-overlay.nix)
       (import ./overlays/beads-ui-overlay.nix)
       (import ./overlays/paperless-mcp-overlay.nix)
       (import ./overlays/pi-coding-agent-overlay.nix)
