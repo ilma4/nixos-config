@@ -26,6 +26,10 @@ in {
           composeText = mkOption {
             type = lib.types.str;
           };
+          composeFile = mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+          };
           environment = mkOption {
             type = types.attrsOf types.str;
             default = {};
@@ -53,7 +57,10 @@ in {
     systemd.services =
       mapAttrs
       (name: svc: let
-        composeFile = pkgs.writeText "docker-compose-${name}.yml" svc.composeText;
+        composeFile =
+          if svc.composeFile != null
+          then svc.composeFile
+          else (pkgs.writeText "docker-compose-${name}.yml" svc.composeText);
         compose =
           "${pkgs.podman}/bin/podman compose --file ${composeFile}"
           + (
