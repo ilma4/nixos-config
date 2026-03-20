@@ -52,8 +52,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     yaml = {
-      url = "github:folospior/yaml.arm64.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:milahu/nix-yaml";
+      flake = false;
     };
     quickemu = {
       url = "github:quickemu-project/quickemu/4.9.9";
@@ -186,7 +186,10 @@
         // {
           myLib = {
             secrets = ./secrets;
-            yaml = inputs.yaml.lib.${system};
+            yaml = {
+              fromYaml = (import "${inputs.yaml}/from-yaml.nix") {lib = pkgs.lib;};
+              toYaml = (import "${inputs.yaml}/to-yaml.nix") {lib = pkgs.lib;};
+            };
             unifiedModules = let
               checkers = {
                 isDarwin = type == "darwin";
