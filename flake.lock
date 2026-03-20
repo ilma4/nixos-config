@@ -280,26 +280,6 @@
         "type": "github"
       }
     },
-    "nix-rosetta-builder": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1764309134,
-        "narHash": "sha256-z7gFxdQVOZV76LUjCKQy13eaYq4q+I3W+9WKGh+osiU=",
-        "ref": "refs/heads/t",
-        "rev": "1c2148c157650c2852c99660df809e96b9504f05",
-        "revCount": 131,
-        "type": "git",
-        "url": "https://nossa.ee/~talya/nix-rosetta-builder"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://nossa.ee/~talya/nix-rosetta-builder"
-      }
-    },
     "nix-system-graphics": {
       "inputs": {
         "nixpkgs": [
@@ -484,7 +464,6 @@
         "monitor-input-rs": "monitor-input-rs",
         "nix-darwin": "nix-darwin",
         "nix-homebrew": "nix-homebrew",
-        "nix-rosetta-builder": "nix-rosetta-builder",
         "nix-system-graphics": "nix-system-graphics",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_4",

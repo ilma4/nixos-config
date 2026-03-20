@@ -14,7 +14,6 @@
     ../../modules/apps.nix
 
     inputs.home-manager.darwinModules.home-manager
-    inputs.nix-rosetta-builder.darwinModules.default
     inputs.sops-nix.darwinModules.sops
   ];
 
@@ -201,15 +200,6 @@
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
   programs.fish.enable = true;
-
-  # uncomment on clean nix-darwin
-  nix.linux-builder.enable = false;
-  nix.linux-builder.config.virtualisation.cores = 8;
-  nix.linux-builder.config.virtualisation.memorySize = lib.mkForce 8192;
-  nix.linux-builder.config.virtualisation.diskSize = lib.mkForce (60 * 1024);
-
-  nix-rosetta-builder.enable = true;
-  nix-rosetta-builder.onDemand = true; # builder sleeps when not in use
 
   # VPN to access homelab
   services.tailscale.enable = true;

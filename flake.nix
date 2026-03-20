@@ -66,10 +66,6 @@
     };
 
     # Platform-specific utilities
-    nix-rosetta-builder = {
-      url = "git+https://nossa.ee/~talya/nix-rosetta-builder";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     nix-system-graphics = {
       url = "github:soupglasses/nix-system-graphics";
