@@ -45,6 +45,11 @@ in {
   };
 
   config = lib.mkIf config.i4.dockerComposeEnable {
+    systemd.targets.docker-compose = {
+      description = "Target for all docker-compose services";
+      wantedBy = ["multi-user.target"];
+    };
+
     systemd.services =
       mapAttrs
       (name: svc: let
@@ -81,7 +86,8 @@ in {
           Restart = "always";
         };
 
-        wantedBy = ["multi-user.target"];
+        wantedBy = ["docker-compose.target"];
+        partOf = ["docker-compose.target"];
       })
       enabledComposeServices;
   };
