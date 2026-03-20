@@ -13,8 +13,8 @@
 
     ../../modules/apps.nix
 
-    inputs.home-manager.darwinModules.home-manager
-    inputs.sops-nix.darwinModules.sops
+    inputs.home-manager-darwin.darwinModules.home-manager
+    inputs.sops-nix-darwin.darwinModules.sops
   ];
 
   # environment.systemPackages = with pkgs; [

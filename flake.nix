@@ -27,6 +27,10 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    home-manager-darwin = {
+      url = "github:nix-community/home-manager/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
     system-manager = {
       url = "github:numtide/system-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -37,11 +41,19 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix-darwin = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
 
     # Development and tooling
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    rust-overlay-darwin = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     hoopsnake = {
       url = "github:boinkor-net/hoopsnake";
@@ -51,6 +63,10 @@
       url = "github:utensils/mcp-nixos";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mcp-nixos-darwin = {
+      url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
     yaml = {
       url = "github:milahu/nix-yaml";
       flake = false;
@@ -59,7 +75,6 @@
       url = "github:quickemu-project/quickemu/4.9.9";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
-
 
     # Platform-specific utilities
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
@@ -92,7 +107,6 @@
         config.allowUnfree = true;
         inherit overlays;
       };
-
 
     # Common overlays
     commonOverlays = [

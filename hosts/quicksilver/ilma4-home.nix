@@ -7,7 +7,7 @@
   ...
 }: {
   imports = [
-    inputs.sops-nix.homeManagerModules.sops
+    inputs.sops-nix-darwin.homeManagerModules.sops
 
     ../../home/base.nix
 
