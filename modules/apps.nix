@@ -35,18 +35,10 @@ in {
     todoist-electron = {macName = "todoist-app";};
 
     zed-editor = {macName = "zed";};
-    visual-studio-code = {};
 
     # coding agents
-    gemini-cli = asLinuxPackage {macInstallation = "brew";};
     claude-code = asLinuxPackage {};
     codex = asLinuxPackage {};
-    opencode = asLinuxPackage {
-      macInstallation = "brew";
-      macName = "anomalyco/tap/opencode";
-    };
-
-    gitbutler = asLinuxPackage {}; # git client with virtual branches
 
     # lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
     # comfyui = macOnlyCask {}; # tool for generating images/videos
@@ -95,7 +87,6 @@ in {
     marta = macOnlyCask {}; # file manager
     google-drive = macOnlyCask {};
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
-    zoom = macOnlyCask {};
     vial = macOnlyCask {}; # configure my split keyboard
     skim = macOnlyCask {}; # pdf viewer
     eqmac = macOnlyCask {}; # equalizer for macos
