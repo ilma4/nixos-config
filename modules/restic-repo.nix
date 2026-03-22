@@ -21,6 +21,7 @@
     description = "Create and initialize restic repository ${name}";
     wantedBy = ["multi-user.target"];
     after = ["sops-nix.service"];
+    path = [pkgs.restic];
     serviceConfig = {
       Type = "oneshot";
       User = repo.user;
@@ -31,7 +32,6 @@
 
       password_file = "${repo.password-file}"
       location = "${repo.location}"
-      restic_bin = "${resticBin}"
 
       if os.path.exists(os.path.join(location, "config")):
         print(f"restic-repo[${name}] at ''${location} already exists")
@@ -39,7 +39,7 @@
 
       os.makedirs(location, exist_ok=True)
       os.chmod(location, int("${repo.permissions}", 8))
-      subprocess.run([restic_bin, "--no-cache=true", "--repo", location, "--password-file", password_file, "init"], check=True)
+      subprocess.run(["restic", "--no-cache=true", "--repo", location, "--password-file", password_file, "init"], check=True)
     '');
   };
 
@@ -49,6 +49,7 @@
     after = ["restic-repo-${name}-create.service"];
     requires = ["restic-repo-${name}-create.service"];
     enable = repo.old-password-file != null;
+    path = [pkgs.restic];
     serviceConfig = {
       Type = "oneshot";
       User = repo.user;
@@ -60,9 +61,8 @@
       password_file = "${repo.password-file}"
       old_password_file = "${repo.old-password-file}"
       location = "${repo.location}"
-      restic_bin = "${resticBin}"
 
-      base_cmd = [restic_bin, "--no-cache=true", "--repo", location]
+      base_cmd = ["restic", "--no-cache=true", "--repo", location]
 
       if subprocess.run(base_cmd + ["--password-file", password_file, "key", "list"]).returncode == 0:
         sys.exit(0)
