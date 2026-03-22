@@ -179,14 +179,12 @@ in {
               description = "Mode for the repository directory.";
             };
             user = mkOption {
-              type = types.nullOr types.singleLineStr;
-              default = null;
-              description = "Owner user for the repository directory (support only NixOS and nix-darwin)";
+              type = types.singleLineStr;
+              description = "Owner user for the repository directory";
             };
             group = mkOption {
-              type = types.nullOr types.singleLineStr;
-              default = null;
-              description = "Owner group for the repository directory (support only NixOS and nix-darwiln)";
+              type = types.singleLineStr;
+              description = "Owner group for the repository directory";
             };
           };
         }));
@@ -196,53 +194,11 @@ in {
     };
   };
 
-  config = mkIf cfg.enable (
-    let
-      hasSopsSecrets = (config ? sops) && (config.sops ? secrets) && config.sops.secrets != {};
-      invalidOwnershipRepos = lib.attrNames (
-        lib.filterAttrs (
-          _: repo:
-            if isHomeManager
-            then repo.user != null || repo.group != null
-            else repo.user == null || repo.group == null
-        )
-        cfg.repos
-      );
-    in
-      mkMerge [
-        {
-          assertions = [
-            {
-              assertion = invalidOwnershipRepos == [];
-              message =
-                if isHomeManager
-                then "On Home Manager, `i4.restic.repos.<name>.user` and `i4.restic.repos.<name>.group` must be null. Invalid repos: ${lib.concatStringsSep ", " invalidOwnershipRepos}"
-                else "On NixOS and nix-darwin, `i4.restic.repos.<name>.user` and `i4.restic.repos.<name>.group` must be set. Invalid repos: ${lib.concatStringsSep ", " invalidOwnershipRepos}";
-            }
-          ];
-        }
-        (optionalAttrs isHomeManager {
-          home.activation.i4-restic-repo =
-            lib.hm.dag.entryAfter (
-              ["writeBoundary"]
-              ++ lib.optional hasSopsSecrets "sops-nix"
-            ) ''
-              ${activationScriptExe}
-            '';
-        })
-        (optionalAttrs (!isHomeManager && !isDarwin) {
-          system.activationScripts.i4-restic-repo =
-            lib.stringAfter
-            (lib.optional hasSopsSecrets "setupSecrets")
-            ''
-              ${activationScriptExe}
-            '';
-        })
-        (optionalAttrs (!isHomeManager && isDarwin) {
-          system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
-            ${activationScriptExe}
-          '';
-        })
-      ]
-  );
+  config = mkIf cfg.enable {
+    system.activationScripts.i4-restic-repo =
+      lib.stringAfter "setupSecrets"
+      ''
+        ${activationScriptExe}
+      '';
+  };
 }
