@@ -32,7 +32,7 @@
       location = "${repo.location}"
 
       if os.path.exists(os.path.join(location, "config")):
-        print(f"restic-repo[${name}] at ''${location} already exists")
+        print(f"restic-repo[${name}] at {location} already exists")
         sys.exit(0)
 
       os.makedirs(location, exist_ok=True)
@@ -67,10 +67,11 @@
 
       base_cmd = ["restic", "--no-cache=true", "--repo", location]
 
-      if subprocess.run(base_cmd + ["--password-file", password_file, "key", "list"]).returncode == 0:
-        sys.exit(0)
-
-      subprocess.run(base_cmd + ["--password-file", old_password_file, "key", "add", "--new-password-file", password_file], check=True)
+      print(f"password_file={password_file}, location={location}\nchecking if password opens repo")
+      if subprocess.run(base_cmd + ["--password-file", password_file, "key", "list"]).returncode != 0:
+        print(f"password_file={password_file}, location={location}\nadding password to repo")
+        subprocess.run(base_cmd + ["--password-file", old_password_file, "key", "add", "--new-password-file", password_file], check=True)
+        print(f"password_file={password_file}, location={location}\npassword added")
 
       keys = json.loads(subprocess.run(base_cmd + ["--password-file", password_file, "key", "list", "--json"], capture_output=True, text=True, check=True).stdout)
 

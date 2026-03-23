@@ -68,6 +68,14 @@ args @ {
       user = "root";
       group = "root";
     };
+  };
+  /*
+    restic-server = {
+      location = "/mnt/hdd/restic-server";
+      password-file = "/run/secrets/${constants.nas.restic.password-file}";
+      user = "root";
+      group = "root";
+    };
     restic-ilma4 = let
       const = constants.nas.restic-ilma4;
     in {
@@ -78,6 +86,7 @@ args @ {
       group = "1000"; # TODO: fix this permission maybe
     };
   };
+  */
 
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
