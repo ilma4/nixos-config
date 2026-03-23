@@ -74,7 +74,7 @@ args @ {
     in {
       location = "/mnt/hdd/restic";
       password-file = "/run/secrets/${const.password-secret}";
-      old-password-file = lib.mkIf (const.old-password-secret != null) "/run/secrets/${const.old-password-file}";
+      old-password-file = const.old-password-file;
       user = "ilma4";
       group = "1000"; # TODO: fix this permission maybe
     };

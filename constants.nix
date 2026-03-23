@@ -18,10 +18,15 @@
       location = "/var/restic-chunker-params-donor-repo";
       password-secret = "restic_password/chunker_params_donor";
     };
-    restic-ilma4 = {
+    restic-ilma4 = rec {
       location = "/mnt/hdd/restic";
       password-secret = "restic_password/ilma4_legacy";
+      password-file = "/run/secrets/${password-secret}";
       old-password-secret = null; # used to migrate passwod on repo
+      old-password-file =
+        if old-password-file == null
+        then null
+        else "/run/secrets/${old-password-secret}";
     };
     restic = {
       repo = "/mnt/hdd/restic";
