@@ -15,20 +15,18 @@
 
   cfg = config.i4.restic;
 
-  resticBin = "${pkgs.restic}/bin/restic";
-
   mkRepoCreateService = name: repo: {
     description = "Create and initialize restic repository ${name}";
     wantedBy = ["multi-user.target"];
     after = ["sops-nix.service"];
-    path = [pkgs.restic];
+    path = [pkgs.restic pkgs.sudo];
     serviceConfig = {
       Type = "oneshot";
-      User = repo.user;
-      Group = repo.group;
+      # User = repo.user;
+      # Group = repo.group;
     };
     script = toString (pkgs.writers.writePython3Bin "create-repo.py" {} ''
-      import os, sys, subprocess
+      import os, sys, subprocess, shutil
 
       password_file = "${repo.password-file}"
       location = "${repo.location}"
@@ -39,7 +37,8 @@
 
       os.makedirs(location, exist_ok=True)
       os.chmod(location, int("${repo.permissions}", 8))
-      subprocess.run(["restic", "--no-cache=true", "--repo", location, "--password-file", password_file, "init"], check=True)
+      shutil.chown(location, user="${repo.user}", group="${repo.group}")
+      subprocess.run(["sudo", "-u", "${repo.user}", "restic", "--no-cache=true", "--repo", location, "--password-file", password_file, "init"], check=True)
     '');
   };
 
