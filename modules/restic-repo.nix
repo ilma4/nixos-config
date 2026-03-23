@@ -25,7 +25,7 @@
       # User = repo.user;
       # Group = repo.group;
     };
-    script = toString (pkgs.writers.writePython3Bin "create-repo.py" {} ''
+    script = lib.getExe (pkgs.writers.writePython3Bin "create-repo.py" {doCheck = false;} ''
       import os, sys, subprocess, shutil
 
       password_file = "${repo.password-file}"
@@ -54,11 +54,15 @@
       User = repo.user;
       Group = repo.group;
     };
-    script = toString (pkgs.writers.writePython3Bin "rorate-keys.py" {} ''
+    script = lib.getExe (pkgs.writers.writePython3Bin "rorate-keys.py" {doCheck = false;} ''
       import os, sys, subprocess, json
 
       password_file = "${repo.password-file}"
-      old_password_file = "${repo.old-password-file}"
+      old_password_file = "${
+        if repo.old-password-file != null
+        then repo.old-password-file
+        else ""
+      }"
       location = "${repo.location}"
 
       base_cmd = ["restic", "--no-cache=true", "--repo", location]
@@ -68,7 +72,7 @@
 
       subprocess.run(base_cmd + ["--password-file", old_password_file, "key", "add", "--new-password-file", password_file], check=True)
 
-      keys = json.load(subprocess.run(base_cmd + ["--password-file", password_file, "key", "list", "--json"], capture_output=True, text=True, check=True).stdout)
+      keys = json.loads(subprocess.run(base_cmd + ["--password-file", password_file, "key", "list", "--json"], capture_output=True, text=True, check=True).stdout)
 
       for k in [k for k in keys if k.get("current") == False]:
         subprocess.run(base_cmd + ["--password-file", password_file, "key", "remove", k["id"]], check=True)
