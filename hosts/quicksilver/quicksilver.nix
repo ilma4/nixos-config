@@ -149,6 +149,7 @@
     ];
     brews = [
       "steveyegge/beads/bd"
+      "mas" # cli util to install apps from AppStore
     ];
 
     masApps = {
