@@ -49,3 +49,10 @@ They have to search for the newer version of the service, find the docker-compos
 - search text in files
 - comments
 - folding
+
+# Always new versions of apps
+
+- codex (check release versions on github, and use flake from their repo)
+- claude-code
+- junie
+- container (run docker containers on mac from Apple)
