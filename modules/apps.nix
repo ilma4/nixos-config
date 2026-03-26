@@ -95,7 +95,7 @@ in {
     easydict = macOnlyCask {};
     alt-tab = macOnlyCask {};
     blackhole-2ch = macOnlyCask {};
-    jetbrains-toolbox = macOnlyCask {};
+    # jetbrains-toolbox = macOnlyCask {};
     # "intellij-idea@eap" # as a platform developer, I use nightly builds from toolbox
     swiftly = macOnlyBrew {};
   };
