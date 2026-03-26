@@ -15,7 +15,7 @@
   },
   "security": {
     "auth": {
-      "selectedType": "oauth-personal"
+      "selectedType": "gateway"
     }
   }
 }
