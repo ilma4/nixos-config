@@ -144,6 +144,7 @@ in {
       initContent = let
         early = lib.mkOrder 500 ''
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
+          ${lib.optionalString isDarwin "fpath+=/opt/homebrew/share/zsh/site-functions"}
 
           # Powerlevel10k theme
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
