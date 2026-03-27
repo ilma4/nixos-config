@@ -1,33 +1,25 @@
 services:
-  gluetun:
-    container_name: gluetun
-    image: qmcgaw/gluetun:latest
-    environment:
-      VPN_SERVICE_PROVIDER: custom
-      VPN_TYPE: wireguard
-    volumes:
-      - "/etc/localtime:/etc/localtime:ro"
-      # TODO: do not hardcode wg.conf path
-      # - "${WG_CONF_PATH:-/aaa}:/gluetun/wireguard/wg0.conf:ro"
-      - "/home/ilma4/.config/wg0.conf:/gluetun/wireguard/wg0.conf:ro"
-    ports:
-      - "8080:8080"
-    hostname: gluetun
-    devices:
-      - "/dev/net/tun:/dev/net/tun"
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-
   qbittorrent:
     container_name: qbittorrent
-    image: linuxserver/qbittorrent:latest
+    image: ghcr.io/hotio/qbittorrent:release-5.1.4
+    ports:
+      - "8080:8080"
+    environment:
+      - VPN_ENABLED=true
+      - VPN_PROVIDER=wireguard
+      - VPN_LAN_NETWORK=10.0.0.0/8,192.168.0.0/16,172.16.0.0/12
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/srv/qbittorrent/config:/config"
       - "/mnt/hdd/torrent:/downloads"
       - "/home/ilma4/torrents:/ssd-downloads"
-    network_mode: "container:gluetun"
-    depends_on:
-      - gluetun
+      - "/home/ilma4/.config/wg0.conf:/config/wireguard/wg0.conf:ro"
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
     restart: unless-stopped
