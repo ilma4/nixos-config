@@ -29,6 +29,6 @@
   home.packages = with pkgs; [
     (writers.writePython3Bin "set-power" {
       doCheck = false; # disable PEP style checks
-    } (builtins.readFile ../../dotfiles/set-power.py))
+    } (builtins.readFile ../../scripts/set-power.py))
   ];
 }
