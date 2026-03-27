@@ -1,136 +1,58 @@
 #!/usr/bin/env python3
-
-import argparse
 import os
 import sys
-from enum import Enum
 from pathlib import Path
 
-CPU_DIR = Path('/sys/devices/system/cpu')
-PLATFORM_MODE_FILE = Path('/sys/firmware/acpi/platform_profile')
-PCI_MODE_FILE = Path('/sys/module/pcie_aspm/parameters/policy')
+CPU_DIR = Path("/sys/devices/system/cpu")
+PLATFORM_MODE_FILE = Path("/sys/firmware/acpi/platform_profile")
+PCI_MODE_FILE = Path("/sys/module/pcie_aspm/parameters/policy")
 
-class PowerMode(Enum):
-    POWER = 'power'
-    BALANCED = 'balanced'
-    PERFORMANCE = 'performance'
-
-# Mode mappings: (cpu_mode, platform_mode, pcie_mode)
-MODE_MAPPINGS = {
-    PowerMode.POWER: ('power', 'low-power', 'powersave'),
-    PowerMode.BALANCED: ('balance_performance', 'balanced', 'default'),
-    PowerMode.PERFORMANCE: ('balance_performance', 'performance', 'default')
+# cpu_mode, platform_mode, pcie_mode
+MODES = {
+    "power": ("power", "low-power", "powersave"),
+    "balanced": ("balance_performance", "balanced", "default"),
+    "performance": ("balance_performance", "performance", "default"),
 }
+ALIASES = {"balance": "balanced", "ok": "balanced", "normal": "balanced", "default": "balanced", "perf": "performance"}
 
-def read_file(path: Path) -> str:
-    if not path.exists():
-        return f'Cannot read file {path}'
-    return path.read_text().strip()
+def read(path):
+    return path.read_text().strip() if path.exists() else "N/A"
 
-def write_file(path: Path, content: str):
-    if not path.exists():
-        print(f'Cannot write to file {path}', file=sys.stderr)
-        return
-    path.write_text(content)
-
-def get_cpu_files():
-    # Only match cpu[0-9]*
-    return [d / 'cpufreq/energy_performance_preference' for d in CPU_DIR.glob('cpu[0-9]*')]
-
-def current_mode() -> PowerMode:
-    if not PLATFORM_MODE_FILE.exists():
-        print(f'platform power profile file does not exist: {PLATFORM_MODE_FILE}', file=sys.stderr)
-        return PowerMode.BALANCED
-
-    current = read_file(PLATFORM_MODE_FILE)
-    if current == 'low-power':
-        return PowerMode.POWER
-    elif current == 'balanced':
-        return PowerMode.BALANCED
-    elif current == 'performance':
-        return PowerMode.PERFORMANCE
-    else:
-        print(f'unexpected platform power profile: {current}', file=sys.stderr)
-        sys.exit(1)
-
-def opposite_mode(mode: PowerMode) -> PowerMode:
-    if mode == PowerMode.BALANCED:
-        return PowerMode.POWER
-    elif mode == PowerMode.POWER:
-        return PowerMode.BALANCED
-    elif mode == PowerMode.PERFORMANCE:
-        return PowerMode.BALANCED
-    else:
-        print(f"Unexpected mode: {mode}", file=sys.stderr)
-        sys.exit(1)
-
-def display_info():
-    print('Current power mode settings:')
-    print(f' Platform Mode: {read_file(PLATFORM_MODE_FILE)}')
-    print(f' PCIe Mode: {read_file(PCI_MODE_FILE)}')
-
-    cpu_files = get_cpu_files()
-    if not cpu_files:
-        print("Cannot determine number of CPUs")
-        return
-
-    cpu_modes = set()
-    for f in cpu_files:
-        cpu_modes.add(read_file(f))
-
-    if len(cpu_modes) == 1:
-        print(f' All CPUs have mode: {cpu_modes.pop()}')
-    else:
-        print(" CPUs modes:")
-        for i, f in enumerate(sorted(cpu_files, key=lambda x: int(x.parent.parent.name[3:]))):
-            print(f'  CPU {i} Mode: {read_file(f)}')
+def write(path, value):
+    if path.exists():
+        path.write_text(value)
 
 def main():
-    parser = argparse.ArgumentParser(description="Set various power consumption related Linux system settings.")
-    parser.add_argument('-i', '--info', action='store_true', help="Display current power mode settings")
-    parser.add_argument('mode', nargs='?', help="power, balance, perf. If omitted, toggles.")
-    
-    args = parser.parse_args()
+    info = "-i" in sys.argv or "--info" in sys.argv
+    args = [arg.lower() for arg in sys.argv[1:] if not arg.startswith("-")]
+    mode = args[0] if args else None
 
-    if args.info:
-        display_info()
-        sys.exit(0)
+    cpu_files = list(CPU_DIR.glob("cpu[0-9]*/cpufreq/energy_performance_preference"))
 
-    if args.mode:
-        mode_str = args.mode.lower()
-        if mode_str == 'power':
-            mode = PowerMode.POWER
-        elif mode_str in ('balance', 'balanced', 'ok', 'normal', 'default'):
-            mode = PowerMode.BALANCED
-        elif mode_str in ('perf', 'performance'):
-            mode = PowerMode.PERFORMANCE
-        else:
-            print(f"Error! Unknown mode: {args.mode}", file=sys.stderr)
-            sys.exit(1)
-    else:
-        print("toggle mode")
-        current = current_mode()
-        mode = opposite_mode(current)
-        print(f'Switching from {current.name} to {mode.name}')
+    if info:
+        print(f"Platform: {read(PLATFORM_MODE_FILE)}\nPCIe: {read(PCI_MODE_FILE)}")
+        modes = {read(file) for file in cpu_files}
+        print(f"CPUs: {modes.pop() if len(modes) == 1 else 'mixed'}")
+        return
+
+    mode = ALIASES.get(mode, mode)
+
+    if not mode:
+        mode = "balanced" if read(PLATFORM_MODE_FILE) == "low-power" else "power"
+        print(f"Toggled to {mode}")
+
+    if mode not in MODES:
+        sys.exit(f"Unknown mode: {mode}")
 
     if os.getuid() != 0:
-        print("Changing power setting require root permissions!", file=sys.stderr)
-        os.execvp("sudo", ["sudo"] + sys.argv)
+        os.execvp("sudo", ["sudo", *sys.argv])
 
-    cpu_mode, platform_mode, pcie_mode = MODE_MAPPINGS[mode]
-
-    print(f"Setting cpu mode: {cpu_mode}")
-    for cpu_file in get_cpu_files():
-        write_file(cpu_file, cpu_mode)
-    print("Successfuly set cpu mode")
-
-    print(f"Setting platform mode: {platform_mode}")
-    write_file(PLATFORM_MODE_FILE, platform_mode)
-    print("Successfuly set platform mode")
-
-    print(f"Setting PCIe mode: {pcie_mode}")
-    write_file(PCI_MODE_FILE, pcie_mode)
-    print("Successfuly set PCIe mode")
+    cpu_mode, platform_mode, pcie_mode = MODES[mode]
+    for file in cpu_files:
+        write(file, cpu_mode)
+    write(PLATFORM_MODE_FILE, platform_mode)
+    write(PCI_MODE_FILE, pcie_mode)
+    print(f"Set: CPU={cpu_mode}, Platform={platform_mode}, PCIe={pcie_mode}")
 
 if __name__ == "__main__":
     main()
