@@ -34,6 +34,8 @@ exclude = [
   "/Users/ilma4/Library/Thunderbird/Profiles/*/ImapMail",
   "/Users/ilma4/Library/Application Support/JetBrains",
 
+  "/Users/ilma4/Library/Application Support/com.apple.container", # docker from Apple
+
   "/Users/ilma4/Library/Application Support/JetBrains/*/plugins", # do not backup plugins for JetBrains IDEs
   "/Users/ilma4/Library/Application Support/Google",              # do not backup google's apps
 
