@@ -8,32 +8,13 @@
 
   config = lib.mkIf config.i4.launchd-agents.enable {
     launchd.user.agents.podman-machine-autostart = {
+      path = [pkgs.podman];
       serviceConfig = {
-        ProgramArguments = [
-          "${pkgs.bash}/bin/bash"
-          "-c"
-          ''
-            set -euo pipefail
-            # export PATH="$PATH:${pkgs.docker}/bin"
-            echo $(whoami)
-
-            echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine"
-
-            # Check if podman-machine is already running
-            if ${pkgs.podman}/bin/podman machine ls >/dev/null 2>&1; then
-              echo "$(${pkgs.coreutils}/bin/date): Podman-machine is already running"
-              exit 0
-            fi
-
-            echo "$(${pkgs.coreutils}/bin/date): Starting podman-machine..."
-            ${pkgs.podman}/bin/podman machine start
-
-            echo "$(${pkgs.coreutils}/bin/date): Podman-machine started successfully"
-          ''
-        ];
+        ProgramArguments = ["${pkgs.bash}/bin/bash" "-c" "podman machine start"];
         RunAtLoad = true;
-        StandardOutPath = "/tmp/colima-start.log";
-        StandardErrorPath = "/tmp/colima-start.log";
+        AbandonProcessGroup = true; # required to keep podman machine process running
+        StandardOutPath = "/tmp/podman-machine-start.log";
+        StandardErrorPath = "/tmp/podman-machine-start.log.err";
       };
     };
 
@@ -92,7 +73,7 @@
       path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
       serviceConfig = {
         ProgramArguments = [
-          "${pkgs.resticprofile}/bin/resticprofile" # do not changes, so wont lose permissions
+          "resticprofile" # do not changes, so wont lose permissions
           "-c"
           "${../dotfiles/resticprofile.toml}"
           "backup"
@@ -112,7 +93,7 @@
       path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
       serviceConfig = {
         ProgramArguments = [
-          "${pkgs.resticprofile}/bin/resticprofile" # do not changes, so wont lose permissions
+          "resticprofile" # do not changes, so wont lose permissions
           "-c"
           "${../dotfiles/resticprofile.toml}"
           "hdd.copy"
