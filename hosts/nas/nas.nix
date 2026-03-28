@@ -99,6 +99,7 @@ args @ {
 
   networking.hostName = "nas"; # Define your hostname.
 
+  # FIXME: setup update script, which don't need a root ssh access
   users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
     constants.main-pub-key
   ];
