@@ -22,6 +22,7 @@
 
   i4.zram.enable = true;
   i4.avahi.enable = true;
+  i4.initrd-ssh.enable = true;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
