@@ -12,8 +12,6 @@
     ./hardware-configuration.nix
 
     ../../modules/base.nix
-    ../../modules/avahi.nix
-    ../../modules/swap.nix
     ../../modules/sops.nix
 
     ../../modules/server.nix

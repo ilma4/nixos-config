@@ -16,8 +16,6 @@ args @ {
     ./hardware-configuration.nix
     ./hdd.nix
 
-    "${modules}/avahi.nix"
-    "${modules}/swap.nix"
     "${modules}/sops.nix"
     "${modules}/notifications.nix"
     "${modules}/docker-compose.nix"

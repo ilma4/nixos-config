@@ -12,8 +12,6 @@
     inputs.home-manager.nixosModules.home-manager
     inputs.sops-nix.nixosModules.sops
 
-    "${modules}/avahi.nix"
-    "${modules}/swap.nix"
     "${modules}/sops.nix"
 
     # Include the results of the hardware scan.

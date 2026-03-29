@@ -35,6 +35,8 @@ in {
     ./nix-settings.nix
     ./initrd-ssh.nix
     ./restic-repo.nix
+    ./swap.nix
+    ./avahi.nix
   ];
 
   config = {
