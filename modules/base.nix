@@ -75,6 +75,13 @@ in {
         HostKeyAlgorithms = "-rsa-sha2-512,-rsa-sha2-256";
         PubkeyAcceptedAlgorithms = "-rsa-sha2-512,-rsa-sha2-256,-ssh-rsa";
       };
+      hostKeys = [
+        # disable RSA key generation. It's less secure than old algorithms
+        {
+          type = "ed25519";
+          path = "/etc/ssh/ssh_host_ed25519_key";
+        }
+      ];
     };
 
     security.rtkit.enable = mkDefault true; # realtime privileges
