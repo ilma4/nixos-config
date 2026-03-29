@@ -20,7 +20,9 @@
     ./hardware-configuration.nix
   ];
 
-  i4.swap.zramEnable = true;
+  i4.swap.zswapEnable = true;
+  i4.swap.swapEnable = true;
+
   i4.avahi.enable = true;
   i4.initrd-ssh.enable = true;
 
