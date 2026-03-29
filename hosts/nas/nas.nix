@@ -17,7 +17,7 @@ args @ {
     ./hdd.nix
 
     "${modules}/avahi.nix"
-    "${modules}/zram.nix"
+    "${modules}/swap.nix"
     "${modules}/sops.nix"
     "${modules}/notifications.nix"
     "${modules}/docker-compose.nix"
@@ -53,7 +53,7 @@ args @ {
     # ./lidarr.nix
   ];
 
-  i4.zram.enable = true;
+  i4.swap.zramEnable = true;
   i4.avahi.enable = true;
   i4.sops.enable = true;
   i4.notifications.enable = true;

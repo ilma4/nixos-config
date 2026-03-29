@@ -13,14 +13,14 @@
     inputs.sops-nix.nixosModules.sops
 
     "${modules}/avahi.nix"
-    "${modules}/zram.nix"
+    "${modules}/swap.nix"
     "${modules}/sops.nix"
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
   ];
 
-  i4.zram.enable = true;
+  i4.swap.zramEnable = true;
   i4.avahi.enable = true;
   i4.initrd-ssh.enable = true;
 

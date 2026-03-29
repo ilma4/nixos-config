@@ -83,6 +83,7 @@
         bw = "${pkgs.bitwarden-cli}/bin/bw";
       in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
+      /*
       (
         let
           CONFIG_LOCATION = "${config.home.homeDirectory}/.local/share/qbittorrent-container";
@@ -97,6 +98,7 @@
           ${pkgs.podman}/bin/podman compose -f "${../../docker-compose/qbittorrent-compose.yaml}" up --force-recreate --remove-orphans --detach --pull
         '')
       )
+      */
     ];
     # ++ (with pkgs-unstable; [gemini-cli]);
 
