@@ -34,7 +34,7 @@
             # commit.gpgsign = false;
             # user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHPP96JkvAFJRI9V08kNz7ah6CfPsRV08DRzu8wjk+4I";
           };
-          condition = "gitdir:~/Projects/JetBrains/";
+          condition = "gitdir:~/JetBrains/";
         }
       ];
     };
