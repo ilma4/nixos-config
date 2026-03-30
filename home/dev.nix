@@ -41,6 +41,7 @@ in {
 
     programs.zsh.shellAliases = {
       # bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
+      codex-personal = "CODEX_HOME=~/.codex-personal codex";
       gw = "./gradlew";
     };
 
