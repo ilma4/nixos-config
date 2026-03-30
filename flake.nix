@@ -117,7 +117,12 @@
       (import ./overlays/pi-coding-agent-overlay.nix)
     ];
 
-    darwinOverlays = commonOverlays ++ [inputs.quickemu.overlays.default];
+    darwinOverlays =
+      commonOverlays
+      ++ [
+        inputs.quickemu.overlays.default
+        (import ./overlays/darwin-htop-overlay.nix)
+      ];
 
     # Centralized package sets
     pkgsSets = system: let

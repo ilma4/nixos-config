@@ -1,6 +1,7 @@
 {...}: {
   virtualisation.podman = {
     enable = true;
+    dockerCompat = true; # create alias docker=podman
     autoPrune.enable = true;
     defaultNetwork.settings = {
       # Required for container networking to be able to use names.
