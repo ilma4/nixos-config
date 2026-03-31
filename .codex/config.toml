@@ -1,3 +1,7 @@
+model = "gpt-5.4"
+model_reasoning_effort = "xhigh"
+plan_mode_reasoning_effort = "xhigh"
+
 [mcp_servers.mcp-nixos]
 type = "stdio"
 command = "nix"
