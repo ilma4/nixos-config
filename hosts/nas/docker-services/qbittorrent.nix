@@ -23,6 +23,7 @@
     # i4-encrypted-files = [wg-conf];
 
     dockerCompose.qbittorrent = {
+      enable = false; # todo: fix issues with secrets
       composeText = builtins.readFile ../../../compose/qbittorrent.yml;
       # enable = false;
       environment = {
