@@ -13,8 +13,6 @@
 
     ../../modules/base.nix
     ../../modules/sops.nix
-
-    ../../modules/server.nix
   ];
 
   i4.swap.zramEnable = true;
