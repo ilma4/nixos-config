@@ -240,6 +240,11 @@
         module = ./hosts/nas/nas.nix;
       };
 
+      openclaw = mkNixosSystem {
+        system = systems.x86-linux;
+        module = ./hosts/openclaw/openclaw.nix;
+      };
+
       msi-modern = mkNixosSystem {
         system = systems.x86-linux;
         module = ./hosts/msi-modern/msi-modern.nix;
