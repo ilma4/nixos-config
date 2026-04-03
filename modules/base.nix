@@ -40,9 +40,9 @@ in {
   ];
 
   config = {
-    hardware.enableAllFirmware = true;
+    hardware.enableAllFirmware = mkDefault (!config.boot.isContainer);
 
-    services.fwupd.enable = true;
+    services.fwupd.enable = mkDefault (!config.boot.isContainer);
 
     time.timeZone = "Europe/Berlin";
     i18n.defaultLocale = "en_US.UTF-8";
@@ -53,11 +53,11 @@ in {
 
     services.dbus.implementation = "broker"; # better dbus, also required for home-assistant bluetooth integration
 
-    services.fstrim.enable = mkDefault true; # Enable background periodic TRIM
-    services.printing.enable = mkDefault true; # Enable CUPS to print documents.
+    services.fstrim.enable = mkDefault (!config.boot.isContainer); # Enable background periodic TRIM
+    services.printing.enable = mkDefault (!config.boot.isContainer); # Enable CUPS to print documents.
 
     services.smartd = {
-      enable = true;
+      enable = mkDefault (!config.boot.isContainer);
     };
 
     # TODO detect btrfs usage in `fileSystems` or in `services.btrfs.autoScrub.fileSystems` to enable automatically
@@ -86,7 +86,7 @@ in {
       ];
     };
 
-    security.rtkit.enable = mkDefault true; # realtime privileges
+    security.rtkit.enable = mkDefault (!config.boot.isContainer); # realtime privileges
 
     users.users.ilma4 = lib.mkIf config.i4.user-ilma4.enable {
       isNormalUser = true;
