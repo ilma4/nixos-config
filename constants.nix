@@ -2,6 +2,13 @@
   main-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A";
   github-pub-key = "TODO";
 
+  telegram = {
+    my-id-secret = "telegram/my_id";
+    mallard = {
+      api-key-secret = "telegram/mallard/api_key";
+    };
+  };
+
   hetzer-restic = {
     repo = "/home/restic";
     password-file = "TODO";
