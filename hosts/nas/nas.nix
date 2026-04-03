@@ -42,6 +42,7 @@ args @ {
     ./docker-services/error-page.nix
 
     ./docker-services/audiobookshelf.nix
+    ./incus-openclaw.nix
 
     # ./docker-services/rssalchemy.nix
 
