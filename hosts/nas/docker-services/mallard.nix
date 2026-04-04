@@ -9,6 +9,7 @@
 
   srvDir = "/srv/mallard";
   voicesDir = "${srvDir}/voices";
+  mallardUidGid = "${toString config.users.users.mallard.uid}:${toString config.users.groups.mallard.gid}";
 
   telegramMyIdSecret = constants.telegram.my-id-secret;
   mallardApiKeySecret = constants.telegram.mallard.api-key-secret;
@@ -23,10 +24,14 @@
   prepareVoicesScript = pkgs.writeShellScript "mallard-prepare-voices.sh" ''
     set -euo pipefail
 
-    ${pkgs.coreutils}/bin/mkdir -p "${voicesDir}"
+    ${pkgs.coreutils}/bin/install -d -m 0750 -o mallard -g mallard "${srvDir}" "${voicesDir}"
 
     for file in "${src}/voices"/*.ogg; do
-      ${pkgs.coreutils}/bin/cp -n "$file" "${voicesDir}/"
+      target="${voicesDir}/$(${pkgs.coreutils}/bin/basename "$file")"
+
+      if [[ ! -e "$target" ]]; then
+        ${pkgs.coreutils}/bin/install -m 0640 -o mallard -g mallard "$file" "$target"
+      fi
     done
   '';
 
@@ -36,14 +41,22 @@
     exec ${pkgs.podman}/bin/podman build --pull=newer --tag ${imageTag} ${src}
   '';
 in {
+  users.users.mallard = {
+    isSystemUser = true;
+    uid = 805;
+    group = "mallard";
+    description = "Mallard Telegram bot user";
+  };
+  users.groups.mallard.gid = config.users.users.mallard.uid;
+
   sops.secrets.${telegramMyIdSecret} = {
-    owner = "root";
-    group = "root";
+    owner = "mallard";
+    group = "mallard";
   };
 
   sops.secrets.${mallardApiKeySecret} = {
-    owner = "root";
-    group = "root";
+    owner = "mallard";
+    group = "mallard";
   };
 
   sops.templates."mallard.env" = {
@@ -52,14 +65,14 @@ in {
       TG_ADMIN_ID=${config.sops.placeholder.${telegramMyIdSecret}}
     '';
     mode = "0400";
-    owner = "root";
-    group = "root";
+    owner = "mallard";
+    group = "mallard";
     restartUnits = ["mallard.service"];
   };
 
   systemd.tmpfiles.rules = [
-    "d ${srvDir} 0755 root root -"
-    "d ${voicesDir} 0755 root root -"
+    "d ${srvDir} 0750 mallard mallard -"
+    "d ${voicesDir} 0750 mallard mallard -"
   ];
 
   systemd.services.mallard = {
@@ -87,7 +100,7 @@ in {
         prepareVoicesScript
         buildImageScript
       ];
-      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --conmon-pidfile %t/%n-pid --cgroups=no-conmon --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --log-driver=journald --volume ${voicesDir}:/app/voices ${imageTag}";
+      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --conmon-pidfile %t/%n-pid --cgroups=no-conmon --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --log-driver=journald --user ${mallardUidGid} --volume ${voicesDir}:/app/voices ${imageTag}";
       ExecStop = "${pkgs.podman}/bin/podman stop --ignore --time 10 ${containerName}";
       ExecStopPost = "${pkgs.podman}/bin/podman rm --ignore -f ${containerName}";
     };
