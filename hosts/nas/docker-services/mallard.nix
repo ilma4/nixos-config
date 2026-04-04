@@ -81,26 +81,29 @@ in {
     wants = ["network-online.target"];
     after = [
       "network-online.target"
-      "sops-nix.service"
+      # "sops-nix.service"
     ];
-    requires = ["sops-nix.service"];
+    requires = [
+      # "sops-nix.service"
+    ];
     unitConfig.RequiresMountsFor = "/var/lib/containers/storage";
+    # unitConfig.ConditionUser = "mallard";
 
     serviceConfig = {
-      Type = "forking";
+      Type = "notify";
       Environment = "PODMAN_SYSTEMD_UNIT=%n";
-      PIDFile = "%t/%n-pid";
-      KillMode = "none";
+      NotifyAccess = "all";
+      Delegate = true;
+      KillMode = "mixed";
       Restart = "always";
       RestartSec = "10s";
       TimeoutStartSec = "15min";
       TimeoutStopSec = "30s";
       ExecStartPre = [
-        "${pkgs.coreutils}/bin/rm -f %t/%n-pid"
         prepareVoicesScript
         buildImageScript
       ];
-      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --conmon-pidfile %t/%n-pid --cgroups=no-conmon --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --log-driver=journald --user ${mallardUidGid} --volume ${voicesDir}:/app/voices ${imageTag}";
+      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --cgroups=split --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --log-driver=journald --user ${mallardUidGid} --volume ${voicesDir}:/app/voices ${imageTag}";
       ExecStop = "${pkgs.podman}/bin/podman stop --ignore --time 10 ${containerName}";
       ExecStopPost = "${pkgs.podman}/bin/podman rm --ignore -f ${containerName}";
     };
