@@ -7,3 +7,6 @@ type = "stdio"
 command = "nix"
 args = ["run", "github:utensils/mcp-nixos", "--"]
 startup_timeout_sec = 60
+
+[mcp_servers.mcp-nixos.tools.nix]
+approval_mode = "approve"
