@@ -62,7 +62,6 @@ in {
           );
         upArgs = lib.concatStringsSep " " svc.upArgs;
       in {
-        # TODO: require pdoman-network-reverse_proxy.service only when needed
         after = ["network-online.target" "podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
         wants = ["network-online.target"];
         requires = ["podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
