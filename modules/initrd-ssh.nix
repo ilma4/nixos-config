@@ -17,9 +17,7 @@ in {
       # Keep defaults aligned with previous `hosts/nas/nas.nix` setup.
       hostKeys = lib.mkDefault [keyPath];
 
-      authorizedKeys = lib.mkDefault [
-        constants.main-pub-key
-      ];
+      authorizedKeys = lib.mkDefault constants.main-pub-keys;
     };
   };
 }

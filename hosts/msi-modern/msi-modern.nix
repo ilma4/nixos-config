@@ -34,9 +34,7 @@
   networking.networkmanager.enable = true;
 
   # FIXME: setup update script, which don't need a root ssh access
-  users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
-    constants.main-pub-key
-  ];
+  users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable constants.main-pub-keys;
 
   # Select internationalisation properties.
   # i18n.defaultLocale = "en_US.UTF-8";

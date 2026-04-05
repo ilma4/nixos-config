@@ -21,7 +21,7 @@ in {
     i4.my-ssh-key.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Whether to add main SSH public key to the ilma4 user";
+      description = "Whether to add personal SSH public keys to the ilma4 user";
     };
     i4.initrd-ssh.enable = lib.mkOption {
       type = lib.types.bool;
@@ -93,9 +93,7 @@ in {
       shell = pkgs.zsh;
       extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
 
-      openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable [
-        constants.main-pub-key
-      ];
+      openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable constants.main-pub-keys;
     };
   };
 }
