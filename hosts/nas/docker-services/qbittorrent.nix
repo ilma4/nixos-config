@@ -24,7 +24,7 @@
 
     dockerCompose.qbittorrent = {
       enable = false; # todo: fix issues with secrets
-      composeText = builtins.readFile ../../../compose/qbittorrent.yml;
+      composeText = builtins.readFile ../../../dockerCompose/qbittorrent.yml;
       # enable = false;
       environment = {
         # TODO: fix

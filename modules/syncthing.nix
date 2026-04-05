@@ -1,6 +1,6 @@
 {lib, ...}: {
   dockerCompose.syncthing = {
-    composeText = builtins.readFile ../compose/syncthing.yml;
+    composeText = builtins.readFile ../dockerCompose/syncthing.yml;
   };
   networking.firewall.allowedTCPPorts = [
     8334 # web interface

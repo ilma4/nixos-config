@@ -95,7 +95,7 @@
           cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
           export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
 
-          ${pkgs.podman}/bin/podman compose -f "${../../docker-compose/qbittorrent-compose.yaml}" up --force-recreate --remove-orphans --detach --pull
+          ${pkgs.podman}/bin/podman compose -f "${../../dockerCompose/qbittorrent.yml}" up --force-recreate --remove-orphans --detach --pull
         '')
       )
       */
