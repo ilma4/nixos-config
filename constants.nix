@@ -33,7 +33,7 @@
       password-file = "/run/secrets/${password-secret}";
       old-password-secret = null; # used to migrate passwod on repo
       old-password-file =
-        if old-password-file == null
+        if old-password-secret == null
         then null
         else "/run/secrets/${old-password-secret}";
     };
