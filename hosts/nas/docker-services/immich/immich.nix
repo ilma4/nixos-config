@@ -21,7 +21,6 @@ in {
 
   dockerCompose.immich = {
     composeText = builtins.readFile ./docker-compose.yml;
-    composeFile = ./docker-compose.yml;
     envFile = publicEnvFile;
     environment = {
       IMMICH_ENV_FILE = toString publicEnvFile;
