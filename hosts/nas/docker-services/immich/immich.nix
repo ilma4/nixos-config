@@ -1,13 +1,34 @@
-{pkgs, ...}: let
-  dir = pkgs.copyPathToStore ./.;
+{
+  config,
+  pkgs,
+  ...
+}: let
+  secretName = "immich/db_password";
+  publicEnvFile = pkgs.copyPathToStore ./.env;
 in {
-  dockerCompose.immich = {
-    composeText = builtins.readFile ./docker-compose.yml;
-    composeFile = "${dir}/docker-compose.yml";
-    envFile = "${dir}/.env";
+  sops.secrets.${secretName} = {};
+
+  sops.templates."immich-secret.env" = {
+    content = ''
+      DB_PASSWORD=${config.sops.placeholder.${secretName}}
+      POSTGRES_PASSWORD=${config.sops.placeholder.${secretName}}
+    '';
+    mode = "0400";
+    owner = "root";
+    group = "root";
+    restartUnits = ["immich.service"];
   };
 
-  systemd.services.immich.serviceConfig.WorkingDirectory = dir; # ./.
+  dockerCompose.immich = {
+    composeText = builtins.readFile ./docker-compose.yml;
+    composeFile = ./docker-compose.yml;
+    envFile = publicEnvFile;
+    environment = {
+      IMMICH_ENV_FILE = toString publicEnvFile;
+      IMMICH_SECRET_ENV_FILE = config.sops.templates."immich-secret.env".path;
+    };
+  };
+
   # networking.firewall.allowedTCPPorts = [2283];
 
   # TODO: setup proper UID and GID for postgres, currently it runs as 999:999, but directory is mounted as root:root causing permission issues
