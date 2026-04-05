@@ -10,7 +10,7 @@
 #
 # Notes:
 # - Uses `nix shell nixpkgs#nixos-rebuild` so it works on macOS/Linux without nixos-rebuild pre-installed.
-# - Connects to the remote host as root via SSH.
+# - Connects to the remote host as `ilma4` and uses sudo for activation.
 # - Tries <targetHost>.local first, falls back to <targetHost> if unreachable.
 
 set -euo pipefail
@@ -43,6 +43,7 @@ fi
 
 nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
     --flake "${flakeRef}" \
-    --target-host "root@${sshTarget}" \
-    --build-host "root@${sshTarget}" \
+    --target-host "ilma4@${sshTarget}" \
+    --build-host "ilma4@${sshTarget}" \
+    --sudo \
     --fast

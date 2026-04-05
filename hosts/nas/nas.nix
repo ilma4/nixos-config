@@ -1,7 +1,6 @@
-args @ {
+{
   config,
   pkgs,
-  lib,
   myLib,
   inputs,
   constants,
@@ -101,9 +100,6 @@ args @ {
   networking.hostName = "nas"; # Define your hostname.
 
   networking.nameservers = ["192.168.1.200" "1.1.1.1" "8.8.8.8"];
-
-  # FIXME: setup update script, which don't need a root ssh access
-  users.users.root.openssh.authorizedKeys.keys = lib.mkIf config.i4.my-ssh-key.enable constants.main-pub-keys;
 
   sops.secrets."restic/server" = {
     owner = "root";
