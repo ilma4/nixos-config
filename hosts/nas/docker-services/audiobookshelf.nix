@@ -52,7 +52,6 @@ in {
   config = {
     dockerCompose.audiobookshelf = {
       composeText = composeText;
-      maxBodySize = "10240M";
     };
 
     systemd.tmpfiles.rules = [
