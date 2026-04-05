@@ -38,6 +38,10 @@ in {
             type = lib.types.nullOr lib.types.path;
             default = null;
           };
+          upArgs = mkOption {
+            type = types.listOf types.str;
+            default = [];
+          };
         };
       }));
       default = {};
@@ -64,6 +68,7 @@ in {
             then " --env-file '${svc.envFile}'"
             else ""
           );
+        upArgs = lib.concatStringsSep " " svc.upArgs;
       in {
         # TODO: require pdoman-network-reverse_proxy.service only when needed
         after = ["network-online.target" "podman.socket" "${config.systemd.services.podman-network-reverse_proxy.name}"];
@@ -81,7 +86,7 @@ in {
 
         serviceConfig = {
           Type = "simple";
-          ExecStart = "${compose} up --pull";
+          ExecStart = "${compose} up --pull ${upArgs}";
           ExecStop = "${compose} down";
           Restart = "always";
         };

@@ -4,9 +4,6 @@
   pkgs,
   ...
 }: let
-  containerName = "mallard-bot";
-  imageTag = "localhost/mallard-bot:2562a38f15ad";
-
   srvDir = "/srv/mallard";
   voicesDir = "${srvDir}/voices";
   mallardUidGid = "${toString config.users.users.mallard.uid}:${toString config.users.groups.mallard.gid}";
@@ -33,12 +30,6 @@
         ${pkgs.coreutils}/bin/install -m 0640 -o mallard -g mallard "$file" "$target"
       fi
     done
-  '';
-
-  buildImageScript = pkgs.writeShellScript "mallard-build-image.sh" ''
-    set -euo pipefail
-
-    exec ${pkgs.podman}/bin/podman build --pull=newer --tag ${imageTag} ${src}
   '';
 in {
   users.users.mallard = {
@@ -70,42 +61,28 @@ in {
     restartUnits = ["mallard.service"];
   };
 
-  systemd.tmpfiles.rules = [
-    "d ${srvDir} 0750 mallard mallard -"
-    "d ${voicesDir} 0750 mallard mallard -"
-  ];
+  dockerCompose.mallard = {
+    composeText = ''
+      name: mallard
 
-  systemd.services.mallard = {
-    description = "Mallard Telegram bot";
-    wantedBy = ["multi-user.target"];
-    wants = ["network-online.target"];
-    after = [
-      "network-online.target"
-      # "sops-nix.service"
-    ];
-    requires = [
-      # "sops-nix.service"
-    ];
-    unitConfig.RequiresMountsFor = "/var/lib/containers/storage";
-    # unitConfig.ConditionUser = "mallard";
+      services:
+        mallard:
+          build:
+            context: ${src}
+          container_name: mallard-bot
+          env_file:
+            - ${config.sops.templates."mallard.env".path}
+          user: "${mallardUidGid}"
+          volumes:
+            - ${voicesDir}:/app/voices
+          restart: unless-stopped
+    '';
+    upArgs = ["--build"];
+  };
 
-    serviceConfig = {
-      Type = "notify";
-      Environment = "PODMAN_SYSTEMD_UNIT=%n";
-      NotifyAccess = "all";
-      Delegate = true;
-      KillMode = "mixed";
-      Restart = "always";
-      RestartSec = "10s";
-      TimeoutStartSec = "15min";
-      TimeoutStopSec = "30s";
-      ExecStartPre = [
-        prepareVoicesScript
-        buildImageScript
-      ];
-      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --cgroups=split --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --user ${mallardUidGid} --volume ${voicesDir}:/app/voices ${imageTag}";
-      ExecStop = "${pkgs.podman}/bin/podman stop --ignore --time 10 ${containerName}";
-      ExecStopPost = "${pkgs.podman}/bin/podman rm --ignore -f ${containerName}";
-    };
+  systemd.services.mallard.serviceConfig = {
+    ExecStartPre = [prepareVoicesScript];
+    TimeoutStartSec = "15min";
+    TimeoutStopSec = "30s";
   };
 }
