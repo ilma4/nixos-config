@@ -10,7 +10,6 @@
 in {
   imports = [
     ./docker-compose-journalctl.nix
-    ./docker-compose-update.nix
   ];
 
   options = {

@@ -47,7 +47,6 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
   - `base.nix` - common configuration for all hosts
   - `avahi.nix` - enables avahi-daemon
   - `docker-compose.nix` - allows running services using docker-compose. Provides `dockerCompose` option to define services using docker-compose
-  - `docker-compose-update.nix` - automatically updates containers for services defined using `dockerCompose`
   - `home-manager.nix` - configuration for home-manager as nixos module
   - `universall-apps.nix` - provides `i4.apps` option, allows install apps on NixOS, home-manager and MacOS with nix-darwin or homebrew
   - `apps.nix` - installs apps on NixOS, home-manager and MacOS using `i4.apps` from universal-apps.nix
