@@ -5,77 +5,72 @@
   pkgs,
   ...
 }: let
-  inherit (lib) types mkOption;
-  inherit (myLib.unifiedModules.checkers) isLinux isDarwin isHomeManager;
-  getLinuxName = name: app:
-    if app.linuxName != null
-    then app.linuxName
-    else name;
-in {
-  options = {
-    i4.apps = {
-      apps = mkOption {
-        type = types.attrsOf (types.submodule (name: {
-          options = {
-            enable = mkOption {
-              type = types.bool;
-              default = true;
-            };
-            linuxName = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-            };
-            macName = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-            };
-            linuxInstallation = mkOption {
-              type = types.nullOr (
-                types.enum [
-                  "program"
-                  "package"
-                ]
-              );
-              default = "program";
-            };
-            macInstallation = mkOption {
-              type = types.nullOr (
-                types.enum [
-                  "cask"
-                  "brew"
-                  "package"
-                ]
-              );
-              default = "cask";
-            };
-          };
-        }));
-        default = {};
-      };
+  inherit (lib) mkEnableOption mkIf mkMerge mkOption types;
+  inherit (myLib.unifiedModules.checkers) isDarwin isHomeManager isLinux;
 
-      enable = lib.mkEnableOption "Enable my apps";
+  appType = types.submodule (name: {
+    options = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+      };
+      linuxName = mkOption {
+        type = types.str;
+        default = name;
+      };
+      macName = mkOption {
+        type = types.str;
+        default = name;
+      };
+      linuxInstallation = mkOption {
+        type = types.nullOr (
+          types.enum [
+            "program"
+            "package"
+          ]
+        );
+        default = "program";
+      };
+      macInstallation = mkOption {
+        type = types.nullOr (
+          types.enum [
+            "cask"
+            "brew"
+            "package"
+          ]
+        );
+        default = "cask";
+      };
     };
+  });
+in {
+  options.i4.apps = {
+    apps = mkOption {
+      type = types.attrsOf appType;
+      default = {};
+    };
+
+    enable = mkEnableOption "Enable my apps";
   };
 
-  # universall module
-  config = lib.mkIf config.i4.apps.enable (
+  config = mkIf config.i4.apps.enable (
     let
-      packageList = lib.concatLists (
-        lib.mapAttrsToList (
-          name: app: let
-            linuxName = getLinuxName name app;
-          in
-            if !(app.enable && ((isLinux && app.linuxInstallation == "package") || (isDarwin && app.macInstallation == "package")))
-            then []
-            else if isLinux
-            then
-              lib.optionals (lib.hasAttrByPath [linuxName] pkgs) [
-                (lib.getAttrFromPath [linuxName] pkgs)
-              ]
-            else [(lib.getAttr name pkgs)]
-        )
-        config.i4.apps.apps
-      );
+      enabledApps = lib.mapAttrsToList (_: app: app) (lib.filterAttrs (_: app: app.enable) config.i4.apps.apps);
+
+      linuxProgramNames = map (app: app.linuxName) (lib.filter (app: app.linuxInstallation == "program") enabledApps);
+
+      linuxPackageNames = map (app: app.linuxName) (lib.filter (app: app.linuxInstallation == "package") enabledApps);
+
+      macCaskNames = map (app: app.macName) (lib.filter (app: app.macInstallation == "cask") enabledApps);
+
+      macBrewNames = map (app: app.macName) (lib.filter (app: app.macInstallation == "brew") enabledApps);
+
+      macPackageNames = map (app: app.name) (lib.filter (app: app.macInstallation == "package") enabledApps);
+
+      packageList =
+        if isLinux
+        then linuxPackageNames
+        else macPackageNames;
     in
       lib.optionalAttrs (!isHomeManager) {
         environment.systemPackages = packageList;
@@ -83,46 +78,13 @@ in {
       // lib.optionalAttrs isHomeManager {
         home.packages = packageList;
       }
-      // lib.optionalAttrs (!isDarwin) {
-        programs = lib.mkIf isLinux (lib.mkMerge (lib.mapAttrsToList (
-            name: app:
-              lib.mkIf (app.enable && app.linuxInstallation == "program")
-              (lib.setAttrByPath [(getLinuxName name app) "enable"] true)
-          )
-          config.i4.apps.apps));
+      // lib.optionalAttrs isLinux {
+        programs = mkMerge (map (name: {${name}.enable = true;}) linuxProgramNames);
       }
       // lib.optionalAttrs isDarwin {
-        homebrew = lib.mkIf isDarwin {
-          casks = lib.concatLists (
-            lib.mapAttrsToList (
-              name: app:
-                if app.enable && app.macInstallation == "cask"
-                then [
-                  (
-                    if app.macName != null
-                    then app.macName
-                    else name
-                  )
-                ]
-                else []
-            )
-            config.i4.apps.apps
-          );
-          brews = lib.concatLists (
-            lib.mapAttrsToList (
-              name: app:
-                if app.enable && app.macInstallation == "brew"
-                then [
-                  (
-                    if app.macName != null
-                    then app.macName
-                    else name
-                  )
-                ]
-                else []
-            )
-            config.i4.apps.apps
-          );
+        homebrew = {
+          casks = macCaskNames;
+          brews = macBrewNames;
         };
       }
   );
