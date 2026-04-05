@@ -83,22 +83,7 @@
         bw = "${pkgs.bitwarden-cli}/bin/bw";
       in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
-      /*
-      (
-        let
-          CONFIG_LOCATION = "${config.home.homeDirectory}/.local/share/qbittorrent-container";
-        in (pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
-          set -euo pipefail
-          export PATH="${pkgs.podman-compose}/bin:${pkgs.podman}/bin:$PATH"
-
-          mkdir -p "${CONFIG_LOCATION}"
-          cp -f "${config.sops.secrets."wg.conf".path}" "${CONFIG_LOCATION}/wg.conf"
-          export WG_CONFIG="${CONFIG_LOCATION}/wg.conf"
-
-          ${pkgs.podman}/bin/podman compose -f "${../../dockerCompose/qbittorrent.yml}" up --force-recreate --remove-orphans --detach --pull
-        '')
-      )
-      */
+      (pkgs.writeShellScriptBin "i4-qbittorrent-start" (builtins.readFile ./../../scripts/run-qbittorrent.sh))
     ];
     # ++ (with pkgs-unstable; [gemini-cli]);
 
