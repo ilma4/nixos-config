@@ -1,3 +1,25 @@
+# backup.nix
+
+- setup local repo
+- setup copy remote repos
+- init local repo with chunker params from remotes
+- init remotes with chunker params from local
+- use rclone serve restic --stdio
+- when copying check that chunker params match
+- use launchd on macos and system on linux/home-manager
+
+# Monitorings and alerts
+
+- wire backups to prometheus
+  - get report if snapshot size increased more than 10%
+    - launch codex to investigate
+- server disk spaces
+- smart of disks
+
+- reachibility of my self-hosted services
+
+- telegram notifications if someting fails
+
 # Constants!
 
 Define more constants to simplify secrets/path/locations etc. management
@@ -11,15 +33,6 @@ Define more constants to simplify secrets/path/locations etc. management
 Create a slash command for codex/claude codex/gemini so that they can update my services. I.e.:
 
 They have to search for the newer version of the service, find the docker-compose.yml file or the docker container version and update my config to match them.
-
-# Create restic-chuncker-donor repo and use it to create every new restic repository
-
-- safe wrapper around `restic copy` which also check if repositories have the same chunker params
-
-# better restic-repos.nix
-
-- convert creation to systemd service so there will be error logs and faster activation
-- launchd on macos?
 
 # setup homebrew autoupdates
 
