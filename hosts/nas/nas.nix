@@ -121,12 +121,6 @@ args @ {
     ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
   '';
 
-  # torrent.wg-conf = "${myLib.secrets}/ru-torrent-wg.conf";
-  sops.secrets.wg-conf = {
-    sopsFile = "${myLib.secrets}/ru-torrent-wg.conf";
-    format = "binary";
-  };
-
   services.prometheus.node-exporter-docker.enable = true;
   services.printing.enable = false;
 
