@@ -103,7 +103,7 @@ in {
         prepareVoicesScript
         buildImageScript
       ];
-      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --cgroups=split --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --log-driver=journald --user ${mallardUidGid} --volume ${voicesDir}:/app/voices ${imageTag}";
+      ExecStart = "${pkgs.podman}/bin/podman run --detach --replace --rm --name ${containerName} --cgroups=split --sdnotify=conmon --env-file ${config.sops.templates."mallard.env".path} --user ${mallardUidGid} --volume ${voicesDir}:/app/voices ${imageTag}";
       ExecStop = "${pkgs.podman}/bin/podman stop --ignore --time 10 ${containerName}";
       ExecStopPost = "${pkgs.podman}/bin/podman rm --ignore -f ${containerName}";
     };
