@@ -7,6 +7,7 @@
 with lib; let
   cfg = config.services.prometheus.node-exporter-docker;
   node-exporter-version = "v1.10.2";
+  port = 9100;
 in {
   options.services.prometheus.node-exporter-docker = {
     enable = mkEnableOption "Prometheus Node Exporter in Docker";
@@ -38,6 +39,7 @@ in {
             command:
               - "--path.rootfs=/host"
               - "--path.udev.data=/host/run/udev/data"
+              - "--web.listen-address=:${toString port}"
             pid: host
             network_mode: host
             read_only: true
@@ -50,6 +52,6 @@ in {
     };
 
     # Open firewall if requested
-    networking.firewall.allowedTCPPorts = [8100];
+    networking.firewall.allowedTCPPorts = [port];
   };
 }
