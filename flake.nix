@@ -259,13 +259,8 @@
       };
     };
 
-    # Standalone Home Manager Configuration (kept for compatibility)
-    homeConfigurations = {
-      msi-modern = mkHomeConfig {
-        system = systems.x86-linux;
-        module = ./hosts/msi-modern/msi-modern.nix;
-      };
-    };
+    # Standalone Home Manager Configurations
+    homeConfigurations = {};
 
     # System Manager Configuration
     systemConfigs = {
