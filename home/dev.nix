@@ -31,6 +31,10 @@ in {
 
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
+      (pkgs.writeShellScriptBin "codex-personal" ''
+        CODEX_HOME=''$HOME/.codex-personal codex "$@"
+      '')
+
       (
         pkgs.writeShellScriptBin "i4-update-host"
         (builtins.readFile ../dotfiles/i4-update-host.sh)
@@ -41,7 +45,7 @@ in {
 
     programs.zsh.shellAliases = {
       # bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
-      codex-personal = "CODEX_HOME=~/.codex-personal codex";
+      codex-personal = "CODEX_HOME=$HOME/.codex-personal codex";
       gw = "./gradlew";
     };
 
