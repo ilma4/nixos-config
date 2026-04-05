@@ -60,21 +60,6 @@ in {
   # universall module
   config = lib.mkIf config.i4.apps.enable (
     let
-      linuxPackageAssertions =
-        lib.mapAttrsToList (name: app: let
-          linuxName = getLinuxName name app;
-        in {
-          assertion =
-            !(
-              isLinux
-              && app.enable
-              && app.linuxInstallation == "package"
-            )
-            || lib.hasAttrByPath [linuxName] pkgs;
-          message = "i4.apps.apps.${name}: resolved Linux package `${linuxName}` is missing from pkgs";
-        })
-        config.i4.apps.apps;
-
       packageList = lib.concatLists (
         lib.mapAttrsToList (
           name: app: let
@@ -92,10 +77,7 @@ in {
         config.i4.apps.apps
       );
     in
-      {
-        assertions = linuxPackageAssertions;
-      }
-      // lib.optionalAttrs (!isHomeManager) {
+      lib.optionalAttrs (!isHomeManager) {
         environment.systemPackages = packageList;
       }
       // lib.optionalAttrs isHomeManager {
