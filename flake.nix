@@ -31,10 +31,6 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
-    system-manager = {
-      url = "github:numtide/system-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     # Security and secrets
     sops-nix = {
@@ -78,10 +74,6 @@
 
     # Platform-specific utilities
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
-    nix-system-graphics = {
-      url = "github:soupglasses/nix-system-graphics";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs @ {
@@ -144,7 +136,6 @@
       nixos = nixpkgs.lib.nixosSystem;
       darwin = nix-darwin.lib.darwinSystem;
       home = home-manager.lib.homeManagerConfiguration;
-      system-manager = inputs.system-manager.lib.makeSystemConfig; # for system-manager
     };
 
     baseModule = {
@@ -261,20 +252,5 @@
 
     # Standalone Home Manager Configurations
     homeConfigurations = {};
-
-    # System Manager Configuration
-    systemConfigs = {
-      default = inputs.system-manager.lib.makeSystemConfig {
-        modules = [
-          inputs.nix-system-graphics.systemModules.default
-          {
-            config = {
-              nixpkgs.hostPlatform = systems.x86-linux;
-              system-graphics.enable = true;
-            };
-          }
-        ];
-      };
-    };
   };
 }
