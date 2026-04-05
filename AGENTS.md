@@ -1,9 +1,11 @@
 # Project: nixos-config
 
 ## Project Description
+
 Configs for nixos, home-manager and nix-darwin for my devices. All configurations use flakes
 
 ## Tech Stack
+
 - NixOS
 - Nix-Darwin
 - Home-Manager
@@ -11,10 +13,12 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - podman
 
 ## Code Conventions
+
 - Write `set -euo pipefail` at the beginning of every bash script
 - Before using options or packages ensure they exists using mcp-nixos
 
 ## Project Structure
+
 - `flake.nix` - file describing flake
 - `constants.nix` - file with global constants
 - `hosts/` - device-specific configurations
@@ -36,13 +40,11 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 - `darwin-modules/` - nix-darwin modules
   - `launchd-agents.nix` - defines launchd agents
-  
 - `home/` - home-manager modules
   - `base.nix` - common configuration for all hosts
   - `fonts.nix` - configuration for fonts
   - `dev.nix` - configuration for development tools
   - `raycast.nix` - configures raycast commands (MacOS only)
-  
 - `modules/` - nixos modules
   - `base.nix` - common configuration for all hosts
   - `avahi.nix` - enables avahi-daemon
@@ -55,11 +57,11 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
   - `work.nix` - settings specific to work machine
   - `server.nix` - settings specific to server machines
   - `restic-repo.nix` - configure local restic repositories and rotate their passwords
-  
 - `dotfiles/` - dotfiles for programs. Usually deployed with home-manager
 - `secrets/` - secrets encrypted with sops-nix
 
 ## Important Notes
+
 - Home-Manager is used as NixOS or Nix-Darwin module where applicable
 - DO NOT switch to new configuration unless specifically asked to
 - When writing docker container tags, ensure that they exist
@@ -69,8 +71,10 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
   - If it is not exists, write a script `create-secrets.sh` which adds it. Use `./scripts/sops/i4-sops-sudo set ...`
   - If you remove secrets use `./scripts/sops/i4-sops-sudo unset ...`
 
-
 ## Environment Setup
+
 - `nix flake check` - to check that the configuration is correct
 - `nix-rebuild` - to switch to the new configuration
-- `i4-update-host <hostname>` - to switch to the new configuration on selected host (supported hosts: "ilma4-bkp", "nas")
+- `i4-update-host <flake-location>#<configuration> [targetHost]` - to switch a remote NixOS host to the selected flake configuration
+  - examples: `i4-update-host .#nas`, `i4-update-host .#rex ilma4-bkp`
+  - `configuration` is the flake output name, `targetHost` overrides the SSH host when it differs from the configuration name
