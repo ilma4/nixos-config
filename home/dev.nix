@@ -23,7 +23,7 @@ in {
       android-tools # adb
 
       # tex-fmt # latex formatting
-      # haskell-language-server
+      haskell-language-server
 
       (pkgs.rust-bin.stable.latest.default.override {
         extensions = ["rust-src"];
