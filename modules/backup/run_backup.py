@@ -55,7 +55,7 @@ def main(config_file: str) -> int:
                 local_repo.location,
                 "--from-password-file",
                 local_password_file,
-            ],
+            ]
         )
 
     keep_within = config.get("keepWithin")

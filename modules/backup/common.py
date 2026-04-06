@@ -47,20 +47,14 @@ class Repo:
         ]
 
         return subprocess.run(
-            cmd + args,
-            capture_output=capture_output,
-            check=check,
-            text=True,
+            cmd + args, capture_output=capture_output, check=check, text=True
         )
 
     def run_restic_json(
         self,
         args: list[str],
     ) -> Any:
-        result = self.run_restic(
-            args,
-            capture_output=True,
-        )
+        result = self.run_restic(args, capture_output=True)
         return json.loads(result.stdout)
 
     def read_repo_chunker(self) -> str | None:
@@ -92,16 +86,10 @@ class Repo:
 
     def probe_repo_status(self, *, password_file: str | None = None) -> int:
         return self.run_restic(
-            ["cat", "config"],
-            password_file=password_file,
-            check=False,
+            ["cat", "config"], password_file=password_file, check=False
         ).returncode
 
-    def rotate_repo_password(
-        self,
-        label: str,
-        old_password_file: str,
-    ) -> None:
+    def rotate_repo_password(self, label: str, old_password_file: str) -> None:
         log(f"{label}: rotating restic key to the current password file")
         self.run_restic(
             ["key", "add", "--new-password-file", self.passwordFile],
