@@ -34,7 +34,7 @@ in {
     ./home-manager.nix
     ./nix-settings.nix
     ./initrd-ssh.nix
-    ./restic-repo.nix
+    ./backup/backup.nix
     ./swap.nix
     ./avahi.nix
   ];

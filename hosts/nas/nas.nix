@@ -58,26 +58,6 @@
   i4.notifications.enable = true;
   i4.dockerComposeEnable = true;
   i4.initrd-ssh.enable = true;
-  i4.restic.enable = false;
-  i4.restic.repos = {
-    # repo to backup nas
-    restic-server = {
-      location = "/mnt/hdd/restic-server";
-      password-file = "/run/secrets/${constants.nas.restic.password-file}";
-      user = "root";
-      group = "root";
-    };
-
-    restic-ilma4 = let
-      const = constants.nas.restic-ilma4;
-    in {
-      location = "/mnt/hdd/restic";
-      password-file = "/run/secrets/${const.password-secret}";
-      old-password-file = const.old-password-file;
-      user = "ilma4";
-      group = "1000"; # TODO: fix this permission maybe
-    };
-  };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
