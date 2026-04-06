@@ -56,12 +56,9 @@ class Repo:
     def run_restic_json(
         self,
         args: list[str],
-        *,
-        password_file: str | None = None,
     ) -> Any:
         result = self.run_restic(
             args,
-            password_file=password_file,
             capture_output=True,
         )
         return json.loads(result.stdout)
