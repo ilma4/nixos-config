@@ -70,7 +70,6 @@ def main(config_file: str, restic_exe: str) -> int:
                 local_password_file,
             ],
             restic_exe,
-            extra_repos=[local_repo],
         )
 
     keep_within = config.get("keepWithin")

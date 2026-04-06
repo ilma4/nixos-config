@@ -67,20 +67,17 @@ def run_restic(
     args: list[str],
     restic_exe: str,
     *,
-    extra_repos: list[Repo] | None = None,
     capture_output: bool = False,
     check: bool = True,
 ) -> subprocess.CompletedProcess[str]:
     cmd = [
         restic_exe,
-        "--no-cache",
         "--repo",
         repo.location,
         "--password-file",
         password_file,
+        *repo.extraResticArgs,
     ]
-    for current_repo in (repo, *(extra_repos or [])):
-        cmd.extend(current_repo.extraResticArgs)
 
     return subprocess.run(
         cmd + args,
@@ -95,15 +92,12 @@ def run_restic_json(
     password_file: str,
     args: list[str],
     restic_exe: str,
-    *,
-    extra_repos: list[Repo] | None = None,
 ) -> Any:
     result = run_restic(
         repo,
         password_file,
         args,
         restic_exe,
-        extra_repos=extra_repos,
         capture_output=True,
     )
     return json.loads(result.stdout)
@@ -245,7 +239,6 @@ def init_repo(
         location_path.mkdir(parents=True, exist_ok=True)
 
     init_args = ["init"]
-    extra_repos = None
     log_message = f"{label}: initializing repository"
 
     if source_repo is not None:
@@ -259,7 +252,6 @@ def init_repo(
                 source_repo.passwordFile,
             ]
         )
-        extra_repos = [source_repo]
 
     log(log_message)
     run_restic(
@@ -267,5 +259,4 @@ def init_repo(
         repo.passwordFile,
         init_args,
         restic_exe,
-        extra_repos=extra_repos,
     )
