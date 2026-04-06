@@ -17,8 +17,7 @@ def main(config_file: str) -> int:
     if not backup_paths:
         raise BackupError("no backup paths configured")
 
-    local_repo_data = config.get("localRepo")
-    local_repo = Repo.from_dict(local_repo_data)
+    local_repo = Repo.from_dict(config.get("localRepo"))
 
     remote_repos = [
         Repo.from_dict(repo_data) for repo_data in (config.get("remoteRepos"))
@@ -50,5 +49,6 @@ def main(config_file: str) -> int:
     if keep_within:
         log(f"running local retention with --keep-within {keep_within}")
         local_repo.run_restic("forget", "--keep-within", str(keep_within))
+        local_repo.run_restic("prune")
 
     return 0

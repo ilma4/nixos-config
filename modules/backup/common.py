@@ -132,11 +132,7 @@ class Repo:
             f"repository (restic exit code {old_status})"
         )
 
-    def init_repo(
-        self,
-        label: str,
-        source_repo: Repo | None = None,
-    ) -> None:
+    def init_repo(self, label: str, source_repo: Repo | None = None) -> None:
         if not self.init:
             raise BackupError(f"{label} is missing and init = false")
 
