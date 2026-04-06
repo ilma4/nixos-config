@@ -3,11 +3,7 @@ import json
 from common import (
     BackupError,
     Repo,
-    ensure_matching_chunker,
-    ensure_repo_ready,
-    init_repo,
     log,
-    run_restic,
 )
 
 LOCAL_REPO_LABEL = "local repo"
@@ -27,39 +23,32 @@ def main(config_file: str) -> int:
     remote_repos = [
         Repo.from_dict(repo_data) for repo_data in (config.get("remoteRepos") or [])
     ]
-    if ensure_repo_ready(local_repo, LOCAL_REPO_LABEL) == "missing":
+    if local_repo.ensure_repo_ready(LOCAL_REPO_LABEL) == "missing":
         init_source_repo = None
         for remote_repo in remote_repos:
             label = f"remote repo {remote_repo.name}"
-            if ensure_repo_ready(remote_repo, label) == "ready":
+            if remote_repo.ensure_repo_ready(label) == "ready":
                 init_source_repo = remote_repo
                 break
 
-        init_repo(local_repo, LOCAL_REPO_LABEL, init_source_repo)
+        local_repo.init_repo(LOCAL_REPO_LABEL, init_source_repo)
 
     local_password_file = local_repo.passwordFile
 
     log("running restic backup into the local repository")
-    run_restic(
-        local_repo,
-        local_password_file,
+    local_repo.run_restic(
         ["backup", *backup_paths],
     )
 
     for remote_repo in remote_repos:
         label = f"remote repo {remote_repo.name}"
-        if ensure_repo_ready(remote_repo, label) == "missing":
-            init_repo(remote_repo, label, local_repo)
+        if remote_repo.ensure_repo_ready(label) == "missing":
+            remote_repo.init_repo(label, local_repo)
 
-        ensure_matching_chunker(
-            local_repo,
-            remote_repo,
-        )
+        local_repo.ensure_matching_chunker(remote_repo)
 
         log(f"copying snapshots from local repo to {label}")
-        run_restic(
-            remote_repo,
-            remote_repo.passwordFile,
+        remote_repo.run_restic(
             [
                 "copy",
                 "--from-repo",
@@ -72,9 +61,7 @@ def main(config_file: str) -> int:
     keep_within = config.get("keepWithin")
     if keep_within:
         log(f"running local retention with --keep-within {keep_within}")
-        run_restic(
-            local_repo,
-            local_password_file,
+        local_repo.run_restic(
             ["forget", "--keep-within", str(keep_within)],
         )
 

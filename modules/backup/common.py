@@ -29,6 +29,156 @@ class Repo:
             init=bool(data.get("init", True)),
         )
 
+    def run_restic(
+        self,
+        args: list[str],
+        *,
+        password_file: str | None = None,
+        capture_output: bool = False,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess[str]:
+        cmd = [
+            "restic",
+            "--repo",
+            self.location,
+            "--password-file",
+            self.passwordFile if password_file is None else password_file,
+            *self.extraResticArgs,
+        ]
+
+        return subprocess.run(
+            cmd + args,
+            capture_output=capture_output,
+            check=check,
+            text=True,
+        )
+
+    def run_restic_json(
+        self,
+        args: list[str],
+        *,
+        password_file: str | None = None,
+    ) -> Any:
+        result = self.run_restic(
+            args,
+            password_file=password_file,
+            capture_output=True,
+        )
+        return json.loads(result.stdout)
+
+    def read_repo_chunker(self) -> str | None:
+        repo_config = self.run_restic_json(["cat", "config", "--json"])
+        for key in ("chunker_polynomial", "chunkerPolynomial"):
+            value = repo_config.get(key)
+            if value not in (None, ""):
+                return str(value)
+        return None
+
+    def ensure_matching_chunker(self, other_repo: "Repo") -> None:
+        repo_chunker = self.read_repo_chunker()
+        other_repo_chunker = other_repo.read_repo_chunker()
+
+        if repo_chunker is None or other_repo_chunker is None:
+            raise BackupError(
+                "unable to read chunker parameters from one of the restic repository "
+                "configs"
+            )
+
+        if repo_chunker == other_repo_chunker:
+            return
+
+        raise BackupError(
+            "chunker parameters differ between "
+            f"{self.name} and {other_repo.name}, refusing to run restic "
+            "copy"
+        )
+
+    def probe_repo_status(self, *, password_file: str | None = None) -> int:
+        return self.run_restic(
+            ["cat", "config"],
+            password_file=password_file,
+            check=False,
+        ).returncode
+
+    def rotate_repo_password(
+        self,
+        label: str,
+        old_password_file: str,
+    ) -> None:
+        log(f"{label}: rotating restic key to the current password file")
+        self.run_restic(
+            ["key", "add", "--new-password-file", self.passwordFile],
+            password_file=old_password_file,
+        )
+
+        keys = self.run_restic_json(
+            ["key", "list", "--json"],
+        )
+
+        for key in keys:
+            if key.get("current") is True:
+                continue
+
+            self.run_restic(
+                ["key", "remove", str(key["id"])],
+            )
+
+    def ensure_repo_ready(self, label: str) -> str:
+        current_status = self.probe_repo_status()
+        if current_status in (0, MISSING_REPO_EXIT_CODE):
+            return "ready" if current_status == 0 else "missing"
+        if current_status != BAD_PASSWORD_EXIT_CODE:
+            raise BackupError(
+                f"{label}: failed to access the repository with the current password "
+                f"file (restic exit code {current_status})"
+            )
+
+        old_password_file = self.oldPasswordFile
+        if old_password_file is None:
+            raise BackupError(
+                f"{label}: current password file cannot unlock the repository "
+                "and no oldPasswordFile is configured"
+            )
+
+        old_status = self.probe_repo_status(password_file=old_password_file)
+        if old_status == 0:
+            self.rotate_repo_password(label, old_password_file)
+            return "ready"
+        if old_status == MISSING_REPO_EXIT_CODE:
+            return "missing"
+
+        raise BackupError(
+            f"{label}: oldPasswordFile also failed while checking the "
+            f"repository (restic exit code {old_status})"
+        )
+
+    def init_repo(
+        self,
+        label: str,
+        source_repo: Repo | None = None,
+    ) -> None:
+        if not self.init:
+            raise BackupError(f"{label} is missing and init = false")
+
+        location_path = Path(self.location)
+        if location_path.is_absolute():
+            location_path.mkdir(parents=True, exist_ok=True)
+
+        init_args = ["init"]
+        log(f"{label}: initializing repository")
+
+        if source_repo is not None:
+            log(f"{label}: initializing repository with copied chunker params")
+            init_args += [
+                "--copy-chunker-params",
+                "--from-repo",
+                source_repo.location,
+                "--from-password-file",
+                source_repo.passwordFile,
+            ]
+
+        self.run_restic(init_args)
+
 
 MISSING_REPO_EXIT_CODE = 10
 BAD_PASSWORD_EXIT_CODE = 12
@@ -59,190 +209,3 @@ def run_cli(main_fn: Callable[[], int]) -> int:
             log_error(stderr)
         return exc.returncode or 1
     return 1
-
-
-def run_restic(
-    repo: Repo,
-    password_file: str,
-    args: list[str],
-    *,
-    capture_output: bool = False,
-    check: bool = True,
-) -> subprocess.CompletedProcess[str]:
-    cmd = [
-        "restic",
-        "--repo",
-        repo.location,
-        "--password-file",
-        password_file,
-        *repo.extraResticArgs,
-    ]
-
-    return subprocess.run(
-        cmd + args,
-        capture_output=capture_output,
-        check=check,
-        text=True,
-    )
-
-
-def run_restic_json(
-    repo: Repo,
-    password_file: str,
-    args: list[str],
-) -> Any:
-    result = run_restic(
-        repo,
-        password_file,
-        args,
-        capture_output=True,
-    )
-    return json.loads(result.stdout)
-
-
-def read_repo_chunker(repo: Repo) -> str | None:
-    repo_config = run_restic_json(
-        repo,
-        repo.passwordFile,
-        ["cat", "config", "--json"],
-    )
-    for key in ("chunker_polynomial", "chunkerPolynomial"):
-        value = repo_config.get(key)
-        if value not in (None, ""):
-            return str(value)
-    return None
-
-
-def ensure_matching_chunker(
-    repo_a: Repo,
-    repo_b: Repo,
-) -> None:
-    repo_a_chunker = read_repo_chunker(repo_a)
-    repo_b_chunker = read_repo_chunker(repo_b)
-
-    if repo_a_chunker is None or repo_b_chunker is None:
-        raise BackupError(
-            "unable to read chunker parameters from one of the restic repository "
-            "configs"
-        )
-
-    if repo_a_chunker == repo_b_chunker:
-        return
-
-    raise BackupError(
-        "chunker parameters differ between "
-        f"{repo_a.name} and {repo_b.name}, refusing to run restic "
-        "copy"
-    )
-
-
-def probe_repo_status(
-    repo: Repo,
-    password_file: str,
-) -> int:
-    return run_restic(
-        repo,
-        password_file,
-        ["cat", "config"],
-        check=False,
-    ).returncode
-
-
-def rotate_repo_password(
-    repo: Repo,
-    label: str,
-    old_password_file: str,
-) -> None:
-    new_password_file = repo.passwordFile
-
-    log(f"{label}: rotating restic key to the current password file")
-    run_restic(
-        repo,
-        old_password_file,
-        ["key", "add", "--new-password-file", new_password_file],
-    )
-
-    keys = run_restic_json(
-        repo,
-        new_password_file,
-        ["key", "list", "--json"],
-    )
-
-    for key in keys:
-        if key.get("current") is True:
-            continue
-
-        run_restic(
-            repo,
-            new_password_file,
-            ["key", "remove", str(key["id"])],
-        )
-
-
-def ensure_repo_ready(
-    repo: Repo,
-    label: str,
-) -> str:
-    current_password_file = repo.passwordFile
-    current_status = probe_repo_status(repo, current_password_file)
-    if current_status in (0, MISSING_REPO_EXIT_CODE):
-        return "ready" if current_status == 0 else "missing"
-    if current_status != BAD_PASSWORD_EXIT_CODE:
-        raise BackupError(
-            f"{label}: failed to access the repository with the current password "
-            f"file (restic exit code {current_status})"
-        )
-
-    old_password_file = repo.oldPasswordFile
-    if old_password_file is None:
-        raise BackupError(
-            f"{label}: current password file cannot unlock the repository "
-            "and no oldPasswordFile is configured"
-        )
-
-    old_status = probe_repo_status(repo, old_password_file)
-    if old_status == 0:
-        rotate_repo_password(repo, label, old_password_file)
-        return "ready"
-    if old_status == MISSING_REPO_EXIT_CODE:
-        return "missing"
-
-    raise BackupError(
-        f"{label}: oldPasswordFile also failed while checking the "
-        f"repository (restic exit code {old_status})"
-    )
-
-
-def init_repo(
-    repo: Repo,
-    label: str,
-    source_repo: Repo | None = None,
-) -> None:
-    if not repo.init:
-        raise BackupError(f"{label} is missing and init = false")
-
-    location_path = Path(repo.location)
-    if location_path.is_absolute():
-        location_path.mkdir(parents=True, exist_ok=True)
-
-    init_args = ["init"]
-    log_message = f"{label}: initializing repository"
-
-    if source_repo is not None:
-        log_message = f"{label}: initializing repository with copied chunker params"
-        init_args.extend(
-            [
-                "--copy-chunker-params",
-                "--from-repo",
-                source_repo.location,
-                "--from-password-file",
-                source_repo.passwordFile,
-            ]
-        )
-
-    log(log_message)
-    run_restic(
-        repo,
-        repo.passwordFile,
-        init_args,
-    )
