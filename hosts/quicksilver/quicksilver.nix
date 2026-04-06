@@ -147,6 +147,7 @@
     # common apps are configured in `modules/apps.nix`
     casks = [
       "codex-app"
+      "lm-studio"
     ];
     brews = [
       "steveyegge/beads/bd"
