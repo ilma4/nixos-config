@@ -1,10 +1,35 @@
 import json
 import subprocess
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-Repo = dict[str, Any]
+
+@dataclass
+class Repo:
+    location: str
+    passwordFile: str
+    name: str = "local"
+    oldPasswordFile: str | None = None
+    extraResticArgs: list[str] = field(default_factory=list)
+    init: bool = True
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Repo":
+        old_password_file = data.get("oldPasswordFile")
+        return cls(
+            location=str(data["location"]),
+            passwordFile=str(data["passwordFile"]),
+            name=str(data.get("name") or "local"),
+            oldPasswordFile=None
+            if old_password_file in (None, "")
+            else str(old_password_file),
+            extraResticArgs=[str(arg) for arg in (data.get("extraResticArgs") or [])],
+            init=bool(data.get("init", True)),
+        )
+
+
 MISSING_REPO_EXIT_CODE = 10
 BAD_PASSWORD_EXIT_CODE = 12
 
@@ -36,23 +61,6 @@ def run_cli(main_fn: Callable[[], int]) -> int:
     return 1
 
 
-def repo_name(repo: Repo) -> str:
-    return str(repo.get("name") or "local")
-
-
-def repo_location(repo: Repo) -> str:
-    return str(repo["location"])
-
-
-def repo_password_file(repo: Repo) -> str:
-    return str(repo["passwordFile"])
-
-
-def repo_old_password_file(repo: Repo) -> str | None:
-    value = repo.get("oldPasswordFile")
-    return None if value in (None, "") else str(value)
-
-
 def run_restic(
     repo: Repo,
     password_file: str,
@@ -67,12 +75,12 @@ def run_restic(
         restic_exe,
         "--no-cache",
         "--repo",
-        repo_location(repo),
+        repo.location,
         "--password-file",
         password_file,
     ]
     for current_repo in (repo, *(extra_repos or [])):
-        cmd.extend(str(arg) for arg in (current_repo.get("extraResticArgs") or []))
+        cmd.extend(current_repo.extraResticArgs)
 
     return subprocess.run(
         cmd + args,
@@ -104,7 +112,7 @@ def run_restic_json(
 def read_repo_chunker(repo: Repo, restic_exe: str) -> str | None:
     repo_config = run_restic_json(
         repo,
-        repo_password_file(repo),
+        repo.passwordFile,
         ["cat", "config", "--json"],
         restic_exe,
     )
@@ -115,7 +123,11 @@ def read_repo_chunker(repo: Repo, restic_exe: str) -> str | None:
     return None
 
 
-def ensure_matching_chunker(repo_a: Repo, repo_b: Repo, restic_exe: str) -> None:
+def ensure_matching_chunker(
+    repo_a: Repo,
+    repo_b: Repo,
+    restic_exe: str,
+) -> None:
     repo_a_chunker = read_repo_chunker(repo_a, restic_exe)
     repo_b_chunker = read_repo_chunker(repo_b, restic_exe)
 
@@ -130,7 +142,7 @@ def ensure_matching_chunker(repo_a: Repo, repo_b: Repo, restic_exe: str) -> None
 
     raise BackupError(
         "chunker parameters differ between "
-        f"{repo_name(repo_a)} and {repo_name(repo_b)}, refusing to run restic "
+        f"{repo_a.name} and {repo_b.name}, refusing to run restic "
         "copy"
     )
 
@@ -155,7 +167,7 @@ def rotate_repo_password(
     old_password_file: str,
     restic_exe: str,
 ) -> None:
-    new_password_file = repo_password_file(repo)
+    new_password_file = repo.passwordFile
 
     log(f"{label}: rotating restic key to the current password file")
     run_restic(
@@ -189,7 +201,7 @@ def ensure_repo_ready(
     label: str,
     restic_exe: str,
 ) -> str:
-    current_password_file = repo_password_file(repo)
+    current_password_file = repo.passwordFile
     current_status = probe_repo_status(repo, current_password_file, restic_exe)
     if current_status in (0, MISSING_REPO_EXIT_CODE):
         return "ready" if current_status == 0 else "missing"
@@ -199,7 +211,7 @@ def ensure_repo_ready(
             f"file (restic exit code {current_status})"
         )
 
-    old_password_file = repo_old_password_file(repo)
+    old_password_file = repo.oldPasswordFile
     if old_password_file is None:
         raise BackupError(
             f"{label}: current password file cannot unlock the repository "
@@ -225,10 +237,10 @@ def init_repo(
     restic_exe: str,
     source_repo: Repo | None = None,
 ) -> None:
-    if not bool(repo.get("init", True)):
+    if not repo.init:
         raise BackupError(f"{label} is missing and init = false")
 
-    location_path = Path(repo_location(repo))
+    location_path = Path(repo.location)
     if location_path.is_absolute():
         location_path.mkdir(parents=True, exist_ok=True)
 
@@ -242,9 +254,9 @@ def init_repo(
             [
                 "--copy-chunker-params",
                 "--from-repo",
-                repo_location(source_repo),
+                source_repo.location,
                 "--from-password-file",
-                repo_password_file(source_repo),
+                source_repo.passwordFile,
             ]
         )
         extra_repos = [source_repo]
@@ -252,7 +264,7 @@ def init_repo(
     log(log_message)
     run_restic(
         repo,
-        repo_password_file(repo),
+        repo.passwordFile,
         init_args,
         restic_exe,
         extra_repos=extra_repos,

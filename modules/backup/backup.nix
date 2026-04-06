@@ -70,8 +70,7 @@ in {
     };
 
     localRepo = mkOption {
-      type = types.nullOr repoType;
-      default = null;
+      type = repoType;
       description = "Local restic repository used for backups before snapshots are copied to remotes.";
     };
 
