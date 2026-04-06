@@ -13,7 +13,7 @@ from common import (
 LOCAL_REPO_LABEL = "local repo"
 
 
-def main(config_file: str, restic_exe: str) -> int:
+def main(config_file: str) -> int:
     with open(config_file, encoding="utf-8") as file:
         config = json.load(file)
 
@@ -27,15 +27,15 @@ def main(config_file: str, restic_exe: str) -> int:
     remote_repos = [
         Repo.from_dict(repo_data) for repo_data in (config.get("remoteRepos") or [])
     ]
-    if ensure_repo_ready(local_repo, LOCAL_REPO_LABEL, restic_exe) == "missing":
+    if ensure_repo_ready(local_repo, LOCAL_REPO_LABEL) == "missing":
         init_source_repo = None
         for remote_repo in remote_repos:
             label = f"remote repo {remote_repo.name}"
-            if ensure_repo_ready(remote_repo, label, restic_exe) == "ready":
+            if ensure_repo_ready(remote_repo, label) == "ready":
                 init_source_repo = remote_repo
                 break
 
-        init_repo(local_repo, LOCAL_REPO_LABEL, restic_exe, init_source_repo)
+        init_repo(local_repo, LOCAL_REPO_LABEL, init_source_repo)
 
     local_password_file = local_repo.passwordFile
 
@@ -44,18 +44,16 @@ def main(config_file: str, restic_exe: str) -> int:
         local_repo,
         local_password_file,
         ["backup", *backup_paths],
-        restic_exe,
     )
 
     for remote_repo in remote_repos:
         label = f"remote repo {remote_repo.name}"
-        if ensure_repo_ready(remote_repo, label, restic_exe) == "missing":
-            init_repo(remote_repo, label, restic_exe, local_repo)
+        if ensure_repo_ready(remote_repo, label) == "missing":
+            init_repo(remote_repo, label, local_repo)
 
         ensure_matching_chunker(
             local_repo,
             remote_repo,
-            restic_exe,
         )
 
         log(f"copying snapshots from local repo to {label}")
@@ -69,7 +67,6 @@ def main(config_file: str, restic_exe: str) -> int:
                 "--from-password-file",
                 local_password_file,
             ],
-            restic_exe,
         )
 
     keep_within = config.get("keepWithin")
@@ -79,7 +76,6 @@ def main(config_file: str, restic_exe: str) -> int:
             local_repo,
             local_password_file,
             ["forget", "--keep-within", str(keep_within)],
-            restic_exe,
         )
 
     return 0

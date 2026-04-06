@@ -100,10 +100,7 @@ in {
       if __name__ == "__main__":
           raise SystemExit(
               run_cli(
-                  lambda: main(
-                      ${builtins.toJSON (toString backupConfigFile)},
-                      ${builtins.toJSON (getExe pkgs.restic)},
-                  )
+                  lambda: main(${builtins.toJSON (toString backupConfigFile)})
               )
           )
     '';
@@ -123,6 +120,7 @@ in {
       description = "Local restic backup with remote copies";
       after = ["network-online.target" "sops-nix.service"];
       wants = ["network-online.target"];
+      path = [pkgs.restic];
       serviceConfig = {
         Type = "oneshot";
         User = cfg.backupUser;

@@ -65,13 +65,12 @@ def run_restic(
     repo: Repo,
     password_file: str,
     args: list[str],
-    restic_exe: str,
     *,
     capture_output: bool = False,
     check: bool = True,
 ) -> subprocess.CompletedProcess[str]:
     cmd = [
-        restic_exe,
+        "restic",
         "--repo",
         repo.location,
         "--password-file",
@@ -91,24 +90,21 @@ def run_restic_json(
     repo: Repo,
     password_file: str,
     args: list[str],
-    restic_exe: str,
 ) -> Any:
     result = run_restic(
         repo,
         password_file,
         args,
-        restic_exe,
         capture_output=True,
     )
     return json.loads(result.stdout)
 
 
-def read_repo_chunker(repo: Repo, restic_exe: str) -> str | None:
+def read_repo_chunker(repo: Repo) -> str | None:
     repo_config = run_restic_json(
         repo,
         repo.passwordFile,
         ["cat", "config", "--json"],
-        restic_exe,
     )
     for key in ("chunker_polynomial", "chunkerPolynomial"):
         value = repo_config.get(key)
@@ -120,10 +116,9 @@ def read_repo_chunker(repo: Repo, restic_exe: str) -> str | None:
 def ensure_matching_chunker(
     repo_a: Repo,
     repo_b: Repo,
-    restic_exe: str,
 ) -> None:
-    repo_a_chunker = read_repo_chunker(repo_a, restic_exe)
-    repo_b_chunker = read_repo_chunker(repo_b, restic_exe)
+    repo_a_chunker = read_repo_chunker(repo_a)
+    repo_b_chunker = read_repo_chunker(repo_b)
 
     if repo_a_chunker is None or repo_b_chunker is None:
         raise BackupError(
@@ -144,13 +139,11 @@ def ensure_matching_chunker(
 def probe_repo_status(
     repo: Repo,
     password_file: str,
-    restic_exe: str,
 ) -> int:
     return run_restic(
         repo,
         password_file,
         ["cat", "config"],
-        restic_exe,
         check=False,
     ).returncode
 
@@ -159,7 +152,6 @@ def rotate_repo_password(
     repo: Repo,
     label: str,
     old_password_file: str,
-    restic_exe: str,
 ) -> None:
     new_password_file = repo.passwordFile
 
@@ -168,14 +160,12 @@ def rotate_repo_password(
         repo,
         old_password_file,
         ["key", "add", "--new-password-file", new_password_file],
-        restic_exe,
     )
 
     keys = run_restic_json(
         repo,
         new_password_file,
         ["key", "list", "--json"],
-        restic_exe,
     )
 
     for key in keys:
@@ -186,17 +176,15 @@ def rotate_repo_password(
             repo,
             new_password_file,
             ["key", "remove", str(key["id"])],
-            restic_exe,
         )
 
 
 def ensure_repo_ready(
     repo: Repo,
     label: str,
-    restic_exe: str,
 ) -> str:
     current_password_file = repo.passwordFile
-    current_status = probe_repo_status(repo, current_password_file, restic_exe)
+    current_status = probe_repo_status(repo, current_password_file)
     if current_status in (0, MISSING_REPO_EXIT_CODE):
         return "ready" if current_status == 0 else "missing"
     if current_status != BAD_PASSWORD_EXIT_CODE:
@@ -212,9 +200,9 @@ def ensure_repo_ready(
             "and no oldPasswordFile is configured"
         )
 
-    old_status = probe_repo_status(repo, old_password_file, restic_exe)
+    old_status = probe_repo_status(repo, old_password_file)
     if old_status == 0:
-        rotate_repo_password(repo, label, old_password_file, restic_exe)
+        rotate_repo_password(repo, label, old_password_file)
         return "ready"
     if old_status == MISSING_REPO_EXIT_CODE:
         return "missing"
@@ -228,7 +216,6 @@ def ensure_repo_ready(
 def init_repo(
     repo: Repo,
     label: str,
-    restic_exe: str,
     source_repo: Repo | None = None,
 ) -> None:
     if not repo.init:
@@ -258,5 +245,4 @@ def init_repo(
         repo,
         repo.passwordFile,
         init_args,
-        restic_exe,
     )
