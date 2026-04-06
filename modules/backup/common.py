@@ -29,10 +29,12 @@ class Repo:
             init=bool(data.get("init", True)),
         )
 
+    def from_args(self) -> list[str]:
+        return ["--from-repo", self.location, "--from-password-file", self.passwordFile]
+
     def run_restic(
         self,
-        args: list[str],
-        *,
+        *args: str,
         password_file: str | None = None,
         capture_output: bool = False,
         check: bool = True,
@@ -47,18 +49,15 @@ class Repo:
         ]
 
         return subprocess.run(
-            cmd + args, capture_output=capture_output, check=check, text=True
+            [*cmd, *args], capture_output=capture_output, check=check, text=True
         )
 
-    def run_restic_json(
-        self,
-        args: list[str],
-    ) -> Any:
-        result = self.run_restic(args, capture_output=True)
+    def run_restic_json(self, *args: str) -> Any:
+        result = self.run_restic(*args, capture_output=True)
         return json.loads(result.stdout)
 
     def read_repo_chunker(self) -> str | None:
-        repo_config = self.run_restic_json(["cat", "config", "--json"])
+        repo_config = self.run_restic_json("cat", "config", "--json")
         for key in ("chunker_polynomial", "chunkerPolynomial"):
             value = repo_config.get(key)
             if value not in (None, ""):
@@ -86,27 +85,23 @@ class Repo:
 
     def probe_repo_status(self, *, password_file: str | None = None) -> int:
         return self.run_restic(
-            ["cat", "config"], password_file=password_file, check=False
+            "cat", "config", password_file=password_file, check=False
         ).returncode
 
     def rotate_repo_password(self, label: str, old_password_file: str) -> None:
         log(f"{label}: rotating restic key to the current password file")
         self.run_restic(
-            ["key", "add", "--new-password-file", self.passwordFile],
+            "key",
+            "add",
+            "--new-password-file",
+            self.passwordFile,
             password_file=old_password_file,
         )
 
-        keys = self.run_restic_json(
-            ["key", "list", "--json"],
-        )
+        keys = self.run_restic_json("key", "list", "--json")
 
-        for key in keys:
-            if key.get("current") is True:
-                continue
-
-            self.run_restic(
-                ["key", "remove", str(key["id"])],
-            )
+        for key in [k for k in keys if not k.get("current")]:
+            self.run_restic("key", "remove", str(key["id"]))
 
     def ensure_repo_ready(self, label: str) -> str:
         current_status = self.probe_repo_status()
@@ -154,15 +149,9 @@ class Repo:
 
         if source_repo is not None:
             log(f"{label}: initializing repository with copied chunker params")
-            init_args += [
-                "--copy-chunker-params",
-                "--from-repo",
-                source_repo.location,
-                "--from-password-file",
-                source_repo.passwordFile,
-            ]
+            init_args += ["--copy-chunker-params", *source_repo.from_args()]
 
-        self.run_restic(init_args)
+        self.run_restic(*init_args)
 
 
 MISSING_REPO_EXIT_CODE = 10

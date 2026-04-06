@@ -21,7 +21,7 @@ def main(config_file: str) -> int:
     local_repo = Repo.from_dict(local_repo_data)
 
     remote_repos = [
-        Repo.from_dict(repo_data) for repo_data in (config.get("remoteRepos") or [])
+        Repo.from_dict(repo_data) for repo_data in (config.get("remoteRepos"))
     ]
     if local_repo.ensure_repo_ready(LOCAL_REPO_LABEL) == "missing":
         init_source_repo = None
@@ -33,12 +33,8 @@ def main(config_file: str) -> int:
 
         local_repo.init_repo(LOCAL_REPO_LABEL, init_source_repo)
 
-    local_password_file = local_repo.passwordFile
-
     log("running restic backup into the local repository")
-    local_repo.run_restic(
-        ["backup", *backup_paths],
-    )
+    local_repo.run_restic("backup", *backup_paths)
 
     for remote_repo in remote_repos:
         label = f"remote repo {remote_repo.name}"
@@ -48,21 +44,11 @@ def main(config_file: str) -> int:
         local_repo.ensure_matching_chunker(remote_repo)
 
         log(f"copying snapshots from local repo to {label}")
-        remote_repo.run_restic(
-            [
-                "copy",
-                "--from-repo",
-                local_repo.location,
-                "--from-password-file",
-                local_password_file,
-            ]
-        )
+        remote_repo.run_restic("copy", *local_repo.from_args())
 
     keep_within = config.get("keepWithin")
     if keep_within:
         log(f"running local retention with --keep-within {keep_within}")
-        local_repo.run_restic(
-            ["forget", "--keep-within", str(keep_within)],
-        )
+        local_repo.run_restic("forget", "--keep-within", str(keep_within))
 
     return 0
