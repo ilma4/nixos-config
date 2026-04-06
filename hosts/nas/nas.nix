@@ -21,7 +21,6 @@
     ./samba.nix
 
     ./hdd-idle-guard.nix
-    ./restic-chunker-params-donor.nix
     # ./agent-dev-box.nix # issues with nixpkgs not having overlays in container unlike on host
 
     "${modules}/server.nix"
