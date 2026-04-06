@@ -4,7 +4,7 @@
   ...
 }: let
   UID_GID = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
-  actual-version = "25.10.0";
+  actual-version = "26.4.0";
 in {
   users.users.actual-budget = {
     isSystemUser = true;
