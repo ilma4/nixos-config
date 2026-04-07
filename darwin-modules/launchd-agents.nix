@@ -73,7 +73,7 @@
       path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
       serviceConfig = {
         ProgramArguments = [
-          "resticprofile" # do not changes, so wont lose permissions
+          "${lib.getExe pkgs.resticprofile}"
           "-c"
           "${../dotfiles/resticprofile.toml}"
           "backup"
@@ -93,7 +93,7 @@
       path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
       serviceConfig = {
         ProgramArguments = [
-          "resticprofile" # do not changes, so wont lose permissions
+          "${lib.getExe pkgs.resticprofile}"
           "-c"
           "${../dotfiles/resticprofile.toml}"
           "hdd.copy"
