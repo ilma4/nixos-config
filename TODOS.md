@@ -55,6 +55,9 @@ They have to search for the newer version of the service, find the docker-compos
 - wakeup-on-lan and autosleep
 
 # Better neovim config
+- make `neovim` to run simple neovim with minimal config
+
+- make `neovim-ide` to run with heavy config
 
 - theme, both light and dark and autoswitch
 - tabs
