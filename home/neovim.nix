@@ -29,6 +29,7 @@ in {
           p.markdown
           p.vim
           p.python
+          p.haskell
         ]))
       ];
 

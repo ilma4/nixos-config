@@ -21,6 +21,7 @@ in {
       pi-coding-agent
 
       ghc
+      stack
 
       android-tools # adb
 
