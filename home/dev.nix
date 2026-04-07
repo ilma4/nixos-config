@@ -20,6 +20,8 @@ in {
       sops
       pi-coding-agent
 
+      ghc
+
       android-tools # adb
 
       # tex-fmt # latex formatting
