@@ -10,7 +10,7 @@
     launchd.user.agents.podman-machine-autostart = {
       path = [pkgs.podman];
       serviceConfig = {
-        ProgramArguments = ["${pkgs.bash}/bin/bash" "-c" "podman machine start"];
+        ProgramArguments = ["${lib.getExe pkgs.bash}" "-c" "podman machine start"];
         RunAtLoad = true;
         AbandonProcessGroup = true; # required to keep podman machine process running
         StandardOutPath = "/tmp/podman-machine-start.log";
@@ -19,43 +19,44 @@
     };
 
     launchd.user.agents.obsidian-auto-commit = {
+      path = [pkgs.coreutils pkgs.git];
       serviceConfig = {
         ProgramArguments = [
-          "${pkgs.bash}/bin/bash"
+          "${lib.getExe pkgs.bash}"
           "-c"
           ''
             set -e
 
-            echo "$(${pkgs.coreutils}/bin/date): Starting Obsidian auto-commit"
+            echo "$(date): Starting Obsidian auto-commit"
 
             if [ ! -d ~/Obsidian ]; then
-              echo "$(${pkgs.coreutils}/bin/date): ~/Obsidian directory not found, exiting"
+              echo "$(date): ~/Obsidian directory not found, exiting"
               exit 0
             fi
 
             cd ~/Obsidian
 
             if [ ! -d .git ]; then
-              echo "$(${pkgs.coreutils}/bin/date): Not a git repository, exiting"
+              echo "$(date): Not a git repository, exiting"
               exit 0
             fi
 
             # Calculate yesterday's date
-            YESTERDAY=$(${pkgs.coreutils}/bin/date -d 'yesterday' '+%Y-%m-%d' 2>/dev/null || ${pkgs.coreutils}/bin/date -v-1d '+%Y-%m-%d' 2>/dev/null || ${pkgs.coreutils}/bin/date -r $(($(${pkgs.coreutils}/bin/date +%s) - 86400)) '+%Y-%m-%d')
+            YESTERDAY=$(date -d 'yesterday' '+%Y-%m-%d' 2>/dev/null || date -v-1d '+%Y-%m-%d' 2>/dev/null || date -r $(($(date +%s) - 86400)) '+%Y-%m-%d')
 
-            echo "$(${pkgs.coreutils}/bin/date): Adding all changes to git"
-            ${pkgs.git}/bin/git add .
+            echo "$(date): Adding all changes to git"
+            git add .
 
             # Check if there are any changes to commit
-            if ${pkgs.git}/bin/git diff --cached --quiet; then
-              echo "$(${pkgs.coreutils}/bin/date): No changes to commit"
+            if git diff --cached --quiet; then
+              echo "$(date): No changes to commit"
               exit 0
             fi
 
-            echo "$(${pkgs.coreutils}/bin/date): Committing with message: $YESTERDAY"
-            ${pkgs.git}/bin/git commit -m "$YESTERDAY"
+            echo "$(date): Committing with message: $YESTERDAY"
+            git commit -m "$YESTERDAY"
 
-            echo "$(${pkgs.coreutils}/bin/date): Auto-commit completed successfully"
+            echo "$(date): Auto-commit completed successfully"
           ''
         ];
         StartCalendarInterval = [
@@ -73,10 +74,9 @@
       path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
       serviceConfig = {
         ProgramArguments = [
-          "${lib.getExe pkgs.resticprofile}"
+          "${lib.getExe pkgs.bash}"
           "-c"
-          "${../dotfiles/resticprofile.toml}"
-          "backup"
+          "resticprofile -c \"${../dotfiles/resticprofile.toml}\" backup"
         ];
         StartCalendarInterval = [
           {
@@ -93,10 +93,9 @@
       path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
       serviceConfig = {
         ProgramArguments = [
-          "${lib.getExe pkgs.resticprofile}"
+          "${lib.getExe pkgs.bash}"
           "-c"
-          "${../dotfiles/resticprofile.toml}"
-          "hdd.copy"
+          "resticprofile -c \"${../dotfiles/resticprofile.toml}\" hdd.copy"
         ];
         StartCalendarInterval = [
           {
