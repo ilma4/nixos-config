@@ -214,19 +214,6 @@ in {
       baseIndex = 1; # enumerate windows from 1 instead of 0
     };
 
-    programs.neovim = {
-      enable = true;
-      extraConfig = ''
-        set number
-      '';
-      plugins = with pkgs.vimPlugins; [
-        {
-          plugin = vim-suda;
-          config = "let g:suda_smart_edit = 1";
-        }
-      ];
-    };
-
     home.file = {
       ".config/htop/htoprc".source = ../dotfiles/htoprc;
     };
