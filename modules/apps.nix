@@ -25,7 +25,7 @@ in {
   ];
 
   i4.apps.apps = {
-    thunderbird = {macName = "thunderbird@esr";};
+    thunderbird = linuxOnlyProgram {}; # installed on mac using corporate thing
     obs-studio = {macName = "obs";};
 
     mpv = linuxOnlyProgram {}; # cli video player for linux. Use iina on mac
