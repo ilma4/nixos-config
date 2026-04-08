@@ -51,6 +51,15 @@
       home = "/Users/ilma4";
       shell = pkgs.zsh;
     };
+    malakhov = {
+      uid = 502;
+      gid = 21;
+      description = "Ilia Malakhov";
+      home = "/Users/malakhov";
+      shell = pkgs.zsh;
+      createHome = true;
+      isHidden = false;
+    };
     backup = {
       uid = 505;
       gid = 505;
@@ -63,11 +72,15 @@
     members = [config.users.users.backup.name];
   };
 
-  users.knownUsers = [config.users.users.backup.name];
+  users.knownUsers = [
+    config.users.users.backup.name
+    config.users.users.malakhov.name
+  ];
   users.knownGroups = [config.users.groups.backup.name];
 
   home-manager.users = {
     ilma4 = import ./ilma4-home.nix;
+    malakhov = import ./malakhov-home.nix;
   };
 
   environment.shells = [pkgs.zsh pkgs.fish];

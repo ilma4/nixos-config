@@ -12,12 +12,10 @@
   };
 
   config = lib.mkIf config.i4.work.enable {
-    # use ssh key from 1password for jetbrains git
+    # Use the 1Password SSH agent by default on the work account.
     programs.ssh.matchBlocks = {
-      "git.jetbrains.team" = {
-        extraOptions = {
-          "IdentityAgent" = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""; # 1password ssh-agent
-        };
+      "*" = {
+        identityAgent = "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
       };
     };
 
@@ -25,18 +23,9 @@
       bun
     ];
 
-    # use jetbrains email for work repos
-    programs.git = {
-      includes = [
-        {
-          contents = {
-            user.email = "ilia.malakhov@jetbrains.com";
-            # commit.gpgsign = false;
-            # user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHPP96JkvAFJRI9V08kNz7ah6CfPsRV08DRzu8wjk+4I";
-          };
-          condition = "gitdir:~/JetBrains/";
-        }
-      ];
+    programs.git.settings.user = {
+      name = "Ilia Malakhov";
+      email = "ilia.malakhov@jetbrains.com";
     };
   };
 }

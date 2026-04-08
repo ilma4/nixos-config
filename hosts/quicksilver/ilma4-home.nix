@@ -1,8 +1,6 @@
 {
   config,
-  lib,
   pkgs,
-  pkgs-unstable,
   inputs,
   ...
 }: {
@@ -11,19 +9,14 @@
 
     ../../home/base.nix
 
-    ../../modules/work.nix
     ../../modules/sops.nix
   ];
-
-  options = {
-  };
 
   config = {
     home.username = "ilma4";
     i4.personal.enable = true;
     i4.fonts.enable = true;
     i4.zed.enable = true;
-    i4.work.enable = true;
     i4.dev.enable = true;
     i4.neovim.enable = true;
     i4.sops.enable = true;
@@ -100,7 +93,7 @@
     };
     programs.ssh.matchBlocks = {
       "*" = {
-        extraOptions."IdentityAgent" = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        identityAgent = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       };
       "hetzer-storage" = {
         port = 23;
@@ -113,14 +106,10 @@
     # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
     home.sessionVariables = {
       PATH = "$PATH:/opt/homebrew/bin";
+      SSH_AUTH_SOCK = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       # JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
     # programs.mpv.enable = true; # fixed in 24.11
-    #
-
-    home.sessionVariables = {
-      SSH_AUTH_SOCK = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
-    };
 
     # RW symlinks, so apps can edits their configs
     home.file = let

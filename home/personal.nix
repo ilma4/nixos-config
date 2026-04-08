@@ -5,7 +5,6 @@
   ...
 }: let
   cfg = config.i4.personal;
-  isDarwin = pkgs.stdenv.isDarwin;
 in {
   options.i4.personal = {
     enable = lib.mkEnableOption "Personal home configuration (SSH keys, packages, etc.)";
@@ -30,6 +29,11 @@ in {
             )
       */
     ];
+
+    programs.git.settings.user = {
+      name = "Ilia Malakhov";
+      email = "ilya.malakhov4@gmail.com";
+    };
 
     programs.ssh.matchBlocks = {
       "nas-init" = {

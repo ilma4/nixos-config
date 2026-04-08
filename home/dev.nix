@@ -80,11 +80,6 @@ in {
     # also check `work.nix` for work-specific options
     programs.git = {
       settings = {
-        user.name = "Ilia Malakhov";
-        user.email = "ilya.malakhov4@gmail.com";
-        # gpg.format = "ssh";
-        # commit.gpgsign = false; # disabled, because my ssh key lives in bitwarden/1password protected by password. And thus ai agents can't sign commits without me
-        # user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7";
         alias = {
           fetch-once = "!f() { git fetch origin +refs/heads/$1:refs/remotes/origin/$1; }; f";
           push-force-safe = "push --force-with-lease --force-if-includes";
