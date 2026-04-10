@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  inherit (lib) getExe mapAttrsToList mkEnableOption mkIf mkOption types;
+  inherit (lib) getExe hasPrefix mapAttrsToList mkEnableOption mkIf mkOption types;
 
   cfg = config.i4.backup;
 
@@ -82,6 +82,9 @@ in {
   };
 
   config = mkIf cfg.enable (let
+    commonAfter = ["network-online.target" "sops-nix.service"];
+    tmpfilesSetupService = "systemd-tmpfiles-setup.service";
+
     backupConfigFile = pkgs.writeText "i4-backup-config.json" (builtins.toJSON {
       localRepo = cfg.localRepo;
       remoteRepos = mapAttrsToList (name: repo: repo // {inherit name;}) cfg.remoteRepos;
@@ -89,21 +92,36 @@ in {
       keepWithin = cfg.keepWithin;
     });
 
-    backupScript = pkgs.writers.writePython3Bin "i4-backup-run" {doCheck = false;} ''
+    mkBackupScript = name: moduleName:
+      pkgs.writers.writePython3Bin name {doCheck = false;} ''
       import sys
 
       sys.path.insert(0, ${builtins.toJSON (toString ./.)})
 
-      from common import run_cli
-      from run_backup import main
+      from ${moduleName} import main
 
       if __name__ == "__main__":
-          raise SystemExit(
-              run_cli(
-                  lambda: main(${builtins.toJSON (toString backupConfigFile)})
-              )
-          )
+          raise SystemExit(main(${builtins.toJSON (toString backupConfigFile)}))
     '';
+
+    initLocalRepoScript = mkBackupScript "i4-backup-init-local" "init_local_repo";
+    rotateKeysScript = mkBackupScript "i4-backup-rotate-keys" "rotate_keys";
+    backupScript = mkBackupScript "i4-backup-run" "run_backup";
+
+    mkBackupService = description: script: extraConfig:
+      {
+        inherit description;
+        after = commonAfter;
+        wants = ["network-online.target"];
+        path = [pkgs.restic];
+        serviceConfig = {
+          Type = "oneshot";
+          User = cfg.backupUser;
+          Group = cfg.backupGroup;
+          ExecStart = getExe script;
+        };
+      }
+      // extraConfig;
   in {
     assertions = [
       {
@@ -114,19 +132,29 @@ in {
         assertion = cfg.paths != [];
         message = "i4.backup.paths must contain at least one path when i4.backup.enable = true";
       }
+      {
+        assertion = cfg.localRepo == null || hasPrefix "/" cfg.localRepo.location;
+        message = "i4.backup.localRepo.location must be an absolute path when i4.backup.enable = true";
+      }
     ];
 
-    systemd.services.i4-backup = {
-      description = "Local restic backup with remote copies";
-      after = ["network-online.target" "sops-nix.service"];
-      wants = ["network-online.target"];
-      path = [pkgs.restic];
-      serviceConfig = {
-        Type = "oneshot";
-        User = cfg.backupUser;
-        Group = cfg.backupGroup;
-        ExecStart = getExe backupScript;
-      };
+    systemd.tmpfiles.rules = [
+      "d ${cfg.localRepo.location} 0750 ${cfg.backupUser} ${cfg.backupGroup} -"
+    ];
+
+    systemd.services.i4-backup-init-local = mkBackupService "Initialize local restic backup repository" initLocalRepoScript {
+      after = commonAfter ++ [tmpfilesSetupService];
+      requires = [tmpfilesSetupService];
+    };
+
+    systemd.services.i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" rotateKeysScript {
+      after = commonAfter ++ ["i4-backup-init-local.service"];
+      requires = ["i4-backup-init-local.service"];
+    };
+
+    systemd.services.i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" backupScript {
+      after = commonAfter ++ ["i4-backup-rotate-keys.service"];
+      requires = ["i4-backup-rotate-keys.service"];
     };
 
     systemd.timers.i4-backup = {
