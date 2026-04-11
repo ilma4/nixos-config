@@ -88,7 +88,16 @@
     owner = "root";
     group = "root";
   };
-  environment.etc."resticprofile/profiles.toml".source = ../../dotfiles/resticprofile/nas.toml;
+
+  i4.backup = {
+    enable = true;
+    paths = ["/srv"];
+    time = "*-*-* 00:04:00";
+    localRepo = {
+      location = "/mnt/hdd/restic-server";
+      passwordFile = "/run/secrets/restic/server";
+    };
+  };
 
   # suspend sata hdds after 1 minute of inactivity
   powerManagement.powerUpCommands = ''
@@ -117,29 +126,11 @@
   environment.systemPackages = with pkgs; [
     config.boot.kernelPackages.x86_energy_perf_policy
     hdparm
-    resticprofile
     smartmontools
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   ];
 
   services.smartd.extraOptions = ["--interval=86400"]; # run checks every 24 hours # TODO reset to default when switch to SSD
-
-  systemd.timers.restic-backup = {
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      OnCalendar = "*-*-* 00:04:00";
-      Persistent = true;
-    };
-  };
-
-  systemd.services.restic-backup = {
-    path = [pkgs.resticprofile pkgs.restic];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.resticprofile}/bin/resticprofile -c \"${../../dotfiles/resticprofile/nas.toml}\" backup";
-      User = "root";
-    };
-  };
 
   security.sudo.extraRules = [
     {
