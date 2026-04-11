@@ -21,6 +21,11 @@ scrape_configs:
     metrics_path: /metrics
     scrape_timeout: 10s
 
+  - job_name: "pushgateway"
+    static_configs:
+      - targets: ["localhost:9091"]
+    honor_labels: true
+
   # Additional targets can be added here
   # - job_name: 'my-application'
   #   static_configs:

@@ -107,6 +107,7 @@
       (import ./overlays/beads-ui-overlay.nix)
       (import ./overlays/paperless-mcp-overlay.nix)
       (import ./overlays/pi-coding-agent-overlay.nix)
+      (import ./overlays/restic-exporter-overlay.nix)
     ];
 
     darwinOverlays =
@@ -215,7 +216,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
-        inherit (pkgs) monitor-input beads-ui paperless-mcp pi-coding-agent;
+        inherit (pkgs) monitor-input beads-ui paperless-mcp pi-coding-agent restic-exporter;
       };
     }) (builtins.attrValues systems));
 

@@ -29,6 +29,14 @@ in let
         restart: unless-stopped
   '';
 in {
+  services.prometheus.pushgateway = {
+    enable = true;
+    persistMetrics = true;
+    extraFlags = [
+      "--web.listen-address=127.0.0.1:9091"
+    ];
+  };
+
   users.users.prometheus = {
     isSystemUser = true;
     uid = 802;

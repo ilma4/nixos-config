@@ -38,6 +38,7 @@
 in {
   imports = [
     ./restic-wrappers.nix
+    ./metrics.nix
   ];
 
   options.i4.backup = {
@@ -83,6 +84,7 @@ in {
       default = {};
       description = "Remote restic repositories that receive copies from the local repository.";
     };
+
   };
 
   config = mkIf cfg.enable (let
@@ -134,19 +136,21 @@ in {
       "d ${cfg.localRepo.location} 0750 ${cfg.backupUser} ${cfg.backupGroup} -"
     ];
 
-    systemd.services.i4-backup-init-local = mkBackupService "Initialize local restic backup repository" "init-local" {
-      after = commonAfter ++ [tmpfilesSetupService];
-      requires = [tmpfilesSetupService];
-    };
+    systemd.services = {
+      i4-backup-init-local = mkBackupService "Initialize local restic backup repository" "init-local" {
+        after = commonAfter ++ [tmpfilesSetupService];
+        requires = [tmpfilesSetupService];
+      };
 
-    systemd.services.i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" "rotate-keys" {
-      after = commonAfter ++ ["i4-backup-init-local.service"];
-      requires = ["i4-backup-init-local.service"];
-    };
+      i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" "rotate-keys" {
+        after = commonAfter ++ ["i4-backup-init-local.service"];
+        requires = ["i4-backup-init-local.service"];
+      };
 
-    systemd.services.i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" "run-backup" {
-      after = commonAfter ++ ["i4-backup-rotate-keys.service"];
-      requires = ["i4-backup-rotate-keys.service"];
+      i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" "run-backup" {
+        after = commonAfter ++ ["i4-backup-rotate-keys.service"];
+        requires = ["i4-backup-rotate-keys.service"];
+      };
     };
 
     systemd.timers.i4-backup = {

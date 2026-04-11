@@ -91,6 +91,10 @@
 
   i4.backup = {
     enable = true;
+    metrics = {
+      enable = true;
+      pushgatewayBaseUrl = "http://127.0.0.1:9091";
+    };
     paths = ["/srv"];
     time = "*-*-* 00:04:00";
     localRepo = {
