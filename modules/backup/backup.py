@@ -1,3 +1,4 @@
+import argparse
 import json
 import subprocess
 import sys
@@ -123,6 +124,10 @@ class Repo:
         self.run_restic(*args)
 
 
+MISSING_REPO_EXIT_CODE = 10
+BAD_PASSWORD_EXIT_CODE = 12
+
+
 def load_config(config_file):
     with open(config_file, encoding="utf-8") as file:
         return json.load(file)
@@ -132,5 +137,67 @@ def log(message):
     print(f"i4-backup: {message}", file=sys.stderr)
 
 
-MISSING_REPO_EXIT_CODE = 10
-BAD_PASSWORD_EXIT_CODE = 12
+def init_local_repo(config_file):
+    config = load_config(config_file)
+    local_repo = Repo.from_dict(config.get("localRepo"))
+    if local_repo.access("local repo")[0] != "missing":
+        log("local repo: already exists, skipping initialization")
+        return 0
+    source_repo = None
+    for repo_data in config.get("remoteRepos") or []:
+        remote_repo = Repo.from_dict(repo_data)
+        label = f"remote repo {remote_repo.name}"
+        state, source_repo = remote_repo.access(label)
+        if state != "missing":
+            break
+    local_repo.init_repo("local repo", source_repo)
+    return 0
+
+
+def rotate_keys(config_file):
+    config = load_config(config_file)
+    Repo.from_dict(config.get("localRepo")).rotate_key_if_needed("local repo")
+    for repo_data in config.get("remoteRepos") or []:
+        repo = Repo.from_dict(repo_data)
+        repo.rotate_key_if_needed(f"remote repo {repo.name}")
+    return 0
+
+
+def run_backup(config_file):
+    config = load_config(config_file)
+    backup_paths = [str(path) for path in config.get("paths") or []]
+    if not backup_paths:
+        raise ValueError("no backup paths configured")
+    local_repo = Repo.from_dict(config.get("localRepo"))
+    log("running restic backup into the local repository")
+    local_repo.run_restic("backup", *backup_paths)
+    for repo_data in config.get("remoteRepos") or []:
+        remote_repo = Repo.from_dict(repo_data)
+        label = f"remote repo {remote_repo.name}"
+        local_repo.ensure_matching_chunker(remote_repo)
+        log(f"copying snapshots from local repo to {label}")
+        remote_repo.run_restic("copy", *local_repo.from_args())
+    if keep_within := config.get("keepWithin"):
+        log(f"running local retention with --keep-within {keep_within}")
+        local_repo.run_restic("forget", "--keep-within", str(keep_within))
+        local_repo.run_restic("prune")
+    return 0
+
+
+COMMANDS = {
+    "init-local": init_local_repo,
+    "rotate-keys": rotate_keys,
+    "run-backup": run_backup,
+}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="i4-backup")
+    parser.add_argument("command", choices=sorted(COMMANDS))
+    parser.add_argument("config_file")
+    args = parser.parse_args(argv)
+    return COMMANDS[args.command](args.config_file)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

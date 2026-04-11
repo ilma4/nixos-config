@@ -92,23 +92,11 @@ in {
       keepWithin = cfg.keepWithin;
     });
 
-    mkBackupScript = name: moduleName:
-      pkgs.writers.writePython3Bin name {doCheck = false;} ''
-      import sys
+    backupScript = pkgs.writers.writePython3Bin "i4-backup" {doCheck = false;} (builtins.readFile ./backup.py);
 
-      sys.path.insert(0, ${builtins.toJSON (toString ./.)})
+    mkBackupCommand = command: "${getExe backupScript} ${command} ${backupConfigFile}";
 
-      from ${moduleName} import main
-
-      if __name__ == "__main__":
-          raise SystemExit(main(${builtins.toJSON (toString backupConfigFile)}))
-    '';
-
-    initLocalRepoScript = mkBackupScript "i4-backup-init-local" "init_local_repo";
-    rotateKeysScript = mkBackupScript "i4-backup-rotate-keys" "rotate_keys";
-    backupScript = mkBackupScript "i4-backup-run" "run_backup";
-
-    mkBackupService = description: script: extraConfig:
+    mkBackupService = description: command: extraConfig:
       {
         inherit description;
         after = commonAfter;
@@ -118,7 +106,7 @@ in {
           Type = "oneshot";
           User = cfg.backupUser;
           Group = cfg.backupGroup;
-          ExecStart = getExe script;
+          ExecStart = mkBackupCommand command;
         };
       }
       // extraConfig;
@@ -142,17 +130,17 @@ in {
       "d ${cfg.localRepo.location} 0750 ${cfg.backupUser} ${cfg.backupGroup} -"
     ];
 
-    systemd.services.i4-backup-init-local = mkBackupService "Initialize local restic backup repository" initLocalRepoScript {
+    systemd.services.i4-backup-init-local = mkBackupService "Initialize local restic backup repository" "init-local" {
       after = commonAfter ++ [tmpfilesSetupService];
       requires = [tmpfilesSetupService];
     };
 
-    systemd.services.i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" rotateKeysScript {
+    systemd.services.i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" "rotate-keys" {
       after = commonAfter ++ ["i4-backup-init-local.service"];
       requires = ["i4-backup-init-local.service"];
     };
 
-    systemd.services.i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" backupScript {
+    systemd.services.i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" "run-backup" {
       after = commonAfter ++ ["i4-backup-rotate-keys.service"];
       requires = ["i4-backup-rotate-keys.service"];
     };
