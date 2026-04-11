@@ -36,6 +36,10 @@
     };
   };
 in {
+  imports = [
+    ./restic-wrappers.nix
+  ];
+
   options.i4.backup = {
     enable = mkEnableOption "local restic backups with remote copies";
 
