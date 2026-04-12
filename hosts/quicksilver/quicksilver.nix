@@ -53,7 +53,6 @@
     };
     malakhov = {
       uid = 502;
-      gid = 21;
       description = "Ilia Malakhov";
       home = "/Users/malakhov";
       shell = pkgs.zsh;
