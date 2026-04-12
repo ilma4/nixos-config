@@ -1,10 +1,13 @@
 {
   config,
+  constants,
   lib,
   pkgs,
   ...
 }: let
   cfg = config.i4.notifications;
+  telegramMyIdSecret = constants.telegram.my-id-secret;
+  notificationsApiKeySecret = constants.telegram.notifications-api-key-secret;
 in {
   options.i4.notifications = {
     enable = lib.mkEnableOption "notifications via apprise";
@@ -23,10 +26,19 @@ in {
       _module.args.notify = cfg.notify;
     }
     (lib.mkIf cfg.enable {
-      sops.secrets."apprise-config" = {};
+      sops.secrets.${telegramMyIdSecret} = {};
+      sops.secrets.${notificationsApiKeySecret} = {};
 
-      i4.notifications.notify = message:
-        "${lib.getExe pkgs.apprise} --config ${lib.escapeShellArg config.sops.secrets."apprise-config".path} --body ${lib.escapeShellArg message}";
+      sops.templates."apprise.conf" = {
+        content = ''
+          tgram://bot${config.sops.placeholder.${notificationsApiKeySecret}}/${config.sops.placeholder.${telegramMyIdSecret}}/
+        '';
+        mode = "0400";
+        owner = "root";
+        group = "root";
+      };
+
+      i4.notifications.notify = message: "${lib.getExe pkgs.apprise} --config ${lib.escapeShellArg config.sops.templates."apprise.conf".path} --body ${lib.escapeShellArg message}";
     })
   ];
 }

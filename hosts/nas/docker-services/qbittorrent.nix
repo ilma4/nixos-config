@@ -1,7 +1,6 @@
 {
   config,
   myLib,
-  notify,
   pkgs,
   ...
 }: let
@@ -36,7 +35,6 @@
       if [ "$current_ip" = "${expectedVpnIp}" ]; then
         if [ -e "$AWAITING_RECOVERY_FILE" ]; then
           echo "qBittorrent VPN IP recovered after restart: $current_ip"
-          ${notify "qBittorrent VPN IP is back to normal after restart."}
         fi
 
         ${pkgs.coreutils}/bin/rm -f "$FAILURE_NOTIFIED_FILE" "$AWAITING_RECOVERY_FILE"
@@ -46,7 +44,6 @@
 
       if [ ! -e "$FAILURE_NOTIFIED_FILE" ]; then
         echo "qBittorrent VPN IP mismatch detected: got $current_ip, expected ${expectedVpnIp}"
-        ${notify "qBittorrent VPN IP check failed. qBittorrent was stopped and will be restarted in 5 minutes."}
         ${pkgs.coreutils}/bin/touch "$FAILURE_NOTIFIED_FILE"
       else
         echo "qBittorrent VPN IP mismatch persists: got $current_ip, expected ${expectedVpnIp}"

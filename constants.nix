@@ -9,6 +9,7 @@
     mallard = {
       api-key-secret = "telegram/mallard/api_key";
     };
+    notifications-api-key-secret = "telegram/notifications_api_key";
   };
 
   hetzer-restic = {
