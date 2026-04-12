@@ -1,0 +1,20 @@
+groups:
+  - name: restic-backup
+    rules:
+      - alert: ResticBackupMetricsStale
+        expr: time() - push_time_seconds{job="restic-backup"} > 36 * 60 * 60
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Restic backup metrics are stale for {{ $labels.host }}/{{ $labels.repo }}"
+          description: "No restic backup metrics have been pushed for host {{ $labels.host }} repo {{ $labels.repo }} in the last 36 hours."
+
+      - alert: ResticDataCheckFailed
+        expr: restic_check_all_data_success{job="restic-backup"} == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Restic data check failed for {{ $labels.host }}/{{ $labels.repo }}"
+          description: "The monthly restic data check reported a failure for host {{ $labels.host }} repo {{ $labels.repo }}."
