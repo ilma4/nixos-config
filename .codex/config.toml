@@ -10,3 +10,6 @@ startup_timeout_sec = 60
 
 [mcp_servers.mcp-nixos.tools.nix]
 approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.nix_versions]
+approval_mode = "approve"
