@@ -8,6 +8,7 @@
     inputs.sops-nix-darwin.homeManagerModules.sops
 
     ../../home/base.nix
+    ./darwin-defaults-home.nix
 
     ../../modules/sops.nix
   ];

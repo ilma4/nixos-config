@@ -97,11 +97,6 @@
   security.pam.services.sudo_local.touchIdAuth = true;
 
   system.primaryUser = "ilma4";
-  system.defaults.trackpad = {
-    Clicking = true;
-    TrackpadThreeFingerDrag = true;
-    # Dragging = true; # enable when Apple fix input lag caused by it
-  };
 
   # Enable certificate management
   # security.pki.enable = true;
@@ -111,35 +106,6 @@
     ../../certs/wildcard-ec.crt
     # You can add more certificates here
   ];
-
-  system.defaults.NSGlobalDomain = {
-    "com.apple.trackpad.scaling" = 2.0;
-    "com.apple.keyboard.fnState" = true; # enable fn lock
-  };
-
-  system.defaults.spaces.spans-displays = false; # displays have separate spaces option (macos default is false)
-  system.defaults.menuExtraClock.Show24Hour = true;
-  system.defaults.finder = {
-    ShowPathbar = true;
-  };
-
-  system.defaults.dock = {
-    wvous-bl-corner = 1; # bottom left hot corner. disabled
-    wvous-br-corner = 1; # bottom left hot corner. disabled
-    wvous-tl-corner = 1; # top left hot corner. Mission Control
-    # wvous-tl-corner = 2; # top left hot corner. Mission Control
-    wvous-tr-corner = 1; # top left right corner. disabled
-
-    mru-spaces = false; # disable rearrange spaces based on most recent use
-    orientation = "bottom";
-
-    autohide = true;
-    autohide-time-modifier = 0.1;
-  };
-
-  system.defaults.WindowManager = {
-    GloballyEnabled = false; # disable Stage Manager
-  };
 
   fonts.packages = with pkgs; [
     meslo-lgs-nf

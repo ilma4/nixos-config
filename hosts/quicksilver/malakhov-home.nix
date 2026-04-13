@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   imports = [
     ../../home/base.nix
+    ./darwin-defaults-home.nix
 
     ../../modules/work.nix
   ];
