@@ -8,24 +8,24 @@
 in {
   config = lib.mkIf config.homebrew.enable {
     launchd.user.agents.homebrew-auto-upgrade = {
-      path = [pkgs.bash];
+      path = [pkgs.bash brewPrefix pkgs.coreutils];
 
       script = ''
         set -euo pipefail
 
-        export PATH="${brewPrefix}/bin:${brewPrefix}/sbin:/usr/bin:/bin:/usr/sbin:/sbin"
+        echo "''$(date): running autoupdate"
 
         # Refresh metadata
-        brew update
+        /opt/homebrew/bin/brew update
 
         # Upgrade formulae
-        brew upgrade
+        /opt/homebrew/bin/brew upgrade
 
         # Upgrade casks too, including auto-updating/version:latest ones
-        brew upgrade --cask --greedy
+        /opt/homebrew/bin/brew upgrade --cask --greedy
 
         # Remove old versions/cache
-        brew cleanup --prune=all
+        /opt/homebrew/bin/brew cleanup --prune=all
       '';
 
       serviceConfig = {
