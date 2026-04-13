@@ -1,3 +1,7 @@
+# Can I bike to the office without rain?
+
+use openweather prescription map to check if I can go to the office without rain
+
 # backup.nix
 
 - setup local repo
@@ -9,6 +13,20 @@
 - use launchd on macos and system on linux/home-manager
 
 # Monitorings and alerts
+
+- check status of podman containers
+  - or even status of selected systemd services
+- check availability of services (i.e. curl of `myservice.ilma4.local` returns 200)
+- check S.M.A.R.T. of disks
+- check available disk space
+- check free RAM
+- check CPU load
+- check status of restic backups
+- alerts
+- collect data from multiple machines
+- lightveight (can run on cheap VPS)
+- simple configuration (preferrably declarative)
+
 
 - wire backups to prometheus
   - get report if snapshot size increased more than 10%
