@@ -77,9 +77,9 @@ in {
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
     iterm2 = macOnlyCask {};
-    windows-app = macOnlyCask {};
     itermai = macOnlyCask {};
-    # slack = macOnlyCask {};
+    # windows-app = macOnlyCask {}; # updated by corporate software
+    # slack = macOnlyCask {}; # updated by corporate software
     karabiner-elements = macOnlyCask {}; # keyboard remapping
     raycast = macOnlyCask {}; # cmd+space : search apps and commands
     caffeine = macOnlyCask {};
