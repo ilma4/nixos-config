@@ -78,6 +78,7 @@ in {
     "zulu@25" = macOnlyCask {};
     iterm2 = macOnlyCask {};
     itermai = macOnlyCask {};
+    kitty = macOnlyCask {};
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software
     karabiner-elements = macOnlyCask {}; # keyboard remapping
