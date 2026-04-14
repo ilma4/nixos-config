@@ -2,12 +2,14 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }: let
   HOME = config.home.homeDirectory;
   inherit (pkgs) stdenv;
   isDarwin = stdenv.isDarwin;
   isNixos = stdenv.isLinux && !config.targets.genericLinux.enable;
+  i4-revision-package = pkgs.writeShellScriptBin "i4-revision" "echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'";
 in {
   imports = [
     ./dev.nix
@@ -96,6 +98,7 @@ in {
       ncdu
 
       (pkgs.writeShellScriptBin "nix-rebuild" config.rebuild-script)
+      i4-revision-package
     ];
 
     programs.git = {

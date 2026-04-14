@@ -21,6 +21,9 @@
   # environment.systemPackages = with pkgs; [
   # ];
 
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "i4-revision" "echo '${config.system.configurationRevision}'")
+  ];
   /*
   environment.etc."hosts".text = ''
     ##
