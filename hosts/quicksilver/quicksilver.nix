@@ -192,7 +192,7 @@
   programs.zsh.enable = true; # default shell on catalina
 
   # Set Git commit hash for darwin-version.
-  system.configurationRevision = config.rev or config.dirtyRev or null;
+  system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or "null";
 
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
