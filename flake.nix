@@ -107,6 +107,7 @@
       (import ./overlays/beads-ui-overlay.nix)
       (import ./overlays/paperless-mcp-overlay.nix)
       (import ./overlays/pi-coding-agent-overlay.nix)
+      (import ./overlays/prometheus-smartctl-exporter-overlay.nix)
       (import ./overlays/restic-exporter-overlay.nix)
     ];
 
