@@ -71,7 +71,7 @@ in {
     shottr = macOnlyCask {};
 
     "1password-cli" = macOnlyCask {};
-    container = macOnlyBrew {}; # docker alternative from Apple. Runs each container in separate vm
+    # container = macOnlyBrew {}; # docker alternative from Apple. Runs each container in separate vm
     activitywatch = macOnlyCask {};
     cloudflare-warp = macOnlyCask {}; # corporate JetBrains VPN
     "zulu@21" = macOnlyCask {};
