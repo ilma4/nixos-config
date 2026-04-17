@@ -96,7 +96,8 @@
       pushgatewayBaseUrl = "http://127.0.0.1:9091";
     };
     paths = ["/srv"];
-    time = "*-*-* 00:04:00";
+    backupHour = 4;
+    backupMinute = 0;
     localRepo = {
       location = "/mnt/hdd/restic-server";
       passwordFile = "/run/secrets/restic/server";

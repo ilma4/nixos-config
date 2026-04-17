@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  myLib,
   pkgs,
   ...
 }: let
@@ -32,7 +33,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable && cfg.metrics.enable) (let
+  config = myLib.unifiedModules.enableForConfigurations ["isNixos"] (mkIf (cfg.enable && cfg.metrics.enable) (let
     commonAfter = ["network-online.target"];
     allRepos =
       mapAttrsToList
@@ -147,5 +148,5 @@ in {
 
     systemd.services = optionalAttrs cfg.metrics.enable metricServices;
     systemd.timers = optionalAttrs cfg.metrics.enable metricTimers;
-  });
+  }));
 }

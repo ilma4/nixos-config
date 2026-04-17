@@ -7,6 +7,7 @@
 }: {
   imports = [
     ../../modules/nix-settings.nix
+    ../../modules/backup/backup.nix
     ../../darwin-modules/launchd-agents.nix
     ../../modules/home-manager.nix
     ../../modules/sops.nix
