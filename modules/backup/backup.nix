@@ -4,7 +4,18 @@
   pkgs,
   ...
 }: let
-  inherit (lib) getExe hasPrefix mapAttrsToList mkEnableOption mkIf mkOption types;
+  inherit
+    (lib)
+    concatMapStringsSep
+    escapeShellArgs
+    getExe
+    hasPrefix
+    mapAttrsToList
+    mkEnableOption
+    mkIf
+    mkOption
+    types
+    ;
 
   cfg = config.i4.backup;
 
@@ -27,11 +38,6 @@
         type = types.listOf types.str;
         default = [];
         description = "Extra global restic arguments added before the command.";
-      };
-      init = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether the module may initialize the repository when it does not exist.";
       };
     };
   };
@@ -84,25 +90,46 @@ in {
       default = {};
       description = "Remote restic repositories that receive copies from the local repository.";
     };
-
   };
 
   config = mkIf cfg.enable (let
     commonAfter = ["network-online.target" "sops-nix.service"];
     tmpfilesSetupService = "systemd-tmpfiles-setup.service";
 
-    backupConfigFile = pkgs.writeText "i4-backup-config.json" (builtins.toJSON {
-      localRepo = cfg.localRepo;
-      remoteRepos = mapAttrsToList (name: repo: repo // {inherit name;}) cfg.remoteRepos;
+    translateRepo = repo: {
+      inherit (repo) location passwordFile oldPasswordFile;
+      extraArgs = repo.extraResticArgs;
+    };
+
+    remoteRepos = mapAttrsToList (_: repo: repo) cfg.remoteRepos;
+    allRepos = [cfg.localRepo] ++ remoteRepos;
+
+    runBackupConfigFile = pkgs.writeText "i4-backup-run-backup.json" (builtins.toJSON {
+      localRepo = translateRepo cfg.localRepo;
+      remoteRepos = map translateRepo remoteRepos;
       paths = cfg.paths;
       keepWithin = cfg.keepWithin;
     });
 
-    backupScript = pkgs.writers.writePython3Bin "i4-backup" {doCheck = false;} (builtins.readFile ./backup.py);
+    rotateKeysConfigFile = pkgs.writeText "i4-backup-rotate-keys.json" (builtins.toJSON (
+      map translateRepo allRepos
+    ));
 
-    mkBackupCommand = command: "${getExe backupScript} ${command} ${backupConfigFile}";
+    initReposConfigFile = pkgs.writeText "i4-backup-init-repos.json" (builtins.toJSON (
+      map translateRepo allRepos
+    ));
 
-    mkBackupService = description: command: extraConfig:
+    backupScript = pkgs.writers.writeHaskellBin "i4-backup" {
+      libraries = with pkgs.haskellPackages; [aeson bytestring containers process];
+    } (builtins.readFile ./backup.hs);
+
+    mkBackupCommand = command: configFile: "${getExe backupScript} ${command} ${configFile}";
+
+    initReposCommand = pkgs.writeShellScript "i4-backup-init-repos" ''
+      exec ${mkBackupCommand "init-repos" initReposConfigFile}
+    '';
+
+    mkBackupService = description: execStart: extraConfig:
       {
         inherit description;
         after = commonAfter;
@@ -112,7 +139,7 @@ in {
           Type = "oneshot";
           User = cfg.backupUser;
           Group = cfg.backupGroup;
-          ExecStart = mkBackupCommand command;
+          ExecStart = execStart;
         };
       }
       // extraConfig;
@@ -137,17 +164,17 @@ in {
     ];
 
     systemd.services = {
-      i4-backup-init-local = mkBackupService "Initialize local restic backup repository" "init-local" {
+      i4-backup-init-local = mkBackupService "Initialize local restic backup repository" initReposCommand {
         after = commonAfter ++ [tmpfilesSetupService];
         requires = [tmpfilesSetupService];
       };
 
-      i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" "rotate-keys" {
+      i4-backup-rotate-keys = mkBackupService "Rotate restic repository keys" (mkBackupCommand "rotate-keys" rotateKeysConfigFile) {
         after = commonAfter ++ ["i4-backup-init-local.service"];
         requires = ["i4-backup-init-local.service"];
       };
 
-      i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" "run-backup" {
+      i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" (mkBackupCommand "run-backup" runBackupConfigFile) {
         after = commonAfter ++ ["i4-backup-rotate-keys.service"];
         requires = ["i4-backup-rotate-keys.service"];
       };
