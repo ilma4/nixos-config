@@ -1,8 +1,8 @@
 {...}: let
-  redis-version = "8";
-  paperless-version = "2.20.8";
-  tika-version = "3.2.3.0-full";
-  gotenberg-version = "8.25";
+  redis-version = "8.6.2-alpine3.23";
+  paperless-version = "2.20.14";
+  tika-version = "3.3.0.0-full";
+  gotenberg-version = "8.27";
 in {
   # Containers
   dockerCompose.paperless.composeText = ''
