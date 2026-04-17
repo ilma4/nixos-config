@@ -29,8 +29,6 @@ in {
           - tika
         expose:
           - "8000"
-        ports:
-          - "8000:8000"
         networks:
           reverse_proxy:
 
