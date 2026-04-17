@@ -29,7 +29,6 @@
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
 
-    # sops-nix configuration
     sops = {
       secrets."wg.conf" = {
         sopsFile = ../../secrets/ru-torrent-nixos-vm-wg.conf;
@@ -42,20 +41,12 @@
     };
 
     home.packages = with pkgs; [
-      # quickemu # run vm's with qemu easily
       qemu
 
       (pkgs.writeShellScriptBin "bazel" "${pkgs.bazelisk}/bin/bazelisk \"$@\"")
-      # clang
-      # lldb
-
-      # ghc
-      # stack
-      # haskell-language-server
 
       nodejs_24
 
-      # texlab
       beads-ui
 
       monitor-input
@@ -64,30 +55,12 @@
       age # for age key management
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
 
-      /*
-      (pkgs.writeShellScriptBin "system-upgrade" ''
-        nix flake update --flake ${config.flake-location}
-        nix-rebuild
-        /opt/homebrew/bin/brew update -f
-        /opt/homebrew/bin/brew upgrade --greedy
-      '')
-      */
-
       (let
         bw = "${pkgs.bitwarden-cli}/bin/bw";
       in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
 
       (pkgs.writeShellScriptBin "i4-qbittorrent-start" (builtins.readFile ./../../scripts/run-qbittorrent.sh))
     ];
-    # ++ (with pkgs-unstable; [gemini-cli]);
-
-    /*
-    programs.pandoc.enable = true;
-    programs.texlive = {
-      enable = true;
-      extraPackages = tpkgs: {inherit (tpkgs) scheme-full;};
-    };
-    */
 
     programs.fish = {
       enable = true;
@@ -110,7 +83,6 @@
       SSH_AUTH_SOCK = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       # JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
-    # programs.mpv.enable = true; # fixed in 24.11
 
     # RW symlinks, so apps can edits their configs
     home.file = let
