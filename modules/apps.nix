@@ -46,7 +46,7 @@ in {
 
     firefox = {};
     vivaldi = asLinuxPackage {};
-    browsers = asLinuxPackage {macName = "browsers-software/tap/browsers";}; # select browser when open link
+    # browsers = asLinuxPackage {macName = "browsers-software/tap/browsers";}; # select browser when open link
 
     krita = asLinuxPackage {}; # image editor
     anki = asLinuxPackage {}; # learn word app
