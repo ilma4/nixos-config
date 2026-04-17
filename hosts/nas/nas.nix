@@ -117,10 +117,6 @@
   networking.firewall.trustedInterfaces = ["tailscale0"];
 
   services.btrfs.autoScrub.enable = true;
-  services.btrfs.autoScrub.fileSystems = [
-    "/"
-    "/mnt/hdd"
-  ];
 
   home-manager.users = {
     "ilma4" = import ./home.nix;
