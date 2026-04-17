@@ -1,4 +1,4 @@
-{pkgs, ...}: let
+{...}: let
   redis-version = "8";
   paperless-version = "2.20.8";
   tika-version = "3.2.3.0-full";
@@ -35,7 +35,6 @@ in {
           reverse_proxy:
 
         volumes:
-          # TODO pass `/srv/paperless-ngx` as env-var
           - /srv/paperless-ngx/data:/usr/src/paperless/data
           - /srv/paperless-ngx/media:/usr/src/paperless/media
           - /srv/paperless-ngx/export:/usr/src/paperless/export
@@ -75,9 +74,6 @@ in {
       reverse_proxy:
         external: true
   '';
-
-  dockerCompose.paperless.environment = {
-  };
 
   networking.firewall.allowedTCPPorts = [8000];
 
