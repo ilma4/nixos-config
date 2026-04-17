@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{config, ...}: {
   users.users.homer = {
     isSystemUser = true;
     uid = 989;
