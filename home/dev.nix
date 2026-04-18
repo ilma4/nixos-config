@@ -23,6 +23,8 @@ in {
       ghc
       stack
 
+      uv
+
       android-tools # adb
 
       # tex-fmt # latex formatting
