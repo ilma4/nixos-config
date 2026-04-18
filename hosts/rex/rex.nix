@@ -126,22 +126,7 @@
     "ilma4" = import ./home.nix;
   };
 
-  virtualisation = {
-    docker = {
-      enable = true;
-      storageDriver = "btrfs";
-      rootless = {
-        enable = false;
-        #setSocketVariable = true;
-      };
-    };
-    libvirtd = {
-      enable = true;
-    };
-  };
-
   # List packages installed in system profile. To search, run:
-  programs.virt-manager.enable = true;
   programs.gnome-terminal.enable = true;
 
   environment.pathsToLink = ["/share/zsh"];
