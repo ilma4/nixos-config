@@ -24,6 +24,7 @@ in {
       stack
 
       uv
+      mcp-nixos
 
       android-tools # adb
 
