@@ -12,3 +12,12 @@ approval_mode = "approve"
 
 [mcp_servers.mcp-nixos.tools.nix_versions]
 approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.nixos_channels]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.darwin_stats]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.home_manager_stats]
+approval_mode = "approve"
