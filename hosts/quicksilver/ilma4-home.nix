@@ -7,19 +7,13 @@
   imports = [
     inputs.sops-nix-darwin.homeManagerModules.sops
 
-    ../../home/base.nix
-    ./darwin-defaults-home.nix
-
+    ./common-home.nix
     ../../modules/sops.nix
   ];
 
   config = {
     home.username = "ilma4";
     i4.personal.enable = true;
-    i4.fonts.enable = true;
-    i4.zed.enable = true;
-    i4.dev.enable = true;
-    i4.neovim.enable = true;
     i4.sops.enable = true;
     i4.raycast = {
       enable = true;
@@ -41,19 +35,8 @@
     };
 
     home.packages = with pkgs; [
-      qemu
-
-      (pkgs.writeShellScriptBin "bazel" "${pkgs.bazelisk}/bin/bazelisk \"$@\"")
-
-      nodejs_24
-
-      beads-ui
-
-      monitor-input
-
       sops # for managing secrets
       age # for age key management
-      meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
 
       (let
         bw = "${pkgs.bitwarden-cli}/bin/bw";
@@ -62,9 +45,6 @@
       (pkgs.writeShellScriptBin "i4-qbittorrent-start" (builtins.readFile ./../../scripts/run-qbittorrent.sh))
     ];
 
-    programs.fish = {
-      enable = true;
-    };
     programs.ssh.matchBlocks = {
       "*" = {
         identityAgent = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
@@ -77,9 +57,7 @@
       };
     };
 
-    # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
     home.sessionVariables = {
-      PATH = "$PATH:/opt/homebrew/bin";
       SSH_AUTH_SOCK = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       # JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
@@ -88,13 +66,11 @@
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/nixos-config/dotfiles/${x}";
     in {
-      # TODO: move those options to some common module
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
       ".config/zed".source = symlink "zed";
       ".gemini/settings.json".source = symlink "gemini_cli_settings.json";
 
-      ".config/aerospace/aerospace.toml".source = ../../dotfiles/aerospace.toml;
       ".config/resticprofile/profiles.toml".source = ../../dotfiles/resticprofile.toml;
     };
   };
