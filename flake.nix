@@ -55,21 +55,9 @@
       url = "github:boinkor-net/hoopsnake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    mcp-nixos = {
-      url = "github:utensils/mcp-nixos";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    mcp-nixos-darwin = {
-      url = "github:utensils/mcp-nixos";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
-    };
     yaml = {
       url = "github:milahu/nix-yaml";
       flake = false;
-    };
-    quickemu = {
-      url = "github:quickemu-project/quickemu/4.9.9";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     # Platform-specific utilities
@@ -114,7 +102,6 @@
     darwinOverlays =
       commonOverlays
       ++ [
-        inputs.quickemu.overlays.default
         (import ./overlays/darwin-htop-overlay.nix)
       ];
 
