@@ -52,8 +52,6 @@ Create a slash command for codex/claude codex/gemini so that they can update my 
 
 They have to search for the newer version of the service, find the docker-compose.yml file or the docker container version and update my config to match them.
 
-# setup homebrew autoupdates
-
 # Configs for msi-moder Ubuntu
 
 ## Autoinstall config
