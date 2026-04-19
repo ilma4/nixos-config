@@ -21,3 +21,21 @@ approval_mode = "approve"
 
 [mcp_servers.mcp-nixos.tools.home_manager_stats]
 approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.nixos_search]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.home_manager_search]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.darwin_search]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.home_manager_options_by_prefix]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.home_manager_info]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.nixos_info]
+approval_mode = "approve"
