@@ -16,7 +16,6 @@
       nil
       alejandra
       sops
-      pi-coding-agent
 
       ghc
       stack

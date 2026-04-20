@@ -94,7 +94,6 @@
       (import ./overlays/monitor-input-overlay.nix)
       (import ./overlays/beads-ui-overlay.nix)
       (import ./overlays/paperless-mcp-overlay.nix)
-      (import ./overlays/pi-coding-agent-overlay.nix)
       (import ./overlays/prometheus-smartctl-exporter-overlay.nix)
       (import ./overlays/restic-exporter-overlay.nix)
     ];
@@ -205,7 +204,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
-        inherit (pkgs) monitor-input beads-ui paperless-mcp pi-coding-agent restic-exporter;
+        inherit (pkgs) monitor-input beads-ui paperless-mcp restic-exporter;
       };
     }) (builtins.attrValues systems));
 
