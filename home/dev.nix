@@ -3,9 +3,7 @@
   lib,
   pkgs,
   ...
-}: let
-  isNotNixOS = pkgs.stdenv.isDarwin || config.targets.genericLinux.enable;
-in {
+}: {
   options.i4.dev.enable = lib.mkEnableOption "development tools";
 
   config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
@@ -47,12 +45,7 @@ in {
 
     programs.zsh.shellAliases = {
       # bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
-      codex-personal = "CODEX_HOME=$HOME/.codex-personal codex";
       gw = "./gradlew";
-    };
-
-    programs.bash.shellAliases = lib.mkIf isNotNixOS {
-      # bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
     };
 
     programs.direnv = {
