@@ -64,9 +64,12 @@ in {
 
     programs.bash.enable = true;
 
-    home.file.".bazelrc".text = ''
-      common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
-    '';
+    home.file = {
+      ".bazelrc".text = ''
+        common --disk_cache=${config.home.homeDirectory}/.cache/bazel-disk
+      '';
+      ".ideavimrc".source = ../dotfiles/ideavimrc;
+    };
 
     home.sessionPath =
       ["$HOME/.local/bin"]
