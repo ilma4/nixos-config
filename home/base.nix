@@ -111,17 +111,6 @@ in {
       # config to commit located in `dev.nix`
     };
 
-    programs.fish = {
-      shellAliases = {
-        ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
-        # dirsize = "${pkgs.ncdu}/bin/ncdu";
-        l = "ls -lah";
-        ll = "ls -lh";
-        la = "ls -lAh";
-        lsa = "ls -lah";
-      };
-    };
-
     programs.zsh = {
       enable = true;
       enableCompletion = true;

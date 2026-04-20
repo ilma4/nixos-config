@@ -86,7 +86,7 @@
     malakhov = import ./malakhov-home.nix;
   };
 
-  environment.shells = [pkgs.zsh pkgs.fish];
+  environment.shells = [pkgs.zsh];
 
   /*
   remmapings are done in Karabiner-Elements
@@ -182,8 +182,6 @@
   # Prometheus node exporter: monitoring
   services.prometheus.exporters.node.enable = true;
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
-
-  programs.fish.enable = true;
 
   # VPN to access homelab
   services.tailscale.enable = true;

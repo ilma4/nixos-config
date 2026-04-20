@@ -21,8 +21,6 @@
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
     ];
 
-    programs.fish.enable = true;
-
     # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
     home.sessionVariables = {
       PATH = "$PATH:/opt/homebrew/bin";
