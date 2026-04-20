@@ -37,7 +37,7 @@ in {
     zed-editor = {macName = "zed";};
 
     # coding agents
-    claude-code = asLinuxPackage {};
+    claude-code = asLinuxPackage {macName = "claude-code@latest";};
     codex = asLinuxPackage {};
 
     # lm-studio = asLinuxPackage {linuxName = "lmstudio";}; # run LLMs locally
