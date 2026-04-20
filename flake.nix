@@ -103,6 +103,7 @@
       commonOverlays
       ++ [
         (import ./overlays/darwin-htop-overlay.nix)
+        (import ./overlays/darwin-signing-workaround-overlay.nix)
       ];
 
     # Centralized package sets
