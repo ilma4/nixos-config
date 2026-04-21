@@ -76,7 +76,7 @@ in {
     cloudflare-warp = macOnlyCask {}; # corporate JetBrains VPN
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
-    iterm2 = macOnlyCask {};
+    # iterm2 = macOnlyCask {}; # managed by corporate software
     itermai = macOnlyCask {};
     kitty = macOnlyCask {};
     # windows-app = macOnlyCask {}; # updated by corporate software
