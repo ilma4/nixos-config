@@ -16,6 +16,7 @@
     '';
 
     home.file = {
+      ".config/karabiner".source = ../../dotfiles/karabiner;
       ".config/zed".source = ../../dotfiles/zed;
     };
   };
