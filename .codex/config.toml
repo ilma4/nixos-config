@@ -39,3 +39,9 @@ approval_mode = "approve"
 
 [mcp_servers.mcp-nixos.tools.nixos_info]
 approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.darwin_options_by_prefix]
+approval_mode = "approve"
+
+[mcp_servers.mcp-nixos.tools.darwin_info]
+approval_mode = "approve"
