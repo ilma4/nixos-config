@@ -7,6 +7,9 @@
   config = {
     home.username = "malakhov";
     i4.work.enable = true;
+    programs.zsh.localVariables = {
+      ZSH_DISABLE_COMPFIX = "true";
+    };
 
     rebuild-script = ''
       set -euo pipefail
