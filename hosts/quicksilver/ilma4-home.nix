@@ -66,6 +66,7 @@
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/nixos-config/dotfiles/${x}";
     in {
+      ".config/linearmouse/linearmouse.json".source = symlink "linearmouse/linearmouse.json";
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
       ".config/zed".source = symlink "zed";
