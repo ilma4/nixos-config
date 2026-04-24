@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    echo "Usage: simple-service-update <service-nix-file> <github-owner/repo|github-url>" >&2
+    echo "Environment:" >&2
+    echo "  SIMPLE_SERVICE_UPDATE_MODEL=<codex-model>" >&2
+    echo "  SIMPLE_SERVICE_UPDATE_REASONING_EFFORT=<low|medium|high|xhigh>" >&2
+    echo "  SIMPLE_SERVICE_UPDATE_REASONING_LEVEL=<low|medium|high|xhigh>  # alias" >&2
+}
+
+if [ "$#" -ne 2 ]; then
+    usage
+    exit 2
+fi
+
+service_file=$1
+github_repo=$2
+codex_model="${SIMPLE_SERVICE_UPDATE_MODEL:-gpt-5.4-mini}"
+reasoning_effort="${SIMPLE_SERVICE_UPDATE_REASONING_EFFORT:-${SIMPLE_SERVICE_UPDATE_REASONING_LEVEL:-high}}"
+
+if [ -n "${SIMPLE_SERVICE_UPDATE_REASONING_EFFORT:-}" ] && [ -n "${SIMPLE_SERVICE_UPDATE_REASONING_LEVEL:-}" ] && [ "$SIMPLE_SERVICE_UPDATE_REASONING_EFFORT" != "$SIMPLE_SERVICE_UPDATE_REASONING_LEVEL" ]; then
+    echo "Error: SIMPLE_SERVICE_UPDATE_REASONING_EFFORT and SIMPLE_SERVICE_UPDATE_REASONING_LEVEL disagree" >&2
+    exit 2
+fi
+
+case "$reasoning_effort" in
+    "" | low | medium | high | xhigh) ;;
+    *)
+        echo "Error: SIMPLE_SERVICE_UPDATE_REASONING_EFFORT must be one of: low, medium, high, xhigh" >&2
+        exit 2
+        ;;
+esac
+
+if ! command -v codex >/dev/null 2>&1; then
+    echo "Error: codex command was not found in PATH" >&2
+    exit 127
+fi
+
+repo_root=${NIXOS_CONFIG_DIR:-}
+if [ -n "$repo_root" ]; then
+    if [ ! -d "$repo_root/.git" ]; then
+        echo "Error: NIXOS_CONFIG_DIR does not point to this git repository: $repo_root" >&2
+        exit 1
+    fi
+elif repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    :
+else
+    script_dir=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+    candidate_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
+    if [ -d "$candidate_root/.git" ]; then
+        repo_root=$candidate_root
+    else
+        echo "Error: run from the nixos-config git repository or set NIXOS_CONFIG_DIR" >&2
+        exit 1
+    fi
+fi
+
+cd "$repo_root"
+
+case "$service_file" in
+    /*) service_path=$service_file ;;
+    *) service_path=$repo_root/$service_file ;;
+esac
+
+if [ ! -f "$service_path" ]; then
+    echo "Error: service Nix file does not exist: $service_file" >&2
+    exit 1
+fi
+
+for helper in scripts/github-latest-release.py scripts/github-releases-since.py; do
+    if [ ! -x "$helper" ]; then
+        echo "Error: required helper is missing or not executable: $helper" >&2
+        exit 1
+    fi
+done
+
+case "$service_path" in
+    "$repo_root"/*) service_ref=${service_path#"$repo_root"/} ;;
+    *) service_ref=$service_path ;;
+esac
+
+prompt=$(cat <<EOF
+Update the service defined in \`$service_ref\` using GitHub releases from \`$github_repo\`.
+
+Required workflow:
+1. Read the service configuration from the Nix file and any directly related local files needed to understand the image/version/tag being updated.
+2. Run \`./scripts/github-latest-release.py "$github_repo"\` to get the latest stable GitHub release tag.
+3. Determine the current GitHub release tag from the service config. If the config version uses a different image-tag format, reconcile it carefully instead of guessing.
+4. If the service is already on the latest release, report that and do not commit.
+5. Run \`./scripts/github-releases-since.py "$github_repo" "<current-release-tag>"\` to get release notes since the current release.
+6. Analyze the release notes for breaking changes, migrations, removed options, changed environment variables, changed volumes, database/state migrations, manual steps, and other operational risks.
+7. If there are no breaking changes, update the service version/tag to the latest release.
+8. If breaking changes are manageable from the notes and local config, apply the required migration together with the version update.
+9. If the migration is unclear, stateful/manual, risky, requires secrets, or requires a user choice, stop and ask the user for help. Do not commit in that case.
+10. Verify the change with the narrowest practical checks. Do not switch or deploy any NixOS, nix-darwin, or Home Manager configuration.
+11. Commit only the relevant changes when the update is complete and verified. Use the commit message \`Update <service-name> <current-tag> -> <latest-release-tag>\`, deriving the service name from the Nix config.
+
+Rules:
+- Use the two helper scripts above for GitHub release discovery and release notes. Do not rely on model memory for the latest release.
+- Before writing a Docker image tag, verify that the target image tag exists. If you cannot verify it, stop and ask the user.
+- Before adding or changing Nix packages or options, verify them with mcp-nixos.
+- Check \`git status\` before editing. Preserve unrelated user changes and do not revert anything you did not change.
+- Inspect the final diff before committing, and include only the files required for this service update in the commit.
+EOF
+)
+
+codex_args=(--cd "$repo_root")
+
+if [ -n "$codex_model" ]; then
+    codex_args+=(--model "$codex_model")
+fi
+
+if [ -n "$reasoning_effort" ]; then
+    codex_args+=(-c "model_reasoning_effort=\"$reasoning_effort\"")
+fi
+
+exec codex exec --full-auto "${codex_args[@]}" "$prompt"

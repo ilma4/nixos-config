@@ -38,6 +38,10 @@
         pkgs.writeShellScriptBin "i4-update-host"
         (builtins.readFile ../dotfiles/i4-update-host.sh)
       )
+      (
+        pkgs.writeShellScriptBin "simple-service-update"
+        (builtins.readFile ../scripts/simple-service-update)
+      )
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
     ];
