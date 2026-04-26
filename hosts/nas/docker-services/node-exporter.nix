@@ -6,7 +6,7 @@
 }:
 with lib; let
   cfg = config.services.prometheus.node-exporter-docker;
-  node-exporter-version = "1.10.2";
+  node-exporter-version = "v1.11.1";
   port = 9100;
 in {
   options.services.prometheus.node-exporter-docker = {
