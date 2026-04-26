@@ -1,5 +1,5 @@
 {pkgs, ...}: let
-  version = "2.4.2";
+  version = "2.10.0";
 in {
   dockerCompose.stirling-pdf = {
     enable = true;
