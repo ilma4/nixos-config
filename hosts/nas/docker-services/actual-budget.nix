@@ -1,10 +1,11 @@
 {
   config,
-  pkgs,
+  lib,
   ...
 }: let
   UID_GID = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
   actual-version = "v26.4.0";
+  tag = "${lib.removePrefix "v" actual-version}-alpine";
 in {
   users.users.actual-budget = {
     isSystemUser = true;
@@ -28,7 +29,7 @@ in {
           - "traefik.http.routers.actual-budget.entrypoints=websecure"
           - "traefik.http.routers.actual-budget.tls=true"
           - "traefik.http.services.actual-budget.loadbalancer.server.port=5006"
-        image: "ghcr.io/actualbudget/actual:${actual-version}-alpine"
+        image: "ghcr.io/actualbudget/actual:${tag}"
         user: "${UID_GID}"
         expose:
           - "5006"
