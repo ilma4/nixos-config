@@ -16,8 +16,8 @@ fi
 
 service_file=$1
 github_repo=$2
-codex_model="${SIMPLE_SERVICE_UPDATE_MODEL:-gpt-5.4-mini}"
-reasoning_effort="${SIMPLE_SERVICE_UPDATE_REASONING_EFFORT:-${SIMPLE_SERVICE_UPDATE_REASONING_LEVEL:-high}}"
+codex_model="${SIMPLE_SERVICE_UPDATE_MODEL:-gpt-5.5}"
+reasoning_effort="${SIMPLE_SERVICE_UPDATE_REASONING_EFFORT:-${SIMPLE_SERVICE_UPDATE_REASONING_LEVEL:-medium}}"
 
 if [ -n "${SIMPLE_SERVICE_UPDATE_REASONING_EFFORT:-}" ] && [ -n "${SIMPLE_SERVICE_UPDATE_REASONING_LEVEL:-}" ] && [ "$SIMPLE_SERVICE_UPDATE_REASONING_EFFORT" != "$SIMPLE_SERVICE_UPDATE_REASONING_LEVEL" ]; then
     echo "Error: SIMPLE_SERVICE_UPDATE_REASONING_EFFORT and SIMPLE_SERVICE_UPDATE_REASONING_LEVEL disagree" >&2
@@ -115,4 +115,4 @@ if [ -n "$reasoning_effort" ]; then
     codex_args+=(-c "model_reasoning_effort=\"$reasoning_effort\"")
 fi
 
-exec codex exec --full-auto "${codex_args[@]}" "$prompt"
+exec codex exec --yolo "${codex_args[@]}" "$prompt"
