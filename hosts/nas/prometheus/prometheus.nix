@@ -6,7 +6,7 @@
   ...
 }: let
   port = "9090";
-  version = "v3.10.0";
+  version = "3.10.0";
   alertmanagerVersion = "v0.29.0";
   telegramMyIdSecret = constants.telegram.my-id-secret;
   notificationsApiKeySecret = constants.telegram.notifications-api-key-secret;
