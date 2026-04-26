@@ -1,8 +1,15 @@
 {
+  "project_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
   "edit_predictions": {
     "mode": "eager",
   },
   "agent": {
+    "sidebar_side": "right",
     "notify_when_agent_waiting": "all_screens",
     "default_profile": "write",
     "always_allow_tool_actions": true,
