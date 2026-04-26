@@ -1,5 +1,5 @@
 {pkgs, ...}: let
-  version = "2026.04.0";
+  version = "2026.04.1";
 in {
   dockerCompose.pihole.composeText = ''
     name: pihole
