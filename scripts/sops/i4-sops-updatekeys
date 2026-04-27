@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# i4-sops-updatekey: Update keys for all secrets using .sops.yaml.
+# i4-sops-updatekeys: Update keys for all secrets using .sops.yaml.
 # Usage:
-#   i4-sops-updatekey
+#   i4-sops-updatekeys
 
 set -euo pipefail
 

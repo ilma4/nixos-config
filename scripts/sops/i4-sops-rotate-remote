@@ -30,7 +30,7 @@ pick_cmd() {
 
 cmd_remote_gen="$(pick_cmd i4-sops-generate-key-remote)"
 cmd_update_yaml="$(pick_cmd i4-sops-update-sops-yaml)"
-cmd_rotate_secrets="$(pick_cmd i4-sops-updatekey)"
+cmd_rotate_secrets="$(pick_cmd i4-sops-updatekeys)"
 
 repo_root() {
   local root
