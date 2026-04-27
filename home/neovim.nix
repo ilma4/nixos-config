@@ -11,6 +11,7 @@
   baseExtraConfigLua = ''
     vim.g.suda_smart_edit = 1
     vim.opt.number = true
+    vim.opt.clipboard = "unnamedplus"
   '';
   idePlugins = with pkgs.vimPlugins; [
     nvim-lspconfig
@@ -55,8 +56,6 @@
   ideInitLua = ''
     ${config.programs.neovim.extraLuaConfig}
     ${config.programs.neovim.generatedConfigs.lua or ""}
-
-    vim.o.clipboard = "unnamedplus"
 
     vim.opt.expandtab = true
     vim.opt.shiftwidth = 4
