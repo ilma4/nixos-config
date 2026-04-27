@@ -10,7 +10,7 @@
     launchd.user.agents.podman-machine-autostart = {
       path = [pkgs.podman];
       serviceConfig = {
-        ProgramArguments = ["${lib.getExe pkgs.bash}" "-c" "podman machine start"];
+        ProgramArguments = ["${lib.getExe pkgs.bash}" "-c" "set -euo pipefail; podman machine start"];
         RunAtLoad = true;
         AbandonProcessGroup = true; # required to keep podman machine process running
         StandardOutPath = "/tmp/podman-machine-start.log";
@@ -25,7 +25,7 @@
           "${lib.getExe pkgs.bash}"
           "-c"
           ''
-            set -e
+            set -euo pipefail
 
             echo "$(date): Starting Obsidian auto-commit"
 
@@ -76,7 +76,7 @@
         ProgramArguments = [
           "${lib.getExe pkgs.bash}"
           "-c"
-          "resticprofile -c \"${../dotfiles/resticprofile.toml}\" backup"
+          "set -euo pipefail; resticprofile -c \"${../dotfiles/resticprofile.toml}\" backup"
         ];
         StartCalendarInterval = [
           {
@@ -95,7 +95,7 @@
         ProgramArguments = [
           "${lib.getExe pkgs.bash}"
           "-c"
-          "resticprofile -c \"${../dotfiles/resticprofile.toml}\" hdd.copy"
+          "set -euo pipefail; resticprofile -c \"${../dotfiles/resticprofile.toml}\" hdd.copy"
         ];
         StartCalendarInterval = [
           {

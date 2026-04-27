@@ -1,6 +1,6 @@
 {pkgs, ...}: let
   script = pkgs.writeShellScript "hdd-idle-guard.sh" ''
-    set -eu
+    set -euo pipefail
 
     DISK_A="/dev/disk/by-id/ata-ST4000DM004-2U9104_ZW62WG3D" # segate
     DISK_B="/dev/disk/by-id/ata-WDC_WD40EFPX-68C6CN0_WD-WX42D44C18S3" # WD
