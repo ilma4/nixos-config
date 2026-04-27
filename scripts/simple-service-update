@@ -46,8 +46,8 @@ if [ -n "$repo_root" ]; then
 elif repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
     :
 else
-    script_dir=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-    candidate_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
+    script_dir=$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+    candidate_root=$(CDPATH='' cd -- "$script_dir/.." && pwd)
     if [ -d "$candidate_root/.git" ]; then
         repo_root=$candidate_root
     else

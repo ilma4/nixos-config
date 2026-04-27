@@ -39,7 +39,7 @@ repo_root() {
     return 0
   fi
 
-  echo "$(cd "$script_dir/.." && pwd)"
+  cd "$script_dir/../.." && pwd
 }
 
 root="$(repo_root)"
