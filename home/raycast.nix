@@ -15,7 +15,7 @@ with lib; let
     "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;
     "chrome.applescript" = ./raycast-scripts/chrome.applescript;
 
-    "switch-monitor" = pkgs.writeText "monitor-displayport.applescript" ''
+    "monitor-displayport.applescript" = pkgs.writeText "monitor-displayport.applescript" ''
       #!/usr/bin/osascript
 
       # Required parameters:
