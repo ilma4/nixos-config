@@ -32,8 +32,24 @@ fi
 config="${flakeRef##*#}"
 targetHost="${2:-$config}"
 
+host_responds_to_ping() {
+    local host="$1"
+
+    case "$(uname -s)" in
+        Darwin)
+            ping -c 1 -W 1000 "$host" &>/dev/null
+            ;;
+        Linux)
+            ping -c 1 -W 1 "$host" &>/dev/null
+            ;;
+        *)
+            ping -c 1 "$host" &>/dev/null
+            ;;
+    esac
+}
+
 # Check if targetHost.local is reachable (ping with 1 second timeout, 1 packet)
-if ping -c 1 -W 1 "${targetHost}.local" &>/dev/null; then
+if host_responds_to_ping "${targetHost}.local"; then
     echo "Using ${targetHost}.local (mDNS)"
     sshTarget="${targetHost}.local"
 else
