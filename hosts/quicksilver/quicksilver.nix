@@ -23,7 +23,10 @@
   # ];
 
   environment.systemPackages = [
-    (pkgs.writeShellScriptBin "i4-revision" "echo '${config.system.configurationRevision}'")
+    (pkgs.writeShellScriptBin "i4-revision" ''
+      set -euo pipefail
+      echo '${config.system.configurationRevision}'
+    '')
   ];
   /*
   environment.etc."hosts".text = ''

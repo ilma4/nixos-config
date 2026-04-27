@@ -7,7 +7,6 @@
   ...
 }: let
   mkDefault = lib.mkDefault;
-  i4-revision-package = pkgs.writeShellScriptBin "i4-revision" "echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'";
 in {
   options = {
     isServer = lib.mkOption {
@@ -89,7 +88,10 @@ in {
     };
 
     environment.systemPackages = [
-      (pkgs.writeShellScriptBin "i4-revision" "echo '${config.system.configurationRevision}'")
+      (pkgs.writeShellScriptBin "i4-revision" ''
+        set -euo pipefail
+        echo '${config.system.configurationRevision}'
+      '')
     ];
     system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or "null";
 

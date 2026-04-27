@@ -40,7 +40,11 @@
 
       (let
         bw = "${pkgs.bitwarden-cli}/bin/bw";
-      in (pkgs.writeShellScriptBin "i4-generate-password" " ${bw} generate -u -l -s -n --length 30 --ambiguous"))
+      in
+        pkgs.writeShellScriptBin "i4-generate-password" ''
+          set -euo pipefail
+          exec ${bw} generate -u -l -s -n --length 30 --ambiguous
+        '')
 
       (pkgs.writeShellScriptBin "i4-qbittorrent-start" (builtins.readFile ./../../scripts/run-qbittorrent.sh))
     ];

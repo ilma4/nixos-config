@@ -9,7 +9,10 @@
   inherit (pkgs) stdenv;
   isDarwin = stdenv.isDarwin;
   isNixos = stdenv.isLinux && !config.targets.genericLinux.enable;
-  i4-revision-package = pkgs.writeShellScriptBin "i4-revision" "echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'";
+  i4-revision-package = pkgs.writeShellScriptBin "i4-revision" ''
+    set -euo pipefail
+    echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
+  '';
 in {
   imports = [
     ./dev.nix
@@ -97,7 +100,10 @@ in {
       tree
       ncdu
 
-      (pkgs.writeShellScriptBin "nix-rebuild" config.rebuild-script)
+      (pkgs.writeShellScriptBin "nix-rebuild" ''
+        set -euo pipefail
+        ${config.rebuild-script}
+      '')
       i4-revision-package
     ];
 

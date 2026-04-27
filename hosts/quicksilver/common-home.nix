@@ -13,7 +13,10 @@
     home.packages = with pkgs; [
       qemu
 
-      (pkgs.writeShellScriptBin "bazel" "${pkgs.bazelisk}/bin/bazelisk \"$@\"")
+      (pkgs.writeShellScriptBin "bazel" ''
+        set -euo pipefail
+        exec ${pkgs.bazelisk}/bin/bazelisk "$@"
+      '')
 
       nodejs_24
       beads-ui
