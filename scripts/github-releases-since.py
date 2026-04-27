@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 import requests
 
 API_BASE_URL = "https://api.github.com"
+DEFAULT_TIMEOUT_SECONDS = 30
 UNSTABLE_RELEASE_PATTERN = re.compile(
     r"\b(alpha|alfa|beta|pre[- ]?release)\b", re.IGNORECASE
 )
@@ -85,7 +86,7 @@ def fetch_releases_since(
 
     with github_session(token) as session:
         while next_url:
-            response = session.get(next_url)
+            response = session.get(next_url, timeout=DEFAULT_TIMEOUT_SECONDS)
             response.raise_for_status()
 
             payload = response.json()
@@ -221,6 +222,8 @@ def render_markdown(repo: str, since_release: str, releases: list[Release]) -> s
         lines.append("")
 
     return "\n".join(lines)
+
+
 def main() -> int:
     args = parse_args()
 
