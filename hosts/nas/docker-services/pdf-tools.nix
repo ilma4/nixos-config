@@ -1,5 +1,10 @@
 {pkgs, ...}: let
   version = "2.10.0";
+  srvDir = "/srv/stirling-pdf";
+  trainingDataDir = "${srvDir}/trainingData";
+  extraConfigsDir = "${srvDir}/extraConfigs";
+  logsDir = "${srvDir}/logs";
+  pipelineDir = "${srvDir}/pipeline";
 in {
   dockerCompose.stirling-pdf = {
     enable = true;
@@ -23,10 +28,10 @@ in {
 
           volumes:
             - /etc/localtime:/etc/localtime:ro
-            - /srv/stirling-pdf/trainingData:/usr/share/tessdata
-            - /srv/stirling-pdf/extraConfigs:/configs
-            - /srv/stirling-pdf/logs:/logs
-            - /srv/stirling-pdf/pipeline:/pipeline
+            - ${trainingDataDir}:/usr/share/tessdata
+            - ${extraConfigsDir}:/configs
+            - ${logsDir}:/logs
+            - ${pipelineDir}:/pipeline
           restart: unless-stopped
 
       networks:
@@ -34,4 +39,12 @@ in {
           external: true
     '';
   };
+
+  systemd.tmpfiles.rules = [
+    "d ${srvDir} 0755 root root -"
+    "d ${trainingDataDir} 0755 root root -"
+    "d ${extraConfigsDir} 0755 root root -"
+    "d ${logsDir} 0755 root root -"
+    "d ${pipelineDir} 0755 root root -"
+  ];
 }

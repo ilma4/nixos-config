@@ -1,5 +1,6 @@
 {pkgs, ...}: let
   version = "2026.04.1";
+  dataDir = "/srv/pihole";
 in {
   dockerCompose.pihole.composeText = ''
     name: pihole
@@ -14,7 +15,7 @@ in {
           FTLCONF_misc_dnsmasq_lines: |-
             address=/ilma4.local/192.168.1.33
         volumes:
-          - "/srv/pihole:/etc/pihole"
+          - "${dataDir}:/etc/pihole"
           # Uncomment if you’re migrating from v5 and need dnsmasq configs
           # - './etc-dnsmasq.d:/etc/dnsmasq.d'
         cap_add:
@@ -42,4 +43,8 @@ in {
               ip_range: "fd00:abcd::200/128"
 
   '';
+
+  systemd.tmpfiles.rules = [
+    "d ${dataDir} 0755 root root -"
+  ];
 }
