@@ -4,7 +4,7 @@
 
 title: "Demo dashboard"
 subtitle: "Homer"
-logo: "logo.png"
+logo: "icons/logo.svg"
 # icon: "fas fa-skull-crossbones" # Optional icon
 
 header: true
