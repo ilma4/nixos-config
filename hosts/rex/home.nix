@@ -18,8 +18,6 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs; [
-    gnomeExtensions.gsconnect
-    gnomeExtensions.dash-to-dock
     gnomeExtensions.caffeine
     gnome-tweaks
 
@@ -28,18 +26,19 @@
     } (builtins.readFile ../../scripts/set-power.py))
   ];
 
-  programs.gnome-shell.enable = true;
+  programs.gnome-shell = {
+    enable = true;
+    extensions = with pkgs.gnomeExtensions; [
+      {package = blur-my-shell;}
+      {package = gsconnect;}
+      {package = dash-to-dock;}
+    ];
+  };
 
   dconf = {
     enable = true;
     settings."org/gnome/shell" = {
       disable-user-extensions = false;
-      enabled-extensions = with pkgs.gnomeExtensions; [
-        blur-my-shell.extensionUuid
-        gsconnect.extensionUuid
-        "dash-to-dock"
-        "gsconnect"
-      ];
     };
   };
 }
