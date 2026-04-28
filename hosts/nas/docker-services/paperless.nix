@@ -30,6 +30,7 @@ in {
         expose:
           - "8000"
         networks:
+          default:
           reverse_proxy:
 
         volumes:
@@ -69,6 +70,7 @@ in {
       redisdata:
 
     networks:
+      default:
       reverse_proxy:
         external: true
   '';
