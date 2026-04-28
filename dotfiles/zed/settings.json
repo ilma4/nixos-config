@@ -19,7 +19,7 @@
     },
   },
   "auto_install_extensions": {
-    "activitiwatch": true,
+    "activitywatch": true,
     "basher": true,
     "docker-compose": true,
     "dockerfile": true,
