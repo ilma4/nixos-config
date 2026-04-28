@@ -5,6 +5,7 @@
   ...
 }: let
   brewPrefix = config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
+  brew = "${brewPrefix}/bin/brew";
 in {
   config = lib.mkIf config.homebrew.enable {
     launchd.user.agents.homebrew-auto-upgrade = {
@@ -16,16 +17,16 @@ in {
         echo "''$(date): running autoupdate"
 
         # Refresh metadata
-        /opt/homebrew/bin/brew update
+        ${brew} update
 
         # Upgrade formulae
-        /opt/homebrew/bin/brew upgrade
+        ${brew} upgrade
 
         # Upgrade casks too, including auto-updating/version:latest ones
-        /opt/homebrew/bin/brew upgrade --cask --greedy
+        ${brew} upgrade --cask --greedy
 
         # Remove old versions/cache
-        /opt/homebrew/bin/brew cleanup --prune=all
+        ${brew} cleanup --prune=all
       '';
 
       serviceConfig = {

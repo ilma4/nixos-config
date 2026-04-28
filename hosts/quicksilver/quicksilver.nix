@@ -4,7 +4,9 @@
   pkgs,
   inputs,
   ...
-}: {
+}: let
+  homebrewPrefix = config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
+in {
   imports = [
     ../../modules/nix-settings.nix
     ../../modules/backup/backup.nix
@@ -147,9 +149,9 @@
     };
   };
 
-  # TODO: use homebrew path from config
   system.activationScripts.aerospace-config.text = ''
-    sudo --user=ilma4 -- /opt/homebrew/bin/aerospace reload-config
+    set -euo pipefail
+    sudo --user=ilma4 -- ${homebrewPrefix}/bin/aerospace reload-config
   '';
 
   /*
