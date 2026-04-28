@@ -1,4 +1,11 @@
-{pkgs, ...}: {
+{
+  lib,
+  osConfig,
+  pkgs,
+  ...
+}: let
+  homebrewPrefix = osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix);
+in {
   imports = [
     ../../home/base.nix
     ./darwin-defaults-home.nix
@@ -24,9 +31,9 @@
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
     ];
 
-    # home.sessionPath = ["/opt/homebrew/bin"]; # do not use, places before nix
+    # Do not use home.sessionPath for Homebrew; it places Homebrew before Nix.
     home.sessionVariables = {
-      PATH = "$PATH:/opt/homebrew/bin";
+      PATH = "$PATH:${homebrewPrefix}/bin";
     };
 
     home.file = {

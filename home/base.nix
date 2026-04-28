@@ -3,12 +3,17 @@
   pkgs,
   lib,
   inputs,
+  osConfig ? null,
   ...
 }: let
   HOME = config.home.homeDirectory;
   inherit (pkgs) stdenv;
   isDarwin = stdenv.isDarwin;
   isNixos = stdenv.isLinux && !config.targets.genericLinux.enable;
+  homebrewPrefix =
+    if osConfig != null && osConfig ? homebrew
+    then osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix)
+    else "/opt/homebrew";
   i4-revision-package = pkgs.writeShellScriptBin "i4-revision" ''
     set -euo pipefail
     echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
@@ -142,7 +147,7 @@ in {
       initContent = let
         early = lib.mkOrder 500 ''
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
-          ${lib.optionalString isDarwin "fpath+=/opt/homebrew/share/zsh/site-functions"}
+          ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
 
           # Powerlevel10k theme
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
