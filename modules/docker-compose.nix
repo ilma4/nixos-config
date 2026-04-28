@@ -77,7 +77,7 @@ in {
 
         serviceConfig = {
           Type = "simple";
-          ExecStart = "${compose} up --pull ${upArgs}";
+          ExecStart = "${compose} up --pull missing ${upArgs}";
           ExecStop = "${compose} down";
           Restart = "always";
         };
