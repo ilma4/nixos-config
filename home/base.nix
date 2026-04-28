@@ -149,21 +149,20 @@ in {
           source ${../dotfiles/p10k.zsh} # Powerlevel10k config
         '';
 
-        beforeCompinit =
-          lib.mkOrder 550 ''
-            ${lib.optionalString isDarwin ''
-              # nix-darwin includes completions from /nix/var/nix/profiles/default,
-              # which may resolve to a mixed-ownership store path on quicksilver.
-              for default_profile_fpath in \
-                /nix/var/nix/profiles/default/share/zsh/site-functions \
-                /nix/var/nix/profiles/default/share/zsh/$ZSH_VERSION/functions \
-                /nix/var/nix/profiles/default/share/zsh/vendor-completions
-              do
-                fpath=(''${fpath:#$default_profile_fpath})
-              done
-              unset default_profile_fpath
-            ''}
-          '';
+        beforeCompinit = lib.mkOrder 550 ''
+          ${lib.optionalString isDarwin ''
+            # nix-darwin includes completions from /nix/var/nix/profiles/default,
+            # which may resolve to a mixed-ownership store path on quicksilver.
+            for default_profile_fpath in \
+              /nix/var/nix/profiles/default/share/zsh/site-functions \
+              /nix/var/nix/profiles/default/share/zsh/$ZSH_VERSION/functions \
+              /nix/var/nix/profiles/default/share/zsh/vendor-completions
+            do
+              fpath=(''${fpath:#$default_profile_fpath})
+            done
+            unset default_profile_fpath
+          ''}
+        '';
 
         normal =
           lib.mkOrder 1000 ''
