@@ -6,6 +6,9 @@
 }: let
   version = "5.1.4";
   download = "/mnt/hdd/torrent";
+  puid = "1000";
+  pgid = "1000";
+  configDir = "/srv/qbittorrent/config";
   checkIntervalSeconds = 30;
   expectedVpnIp = "185.68.21.215";
   qbittorrentContainer = "qbittorrent";
@@ -87,13 +90,13 @@ in {
           environment:
             - VPN_ENABLED=true
             - VPN_PROVIDER=generic
-            - PUID=1000
-            - PGID=1000
+            - PUID=${puid}
+            - PGID=${pgid}
             - UMASK=002
             - WEBUI_PORTS=8080/tcp
           volumes:
             - "/etc/localtime:/etc/localtime:ro"
-            - "/srv/qbittorrent/config:/config"
+            - "${configDir}:/config"
             - "${download}:/downloads"
             - "/home/ilma4/torrents:/ssd-downloads"
             - "${config.sops.secrets.wg-conf.path}:/config/wireguard/wg0.conf:ro"
@@ -113,6 +116,11 @@ in {
     sopsFile = "${myLib.secrets}/ru-torrent-wg.conf";
     format = "binary";
   };
+
+  systemd.tmpfiles.rules = [
+    "d /srv/qbittorrent 0775 ${puid} ${pgid} -"
+    "d ${configDir} 0775 ${puid} ${pgid} -"
+  ];
 
   systemd.services.qbittorrent-vpn-ip-check = {
     description = "Check qBittorrent public IP stays on the VPN endpoint";
