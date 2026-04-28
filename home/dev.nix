@@ -3,7 +3,15 @@
   lib,
   pkgs,
   ...
-}: {
+}: let
+  simpleServiceUpdateScript = pkgs.writeShellScript "simple-service-update-source" (builtins.readFile ../scripts/simple-service-update);
+  flakeSource = config.flake-source or null;
+  simpleServiceUpdateFlakeSource = lib.optionalString (flakeSource != null) ''
+    if [ -z "''${NIXOS_CONFIG_DIR:-}" ]; then
+      export NIXOS_CONFIG_DIR=${lib.escapeShellArg flakeSource}
+    fi
+  '';
+in {
   options.i4.dev.enable = lib.mkEnableOption "development tools";
 
   config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
@@ -39,8 +47,11 @@
         (builtins.readFile ../dotfiles/i4-update-host.sh)
       )
       (
-        pkgs.writeShellScriptBin "simple-service-update"
-        (builtins.readFile ../scripts/simple-service-update)
+        pkgs.writeShellScriptBin "simple-service-update" ''
+          set -euo pipefail
+          ${simpleServiceUpdateFlakeSource}
+          exec ${simpleServiceUpdateScript} "$@"
+        ''
       )
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
