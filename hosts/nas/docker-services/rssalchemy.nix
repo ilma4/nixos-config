@@ -10,7 +10,7 @@
     sha256 = "sha256-JHKmUxUPDJsnxPrCuPtVjG4B56NL/fV+C/BhRxNIxkE=";
   };
 
-  composeYaml = pkgs.writeText "rssalchemy-compose.yml" ''
+  composeYaml = ''
     services:
       webserver:
         build:
