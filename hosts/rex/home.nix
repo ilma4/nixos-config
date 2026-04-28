@@ -1,6 +1,6 @@
 {
+  config,
   pkgs,
-  lib,
   ...
 }: {
   imports = [
@@ -10,6 +10,8 @@
   ];
 
   home.username = "ilma4";
+  rebuild-script = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#rex";
+
   i4.personal.enable = true;
   i4.dev.enable = true;
 
