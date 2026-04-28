@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   inputs,
   ...
@@ -46,7 +47,14 @@
           exec ${bw} generate -u -l -s -n --length 30 --ambiguous
         '')
 
-      (pkgs.writeShellScriptBin "i4-qbittorrent-start" (builtins.readFile ./../../scripts/run-qbittorrent.sh))
+      (let
+        runQbittorrent = pkgs.writeShellScript "run-qbittorrent" (builtins.readFile ./../../scripts/run-qbittorrent.sh);
+      in
+        pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
+          set -euo pipefail
+          export WG_CONFIG=${lib.escapeShellArg config.sops.secrets."wg.conf".path}
+          exec ${runQbittorrent}
+        '')
     ];
 
     programs.ssh.matchBlocks = {
