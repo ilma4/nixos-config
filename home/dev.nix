@@ -53,9 +53,22 @@ in {
           exec ${simpleServiceUpdateScript} "$@"
         ''
       )
+      (lib.mkIf pkgs.stdenv.isDarwin (pkgs.writeShellScriptBin "codex" ''
+        set -euo pipefail
+        exec /opt/homebrew/bin/codex --yolo "$@"
+      ''))
+      (lib.mkIf pkgs.stdenv.isDarwin (pkgs.writeShellScriptBin "claude" ''
+        set -euo pipefail
+        exec /opt/homebrew/bin/claude --dangerously-skip-permissions "$@"
+      ''))
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
     ];
+
+    home.shellAliases = lib.mkIf pkgs.stdenv.isDarwin {
+      codex = "/opt/homebrew/bin/codex --yolo";
+      claude = "/opt/homebrew/bin/claude --dangerously-skip-permissions";
+    };
 
     programs.zsh.shellAliases = {
       # bazel = lib.mkIf isNotNixOS "${pkgs.bazelisk}/bin/bazelisk";
