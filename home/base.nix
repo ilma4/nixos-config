@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  pkgs-unstable,
   lib,
   inputs,
   osConfig ? null,
@@ -220,7 +221,14 @@ in {
     programs.ripgrep.enable = true;
     programs.fd.enable = true;
     programs.bat.enable = true;
-    programs.htop.enable = true;
+    programs.htop = {
+      enable = true;
+      package =
+        # TODO: use default package with nixpkgs-26.11
+        if isDarwin
+        then pkgs-unstable.htop
+        else pkgs.htop;
+    };
     programs.fzf.enable = true;
     programs.tmux = {
       enable = true;
