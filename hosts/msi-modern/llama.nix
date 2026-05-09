@@ -10,8 +10,12 @@
     url = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/24fadbaba5891f3965d66ea0e2e4aa259cd38c77/${modelName}.gguf";
     hash = "sha256-b10wZmwtiuFqMG5hbZU0Hc88xGgQ34TX5vWn0eTBspM=";
   };
+  qwen35-9b-mmproj = pkgs.fetchurl {
+    url = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/24fadbaba5891f3965d66ea0e2e4aa259cd38c77/mmproj-F16.gguf";
+    hash = "sha256-9w3DUJBTlisNDT7op+rOv11gqlYMrXglSuhphRauAp8=";
+  };
   llamaCpp = pkgs-unstable.llama-cpp.override {vulkanSupport = true;};
-  llamaServer = lib.getExe' llamaCpp "llama-server";
+  llamaServerBase = "${lib.getExe' llamaCpp "llama-server"} --host 127.0.0.1 --port \${PORT} -ngl 999 --no-webui";
 in {
   services.llama-swap = {
     enable = true;
@@ -22,8 +26,12 @@ in {
       healthCheckTimeout = 60;
       globalTTL = 300; # unload models after 5 minutes of inactivity
       models.${modelName} = {
-        cmd = "${llamaServer} --host 127.0.0.1 --port \${PORT} -m ${qwen35-9b} -ngl 999 --no-webui";
+        cmd = "${llamaServerBase} -m ${qwen35-9b}";
         aliases = ["qwen3.5-9b"];
+      };
+      models."qwen-3.5-9b-vision" = {
+        cmd = "${llamaServerBase} -m ${qwen35-9b} --mmproj ${qwen35-9b-mmproj}";
+        aliases = ["qwen3.5-9b-vision"];
       };
     };
   };
