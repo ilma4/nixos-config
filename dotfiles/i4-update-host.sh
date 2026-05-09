@@ -2,11 +2,12 @@
 # i4-update-host: Switch a remote NixOS host to the specified flake configuration.
 #
 # Usage:
-#   i4-update-host <flake-location>#<configuration> [targetHost]
+#   i4-update-host <flake-location>#<configuration> [targetHost] [nixos-rebuild-args...]
 #
 # Arguments:
 #   <flake-location>#<configuration>  Flake reference (e.g., .#nas or /path/to/flake#nas)
 #   [targetHost]                      Optional SSH target host (defaults to <configuration>)
+#   [nixos-rebuild-args...]           Extra arguments forwarded to nixos-rebuild
 #
 # Notes:
 # - Uses `nix shell nixpkgs#nixos-rebuild` so it works on macOS/Linux without nixos-rebuild pre-installed.
@@ -17,11 +18,12 @@ set -euo pipefail
 
 if [[ ${1-} == "" ]]; then
     echo "Error: No flake reference provided."
-    echo "Usage: i4-update-host <flake-location>#<configuration> [targetHost]"
+    echo "Usage: i4-update-host <flake-location>#<configuration> [targetHost] [nixos-rebuild-args...]"
     exit 1
 fi
 
 flakeRef="$1"
+shift
 
 # Extract configuration name from flake reference (part after #)
 if [[ "$flakeRef" != *"#"* ]]; then
@@ -30,7 +32,12 @@ if [[ "$flakeRef" != *"#"* ]]; then
 fi
 
 config="${flakeRef##*#}"
-targetHost="${2:-$config}"
+targetHost="$config"
+if [[ ${1-} != "" && ${1-} != --* ]]; then
+    targetHost="$1"
+    shift
+fi
+nixosRebuildArgs=("$@")
 
 host_responds_to_ping() {
     local host="$1"
@@ -57,9 +64,10 @@ else
     sshTarget="${targetHost}"
 fi
 
-nix shell nixpkgs#nixos-rebuild --command nixos-rebuild switch \
+nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild switch \
     --flake "${flakeRef}" \
     --target-host "ilma4@${sshTarget}" \
     --build-host "ilma4@${sshTarget}" \
     --sudo \
-    --fast
+    --fast \
+    "${nixosRebuildArgs[@]}"
