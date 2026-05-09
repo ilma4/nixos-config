@@ -6,6 +6,9 @@
   imports = [
     ../../home/base.nix
     ../../home/personal.nix
+
+    ./sway.nix
+    ./top-commands.nix
   ];
 
   home.username = "ilma4";
@@ -23,6 +26,12 @@
       tmux attach-session -t default || tmux new-session -s default
     fi
   '';
+
+  top-commands.commands = lib.mkOptionDefault {
+    suspend = "systemctl suspend";
+    sleep = "systemctl suspend";
+    reboot = "systemctl reboot";
+  };
 
   # The home.packages option allows you to install Nix packages into your
   # environment.

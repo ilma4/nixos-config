@@ -39,12 +39,12 @@
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  programs.sway.enable = true;
 
-  # Enable the GNOME Desktop Environment.
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+  };
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -58,7 +58,7 @@
     pulse.enable = true;
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
+  # Enable touchpad support.
   services.libinput.enable = true;
 
   programs.firefox.enable = true;
