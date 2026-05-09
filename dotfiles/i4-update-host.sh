@@ -69,5 +69,4 @@ nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild switch \
     --target-host "ilma4@${sshTarget}" \
     --build-host "ilma4@${sshTarget}" \
     --sudo \
-    --fast \
     "${nixosRebuildArgs[@]}"
