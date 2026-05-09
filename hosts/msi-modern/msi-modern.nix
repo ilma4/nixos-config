@@ -13,6 +13,7 @@
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ./llama.nix
   ];
 
   i4.swap.zswapEnable = true;
