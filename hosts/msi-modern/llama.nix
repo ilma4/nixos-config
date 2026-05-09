@@ -20,6 +20,7 @@ in {
     openFirewall = false;
     settings = {
       healthCheckTimeout = 60;
+      globalTTL = 300; # unload models after 5 minutes of inactivity
       models.${modelName} = {
         cmd = "${llamaServer} --host 127.0.0.1 --port \${PORT} -m ${qwen35-9b} -ngl 999 --no-webui";
         aliases = ["qwen3.5-9b"];
