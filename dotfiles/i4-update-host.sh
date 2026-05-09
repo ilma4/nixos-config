@@ -64,7 +64,7 @@ else
     sshTarget="${targetHost}"
 fi
 
-nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild switch \
+nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild-ng switch \
     --flake "${flakeRef}" \
     --target-host "ilma4@${sshTarget}" \
     --build-host "ilma4@${sshTarget}" \
