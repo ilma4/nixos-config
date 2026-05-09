@@ -24,6 +24,7 @@ in {
       nil
       alejandra
       sops
+      gh
 
       ghc
       stack
