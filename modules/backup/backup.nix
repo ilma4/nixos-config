@@ -54,6 +54,7 @@
     localRepo = translateRepo cfg.localRepo;
     remoteRepos = map translateRepo remoteRepos;
     paths = cfg.paths;
+    excludes = cfg.excludes;
     keepWithin = cfg.keepWithin;
   });
 
@@ -116,6 +117,12 @@ in {
       type = types.listOf types.str;
       default = [];
       description = "Paths that are backed up into the local repository.";
+    };
+
+    excludes = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      description = "Restic exclude patterns passed to `restic backup --exclude`.";
     };
 
     keepWithin = mkOption {

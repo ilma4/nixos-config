@@ -20,7 +20,13 @@ type PasswordFile = String
 data Repo = Repo {location :: String, passwordFile :: PasswordFile, oldPasswordFile :: Maybe PasswordFile, extraArgs :: [String]}
   deriving (Show, Generic, Eq)
 
-data BackupConfig = BackupConfig {localRepo :: Repo, remoteRepos :: [Repo], paths :: [String], keepWithin :: Maybe String}
+data BackupConfig = BackupConfig
+  { localRepo :: Repo,
+    remoteRepos :: [Repo],
+    paths :: [String],
+    excludes :: [String],
+    keepWithin :: Maybe String
+  }
   deriving (Show, Generic)
 
 instance FromJSON Repo
@@ -88,7 +94,8 @@ requireChunckerMatching chunker repo = do
 runBackupCommand :: String -> IO ()
 runBackupCommand file = do
   BackupConfig {..} <- Lazy.readFile file >>= throwDecode :: IO BackupConfig
-  (exitCode, _, stderr) <- runRestic localRepo ("backup" : paths)
+  let backupArgs = ["backup"] ++ concatMap (\path -> ["--exclude", path]) excludes ++ paths
+  (exitCode, _, stderr) <- runRestic localRepo backupArgs
   when (exitCode /= ExitSuccess && exitCode /= ExitFailure 3) (error $ "error while running backup\n" ++ stderr)
 
   localChunker <- readRepoChunker localRepo
