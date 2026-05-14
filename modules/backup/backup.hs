@@ -51,7 +51,7 @@ exists repo = do
   return (exitCode == ExitSuccess)
 
 fromArgs :: Repo -> [String]
-fromArgs Repo {..} = ["--from-repo", location, "--from-password-file", passwordFile]
+fromArgs Repo {..} = ["--from-repo", location, "--from-password-file", passwordFile] ++ extraArgs
 
 readRepoChunker :: Repo -> IO String
 readRepoChunker repo = do
@@ -77,7 +77,9 @@ initReposCommand file = do
   if null repos
     then return ()
     else do
-      existingRepos@(fromRepo : _) <- filterM exists repos
+      existingRepos <- filterM exists repos
+      when (existingRepos == []) (error "Can't init repo because no repo exists/accessible")
+      let fromRepo = head existingRepos
       let args = "init" : "--copy-chunker-params" : fromArgs fromRepo
       mapM_ (`runResticThrowing` args) (repos \\ existingRepos)
 
