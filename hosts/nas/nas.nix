@@ -1,11 +1,21 @@
 {
   config,
+  lib,
   pkgs,
   myLib,
   inputs,
   constants,
   ...
-}: {
+}: let
+  resticIlma4Repo = constants.nas.restic-ilma4.location;
+  resticIlma4RepoArg = lib.escapeShellArg resticIlma4Repo;
+  appendOnlyResticCommand = pkgs.writeShellScript "i4-quicksilver-restic-append-only" ''
+    set -euo pipefail
+
+    umask 007
+    exec ${lib.getExe pkgs.rclone} serve restic --stdio --append-only ${resticIlma4RepoArg}
+  '';
+in {
   imports = let
     modules = ../../modules;
   in [
@@ -79,6 +89,10 @@
   networking.hostName = "nas"; # Define your hostname.
 
   networking.nameservers = ["192.168.1.200" "1.1.1.1" "8.8.8.8"];
+
+  users.users.ilma4.openssh.authorizedKeys.keys = [
+    ''command="${appendOnlyResticCommand}",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty,no-user-rc ${constants.quicksilver.backup-pub-key}''
+  ];
 
   sops.secrets."restic/server" = {
     owner = "root";

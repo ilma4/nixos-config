@@ -69,43 +69,5 @@
         StandardErrorPath = "/tmp/obsidian-auto-commit.log";
       };
     };
-
-    launchd.user.agents.resticprofile-backup = {
-      path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
-      serviceConfig = {
-        ProgramArguments = [
-          "${lib.getExe pkgs.bash}"
-          "-c"
-          "set -euo pipefail; resticprofile -c \"${../dotfiles/resticprofile.toml}\" backup"
-        ];
-        StartCalendarInterval = [
-          {
-            Hour = 4;
-            Minute = 0;
-          }
-        ];
-        StandardOutPath = "/tmp/resticprofile-backups.log";
-        StandardErrorPath = "/tmp/resticprofile-backups.log";
-      };
-    };
-
-    launchd.user.agents.resticprofile-hddcopy = {
-      path = [pkgs.restic "/usr/bin" pkgs.resticprofile];
-      serviceConfig = {
-        ProgramArguments = [
-          "${lib.getExe pkgs.bash}"
-          "-c"
-          "set -euo pipefail; resticprofile -c \"${../dotfiles/resticprofile.toml}\" hdd.copy"
-        ];
-        StartCalendarInterval = [
-          {
-            Hour = 4;
-            Minute = 10;
-          }
-        ];
-        StandardOutPath = "/tmp/resticprofile-hddcopy.log";
-        StandardErrorPath = "/tmp/resticprofile-hddcopy.log";
-      };
-    };
   };
 }

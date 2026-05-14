@@ -9,11 +9,11 @@
 in {
   imports = [
     ../../modules/nix-settings.nix
-    ../../modules/backup/backup.nix
     ../../darwin-modules/launchd-agents.nix
     ../../modules/home-manager.nix
     ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
+    ./backup.nix
 
     ../../modules/apps.nix
 
@@ -68,23 +68,11 @@ in {
       createHome = true;
       isHidden = false;
     };
-    backup = {
-      uid = 505;
-      gid = 505;
-      # shell = pkgs.zsh;
-    };
-  };
-
-  users.groups.backup = {
-    gid = 505;
-    members = [config.users.users.backup.name];
   };
 
   users.knownUsers = [
-    config.users.users.backup.name
     config.users.users.malakhov.name
   ];
-  users.knownGroups = [config.users.groups.backup.name];
 
   home-manager.users = {
     ilma4 = import ./ilma4-home.nix;
