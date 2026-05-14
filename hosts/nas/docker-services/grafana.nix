@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  version = "13.0.1";
+  version = "13.0.1-security-01";
   port = "3000";
 in {
   users.users.grafana = {
