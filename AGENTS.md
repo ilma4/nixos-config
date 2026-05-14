@@ -73,7 +73,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 
 ## Environment Setup
 
-- `nix flake check` - to check that the configuration is correct
+- `./utils/flake-check.sh` - to check that the configuration is correct
 - `nix-rebuild` - to switch to the new configuration
 - `i4-update-host <flake-location>#<configuration> [targetHost]` - to switch a remote NixOS host to the selected flake configuration
   - examples: `i4-update-host .#nas`, `i4-update-host .#rex ilma4-bkp`
