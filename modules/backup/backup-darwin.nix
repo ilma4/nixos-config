@@ -35,7 +35,7 @@ in {
       serviceConfig = {
         UserName = cfg.backupUser;
         GroupName = cfg.backupGroup;
-        ProgramArguments = ["${backupDriverScript}"];
+        ProgramArguments = ["/bin/bash" "${backupDriverScript}"];
         StandardOutPath = "/tmp/i4-backup.log";
         StandardErrorPath = "/tmp/i4-backup.log";
         StartCalendarInterval = [
