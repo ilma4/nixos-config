@@ -8,6 +8,7 @@
   inherit
     (lib)
     escapeShellArg
+    mkAfter
     mkIf
     ;
 
@@ -22,19 +23,21 @@
   '';
 in {
   config = myLib.unifiedModules.enableForConfigurations ["isDarwin"] (mkIf cfg.enable {
-    system.activationScripts.i4-backup-local-repo.text = ''
+    system.activationScripts.extraActivation.text = mkAfter ''
       set -euo pipefail
 
       mkdir -p ${escapeShellArg cfg.localRepo.location}
       chown ${escapeShellArg "${cfg.backupUser}:${cfg.backupGroup}"} ${escapeShellArg cfg.localRepo.location}
       chmod 0750 ${escapeShellArg cfg.localRepo.location}
+
+      touch /tmp/i4-backup.log
+      chown ${escapeShellArg "${cfg.backupUser}:${cfg.backupGroup}"} /tmp/i4-backup.log
+      chmod 0644 /tmp/i4-backup.log
     '';
 
-    launchd.daemons.i4-backup = {
+    launchd.user.agents.i4-backup = {
       path = [pkgs.restic];
       serviceConfig = {
-        UserName = cfg.backupUser;
-        GroupName = cfg.backupGroup;
         ProgramArguments = ["/bin/bash" "${backupDriverScript}"];
         StandardOutPath = "/tmp/i4-backup.log";
         StandardErrorPath = "/tmp/i4-backup.log";

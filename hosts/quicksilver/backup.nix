@@ -4,9 +4,9 @@
   pkgs,
   ...
 }: let
-  backupHome = "/Users/backup";
-  backupCache = "${backupHome}/cache";
-  backupLocalRepo = "${backupHome}/repo";
+  backupHome = "/Users/ilma4";
+  backupCache = "${backupHome}/NoBackup/restic-cache";
+  backupLocalRepo = "${backupHome}/NoBackup/restic";
   localResticPasswordSecret = "restic_password/quicksilver_local";
   remoteResticPasswordSecret = "restic_password/ilma4_legacy";
   backupSshKey = config.sops.secrets."quicksilver-backup-key".path;
@@ -85,72 +85,31 @@
     "/Users/ilma4/.bundle"
     "/Users/ilma4/Applications"
   ];
-  backupReadAclScript = pkgs.writeShellScript "i4-backup-home-read-acl" ''
-    set -euo pipefail
-
-    /bin/chmod -R -a "backupuser allow list,search,readattr,readextattr,readsecurity,file_inherit,directory_inherit" /Users/ilma4 2>/dev/null || true
-    /bin/chmod -R -a "backupuser allow read,readattr,readextattr,readsecurity" /Users/ilma4 2>/dev/null || true
-    /bin/chmod -R -a "backup allow read,execute,list,search,readattr,readextattr,readsecurity,file_inherit,directory_inherit" /Users/ilma4 2>/dev/null || true
-    if ! /bin/chmod -R +a "backup allow read,execute,list,search,readattr,readextattr,readsecurity,file_inherit,directory_inherit" /Users/ilma4; then
-      echo "Warning: failed to update ACL on some protected or transient paths under /Users/ilma4." >&2
-    fi
-  '';
 in {
   imports = [
     ../../modules/backup/backup.nix
   ];
 
-  users.users.backup = {
-    uid = 505;
-    gid = 505;
-    home = backupHome;
-    createHome = true;
-    isHidden = true;
-  };
-
-  users.groups.backup = {
-    gid = 505;
-    members = [config.users.users.backup.name];
-  };
-
-  users.knownUsers = [config.users.users.backup.name];
-  users.knownGroups = [config.users.groups.backup.name];
-
-  system.activationScripts.i4-backup-runtime-dirs.text = ''
-    set -euo pipefail
-
-    mkdir -p ${lib.escapeShellArg backupHome} ${lib.escapeShellArg "${backupHome}/.ssh"} ${lib.escapeShellArg backupCache} ${lib.escapeShellArg backupLocalRepo}
-    chown ${lib.escapeShellArg "backup:backup"} ${lib.escapeShellArg backupHome} ${lib.escapeShellArg "${backupHome}/.ssh"} ${lib.escapeShellArg backupCache} ${lib.escapeShellArg backupLocalRepo}
-    chmod 0750 ${lib.escapeShellArg backupHome} ${lib.escapeShellArg backupCache} ${lib.escapeShellArg backupLocalRepo}
-    chmod 0700 ${lib.escapeShellArg "${backupHome}/.ssh"}
-  '';
-
-  system.activationScripts.i4-backup-user-home.text = ''
-    set -euo pipefail
-
-    ${backupReadAclScript}
-  '';
-
   sops.secrets."quicksilver-backup-key" = {
-    owner = "backup";
-    group = "backup";
+    owner = "ilma4";
+    group = "staff";
     mode = "0400";
   };
   sops.secrets.${localResticPasswordSecret} = {
-    owner = "backup";
-    group = "backup";
+    owner = "ilma4";
+    group = "staff";
     mode = "0400";
   };
   sops.secrets.${remoteResticPasswordSecret} = {
-    owner = "backup";
-    group = "backup";
+    owner = "ilma4";
+    group = "staff";
     mode = "0400";
   };
 
   i4.backup = {
     enable = true;
-    backupUser = "backup";
-    backupGroup = "backup";
+    backupUser = "ilma4";
+    backupGroup = "staff";
     backupHour = 4;
     backupMinute = 0;
     paths = ["/Users/ilma4"];
@@ -171,7 +130,7 @@ in {
     };
   };
 
-  launchd.daemons.i4-backup.serviceConfig = {
+  launchd.user.agents.i4-backup.serviceConfig = {
     EnvironmentVariables = {
       HOME = backupHome;
       RESTIC_CACHE_DIR = backupCache;
@@ -179,18 +138,11 @@ in {
     WorkingDirectory = backupHome;
   };
 
-  launchd.daemons.i4-backup-home-read-acl = {
-    serviceConfig = {
-      ProgramArguments = ["${backupReadAclScript}"];
-      RunAtLoad = true;
-      StartCalendarInterval = [
-        {
-          Hour = 3;
-          Minute = 55;
-        }
-      ];
-      StandardOutPath = "/tmp/i4-backup-home-read-acl.log";
-      StandardErrorPath = "/tmp/i4-backup-home-read-acl.log";
-    };
-  };
+  system.activationScripts.extraActivation.text = lib.mkAfter ''
+    set -euo pipefail
+
+    mkdir -p ${lib.escapeShellArg backupCache}
+    chown ${lib.escapeShellArg "ilma4:staff"} ${lib.escapeShellArg backupCache}
+    chmod 0750 ${lib.escapeShellArg backupCache}
+  '';
 }
