@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""Set a Docker image version variable in a Nix service file."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+ASSIGNMENT_PATTERN = re.compile(
+    r"^(?P<indent>\s*)(?P<name>[A-Za-z_][A-Za-z0-9_-]*)\s*=\s*"
+    r'"(?P<value>[^"\n]*)";(?P<trailing>[^\n]*)$',
+    re.MULTILINE,
+)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Set a version variable in a Nix docker-compose service file."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the planned edit without writing the file.",
+    )
+    parser.add_argument("nix_file", type=Path)
+    parser.add_argument("version", help="New version value to write.")
+    parser.add_argument(
+        "version_name",
+        nargs="?",
+        help="Exact Nix variable name. Required when the file has multiple versions.",
+    )
+    return parser.parse_args()
+
+
+def version_assignments(text: str) -> list[re.Match[str]]:
+    return [
+        match
+        for match in ASSIGNMENT_PATTERN.finditer(text)
+        if "version" in match.group("name").lower()
+    ]
+
+
+def select_assignment(
+    assignments: list[re.Match[str]], version_name: str | None
+) -> re.Match[str]:
+    if version_name is not None:
+        matches = [
+            match for match in assignments if match.group("name") == version_name
+        ]
+        if len(matches) == 1:
+            return matches[0]
+        if not matches:
+            raise ValueError(f"Version variable {version_name!r} was not found")
+        raise ValueError(f"Version variable {version_name!r} is not unique")
+
+    if len(assignments) == 1:
+        return assignments[0]
+
+    if not assignments:
+        raise ValueError("No quoted version variables were found")
+
+    names = ", ".join(match.group("name") for match in assignments)
+    raise ValueError(
+        "Multiple version variables were found; pass one explicitly: " + names
+    )
+
+
+def validate_version(version: str) -> None:
+    if not version:
+        raise ValueError("Version must not be empty")
+    if any(char in version for char in ('"', "\\", "\n", "\r")):
+        raise ValueError("Version contains characters this script will not quote")
+
+
+def replacement_line(match: re.Match[str], version: str) -> str:
+    return (
+        f'{match.group("indent")}{match.group("name")} = "{version}";'
+        f'{match.group("trailing")}'
+    )
+
+
+def main() -> int:
+    args = parse_args()
+
+    try:
+        validate_version(args.version)
+        text = args.nix_file.read_text(encoding="utf-8")
+        assignment = select_assignment(version_assignments(text), args.version_name)
+        old_version = assignment.group("value")
+        name = assignment.group("name")
+
+        if old_version == args.version:
+            print(f"{args.nix_file}: {name} is already {args.version}")
+            return 0
+
+        new_text = (
+            text[: assignment.start()]
+            + replacement_line(assignment, args.version)
+            + text[assignment.end() :]
+        )
+
+        if args.dry_run:
+            print(
+                f"Would update {args.nix_file}: {name} "
+                f"{old_version} -> {args.version}"
+            )
+        else:
+            args.nix_file.write_text(new_text, encoding="utf-8")
+            print(f"Updated {args.nix_file}: {name} {old_version} -> {args.version}")
+    except OSError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+    except ValueError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 2
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

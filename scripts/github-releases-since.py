@@ -16,7 +16,8 @@ import requests
 API_BASE_URL = "https://api.github.com"
 DEFAULT_TIMEOUT_SECONDS = 30
 UNSTABLE_RELEASE_PATTERN = re.compile(
-    r"\b(alpha|alfa|beta|pre[- ]?release)\b", re.IGNORECASE
+    r"\b(alpha|alfa|beta|rc|pre[- ]?release|preview|nightly|dev|canary)\b",
+    re.IGNORECASE,
 )
 
 Release = dict[str, object]
@@ -35,6 +36,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "since_release", help="Release tag to start from, excluded from the output"
+    )
+    parser.add_argument(
+        "--until-release",
+        help=(
+            "Newest release tag to include. Defaults to the newest stable release."
+        ),
     )
     parser.add_argument(
         "-o",
@@ -79,9 +86,13 @@ def github_session(token: str | None) -> requests.Session:
 
 
 def fetch_releases_since(
-    repo: str, since_release: str, token: str | None
+    repo: str, since_release: str, until_release: str | None, token: str | None
 ) -> list[Release]:
+    if until_release == since_release:
+        return []
+
     releases: list[Release] = []
+    found_until_release = until_release is None
     next_url = f"{API_BASE_URL}/repos/{repo}/releases?per_page=100"
 
     with github_session(token) as session:
@@ -96,8 +107,19 @@ def fetch_releases_since(
             for release in payload:
                 if not isinstance(release, dict):
                     continue
-                if release.get("tag_name") == since_release:
+                tag_name = release.get("tag_name")
+                if tag_name == since_release:
+                    if not found_until_release:
+                        raise ValueError(
+                            f"Release tag {until_release!r} was not found before "
+                            f"{since_release!r} in GitHub releases for {repo}"
+                        )
                     return releases
+                if not found_until_release:
+                    if tag_name == until_release:
+                        found_until_release = True
+                    else:
+                        continue
                 if release.get("draft") or is_unstable_release(release):
                     continue
                 releases.append(release)
@@ -187,12 +209,18 @@ def strip_duplicate_title(body: str, release: Release) -> str:
     return "\n".join(remaining_lines).strip()
 
 
-def render_markdown(repo: str, since_release: str, releases: list[Release]) -> str:
+def render_markdown(
+    repo: str, since_release: str, until_release: str | None, releases: list[Release]
+) -> str:
     sorted_releases = sorted(releases, key=release_sort_key)
+    until_clause = f" through `{until_release}`" if until_release is not None else ""
     lines = [
-        f"# Releases for `{repo}` since `{since_release}`",
+        f"# Releases for `{repo}` since `{since_release}`{until_clause}",
         "",
-        f"Found {len(sorted_releases)} release(s) newer than `{since_release}`.",
+        (
+            f"Found {len(sorted_releases)} stable release(s) newer than "
+            f"`{since_release}`{until_clause}."
+        ),
         "",
     ]
 
@@ -230,8 +258,12 @@ def main() -> int:
     try:
         repo = normalize_repo(args.repo)
         token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
-        releases = fetch_releases_since(repo, args.since_release, token)
-        markdown = render_markdown(repo, args.since_release, releases)
+        releases = fetch_releases_since(
+            repo, args.since_release, args.until_release, token
+        )
+        markdown = render_markdown(
+            repo, args.since_release, args.until_release, releases
+        )
         if args.output is None:
             sys.stdout.write(markdown)
         else:
