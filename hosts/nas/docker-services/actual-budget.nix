@@ -4,7 +4,7 @@
   ...
 }: let
   UID_GID = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
-  actual-version = "v26.4.0";
+  actual-version = "v26.5.2";
   tag = "${lib.removePrefix "v" actual-version}-alpine";
 in {
   users.users.actual-budget = {
