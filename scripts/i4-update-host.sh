@@ -39,6 +39,18 @@ if [[ ${1-} != "" && ${1-} != --* ]]; then
 fi
 nixosRebuildArgs=("$@")
 
+has_nixos_rebuild_arg() {
+    local expectedArg="$1"
+
+    for arg in "${nixosRebuildArgs[@]}"; do
+        if [[ "$arg" == "$expectedArg" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 host_responds_to_ping() {
     local host="$1"
 
@@ -64,9 +76,19 @@ else
     sshTarget="${targetHost}"
 fi
 
+remoteTarget="ilma4@${sshTarget}"
+sudoPasswordArgs=()
+if ssh "${remoteTarget}" "sudo -n true" &>/dev/null; then
+    echo "Remote sudo is available without password"
+elif ! has_nixos_rebuild_arg "--ask-sudo-password"; then
+    echo "Remote sudo requires a password; adding --ask-sudo-password"
+    sudoPasswordArgs=("--ask-sudo-password")
+fi
+
 nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild-ng switch \
     --flake "${flakeRef}" \
-    --target-host "ilma4@${sshTarget}" \
-    --build-host "ilma4@${sshTarget}" \
+    --target-host "${remoteTarget}" \
+    --build-host "${remoteTarget}" \
     --sudo \
+    "${sudoPasswordArgs[@]}" \
     "${nixosRebuildArgs[@]}"

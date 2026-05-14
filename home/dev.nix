@@ -45,7 +45,7 @@ in {
 
       (
         pkgs.writeShellScriptBin "i4-update-host"
-        (builtins.readFile ../dotfiles/i4-update-host.sh)
+        (builtins.readFile ../scripts/i4-update-host.sh)
       )
       (
         pkgs.writeShellScriptBin "simple-service-update" ''
