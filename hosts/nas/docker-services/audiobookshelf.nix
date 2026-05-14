@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  version = "2.33.2";
+  version = "2.34.0";
 
   srvDir = "/srv/audiobookshelf";
   configDir = "${srvDir}/config";
