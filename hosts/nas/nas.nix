@@ -37,6 +37,7 @@ in {
     ./docker-services/qbittorrent.nix
 
     ./docker-services/home-assistant.nix
+    ./mqtt.nix
     ./docker-services/pdf-tools.nix
 
     ./docker-services/actual-budget.nix
