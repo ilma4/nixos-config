@@ -73,15 +73,14 @@ rotateKey repo@Repo {..} = do
 
 initReposCommand :: String -> IO ()
 initReposCommand file = do
-  repos <- Lazy.readFile file >>= throwDecode :: IO [Repo]
-  if null repos
-    then return ()
-    else do
-      existingRepos <- filterM exists repos
-      when (existingRepos == []) (error "Can't init repo because no repo exists/accessible")
-      let fromRepo = head existingRepos
+  allRepos <- Lazy.readFile file >>= throwDecode :: IO [Repo]
+  existingRepos <- filterM exists allRepos
+  case (allRepos, existingRepos) of
+    ([], _) -> return () -- no repos, no init
+    (_, []) -> error "Can't init repo because no repo exists/accessible"
+    (_, fromRepo : _) -> do
       let args = "init" : "--copy-chunker-params" : fromArgs fromRepo
-      mapM_ (`runResticThrowing` args) (repos \\ existingRepos)
+      mapM_ (`runResticThrowing` args) (allRepos \\ existingRepos)
 
 rotateKeysCommand :: String -> IO ()
 rotateKeysCommand file = do
