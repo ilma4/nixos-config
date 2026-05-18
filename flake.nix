@@ -207,6 +207,26 @@
       };
     }) (builtins.attrValues systems));
 
+    devShells = builtins.listToAttrs (builtins.map (system: {
+      name = system;
+      value = let
+        pkgs = (pkgsSets system).stable;
+      in {
+        default = pkgs.mkShell {
+          packages = [
+            (pkgs.haskellPackages.ghcWithPackages (p:
+              with p; [
+                aeson
+                bytestring
+                containers
+                process
+              ]))
+            pkgs.haskell-language-server
+          ];
+        };
+      };
+    }) (builtins.attrValues systems));
+
     # NixOS Configurations
     nixosConfigurations = {
       rex = mkNixosSystem {

@@ -3,6 +3,7 @@ hosts/bkp/docker-compose.env
 dotfiles/zed/prompts/prompts-library-db.0.mdb/lock.mdb
 tmp/
 .vm/
+.direnv
 
 .DS_Store
 .junie
