@@ -14,6 +14,10 @@ in {
           FTLCONF_dns_listeningMode: "all"
           FTLCONF_misc_dnsmasq_lines: |-
             address=/ilma4.local/192.168.1.33
+            address=/news.ycombinator.com/0.0.0.0
+            address=/habr.com/0.0.0.0
+            address=/www.phoronix.com/0.0.0.0
+            address=/meduza.io/0.0.0.0
         volumes:
           - "${dataDir}:/etc/pihole"
           # Uncomment if you’re migrating from v5 and need dnsmasq configs
