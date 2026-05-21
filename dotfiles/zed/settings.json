@@ -1,9 +1,9 @@
 {
   "project_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "git_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "edit_predictions": {
     "mode": "eager",
@@ -12,14 +12,12 @@
     "sidebar_side": "right",
     "notify_when_agent_waiting": "all_screens",
     "default_profile": "write",
-    "always_allow_tool_actions": true,
     "default_model": {
       "model": "claude-haiku-4.5",
       "provider": "copilot_chat",
     },
   },
   "auto_install_extensions": {
-    "activitywatch": true,
     "basher": true,
     "docker-compose": true,
     "dockerfile": true,
