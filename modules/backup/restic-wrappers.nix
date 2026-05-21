@@ -21,13 +21,28 @@
   wrapperNamesAreUnique = length generatedWrapperNames == length (unique generatedWrapperNames);
 
   mkWrapper = name: repo: let
+    wrapperName = mkWrapperName name;
     resticArgs = ["${lib.getExe pkgs.restic}" "--repo" repo.location "--password-file" repo.passwordFile] ++ repo.extraResticArgs;
-  in
-    pkgs.writeShellScriptBin (mkWrapperName name) ''
+    wrapper = pkgs.writeShellScriptBin wrapperName ''
       set -euo pipefail
 
       exec ${escapeShellArgs resticArgs} "''$@"
     '';
+    zshCompletion = pkgs.writeTextFile {
+      name = "${wrapperName}-zsh-completion";
+      destination = "/share/zsh/site-functions/_${wrapperName}";
+      text = ''
+        #compdef ${wrapperName}
+
+        source ${pkgs.restic}/share/zsh/site-functions/_restic
+        _restic "$@"
+      '';
+    };
+  in
+    pkgs.symlinkJoin {
+      name = wrapperName;
+      paths = [wrapper zshCompletion];
+    };
 in {
   config = mkIf cfg.enable {
     assertions = [
