@@ -20,24 +20,26 @@
     "/Users/ilma4/.cache"
     "/Users/ilma4/.Trash"
     "/Users/ilma4/Library/Caches"
-    "/Users/ilma4/Library/Android"
-    "/Users/ilma4/Library/Developer"
-    "/Users/ilma4/Library/Containers"
-    "/Users/ilma4/Library/Java"
+    "/Users/ilma4/Library/Android" # android sdks
+    "/Users/ilma4/Library/Developer" # xcode stuff
+    "/Users/ilma4/Library/Containers" # docker, vms, wine bottles
+    "/Users/ilma4/Library/Java" # jdk's binaries
     "/Users/ilma4/Library/Logs"
     "/Users/ilma4/Library/Thunderbird/Profiles/*/ImapMail"
     "/Users/ilma4/Library/Application Support/JetBrains"
-    "/Users/ilma4/Library/Application Support/com.apple.container"
-    "/Users/ilma4/Library/Application Support/JetBrains/*/plugins"
-    "/Users/ilma4/Library/Application Support/Google"
+    "/Users/ilma4/Library/Application Support/com.apple.container" # docker from Apple
+    "/Users/ilma4/Library/Application Support/JetBrains/*/plugins" # do not backup plugins for JetBrains IDEs
+    "/Users/ilma4/Library/Application Support/Google" # do not backup google's apps
     "/Users/ilma4/Library/Application Support/Slack"
     "/Users/ilma4/Library/Application Support/Zed"
+
+    # Electron caches(?)
     "/Users/ilma4/Library/Application Support/*/Cache"
     "/Users/ilma4/Library/Application Support/*/Code Cache"
-    "/Users/ilma4/IdeaProjects"
+    "/Users/ilma4/IdeaProjects" # test projects
     "/Users/ilma4/Library/Application Support/Code/CachedExtensionVSIXs"
-    "/Users/ilma4/Library/Application Support/Vivaldi/*/File System"
-    "/Users/ilma4/Library/DuetExpertCenter"
+    "/Users/ilma4/Library/Application Support/Vivaldi/*/File System" # do not backup Vivaldi's file system cache(?)
+    "/Users/ilma4/Library/DuetExpertCenter" # https://apple.stackexchange.com/questions/476332/what-is-duetexpertcentre
     "/Users/ilma4/Library/Metadata/CoreSpotlight"
     "/Users/ilma4/Library/Daemon Containers/*/Data/com.apple.milod"
     "/Users/ilma4/Library/Biome/streams/restricted/Safari.PageLoad"
@@ -48,41 +50,43 @@
     "/Users/ilma4/Library/Group Containers/*.group.com.apple.configurator"
     "/Users/ilma4/Google Drive"
     "/Users/ilma4/Library/CloudStorage"
-    "/Users/ilma4/Virtual Machines.localized"
-    "/Users/ilma4/Projects/JetBrains"
-    "/Users/ilma4/JetBrains"
+    "/Users/ilma4/Virtual Machines.localized" # vmware-fusion VMs
+    "/Users/ilma4/Projects/JetBrains" # too heavy and contains NDA code
+    "/Users/ilma4/JetBrains" # too heavy and contains NDA code
     "/Users/ilma4/*/AeroSpace/.build"
     "/Users/ilma4/Projects/tdesktop"
     "/Users/ilma4/Projects/telegram"
     "/Users/ilma4/Projects/Telegram-Android"
     "/Users/ilma4/Projects/Nekogram"
-    "/Users/ilma4/.android"
-    "/Users/ilma4/.colima"
+    "/Users/ilma4/.android" # android emulator images
+    "/Users/ilma4/.colima" # colima vm images, alternative to DockerDesktop for Mac
     "/Users/ilma4/.local/share"
-    "/Users/ilma4/.vscode"
-    "/Users/ilma4/.ollama"
-    "/Users/ilma4/.lmstudio"
-    "/Users/ilma4/.gemini"
+    "/Users/ilma4/.vscode" # vscode extensions
+
+    # caches
+    "/Users/ilma4/.ollama" # LLMs
+    "/Users/ilma4/.lmstudio" # LLMs
+    "/Users/ilma4/.gemini" # oauth creds for gemini-cli
     "/Users/ilma4/.junie"
-    "/Users/ilma4/.konan"
-    "/Users/ilma4/.lldb"
-    "/Users/ilma4/.npm"
-    "/Users/ilma4/.yarn"
-    "/Users/ilma4/.bun"
-    "/Users/ilma4/.swiftly"
-    "/Users/ilma4/.gem"
-    "/Users/ilma4/sdk"
-    "/Users/ilma4/go"
-    "/Users/ilma4/.sbt"
-    "/Users/ilma4/golangci-lint"
-    "/Users/ilma4/.skiko"
-    "/Users/ilma4/.cargo"
-    "/Users/ilma4/.rustup"
+    "/Users/ilma4/.konan" # c++
+    "/Users/ilma4/.lldb" # lldb
+    "/Users/ilma4/.npm" # javascript!
+    "/Users/ilma4/.yarn" # javascript!
+    "/Users/ilma4/.bun" # javascript!
+    "/Users/ilma4/.swiftly" # Swift!
+    "/Users/ilma4/.gem" # ruby(?)
+    "/Users/ilma4/sdk" # go
+    "/Users/ilma4/go" # go
+    "/Users/ilma4/.sbt" # scala
+    "/Users/ilma4/golangci-lint" # go
+    "/Users/ilma4/.skiko" # idk, just a guess, https://github.com/JetBrains/skiko
+    "/Users/ilma4/.cargo" # rust
+    "/Users/ilma4/.rustup" # rust
     "/Users/ilma4/.gradle"
-    "/Users/ilma4/.m2"
-    "/Users/ilma4/.nuget"
+    "/Users/ilma4/.m2" # maven
+    "/Users/ilma4/.nuget" # .NET (?)
     "/Users/ilma4/.jupyter_kotlin"
-    "/Users/ilma4/.bundle"
+    "/Users/ilma4/.bundle" # ruby(?)
     "/Users/ilma4/Applications"
   ];
 in {
