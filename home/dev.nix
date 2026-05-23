@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }: let
   simpleServiceUpdateScript = pkgs.writeShellScript "simple-service-update-source" (builtins.readFile ../scripts/simple-service-update);
@@ -31,6 +32,7 @@ in {
 
       uv
       mcp-nixos
+      pkgs-unstable.ha-mcp
 
       android-tools # adb
 
