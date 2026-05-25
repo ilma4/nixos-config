@@ -1,6 +1,6 @@
 {pkgs, ...}: let
   CONFIG_DIR = "/srv/homeassistant";
-  home-assistant-version = "2026.5.1";
+  home-assistant-version = "2026.5.4";
 in {
   users.users.homeassistant = {
     isSystemUser = true;
