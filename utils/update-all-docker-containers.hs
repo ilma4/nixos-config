@@ -15,7 +15,7 @@ import NixValue (Assign (..), assigns, select, writeAssign)
 import System.Directory (doesFileExist, makeAbsolute)
 import System.Environment (getArgs)
 import System.Exit (die, exitSuccess)
-import System.FilePath ((</>), makeRelative, takeDirectory)
+import System.FilePath (makeRelative, takeDirectory, (</>))
 
 data Service = S {file, repo, var, prefix :: String, dockerBuild :: Bool}
 
