@@ -220,6 +220,10 @@
                 bytestring
                 containers
                 process
+                extra
+                filepath
+                http-client
+                http-conduit
               ]))
             pkgs.haskell-language-server
           ];
