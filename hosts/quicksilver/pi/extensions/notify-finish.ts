@@ -2,7 +2,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
 
 const title = process.env.PI_NOTIFY_TITLE ?? "Pi";
-const body = process.env.PI_NOTIFY_BODY ?? "Agent finished";
+const finishBody = process.env.PI_NOTIFY_BODY ?? "Agent finished";
 
 function run(cmd: string, args: string[]) {
   execFile(cmd, args, { stdio: "ignore" }, () => {});
@@ -49,8 +49,23 @@ function notify(title: string, body: string) {
   }
 }
 
+function notifyWith(text: string) {
+  notify(title, text);
+}
+
+const customToolNames = ["AskUserQuestion", "EnterPlanMode"];
+
 export default function (pi: ExtensionAPI) {
+  pi.on("tool_call", async (event) => {
+    if (customToolNames.includes(event.toolName)) {
+      const label = event.toolName === "AskUserQuestion"
+        ? "Agent asked a question"
+        : "Agent submitted a plan";
+      notifyWith(label);
+    }
+  });
+
   pi.on("agent_end", async () => {
-    notify(title, body);
+    notifyWith(finishBody);
   });
 }
