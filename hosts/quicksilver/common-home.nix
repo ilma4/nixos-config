@@ -9,6 +9,7 @@ in {
   imports = [
     ../../home/base.nix
     ./darwin-defaults-home.nix
+    ./pi.nix
   ];
 
   config = {
