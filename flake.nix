@@ -225,6 +225,7 @@
                 http-client
                 http-conduit
               ]))
+            pkgs.haskellPackages.hie-bios
             pkgs.haskell-language-server
           ];
         };
