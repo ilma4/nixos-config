@@ -55,7 +55,25 @@ function notifyWith(text: string) {
 
 const customToolNames = ["AskUserQuestion", "EnterPlanMode"];
 
+const isAbortedMessage = (msg: unknown) =>
+  typeof msg === "object" &&
+  msg !== null &&
+  "stopReason" in msg &&
+  (msg as { stopReason?: unknown }).stopReason === "aborted";
+
 export default function (pi: ExtensionAPI) {
+  let aborted = false;
+
+  pi.on("agent_start", async () => {
+    aborted = false;
+  });
+
+  pi.on("turn_end", async (event) => {
+    if (isAbortedMessage(event.message)) {
+      aborted = true;
+    }
+  });
+
   pi.on("tool_call", async (event) => {
     if (customToolNames.includes(event.toolName)) {
       const label = event.toolName === "AskUserQuestion"
@@ -65,7 +83,13 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  pi.on("agent_end", async () => {
+  pi.on("agent_end", async (event) => {
+    if (aborted) return;
+    if (event.messages?.some(isAbortedMessage)) return;
+
+    // Recent Pi versions also expose this on agent_end.
+    if ((event as { willRetry?: boolean }).willRetry) return;
+
     notifyWith(finishBody);
   });
 }
