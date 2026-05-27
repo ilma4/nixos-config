@@ -3,6 +3,7 @@
   pkgs,
   ...
 }: let
+  immich-version = "v2.7.5";
   secretName = "immich/db_password";
   publicEnvFile = pkgs.copyPathToStore ./.env;
 in {
@@ -23,6 +24,7 @@ in {
     composeText = builtins.readFile ./docker-compose.yml;
     envFile = publicEnvFile;
     environment = {
+      IMMICH_VERSION = immich-version;
       IMMICH_ENV_FILE = toString publicEnvFile;
       IMMICH_SECRET_ENV_FILE = config.sops.templates."immich-secret.env".path;
     };

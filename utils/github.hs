@@ -8,6 +8,8 @@
 module GitHub
   ( latestTag,
     changelog,
+    downloadText,
+    downloadFirstText,
   )
 where
 
@@ -17,6 +19,7 @@ import Control.Monad (guard)
 import Data.Aeson (FromJSON, eitherDecode)
 import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy qualified as BL
+import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Char (isAlphaNum, toLower)
 import Data.Foldable (asum)
 import Data.List (isInfixOf, sortOn)
@@ -52,6 +55,21 @@ latestTag repo = do
 changelog :: String -> String -> String -> IO String
 changelog repo from to = render repo from to <$> releasesBetween repo from to
 
+downloadText :: String -> IO String
+downloadText url = BL8.unpack <$> fetchBytes url
+
+downloadFirstText :: [(String, String)] -> IO (String, String)
+downloadFirstText candidates = go [] candidates
+  where
+    go errors = \case
+      [] -> die $ unlines $ "Error: all GitHub downloads failed:" : reverse errors
+      (label, url) : rest ->
+        fetchBytesEither url >>= \case
+          Right body -> pure (label, BL8.unpack body)
+          Left err -> go (failure label url err : errors) rest
+
+    failure label url err = "- " <> label <> " (" <> url <> "): " <> err
+
 releasesBetween :: String -> String -> String -> IO [Release]
 releasesBetween _ from to | from == to = pure []
 releasesBetween repo from to = go 1 False []
@@ -77,9 +95,10 @@ fetchJson url =
   fetchBytes url >>= either (die . ("Error: failed to decode GitHub API response: " <>)) pure . eitherDecode
 
 fetchBytes :: String -> IO BL.ByteString
-fetchBytes url =
-  action `catch` \(e :: HttpException) ->
-    die $ "GitHub API/network error: " <> displayException e
+fetchBytes url = fetchBytesEither url >>= either (die . ("GitHub API/network error: " <>)) pure
+
+fetchBytesEither :: String -> IO (Either String BL.ByteString)
+fetchBytesEither url = (Right <$> action) `catch` \(e :: HttpException) -> pure $ Left $ displayException e
   where
     action = do
       token <- asum . map (>>= nonEmpty) <$> traverse lookupEnv ["GITHUB_TOKEN", "GH_TOKEN"]

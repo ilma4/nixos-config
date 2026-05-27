@@ -217,6 +217,7 @@
             (pkgs.haskellPackages.ghcWithPackages (p:
               with p; [
                 aeson
+                yaml
                 bytestring
                 containers
                 process
