@@ -7,6 +7,10 @@
   config = {
     home.username = "malakhov";
     i4.work.enable = true;
+    i4.raycast = {
+      enable = true;
+      scripts = ["monitor-displayport.applescript"];
+    };
     programs.zsh.localVariables = {
       ZSH_DISABLE_COMPFIX = "true";
     };

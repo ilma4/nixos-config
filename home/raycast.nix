@@ -48,6 +48,11 @@ in {
         default = "Scripts";
         description = "Relative path from home directory where Raycast scripts will be installed";
       };
+      scripts = mkOption {
+        type = types.listOf (types.enum (builtins.attrNames scriptFiles));
+        default = builtins.attrNames scriptFiles;
+        description = "Raycast AppleScript command files to install";
+      };
     };
   };
 
@@ -61,6 +66,6 @@ in {
           executable = true;
         };
       })
-      scriptFiles;
+      (filterAttrs (name: _: elem name cfg.scripts) scriptFiles);
   };
 }
