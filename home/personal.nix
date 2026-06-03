@@ -12,8 +12,6 @@ in {
 
   config = lib.mkIf cfg.enable {
     home.packages = with pkgs; [
-      resticprofile
-
       /*
       TODO: generate new keys defined in `programs.ssh.matchBlocks` and send them to hosts
       TODO: thing about what to do if can't send key to the server
