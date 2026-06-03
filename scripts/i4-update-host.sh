@@ -85,7 +85,7 @@ elif ! has_nixos_rebuild_arg "--ask-sudo-password"; then
     sudoPasswordArgs=("--ask-sudo-password")
 fi
 
-nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild-ng switch \
+nix shell nixpkgs#nixos-rebuild-ng --command nixos-rebuild switch \
     --flake "${flakeRef}" \
     --target-host "${remoteTarget}" \
     --build-host "${remoteTarget}" \
