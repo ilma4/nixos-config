@@ -113,7 +113,8 @@ in {
     onActivation = {
       autoUpdate = false;
       upgrade = false;
-      cleanup = "zap";
+      # TODO: enable when https://github.com/nix-darwin/nix-darwin/issues/1787 is resolved
+      # cleanup = "zap";
     };
 
     # TODO: enable with 25.11 release
