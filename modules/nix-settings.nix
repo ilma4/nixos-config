@@ -21,7 +21,6 @@ in {
       };
     }
     // lib.optionalAttrs hasNixOptimiseAutomatic {
-      auto-optimise-store = false; # DO NOT enable. Use optimize.automatic instead
       optimise.automatic = true;
     };
 }
