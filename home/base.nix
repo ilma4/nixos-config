@@ -27,6 +27,7 @@ in {
     ./personal.nix
     ./raycast.nix
     ./zed.nix
+    ../modules/nix-settings.nix
   ];
 
   options = {
