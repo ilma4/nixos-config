@@ -56,7 +56,7 @@ in {
 
     # ./docker-services/rssalchemy.nix
 
-    # ./dashboard.nix
+    ./dashboard.nix
     "${./prometheus}/prometheus.nix"
     ./docker-services/pihole.nix
     # ./lidarr.nix

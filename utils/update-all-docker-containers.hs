@@ -23,6 +23,7 @@ services :: [Service]
 services =
   [ S "hosts/nas/docker-services/actual-budget.nix" "actualbudget/actual" "actual-version" "" False,
     S "hosts/nas/docker-services/audiobookshelf.nix" "advplyr/audiobookshelf" "version" "v" False,
+    S "hosts/nas/dashboard.nix" "bastienwirtz/homer" "version" "" False,
     S "hosts/nas/docker-services/grafana.nix" "grafana/grafana" "version" "v" True,
     S "hosts/nas/docker-services/home-assistant.nix" "home-assistant/core" "home-assistant-version" "" False,
     S "hosts/nas/docker-services/node-exporter.nix" "prometheus/node_exporter" "node-exporter-version" "" False,

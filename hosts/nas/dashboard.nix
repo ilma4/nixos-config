@@ -1,4 +1,6 @@
-{config, ...}: {
+{config, ...}: let
+  version = "v26.4.2";
+in {
   users.users.homer = {
     isSystemUser = true;
     uid = 989;
@@ -17,8 +19,14 @@
       name: "homer"
       services:
         homer:
-          image: b4bz/homer:latest
+          image: b4bz/homer:${version}
           container_name: homer
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.dashboard.rule=Host(`dashboard.ilma4.local`)"
+            - "traefik.http.routers.dashboard.entrypoints=websecure"
+            - "traefik.http.routers.dashboard.tls=true"
+            - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
           expose:
             - "8080"
 
