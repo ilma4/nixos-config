@@ -7,6 +7,7 @@
   options.i4.launchd-agents.enable = lib.mkEnableOption "Enable launchd agents";
 
   config = lib.mkIf config.i4.launchd-agents.enable {
+    /*
     launchd.user.agents.podman-machine-autostart = {
       path = [pkgs.podman];
       serviceConfig = {
@@ -17,6 +18,7 @@
         StandardErrorPath = "/tmp/podman-machine-start.log.err";
       };
     };
+    */
 
     launchd.user.agents.obsidian-auto-commit = {
       path = [pkgs.coreutils pkgs.git];
