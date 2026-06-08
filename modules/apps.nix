@@ -41,7 +41,6 @@ in {
     claude-code = asLinuxPackage {macName = "claude-code@latest";};
     codex = asLinuxPackage {};
 
-    lm-studio = macOnlyCask {}; # run LLMs locally
     # comfyui = macOnlyCask {}; # tool for generating images/videos
     # cherry-studio = {}; # tool for LLMs
 
