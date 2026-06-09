@@ -14,6 +14,7 @@ in {
     ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
     ./backup.nix
+    ./llama-cpp.nix
 
     ../../modules/apps.nix
 
