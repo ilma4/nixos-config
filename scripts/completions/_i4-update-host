@@ -1,0 +1,41 @@
+#compdef i4-update-host i4-update-host.sh
+
+_i4_update_host_nixos_configurations() {
+  local flake_location="${1:-.}"
+  local configs_output
+  local -a configs
+
+  (( $+commands[nix] )) || return 1
+
+  configs_output="$(
+    command nix eval --raw "${flake_location}#nixosConfigurations" \
+      --apply 'configs: builtins.concatStringsSep "\n" (builtins.attrNames configs)' \
+      2>/dev/null
+  )" || return 1
+
+  [[ -n "$configs_output" ]] || return 1
+  configs=("${(@f)configs_output}")
+  _describe -t nixos-configurations 'NixOS configurations' configs
+}
+
+_i4_update_host_flake_ref() {
+  local word="${words[CURRENT]}"
+
+  if [[ "$word" == *\#* ]]; then
+    local flake_location="${word%%\#*}"
+
+    [[ -n "$flake_location" ]] || flake_location="."
+    compset -P '*\#'
+    _i4_update_host_nixos_configurations "$flake_location"
+  else
+    _path_files -/
+  fi
+}
+
+_i4-update-host() {
+  _arguments -C \
+    '1:flake reference:_i4_update_host_flake_ref' \
+    '*::argument:_normal'
+}
+
+_i4-update-host "$@"
