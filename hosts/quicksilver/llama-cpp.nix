@@ -48,6 +48,9 @@
 in {
   launchd.daemons.llama-cpp = {
     serviceConfig = {
+      EnvironmentVariables = {
+        HOME = "/var/root";
+      };
       ProgramArguments = [
         "${lib.getExe' pkgs.llama-cpp "llama-server"}"
         "--models-preset"
