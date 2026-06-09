@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   inputs,
   ...
 }: {
@@ -36,6 +37,8 @@
     };
 
     home.packages = with pkgs; [
+      pkgs-unstable.llama-cpp
+
       sops # for managing secrets
       age # for age key management
 
