@@ -160,6 +160,30 @@ in {
         readOnly = true;
         description = "Generated script that runs the local backup, remote copy, and retention steps.";
       };
+
+      backupProgram = mkOption {
+        type = types.singleLineStr;
+        readOnly = true;
+        description = "Generated i4-backup executable.";
+      };
+
+      initReposConfigFile = mkOption {
+        type = types.singleLineStr;
+        readOnly = true;
+        description = "Generated init-repos JSON config file.";
+      };
+
+      rotateKeysConfigFile = mkOption {
+        type = types.singleLineStr;
+        readOnly = true;
+        description = "Generated rotate-keys JSON config file.";
+      };
+
+      runBackupConfigFile = mkOption {
+        type = types.singleLineStr;
+        readOnly = true;
+        description = "Generated run-backup JSON config file.";
+      };
     };
   };
 
@@ -171,6 +195,11 @@ in {
           rotateKeysScript
           runBackupScript
           ;
+
+        backupProgram = getExe backupScript;
+        initReposConfigFile = toString initReposConfigFile;
+        rotateKeysConfigFile = toString rotateKeysConfigFile;
+        runBackupConfigFile = toString runBackupConfigFile;
       };
 
       assertions = [
