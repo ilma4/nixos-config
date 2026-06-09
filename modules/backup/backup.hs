@@ -104,7 +104,7 @@ runBackupCommand file = do
   for_ remoteRepos (`runResticThrowing` ("copy" : fromArgs localRepo))
   for_ keepWithin (\interval -> runResticThrowing localRepo ["forget", "--prune", "--keep-within", interval])
 
-  when (exitCode == ExitFailure 3) (print $ "backup can't read some paths:\n" ++ stderr)
+  when (exitCode == ExitFailure 3) (putStrLn $ "backup can't read some paths:\n" ++ stderr)
 
 main :: IO ()
 main = do
