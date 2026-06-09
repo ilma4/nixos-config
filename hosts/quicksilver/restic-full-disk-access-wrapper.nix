@@ -14,10 +14,94 @@
   binDir = "${appPath}/Contents/MacOS";
   backupExecutableName = "i4-backup";
   resticExecutableName = "restic";
-  wrapperVersion = "2";
+  wrapperVersion = "3";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
   backupCfg = config.i4.backup;
+
+  # Build with Nix, then copy into the stable app bundle path during activation
+  # so macOS TCC attributes access to ResticBackup.app.
+  backupWrapper =
+    pkgs.writers.writeRustBin backupExecutableName {
+      rustcArgs = ["--edition=2021" "-C" "opt-level=2"];
+    }
+    ''
+      use std::env;
+      use std::ffi::{OsStr, OsString};
+      use std::os::unix::process::{CommandExt, ExitStatusExt};
+      use std::path::Path;
+      use std::process::{Command, ExitStatus};
+
+      const BACKUP_HOME: &str = r#"${backupHome}"#;
+      const BACKUP_CACHE: &str = r#"${backupCache}"#;
+      const WRAPPER_PATH: &str = r#"${wrapperPath}"#;
+      const RESTIC_EXECUTABLE_NAME: &str = r#"${resticExecutableName}"#;
+      const RESTIC: &str = "/run/current-system/sw/bin/restic";
+      const BACKUP_PROGRAM: &str = r#"${backupCfg.internal.backupProgram}"#;
+      const INIT_REPOS_CONFIG: &str = r#"${backupCfg.internal.initReposConfigFile}"#;
+      const ROTATE_KEYS_CONFIG: &str = r#"${backupCfg.internal.rotateKeysConfigFile}"#;
+      const RUN_BACKUP_CONFIG: &str = r#"${backupCfg.internal.runBackupConfigFile}"#;
+
+      fn exit_code(status: ExitStatus) -> i32 {
+          status
+              .code()
+              .or_else(|| status.signal().map(|signal| 128 + signal))
+              .unwrap_or(127)
+      }
+
+      fn run_process<I, S>(program: &str, argv0: &str, args: I) -> i32
+      where
+          I: IntoIterator<Item = S>,
+          S: AsRef<OsStr>,
+      {
+          let mut command = Command::new(program);
+          command
+              .arg0(argv0)
+              .args(args)
+              .env("HOME", BACKUP_HOME)
+              .env("RESTIC_CACHE_DIR", BACKUP_CACHE)
+              .env("PATH", WRAPPER_PATH);
+
+          match command.status() {
+              Ok(status) => exit_code(status),
+              Err(err) => {
+                  eprintln!("posix_spawn failed: {program}: {err}");
+                  127
+              }
+          }
+      }
+
+      fn run_restic(args: &[OsString]) -> i32 {
+          run_process(RESTIC, "restic", args.iter().skip(1))
+      }
+
+      fn run_i4_backup_command(command: &str, config_file: &str) -> i32 {
+          run_process(BACKUP_PROGRAM, "i4-backup", [command, config_file])
+      }
+
+      fn main() {
+          let args: Vec<OsString> = env::args_os().collect();
+          let is_restic = args
+              .first()
+              .and_then(|argv0| Path::new(argv0.as_os_str()).file_name())
+              .is_some_and(|name| name == OsStr::new(RESTIC_EXECUTABLE_NAME));
+
+          if is_restic {
+              std::process::exit(run_restic(&args));
+          }
+
+          for (command, config_file) in [
+              ("init-repos", INIT_REPOS_CONFIG),
+              ("rotate-keys", ROTATE_KEYS_CONFIG),
+              ("run-backup", RUN_BACKUP_CONFIG),
+          ] {
+              let status = run_i4_backup_command(command, config_file);
+              if status != 0 {
+                  std::process::exit(status);
+              }
+          }
+      }
+    '';
 in {
   environment.systemPackages = [pkgs.restic];
 
@@ -80,112 +164,8 @@ in {
     </plist>
     EOF
 
-          cat > "$bin_dir/${backupExecutableName}.c" <<'EOF'
-    #include <errno.h>
-    #include <libgen.h>
-    #include <spawn.h>
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <sys/wait.h>
-    #include <unistd.h>
-
-    extern char **environ;
-
-    static int run_process(const char *program, char *const argv[]) {
-        pid_t pid;
-        int spawn_error = posix_spawn(&pid, program, NULL, NULL, argv, environ);
-        if (spawn_error != 0) {
-            fprintf(stderr, "posix_spawn failed: %s: %s\n", program, strerror(spawn_error));
-            return 127;
-        }
-
-        int status;
-        while (waitpid(pid, &status, 0) < 0) {
-            if (errno != EINTR) {
-                fprintf(stderr, "waitpid failed: %s\n", strerror(errno));
-                return 127;
-            }
-        }
-
-        if (WIFEXITED(status)) {
-            return WEXITSTATUS(status);
-        }
-        if (WIFSIGNALED(status)) {
-            return 128 + WTERMSIG(status);
-        }
-
-        return 127;
-    }
-
-    static int run_restic(int argc, char **argv) {
-        const char *restic = "/run/current-system/sw/bin/restic";
-
-        char **args = calloc((size_t)argc + 1, sizeof(char *));
-        if (!args) {
-            perror("calloc");
-            return 127;
-        }
-
-        args[0] = "restic";
-        for (int i = 1; i < argc; i++) {
-            args[i] = argv[i];
-        }
-        args[argc] = NULL;
-
-        int status = run_process(restic, args);
-        free(args);
-        return status;
-    }
-
-    static int run_i4_backup_command(const char *command, const char *config_file) {
-        const char *program = "${backupCfg.internal.backupProgram}";
-        char *const args[] = {
-            "i4-backup",
-            (char *)command,
-            (char *)config_file,
-            NULL,
-        };
-
-        return run_process(program, args);
-    }
-
-    int main(int argc, char **argv) {
-        setenv("HOME", "${backupHome}", 1);
-        setenv("RESTIC_CACHE_DIR", "${backupCache}", 1);
-        setenv("PATH", "${wrapperPath}", 1);
-
-        char *argv0 = strdup(argv[0]);
-        if (!argv0) {
-            perror("strdup");
-            return 127;
-        }
-
-        char *name = basename(argv0);
-        int is_restic = strcmp(name, "${resticExecutableName}") == 0;
-        free(argv0);
-
-        if (is_restic) {
-            return run_restic(argc, argv);
-        }
-
-        int status = run_i4_backup_command("init-repos", "${backupCfg.internal.initReposConfigFile}");
-        if (status != 0) {
-            return status;
-        }
-
-        status = run_i4_backup_command("rotate-keys", "${backupCfg.internal.rotateKeysConfigFile}");
-        if (status != 0) {
-            return status;
-        }
-
-        return run_i4_backup_command("run-backup", "${backupCfg.internal.runBackupConfigFile}");
-    }
-    EOF
-
-          /usr/bin/cc -O2 -o "$backup_exe" "$bin_dir/${backupExecutableName}.c"
+          /bin/cp ${lib.escapeShellArg "${backupWrapper}/bin/${backupExecutableName}"} "$backup_exe"
           /bin/cp "$backup_exe" "$restic_exe"
-          /bin/rm "$bin_dir/${backupExecutableName}.c"
           /bin/chmod 0755 "$backup_exe" "$restic_exe"
           printf '%s\n' ${lib.escapeShellArg wrapperVersion} > "$version_file"
 
