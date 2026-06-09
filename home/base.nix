@@ -195,19 +195,19 @@ in {
 
       # Home Manager's implicit Host * defaults are being removed.
       # Keep the current effective defaults explicit in this repo.
-      matchBlocks."*" = {
-        forwardAgent = false;
-        serverAliveInterval = 0;
-        serverAliveCountMax = 3;
-        compression = false;
-        addKeysToAgent = "no";
-        hashKnownHosts = false;
-        userKnownHostsFile = "~/.ssh/known_hosts";
-        controlMaster = "no";
-        controlPath = "~/.ssh/master-%r@%n:%p";
-        controlPersist = "no";
+      settings."*" = {
+        ForwardAgent = false;
+        ServerAliveInterval = 0;
+        ServerAliveCountMax = 3;
+        Compression = false;
+        AddKeysToAgent = "no";
+        HashKnownHosts = false;
+        UserKnownHostsFile = "~/.ssh/known_hosts";
+        ControlMaster = "no";
+        ControlPath = "~/.ssh/master-%r@%n:%p";
+        ControlPersist = "no";
       };
-      # addKeysToAgent = "yes";
+      # AddKeysToAgent = "yes";
     };
 
     programs.atuin = {

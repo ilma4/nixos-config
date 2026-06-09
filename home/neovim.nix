@@ -54,7 +54,7 @@
     };
   };
   ideInitLua = ''
-    ${config.programs.neovim.extraLuaConfig}
+    ${baseExtraConfigLua}
     ${config.programs.neovim.generatedConfigs.lua or ""}
 
     vim.opt.expandtab = true
@@ -159,7 +159,9 @@ in {
   config = lib.mkIf (config ? home) {
     programs.neovim = {
       enable = true;
-      extraLuaConfig = baseExtraConfigLua;
+      withPython3 = true;
+      withRuby = true;
+      initLua = baseExtraConfigLua;
       plugins = basePlugins;
     };
 

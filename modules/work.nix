@@ -13,9 +13,9 @@
 
   config = lib.mkIf config.i4.work.enable {
     # Use the 1Password SSH agent by default on the work account.
-    programs.ssh.matchBlocks = {
+    programs.ssh.settings = {
       "*" = {
-        identityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
+        IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
       };
     };
 

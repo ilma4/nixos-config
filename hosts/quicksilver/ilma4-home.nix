@@ -60,15 +60,15 @@
         '')
     ];
 
-    programs.ssh.matchBlocks = {
+    programs.ssh.settings = {
       "*" = {
-        identityAgent = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        IdentityAgent = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
       };
       "hetzer-storage" = {
-        port = 23;
-        host = "u478838.your-storagebox.de";
-        identityFile = "~/.ssh/jb-mac-to-hetzer-storage";
-        user = "u478838";
+        header = "Host u478838.your-storagebox.de";
+        Port = 23;
+        IdentityFile = "~/.ssh/jb-mac-to-hetzer-storage";
+        User = "u478838";
       };
     };
 

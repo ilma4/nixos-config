@@ -77,12 +77,9 @@ in {
         resumeCommand = "${swaymsg} \"output * power on\"";
       }
     ];
-    events = [
-      {
-        event = "before-sleep";
-        command = "${swaylock} -f -c 000000";
-      }
-    ];
+    events = {
+      before-sleep = "${swaylock} -f -c 000000";
+    };
   };
 
   services.kdeconnect = {

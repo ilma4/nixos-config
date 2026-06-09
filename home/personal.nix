@@ -13,7 +13,7 @@ in {
   config = lib.mkIf cfg.enable {
     home.packages = with pkgs; [
       /*
-      TODO: generate new keys defined in `programs.ssh.matchBlocks` and send them to hosts
+      TODO: generate new keys defined in `programs.ssh.settings` and send them to hosts
       TODO: thing about what to do if can't send key to the server
       (pkgs.writeShellScriptBin "rotate-ssh-keys" ''
             #!/usr/bin/env bash
@@ -33,10 +33,10 @@ in {
       email = "ilya.malakhov4@gmail.com";
     };
 
-    programs.ssh.matchBlocks = {
+    programs.ssh.settings = {
       "nas-init" = {
-        hostname = "192.168.1.33";
-        user = "root";
+        HostName = "192.168.1.33";
+        User = "root";
       };
     };
   };

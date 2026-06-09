@@ -15,6 +15,12 @@
     umask 007
     exec ${lib.getExe pkgs.rclone} serve restic --stdio --append-only ${resticIlma4RepoArg}
   '';
+  configureHddStandbyTimeout = ''
+    set -euo pipefail
+
+    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sdb
+    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
+  '';
 in {
   imports = let
     modules = ../../modules;
@@ -120,10 +126,28 @@ in {
   };
 
   # suspend sata hdds after 1 minute of inactivity
-  powerManagement.powerUpCommands = ''
-    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sdb
-    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
-  '';
+  systemd.services.hdd-standby-timeout = {
+    description = "Configure SATA HDD standby timeout";
+    wantedBy = ["multi-user.target"];
+    script = configureHddStandbyTimeout;
+    serviceConfig.Type = "oneshot";
+  };
+
+  systemd.services.hdd-standby-timeout-resume = {
+    description = "Configure SATA HDD standby timeout after resume";
+    wantedBy = ["sleep.target"];
+    before = ["sleep.target"];
+    unitConfig.StopWhenUnneeded = true;
+    script = ''
+      set -euo pipefail
+      :
+    '';
+    preStop = configureHddStandbyTimeout;
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+  };
 
   services.prometheus.node-exporter-docker.enable = true;
   services.printing.enable = false;
