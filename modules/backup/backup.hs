@@ -14,6 +14,7 @@ import GHC.Generics (Generic)
 import GHC.IO.Exception (ExitCode (ExitSuccess))
 import System.Environment
 import System.Exit (ExitCode (ExitFailure))
+import System.IO (hFlush, stdout)
 import System.Process (readProcessWithExitCode)
 
 type PasswordFile = String
@@ -22,6 +23,7 @@ logInfo :: String -> IO ()
 logInfo message = do
   timestamp <- formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%SZ" <$> getCurrentTime
   for_ (lines message) $ \line -> putStrLn $ timestamp ++ " " ++ line
+  hFlush stdout
 
 data Repo = Repo {location :: String, passwordFile :: PasswordFile, oldPasswordFile :: Maybe PasswordFile, extraArgs :: [String]}
   deriving (Show, Generic, Eq)
@@ -121,6 +123,7 @@ runBackupCommand file = do
   localChunker <- readRepoChunker localRepo
   for_ remoteRepos (requireChunckerMatching localChunker)
   for_ remoteRepos $ \remoteRepo -> do
+    logInfo $ "starting to copy backup to remote repo " ++ location remoteRepo
     void $ runResticThrowing remoteRepo ("copy" : fromArgs localRepo)
     logInfo $ "backup successfully copied to remote repo " ++ location remoteRepo
   when (not (null remoteRepos)) (logInfo "backup successfully copied to all remote repos")
