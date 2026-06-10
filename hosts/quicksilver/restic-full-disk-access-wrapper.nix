@@ -14,10 +14,10 @@
   binDir = "${appPath}/Contents/MacOS";
   backupExecutableName = "i4-backup";
   resticExecutableName = "restic";
-  # Use a real signing identity instead of ad-hoc signing.  Ad-hoc signatures
-  # make the TCC Full Disk Access grant depend on the binary cdhash, so any
-  # wrapper rebuild silently invalidates the grant.
-  codeSigningIdentity = "Apple Configurator: i4 (556FDF84-04C9-4351-BEA1-2E10237A4D18)";
+  # Use ad-hoc signing.  This avoids depending on a local codesigning identity,
+  # but macOS TCC grants may be tied to the cdhash and can be lost when the
+  # wrapper is rebuilt.
+  codeSigningIdentity = "-";
   wrapperVersion = "4";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
@@ -138,12 +138,6 @@ in {
             /usr/bin/sudo -u ${lib.escapeShellArg backupUser} "$@"
           fi
         }
-
-        if ! run_as_backup_user /usr/bin/security find-identity -v -p codesigning | /usr/bin/grep -F -- "$signing_identity" >/dev/null; then
-          echo "error: code signing identity not found for ${appName}.app: $signing_identity" >&2
-          echo "       refusing to ad-hoc sign the wrapper because that invalidates Full Disk Access on rebuild" >&2
-          exit 1
-        fi
 
         current_version=""
         if [ -f "$version_file" ]; then
