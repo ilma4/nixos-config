@@ -18,7 +18,7 @@
   # but macOS TCC grants may be tied to the cdhash and can be lost when the
   # wrapper is rebuilt.
   codeSigningIdentity = "-";
-  wrapperVersion = "4";
+  wrapperVersion = "5";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
   backupCfg = config.i4.backup;
@@ -34,7 +34,7 @@
       use std::ffi::{OsStr, OsString};
       use std::os::unix::process::{CommandExt, ExitStatusExt};
       use std::path::Path;
-      use std::process::{Command, ExitStatus};
+      use std::process::{Command, ExitStatus, Stdio};
 
       const BACKUP_HOME: &str = r#"${backupHome}"#;
       const BACKUP_CACHE: &str = r#"${backupCache}"#;
@@ -64,7 +64,9 @@
               .args(args)
               .env("HOME", BACKUP_HOME)
               .env("RESTIC_CACHE_DIR", BACKUP_CACHE)
-              .env("PATH", WRAPPER_PATH);
+              .env("PATH", WRAPPER_PATH)
+              .stdout(Stdio::inherit())
+              .stderr(Stdio::inherit());
 
           match command.status() {
               Ok(status) => exit_code(status),
