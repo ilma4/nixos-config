@@ -7,6 +7,7 @@
 }: let
   inherit
     (lib)
+    escapeShellArg
     escapeShellArgs
     getExe
     mapAttrsToList
@@ -78,6 +79,34 @@
   initReposScript = mkBackupScript "i4-backup-init-repos" "init-repos" initReposConfigFile;
   rotateKeysScript = mkBackupScript "i4-backup-rotate-keys" "rotate-keys" rotateKeysConfigFile;
   runBackupScript = mkBackupScript "i4-backup-run-backup" "run-backup" runBackupConfigFile;
+
+  runConfiguredBackupScript = pkgs.writeShellScriptBin "i4-backup-run" ''
+    set -euo pipefail
+
+    ${
+      if myLib.unifiedModules.checkers.isNixos
+      then ''
+        exec ${pkgs.systemd}/bin/systemctl start i4-backup.service
+      ''
+      else if myLib.unifiedModules.checkers.isDarwin
+      then let
+        launchdUser =
+          if config.system.primaryUser != null
+          then config.system.primaryUser
+          else cfg.backupUser;
+      in ''
+        launchd_user=${escapeShellArg launchdUser}
+        launchd_label=${escapeShellArg config.launchd.user.agents.i4-backup.serviceConfig.Label}
+        launchd_uid="$(/usr/bin/id -u "$launchd_user")"
+
+        exec /bin/launchctl kickstart "gui/$launchd_uid/$launchd_label"
+      ''
+      else ''
+        echo "i4-backup-run is only supported on NixOS and nix-darwin" >&2
+        exit 1
+      ''
+    }
+  '';
 in {
   imports = [
     ./restic-wrappers.nix
@@ -161,6 +190,12 @@ in {
         description = "Generated script that runs the local backup, remote copy, and retention steps.";
       };
 
+      runConfiguredBackupScript = mkOption {
+        type = types.package;
+        readOnly = true;
+        description = "Generated i4-backup-run command that starts the configured backup scheduler job.";
+      };
+
       backupProgram = mkOption {
         type = types.singleLineStr;
         readOnly = true;
@@ -196,11 +231,15 @@ in {
           runBackupScript
           ;
 
+        inherit runConfiguredBackupScript;
+
         backupProgram = getExe backupScript;
         initReposConfigFile = toString initReposConfigFile;
         rotateKeysConfigFile = toString rotateKeysConfigFile;
         runBackupConfigFile = toString runBackupConfigFile;
       };
+
+      environment.systemPackages = [runConfiguredBackupScript];
 
       assertions = [
         {

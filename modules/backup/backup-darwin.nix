@@ -13,6 +13,7 @@
     ;
 
   cfg = config.i4.backup;
+  backupLogFile = "/var/log/i4-backup.log";
 
   backupDriverScript = pkgs.writeShellScript "i4-backup-driver" ''
     set -euo pipefail
@@ -30,17 +31,17 @@ in {
       chown ${escapeShellArg "${cfg.backupUser}:${cfg.backupGroup}"} ${escapeShellArg cfg.localRepo.location}
       chmod 0750 ${escapeShellArg cfg.localRepo.location}
 
-      touch /tmp/i4-backup.log
-      chown ${escapeShellArg "${cfg.backupUser}:${cfg.backupGroup}"} /tmp/i4-backup.log
-      chmod 0644 /tmp/i4-backup.log
+      touch ${escapeShellArg backupLogFile}
+      chown ${escapeShellArg "${cfg.backupUser}:${cfg.backupGroup}"} ${escapeShellArg backupLogFile}
+      chmod 0644 ${escapeShellArg backupLogFile}
     '';
 
     launchd.user.agents.i4-backup = {
       path = [pkgs.restic];
       serviceConfig = {
         ProgramArguments = ["/bin/bash" "${backupDriverScript}"];
-        StandardOutPath = "/tmp/i4-backup.log";
-        StandardErrorPath = "/tmp/i4-backup.log";
+        StandardOutPath = backupLogFile;
+        StandardErrorPath = backupLogFile;
         StartCalendarInterval = [
           {
             Hour = cfg.backupHour;
