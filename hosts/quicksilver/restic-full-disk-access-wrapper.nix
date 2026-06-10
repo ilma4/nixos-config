@@ -191,6 +191,7 @@ in {
         version_file="$app/Contents/i4-wrapper-version"
         signing_identity_file="$app/Contents/i4-code-signing-identity"
         signing_identity=${lib.escapeShellArg codeSigningIdentity}
+        bundle_identifier=${lib.escapeShellArg bundleIdentifier}
         created_wrapper=0
 
         run_as_backup_user() {
@@ -198,6 +199,51 @@ in {
             "$@"
           else
             /usr/bin/sudo -u ${lib.escapeShellArg backupUser} "$@"
+          fi
+        }
+
+        reset_privacy_permission_for_identifier() {
+          local service="$1"
+          local permission_name="$2"
+          local identifier="$3"
+          local reset_done=0
+
+          if [ -z "$identifier" ]; then
+            return 1
+          fi
+
+          if /usr/bin/tccutil reset "$service" "$identifier" >/dev/null 2>&1; then
+            reset_done=1
+          fi
+
+          if [ "$(/usr/bin/id -un)" != ${lib.escapeShellArg backupUser} ]; then
+            if run_as_backup_user /usr/bin/tccutil reset "$service" "$identifier" >/dev/null 2>&1; then
+              reset_done=1
+            fi
+          fi
+
+          if [ "$reset_done" -eq 1 ]; then
+            echo "Removed outdated $permission_name permission entries for $identifier" >&2
+            return 0
+          fi
+
+          echo "warning: failed to remove outdated $permission_name permission entries for $identifier" >&2
+          return 1
+        }
+
+        check_full_disk_access_permission() {
+          has_full_disk_access=0
+          full_disk_access_report=""
+          if full_disk_access_report="$(HOME=${lib.escapeShellArg backupHome} /bin/bash ${lib.escapeShellArg checkFullDiskAccess} "$app" 2>&1)"; then
+            has_full_disk_access=1
+          fi
+        }
+
+        check_local_network_permission() {
+          has_local_network=0
+          local_network_access_report=""
+          if local_network_access_report="$(HOME=${lib.escapeShellArg backupHome} /bin/bash ${lib.escapeShellArg checkLocalNetworkAccess} "$app" 2>&1)"; then
+            has_local_network=1
           fi
         }
 
@@ -259,16 +305,40 @@ in {
           created_wrapper=1
         fi
 
-        has_full_disk_access=0
-        full_disk_access_report=""
-        if full_disk_access_report="$(HOME=${lib.escapeShellArg backupHome} /bin/bash ${lib.escapeShellArg checkFullDiskAccess} "$app" 2>&1)"; then
-          has_full_disk_access=1
+        check_full_disk_access_permission
+        check_local_network_permission
+
+        full_disk_access_entries_removed=0
+        if [ "$has_full_disk_access" -ne 1 ]; then
+          case "$full_disk_access_report" in
+            *"code signature no longer matches"*)
+              if reset_privacy_permission_for_identifier SystemPolicyAllFiles "Full Disk Access" "$bundle_identifier"; then
+                full_disk_access_entries_removed=1
+                check_full_disk_access_permission
+              fi
+              ;;
+          esac
         fi
 
-        has_local_network=0
-        local_network_access_report=""
-        if local_network_access_report="$(HOME=${lib.escapeShellArg backupHome} /bin/bash ${lib.escapeShellArg checkLocalNetworkAccess} "$app" 2>&1)"; then
-          has_local_network=1
+        local_network_entries_removed=0
+        if [ "$has_local_network" -ne 1 ]; then
+          case "$local_network_access_report" in
+            *"grant exists for this path, but its signing identifier does not match"*|*"grant exists for this signing identifier, but for a different path"*)
+              stale_local_network_identifier="$(printf '%s\n' "$local_network_access_report" | /usr/bin/sed -n "s/.*signing identifier '\([^']*\)'.*/\1/p" | /usr/bin/head -n 1)"
+
+              if reset_privacy_permission_for_identifier LocalNetwork "Local Network" "$bundle_identifier"; then
+                local_network_entries_removed=1
+              fi
+              if [ -n "$stale_local_network_identifier" ] && [ "$stale_local_network_identifier" != "$bundle_identifier" ]; then
+                if reset_privacy_permission_for_identifier LocalNetwork "Local Network" "$stale_local_network_identifier"; then
+                  local_network_entries_removed=1
+                fi
+              fi
+              if [ "$local_network_entries_removed" -eq 1 ]; then
+                check_local_network_permission
+              fi
+              ;;
+          esac
         fi
 
         if [ "$created_wrapper" -eq 1 ] || [ "$has_full_disk_access" -ne 1 ] || [ "$has_local_network" -ne 1 ]; then
@@ -276,11 +346,17 @@ in {
           if [ "$created_wrapper" -eq 1 ]; then
             echo "  - wrapper was created or recreated at $app" >&2
           fi
+          if [ "$full_disk_access_entries_removed" -eq 1 ]; then
+            echo "  - outdated Full Disk Access permission entries were removed" >&2
+          fi
           if [ "$has_full_disk_access" -ne 1 ]; then
             echo "  - Full Disk Access is not granted or no longer valid for ${appName}.app (${bundleIdentifier})" >&2
             if [ -n "$full_disk_access_report" ]; then
               printf '%s\n' "$full_disk_access_report" | /usr/bin/sed 's/^/      /' >&2
             fi
+          fi
+          if [ "$local_network_entries_removed" -eq 1 ]; then
+            echo "  - outdated Local Network permission entries were removed" >&2
           fi
           if [ "$has_local_network" -ne 1 ]; then
             echo "  - Local Network is not granted or no longer valid for ${appName}.app (${bundleIdentifier})" >&2
