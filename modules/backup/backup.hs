@@ -98,13 +98,18 @@ runBackupCommand file = do
   let backupArgs = ["backup"] ++ concatMap (\path -> ["--exclude", path]) excludes ++ paths
   (exitCode, _, stderr) <- runRestic localRepo backupArgs
   when (exitCode /= ExitSuccess && exitCode /= ExitFailure 3) (error $ "error while running backup\n" ++ stderr)
+  when (exitCode == ExitFailure 3) (putStrLn $ "backup can't read some paths:\n" ++ stderr)
+  putStrLn "backup successfully made"
 
   localChunker <- readRepoChunker localRepo
   for_ remoteRepos (requireChunckerMatching localChunker)
-  for_ remoteRepos (`runResticThrowing` ("copy" : fromArgs localRepo))
-  for_ keepWithin (\interval -> runResticThrowing localRepo ["forget", "--prune", "--keep-within", interval])
-
-  when (exitCode == ExitFailure 3) (putStrLn $ "backup can't read some paths:\n" ++ stderr)
+  for_ remoteRepos $ \remoteRepo -> do
+    void $ runResticThrowing remoteRepo ("copy" : fromArgs localRepo)
+    putStrLn $ "backup successfully copied to remote repo " ++ location remoteRepo
+  when (not (null remoteRepos)) (putStrLn "backup successfully copied to all remote repos")
+  for_ keepWithin $ \interval -> do
+    void $ runResticThrowing localRepo ["forget", "--prune", "--keep-within", interval]
+    putStrLn "backup successfully pruned"
 
 main :: IO ()
 main = do
