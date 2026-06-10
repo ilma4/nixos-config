@@ -56,6 +56,14 @@ exists repo = do
   (exitCode, _, _) <- runRestic repo ["cat", "config"]
   return (exitCode == ExitSuccess)
 
+existsWithCurrentOrOldPassword :: Repo -> IO Bool
+existsWithCurrentOrOldPassword repo = do
+  currentExists <- exists repo
+  case (currentExists, withOldPassword repo) of
+    (True, _) -> return True
+    (False, Nothing) -> return False
+    (False, Just oldPasswordRepo) -> exists oldPasswordRepo
+
 fromArgs :: Repo -> [String]
 fromArgs Repo {..} = ["--from-repo", location, "--from-password-file", passwordFile] ++ extraArgs
 
@@ -80,13 +88,16 @@ rotateKey repo@Repo {..} = do
 initReposCommand :: String -> IO ()
 initReposCommand file = do
   allRepos <- Lazy.readFile file >>= throwDecode :: IO [Repo]
-  existingRepos <- filterM exists allRepos
-  case (allRepos, existingRepos) of
-    ([], _) -> return () -- no repos, no init
-    (_, []) -> error "Can't init repo because no repo exists/accessible"
-    (_, fromRepo : _) -> do
+  existingReposWithCurrentPassword <- filterM exists allRepos
+  existingReposWithCurrentOrOldPassword <- filterM existsWithCurrentOrOldPassword allRepos
+  let missingRepos = allRepos \\ existingReposWithCurrentOrOldPassword
+  case (allRepos, missingRepos, existingReposWithCurrentPassword) of
+    ([], _, _) -> return () -- no repos, no init
+    (_, [], _) -> return () -- every repo already exists, possibly with an old password to rotate later
+    (_, _, []) -> error "Can't init missing repos because no repo exists/accessible with the current password"
+    (_, _, fromRepo : _) -> do
       let args = "init" : "--copy-chunker-params" : fromArgs fromRepo
-      mapM_ (`runResticThrowing` args) (allRepos \\ existingRepos)
+      mapM_ (`runResticThrowing` args) missingRepos
 
 rotateKeysCommand :: String -> IO ()
 rotateKeysCommand file = do
