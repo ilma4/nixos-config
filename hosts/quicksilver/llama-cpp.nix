@@ -1,8 +1,11 @@
 {
+  config,
   lib,
   pkgs,
   ...
 }: let
+  user = "ilma4";
+  userHome = config.users.users.${user}.home;
   host = "127.0.0.1";
   port = 8001;
 
@@ -46,10 +49,17 @@
     model = ${qwen36_27b}
   '';
 in {
-  launchd.daemons.llama-cpp = {
+  assertions = [
+    {
+      assertion = config.system.primaryUser == user;
+      message = "llama-cpp uses launchd.user.agents and must run as the ${user} primary user.";
+    }
+  ];
+
+  launchd.user.agents.llama-cpp = {
     serviceConfig = {
       EnvironmentVariables = {
-        HOME = "/var/root";
+        HOME = userHome;
       };
       ProgramArguments = [
         "${lib.getExe' pkgs.llama-cpp "llama-server"}"
@@ -66,9 +76,9 @@ in {
       ];
       RunAtLoad = true;
       KeepAlive = true;
-      WorkingDirectory = "/var/empty";
-      StandardOutPath = "/var/log/llama-cpp.log";
-      StandardErrorPath = "/var/log/llama-cpp.err.log";
+      WorkingDirectory = userHome;
+      StandardOutPath = "${userHome}/Library/Logs/llama-cpp.log";
+      StandardErrorPath = "${userHome}/Library/Logs/llama-cpp.err.log";
     };
   };
 }
