@@ -21,6 +21,7 @@
   wrapperVersion = "5";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
   checkFullDiskAccess = "${../../scripts/check-full-disk-access.sh}";
+  checkLocalNetworkAccess = "${../../scripts/check-local-network-access.sh}";
 
   backupCfg = config.i4.backup;
 
@@ -207,49 +208,8 @@ in {
         fi
 
         has_local_network=0
-        if /usr/bin/python3 - ${lib.escapeShellArg bundleIdentifier} "$backup_exe" <<'PY'
-    import plistlib
-    import sys
-    from pathlib import Path
-
-    bundle_identifier = sys.argv[1]
-    executable_path = sys.argv[2]
-    plist_path = Path("/Library/Preferences/com.apple.networkextension.plist")
-
-    if not plist_path.exists():
-        sys.exit(1)
-
-    try:
-        plist = plistlib.loads(plist_path.read_bytes())
-    except Exception:
-        sys.exit(1)
-
-    objects = plist.get("$objects")
-    if not isinstance(objects, list):
-        sys.exit(1)
-
-
-    def resolve(value):
-        if isinstance(value, plistlib.UID):
-            try:
-                return objects[value.data]
-            except Exception:
-                return None
-        return value
-
-    for item in objects:
-        if not isinstance(item, dict):
-            continue
-        if resolve(item.get("SigningIdentifier")) != bundle_identifier:
-            continue
-        if resolve(item.get("Path")) != executable_path:
-            continue
-        if item.get("MulticastPreferenceSet") is True and item.get("DenyMulticast") is False:
-            sys.exit(0)
-
-    sys.exit(1)
-    PY
-        then
+        local_network_access_report=""
+        if local_network_access_report="$(HOME=${lib.escapeShellArg backupHome} /bin/bash ${lib.escapeShellArg checkLocalNetworkAccess} "$app" 2>&1)"; then
           has_local_network=1
         fi
 
@@ -265,7 +225,10 @@ in {
             fi
           fi
           if [ "$has_local_network" -ne 1 ]; then
-            echo "  - Local Network is not granted to ${appName}.app (${bundleIdentifier})" >&2
+            echo "  - Local Network is not granted or no longer valid for ${appName}.app (${bundleIdentifier})" >&2
+            if [ -n "$local_network_access_report" ]; then
+              printf '%s\n' "$local_network_access_report" | /usr/bin/sed 's/^/      /' >&2
+            fi
           fi
           echo "  Open System Settings -> Privacy & Security, then grant Full Disk Access and Local Network to:" >&2
           echo "    $app" >&2
