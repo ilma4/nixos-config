@@ -12,10 +12,15 @@
     notifications-api-key-secret = "telegram/notifications_api_key";
   };
 
-  hetzer-restic = {
+  hetzer-restic = rec {
     repo = "/home/restic";
-    password-file = "TODO";
-    old-password-file = null;
+    password-secret = "restic_password/hetzer_storage_box";
+    password-file = "/run/secrets/${password-secret}";
+    old-password-secret = null;
+    old-password-file =
+      if old-password-secret == null
+      then null
+      else "/run/secrets/${old-password-secret}";
   };
 
   quicksilver = {
