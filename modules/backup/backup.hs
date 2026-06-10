@@ -8,6 +8,7 @@ import Data.ByteString.Lazy.Char8 qualified as L8
 import Data.Foldable (for_)
 import Data.List ((\\))
 import Data.Map.Strict qualified as Map
+import Data.Time (defaultTimeLocale, formatTime, getCurrentTime)
 import GHC.Base (when)
 import GHC.Generics (Generic)
 import GHC.IO.Exception (ExitCode (ExitSuccess))
@@ -16,6 +17,11 @@ import System.Exit (ExitCode (ExitFailure))
 import System.Process (readProcessWithExitCode)
 
 type PasswordFile = String
+
+logInfo :: String -> IO ()
+logInfo message = do
+  timestamp <- formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%SZ" <$> getCurrentTime
+  for_ (lines message) $ \line -> putStrLn $ timestamp ++ " " ++ line
 
 data Repo = Repo {location :: String, passwordFile :: PasswordFile, oldPasswordFile :: Maybe PasswordFile, extraArgs :: [String]}
   deriving (Show, Generic, Eq)
@@ -98,24 +104,27 @@ runBackupCommand file = do
   let backupArgs = ["backup"] ++ concatMap (\path -> ["--exclude", path]) excludes ++ paths
   (exitCode, _, stderr) <- runRestic localRepo backupArgs
   when (exitCode /= ExitSuccess && exitCode /= ExitFailure 3) (error $ "error while running backup\n" ++ stderr)
-  when (exitCode == ExitFailure 3) (putStrLn $ "backup can't read some paths:\n" ++ stderr)
-  putStrLn "backup successfully made"
+  when (exitCode == ExitFailure 3) (logInfo $ "backup can't read some paths:\n" ++ stderr)
+  logInfo "backup successfully made"
 
   localChunker <- readRepoChunker localRepo
   for_ remoteRepos (requireChunckerMatching localChunker)
   for_ remoteRepos $ \remoteRepo -> do
     void $ runResticThrowing remoteRepo ("copy" : fromArgs localRepo)
-    putStrLn $ "backup successfully copied to remote repo " ++ location remoteRepo
-  when (not (null remoteRepos)) (putStrLn "backup successfully copied to all remote repos")
+    logInfo $ "backup successfully copied to remote repo " ++ location remoteRepo
+  when (not (null remoteRepos)) (logInfo "backup successfully copied to all remote repos")
   for_ keepWithin $ \interval -> do
     void $ runResticThrowing localRepo ["forget", "--prune", "--keep-within", interval]
-    putStrLn "backup successfully pruned"
+    logInfo "backup successfully pruned"
 
 main :: IO ()
 main = do
-  (command : file : _) <- getArgs
-  case command of
-    "init-repos" -> initReposCommand file
-    "rotate-keys" -> rotateKeysCommand file
-    "run-backup" -> runBackupCommand file
-    _ -> error ("unknown command " ++ command)
+  args <- getArgs
+  logInfo $ "backup script started: " ++ show args
+  case args of
+    (command : file : _) -> case command of
+      "init-repos" -> initReposCommand file
+      "rotate-keys" -> rotateKeysCommand file
+      "run-backup" -> runBackupCommand file
+      _ -> error ("unknown command " ++ command)
+    _ -> error "expected command and config file arguments"

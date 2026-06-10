@@ -68,7 +68,7 @@
   ));
 
   backupScript = pkgs.writers.writeHaskellBin "i4-backup" {
-    libraries = with pkgs.haskellPackages; [aeson bytestring containers process];
+    libraries = with pkgs.haskellPackages; [aeson bytestring containers process time_1_15];
   } (builtins.readFile ./backup.hs);
 
   mkBackupScript = name: command: configFile:
