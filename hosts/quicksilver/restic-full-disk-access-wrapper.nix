@@ -20,6 +20,7 @@
   codeSigningIdentity = "-";
   wrapperVersion = "5";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+  checkFullDiskAccess = "${../../scripts/check-full-disk-access.sh}";
 
   backupCfg = config.i4.backup;
 
@@ -200,28 +201,9 @@ in {
         fi
 
         has_full_disk_access=0
-        has_full_disk_access_row=0
-        current_csreq_hex=""
-        current_requirement="$(/usr/bin/codesign -dr - "$app" 2>&1 | /usr/bin/awk -F 'designated => ' '/designated => / { print $2; exit }' || true)"
-        if [ -n "$current_requirement" ]; then
-          current_csreq_file="$(/usr/bin/mktemp -t resticbackup-csreq.XXXXXX)"
-          if /usr/bin/csreq -r "=$current_requirement" -b "$current_csreq_file" >/dev/null 2>&1; then
-            current_csreq_hex="$(/usr/bin/python3 - "$current_csreq_file" <<'PY'
-    import sys
-
-    print(open(sys.argv[1], "rb").read().hex())
-    PY
-    )"
-          fi
-          /bin/rm -f "$current_csreq_file"
-        fi
-
-        if [ -r "/Library/Application Support/com.apple.TCC/TCC.db" ]; then
-          has_full_disk_access_row="$(/usr/bin/sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "select count(*) from access where service = 'kTCCServiceSystemPolicyAllFiles' and client = '${bundleIdentifier}' and client_type = 0 and auth_value = 2;" 2>/dev/null || echo 0)"
-          if [ -n "$current_csreq_hex" ] \
-            && [ "$(/usr/bin/sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "select count(*) from access where service = 'kTCCServiceSystemPolicyAllFiles' and client = '${bundleIdentifier}' and client_type = 0 and auth_value = 2 and upper(hex(csreq)) = upper('$current_csreq_hex');" 2>/dev/null || echo 0)" = 1 ]; then
-            has_full_disk_access=1
-          fi
+        full_disk_access_report=""
+        if full_disk_access_report="$(HOME=${lib.escapeShellArg backupHome} /bin/bash ${lib.escapeShellArg checkFullDiskAccess} "$app" 2>&1)"; then
+          has_full_disk_access=1
         fi
 
         has_local_network=0
@@ -277,10 +259,9 @@ in {
             echo "  - wrapper was created or recreated at $app" >&2
           fi
           if [ "$has_full_disk_access" -ne 1 ]; then
-            if [ "$has_full_disk_access_row" -ge 1 ]; then
-              echo "  - Full Disk Access grant exists for ${appName}.app (${bundleIdentifier}), but it does not match the current code signature" >&2
-            else
-              echo "  - Full Disk Access is not granted to ${appName}.app (${bundleIdentifier})" >&2
+            echo "  - Full Disk Access is not granted or no longer valid for ${appName}.app (${bundleIdentifier})" >&2
+            if [ -n "$full_disk_access_report" ]; then
+              printf '%s\n' "$full_disk_access_report" | /usr/bin/sed 's/^/      /' >&2
             fi
           fi
           if [ "$has_local_network" -ne 1 ]; then
