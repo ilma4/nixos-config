@@ -18,7 +18,7 @@
   # but macOS TCC grants may be tied to the cdhash and can be lost when the
   # wrapper is rebuilt.
   codeSigningIdentity = "-";
-  wrapperVersion = "5";
+  wrapperVersion = "7";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
   checkFullDiskAccess = "${../../scripts/check-full-disk-access.sh}";
   checkLocalNetworkAccess = "${../../scripts/check-local-network-access.sh}";
@@ -38,15 +38,41 @@
       use std::path::Path;
       use std::process::{Command, ExitStatus, Stdio};
 
-      const BACKUP_HOME: &str = r#"${backupHome}"#;
-      const BACKUP_CACHE: &str = r#"${backupCache}"#;
-      const WRAPPER_PATH: &str = r#"${wrapperPath}"#;
-      const RESTIC_EXECUTABLE_NAME: &str = r#"${resticExecutableName}"#;
-      const RESTIC: &str = "/run/current-system/sw/bin/restic";
-      const BACKUP_PROGRAM: &str = r#"${backupCfg.internal.backupProgram}"#;
-      const INIT_REPOS_CONFIG: &str = r#"${backupCfg.internal.initReposConfigFile}"#;
-      const ROTATE_KEYS_CONFIG: &str = r#"${backupCfg.internal.rotateKeysConfigFile}"#;
-      const RUN_BACKUP_CONFIG: &str = r#"${backupCfg.internal.runBackupConfigFile}"#;
+      const ENV_BACKUP_HOME: &str = "I4_BACKUP_HOME";
+      const ENV_BACKUP_CACHE: &str = "I4_BACKUP_CACHE";
+      const ENV_WRAPPER_PATH: &str = "I4_BACKUP_WRAPPER_PATH";
+      const ENV_RESTIC_EXECUTABLE_NAME: &str = "I4_BACKUP_RESTIC_EXECUTABLE_NAME";
+      const ENV_RESTIC: &str = "I4_BACKUP_RESTIC";
+
+      struct RuntimeConfig {
+          backup_home: OsString,
+          backup_cache: OsString,
+          wrapper_path: OsString,
+          restic_executable_name: OsString,
+          restic: OsString,
+      }
+
+      impl RuntimeConfig {
+          fn from_env() -> Self {
+              Self {
+                  backup_home: required_env(ENV_BACKUP_HOME),
+                  backup_cache: required_env(ENV_BACKUP_CACHE),
+                  wrapper_path: required_env(ENV_WRAPPER_PATH),
+                  restic_executable_name: required_env(ENV_RESTIC_EXECUTABLE_NAME),
+                  restic: required_env(ENV_RESTIC),
+              }
+          }
+      }
+
+      fn required_env(name: &str) -> OsString {
+          match env::var_os(name) {
+              Some(value) => value,
+              None => {
+                  eprintln!("missing required environment variable: {name}");
+                  std::process::exit(64);
+              }
+          }
+      }
 
       fn exit_code(status: ExitStatus) -> i32 {
           status
@@ -55,55 +81,74 @@
               .unwrap_or(127)
       }
 
-      fn run_process<I, S>(program: &str, argv0: &str, args: I) -> i32
+      fn run_process<P, I, S>(config: &RuntimeConfig, program: P, argv0: &str, args: I) -> i32
       where
+          P: AsRef<OsStr>,
           I: IntoIterator<Item = S>,
           S: AsRef<OsStr>,
       {
+          let program = program.as_ref();
           let mut command = Command::new(program);
           command
               .arg0(argv0)
               .args(args)
-              .env("HOME", BACKUP_HOME)
-              .env("RESTIC_CACHE_DIR", BACKUP_CACHE)
-              .env("PATH", WRAPPER_PATH)
+              .env("HOME", config.backup_home.as_os_str())
+              .env("RESTIC_CACHE_DIR", config.backup_cache.as_os_str())
+              .env("PATH", config.wrapper_path.as_os_str())
               .stdout(Stdio::inherit())
               .stderr(Stdio::inherit());
 
           match command.status() {
               Ok(status) => exit_code(status),
               Err(err) => {
-                  eprintln!("posix_spawn failed: {program}: {err}");
+                  eprintln!("posix_spawn failed: {}: {err}", program.to_string_lossy());
                   127
               }
           }
       }
 
-      fn run_restic(args: &[OsString]) -> i32 {
-          run_process(RESTIC, "restic", args.iter().skip(1))
+      fn run_restic(config: &RuntimeConfig, args: &[OsString]) -> i32 {
+          run_process(config, config.restic.as_os_str(), "restic", args.iter().skip(1))
       }
 
-      fn run_i4_backup_command(command: &str, config_file: &str) -> i32 {
-          run_process(BACKUP_PROGRAM, "i4-backup", [command, config_file])
+      fn run_i4_backup_command(
+          config: &RuntimeConfig,
+          backup_program: &OsStr,
+          command: &str,
+          config_file: &OsStr,
+      ) -> i32 {
+          run_process(config, backup_program, "i4-backup", [OsStr::new(command), config_file])
       }
 
       fn main() {
+          let config = RuntimeConfig::from_env();
           let args: Vec<OsString> = env::args_os().collect();
           let is_restic = args
               .first()
               .and_then(|argv0| Path::new(argv0.as_os_str()).file_name())
-              .is_some_and(|name| name == OsStr::new(RESTIC_EXECUTABLE_NAME));
+              .is_some_and(|name| name == config.restic_executable_name.as_os_str());
 
           if is_restic {
-              std::process::exit(run_restic(&args));
+              std::process::exit(run_restic(&config, &args));
           }
 
+          if args.len() != 5 {
+              eprintln!(
+                  "usage: {} <i4-backup-program> <init-repos-config> <rotate-keys-config> <run-backup-config>",
+                  args.first()
+                      .and_then(|arg| arg.to_str())
+                      .unwrap_or("i4-backup")
+              );
+              std::process::exit(64);
+          }
+
+          let backup_program = args[1].as_os_str();
           for (command, config_file) in [
-              ("init-repos", INIT_REPOS_CONFIG),
-              ("rotate-keys", ROTATE_KEYS_CONFIG),
-              ("run-backup", RUN_BACKUP_CONFIG),
+              ("init-repos", args[2].as_os_str()),
+              ("rotate-keys", args[3].as_os_str()),
+              ("run-backup", args[4].as_os_str()),
           ] {
-              let status = run_i4_backup_command(command, config_file);
+              let status = run_i4_backup_command(&config, backup_program, command, config_file);
               if status != 0 {
                   std::process::exit(status);
               }
@@ -118,8 +163,21 @@ in {
     # file access to ResticBackup.app rather than /bin/bash or /nix/store tools.
     path = lib.mkForce [];
     serviceConfig = {
-      ProgramArguments = lib.mkForce ["${binDir}/${backupExecutableName}"];
-      EnvironmentVariables.PATH = lib.mkForce wrapperPath;
+      ProgramArguments = lib.mkForce [
+        "${binDir}/${backupExecutableName}"
+        backupCfg.internal.backupProgram
+        backupCfg.internal.initReposConfigFile
+        backupCfg.internal.rotateKeysConfigFile
+        backupCfg.internal.runBackupConfigFile
+      ];
+      EnvironmentVariables = {
+        PATH = lib.mkForce wrapperPath;
+        I4_BACKUP_HOME = backupHome;
+        I4_BACKUP_CACHE = backupCache;
+        I4_BACKUP_WRAPPER_PATH = wrapperPath;
+        I4_BACKUP_RESTIC_EXECUTABLE_NAME = resticExecutableName;
+        I4_BACKUP_RESTIC = "/run/current-system/sw/bin/restic";
+      };
     };
   };
 
