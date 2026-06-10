@@ -6,7 +6,7 @@
   ...
 }: let
   backupHome = "/Users/ilma4";
-  backupCache = "${backupHome}/NoBackup/restic-cache";
+  backupCache = "${backupHome}/Library/Caches/restic";
   backupLocalRepo = "${backupHome}/NoBackup/restic";
   localResticPasswordSecret = "restic_password/quicksilver_local";
   remoteResticPasswordSecret = constants.nas.restic-ilma4.password-secret;

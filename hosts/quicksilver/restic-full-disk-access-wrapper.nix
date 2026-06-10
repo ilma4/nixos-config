@@ -7,7 +7,7 @@
   backupUser = "ilma4";
   backupGroup = "staff";
   backupHome = "/Users/${backupUser}";
-  backupCache = "${backupHome}/NoBackup/restic-cache";
+  backupCache = "${backupHome}/Library/Caches/restic";
   appName = "ResticBackup";
   bundleIdentifier = "local.restic.backup";
   appPath = "${backupHome}/Applications/${appName}.app";
