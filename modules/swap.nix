@@ -39,12 +39,12 @@ in {
     })
 
     (lib.mkIf cfg.zswapEnable {
-      boot.kernelParams = [
-        "zswap.enabled=1"
-        "zswap.compressor=zstd"
-        "zswap.max_pool_percent=30"
-        "zswap.shrinker_enabled=1"
-      ];
+      boot.zswap = lib.mkDefault {
+        enable = true;
+        compressor = "zstd";
+        maxPoolPercent = 25;
+        shrinkerEnabled = true;
+      };
     })
     (lib.mkIf cfg.swapEnable {
       swapDevices = [
