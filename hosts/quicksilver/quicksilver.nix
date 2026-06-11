@@ -130,7 +130,6 @@ in {
     ];
     brews = [
       "jetbrains/utils/teamcity"
-      "steveyegge/beads/bd"
       "mas" # cli util to install apps from AppStore
     ];
 
