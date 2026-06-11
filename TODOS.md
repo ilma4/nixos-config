@@ -2,16 +2,6 @@
 
 use openweather prescription map to check if I can go to the office without rain
 
-# backup.nix
-
-- setup local repo
-- setup copy remote repos
-- init local repo with chunker params from remotes
-- init remotes with chunker params from local
-- use rclone serve restic --stdio
-- when copying check that chunker params match
-- use launchd on macos and system on linux/home-manager
-
 # Monitorings and alerts
 
 - check status of podman containers
