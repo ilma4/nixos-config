@@ -22,6 +22,13 @@
   i4.avahi.enable = true;
   i4.initrd-ssh.enable = true;
 
+  # Prometheus node exporter: monitoring over Tailscale
+  services.prometheus.exporters.node = {
+    enable = true;
+    openFirewall = true;
+    firewallFilter = "-i tailscale0 -p tcp -m tcp --dport 9100";
+  };
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

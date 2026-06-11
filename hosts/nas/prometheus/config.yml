@@ -29,6 +29,9 @@ scrape_configs:
       - targets: ["quicksilver.tail09544e.ts.net:9100"]
         labels:
           instance: "quicksilver"
+      - targets: ["msi-modern.tail09544e.ts.net:9100"]
+        labels:
+          instance: "msi-modern"
     scrape_interval: 15s
     metrics_path: /metrics
     scrape_timeout: 10s
