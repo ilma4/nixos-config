@@ -40,14 +40,14 @@ usage =
     [ "Usage: update-all-docker-containers.hs [--dry-run|--apply]",
       "",
       "Updates simple docker-compose service versions in Nix files.",
-      "Dry-run is the default; pass --apply to write changes."
+      "Apply is the default; pass --dry-run to preview changes without writing."
     ]
 
 main :: IO ()
 main = do
   apply <-
     getArgs >>= \case
-      [] -> pure False
+      [] -> pure True
       ["--dry-run"] -> pure False
       ["--apply"] -> pure True
       [x] | x `elem` ["-h", "--help"] -> putStr usage >> exitSuccess
