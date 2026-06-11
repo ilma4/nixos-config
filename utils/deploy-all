@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+flake_dir="$(cd "${script_dir}/.." && pwd)"
+
+cd "${flake_dir}"
+
+pids=()
+names=()
+
+start_job() {
+    local name="$1"
+    shift
+
+    echo "Starting ${name}: $*"
+    "$@" &
+    pids+=("$!")
+    names+=("${name}")
+}
+
+stop_jobs() {
+    local pid
+
+    for pid in "${pids[@]}"; do
+        if kill -0 "${pid}" 2>/dev/null; then
+            kill "${pid}" 2>/dev/null || true
+        fi
+    done
+}
+
+trap 'stop_jobs; exit 130' INT
+trap 'stop_jobs; exit 143' TERM
+
+start_job "nix-rebuild" nix-rebuild
+start_job "nas" i4-update-host .#nas
+start_job "msi-modern" i4-update-host .#msi-modern
+
+status=0
+for i in "${!pids[@]}"; do
+    name="${names[$i]}"
+    pid="${pids[$i]}"
+
+    if wait "${pid}"; then
+        echo "Finished ${name}"
+    else
+        job_status="$?"
+        echo "Failed ${name} (exit ${job_status})" >&2
+        if [[ "${status}" -eq 0 ]]; then
+            status="${job_status}"
+        fi
+    fi
+done
+
+exit "${status}"
