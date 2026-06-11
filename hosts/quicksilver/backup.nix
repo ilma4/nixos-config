@@ -135,7 +135,7 @@ in {
     };
     remoteRepos = {
       nas = {
-        location = "rclone:quicksilver";
+        location = "rclone:nas";
         passwordFile = config.sops.secrets.${remoteResticPasswordSecret}.path;
         extraResticArgs = [
           "-o"
@@ -145,7 +145,7 @@ in {
         ];
       };
       hetzer-storage-box = {
-        location = "rclone:";
+        location = "rclone:hetzer";
         passwordFile = config.sops.secrets.${hetzerResticPasswordSecret}.path;
         extraResticArgs = [
           "-o"
