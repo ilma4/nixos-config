@@ -36,6 +36,7 @@ in {
             container_name: "node-exporter"
             volumes:
               - "/:/host:ro,rslave"
+              - "/etc/os-release:/host/etc/os-release:ro"
             command:
               - "--path.rootfs=/host"
               - "--path.udev.data=/host/run/udev/data"

@@ -23,8 +23,12 @@ scrape_configs:
   # Node Exporter - System metrics
   - job_name: "node-exporter"
     static_configs:
-      - targets:
-          ["127.0.0.1:9100", "quicksilver.tail09544e.ts.net:9100"]
+      - targets: ["127.0.0.1:9100"]
+        labels:
+          instance: "nas"
+      - targets: ["quicksilver.tail09544e.ts.net:9100"]
+        labels:
+          instance: "quicksilver"
     scrape_interval: 15s
     metrics_path: /metrics
     scrape_timeout: 10s
