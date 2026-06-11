@@ -14,24 +14,26 @@ import GitHub (changelog, latestTag)
 import NixValue (Assign (..), assigns, select, writeAssign)
 import System.Directory (doesFileExist, makeAbsolute)
 import System.Environment (getArgs)
-import System.Exit (die, exitSuccess)
+import System.Exit (ExitCode (..), die, exitSuccess)
 import System.FilePath (makeRelative, takeDirectory, (</>))
+import System.IO (hPutStr, hPutStrLn, stderr)
+import System.Process (readProcessWithExitCode)
 
-data Service = S {file, repo, var, prefix :: String, dockerBuild :: Bool}
+data Service = S {name, file, repo, var, prefix :: String, dockerBuild :: Bool}
 
 services :: [Service]
 services =
-  [ S "hosts/nas/docker-services/actual-budget.nix" "actualbudget/actual" "actual-version" "" False,
-    S "hosts/nas/docker-services/audiobookshelf.nix" "advplyr/audiobookshelf" "version" "v" False,
-    S "hosts/nas/dashboard.nix" "bastienwirtz/homer" "version" "" False,
-    S "hosts/nas/docker-services/grafana.nix" "grafana/grafana" "version" "v" True,
-    S "hosts/nas/docker-services/home-assistant.nix" "home-assistant/core" "home-assistant-version" "" False,
-    S "hosts/nas/docker-services/node-exporter.nix" "prometheus/node_exporter" "node-exporter-version" "" False,
-    S "hosts/nas/docker-services/pdf-tools.nix" "Stirling-Tools/Stirling-PDF" "version" "v" False,
-    S "hosts/nas/docker-services/pihole.nix" "pi-hole/docker-pi-hole" "version" "" False,
-    S "hosts/nas/docker-services/traefik.nix" "traefik/traefik" "version" "" False,
-    S "hosts/nas/prometheus/prometheus.nix" "prometheus/alertmanager" "alertmanagerVersion" "" False,
-    S "hosts/nas/prometheus/prometheus.nix" "prometheus/prometheus" "version" "" False
+  [ S "actual-budget" "hosts/nas/docker-services/actual-budget.nix" "actualbudget/actual" "actual-version" "" False,
+    S "audiobookshelf" "hosts/nas/docker-services/audiobookshelf.nix" "advplyr/audiobookshelf" "version" "v" False,
+    S "homer" "hosts/nas/dashboard.nix" "bastienwirtz/homer" "version" "" False,
+    S "grafana" "hosts/nas/docker-services/grafana.nix" "grafana/grafana" "version" "v" True,
+    S "home-assistant" "hosts/nas/docker-services/home-assistant.nix" "home-assistant/core" "home-assistant-version" "" False,
+    S "node-exporter" "hosts/nas/docker-services/node-exporter.nix" "prometheus/node_exporter" "node-exporter-version" "" False,
+    S "stirling-pdf" "hosts/nas/docker-services/pdf-tools.nix" "Stirling-Tools/Stirling-PDF" "version" "v" False,
+    S "pihole" "hosts/nas/docker-services/pihole.nix" "pi-hole/docker-pi-hole" "version" "" False,
+    S "traefik" "hosts/nas/docker-services/traefik.nix" "traefik/traefik" "version" "" False,
+    S "alertmanager" "hosts/nas/prometheus/prometheus.nix" "prometheus/alertmanager" "alertmanagerVersion" "" False,
+    S "prometheus" "hosts/nas/prometheus/prometheus.nix" "prometheus/prometheus" "version" "" False
   ]
 
 usage :: String
@@ -40,7 +42,8 @@ usage =
     [ "Usage: update-all-docker-containers.hs [--dry-run|--apply]",
       "",
       "Updates simple docker-compose service versions in Nix files.",
-      "Apply is the default; pass --dry-run to preview changes without writing."
+      "Apply is the default; pass --dry-run to preview changes without writing or committing.",
+      "Applied updates are committed only when the service file was clean before that update."
     ]
 
 main :: IO ()
@@ -58,7 +61,7 @@ main = do
 
 update :: FilePath -> Bool -> Service -> IO ()
 update root apply s@S {..} = do
-  putStrLn $ "\n==> " <> file <> " (" <> repo <> ")"
+  putStrLn $ "\n==> " <> name <> " (" <> repo <> ")"
 
   let path = root </> file
   exists <- doesFileExist path
@@ -71,7 +74,8 @@ update root apply s@S {..} = do
   let current = versionToTag s aValue
 
   putStr . unlines $
-    [ "Service file: " <> makeRelative root path,
+    [ "Service: " <> name,
+      "Service file: " <> makeRelative root path,
       "GitHub repo: " <> repo,
       "Version variable: " <> var,
       "Current file version: " <> aValue,
@@ -84,10 +88,41 @@ update root apply s@S {..} = do
   if current == latest
     then putStrLn "Already up to date."
     else do
+      cleanBefore <- if apply then gitFileClean root file else pure False
       putStrLn "\nChangelog:"
       putStr =<< changelog repo current latest
       putStrLn ""
       writeAssign apply path text a target
+      when (apply && aValue /= target) $
+        commitIfClean root file cleanBefore name aValue target
+
+commitIfClean :: FilePath -> FilePath -> Bool -> String -> String -> String -> IO ()
+commitIfClean root file cleanBefore serviceName oldVersion newVersion =
+  if cleanBefore
+    then do
+      putStrLn $ "Committing: " <> message
+      runGit root ["commit", "--only", "-m", message, "--", file]
+    else
+      hPutStrLn stderr $
+        "Warning: " <> file <> " was not clean before update started; not committing " <> serviceName <> "."
+  where
+    message = "update " <> serviceName <> " " <> oldVersion <> " -> " <> newVersion
+
+gitFileClean :: FilePath -> FilePath -> IO Bool
+gitFileClean root file = do
+  (code, out, err) <- readProcessWithExitCode "git" ["-C", root, "status", "--porcelain", "--", file] ""
+  case code of
+    ExitSuccess -> pure $ null out
+    ExitFailure n -> die $ "Error: git status failed for " <> file <> " with exit code " <> show n <> ":\n" <> out <> err
+
+runGit :: FilePath -> [String] -> IO ()
+runGit root args = do
+  (code, out, err) <- readProcessWithExitCode "git" ("-C" : root : args) ""
+  putStr out
+  unless (null err) $ hPutStr stderr err
+  case code of
+    ExitSuccess -> pure ()
+    ExitFailure n -> die $ "Error: git " <> unwords args <> " failed with exit code " <> show n
 
 versionToTag :: Service -> String -> String
 versionToTag S {..} = addPrefix . if dockerBuild then dockerToSemVer else id
