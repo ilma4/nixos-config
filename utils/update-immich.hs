@@ -39,7 +39,7 @@ usage =
     [ "Usage: update-immich.hs [--dry-run|--apply]",
       "",
       "Updates Immich docker-compose image pins and immich-version in immich.nix.",
-      "Dry-run is the default; pass --apply to write changes."
+      "Apply is the default; pass --dry-run to preview changes without writing."
     ]
 
 main :: IO ()
@@ -105,7 +105,7 @@ main = do
 parseArgs :: IO Bool
 parseArgs =
   getArgs >>= \case
-    [] -> pure False
+    [] -> pure True
     ["--dry-run"] -> pure False
     ["--apply"] -> pure True
     [x] | x `elem` ["-h", "--help"] -> putStr usage >> exitSuccess
