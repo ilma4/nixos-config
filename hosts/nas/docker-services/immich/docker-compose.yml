@@ -45,8 +45,10 @@ services:
       - traefik.http.routers.immich.rule=Host(`immich.ilma4.local`)
       - traefik.http.routers.immich.entrypoints=websecure
       - traefik.http.routers.immich.tls=true
+      - traefik.docker.network=reverse_proxy
       - traefik.http.services.immich.loadbalancer.server.port=2283
     networks:
+      default: null
       reverse_proxy: null
     restart: always
     volumes:
