@@ -53,8 +53,10 @@
           - reverse_proxy
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.catchall.rule=HostRegexp(`{subdomain:.+}.ilma4.local`) || Host(`ilma4.local`)"
+          - "traefik.http.routers.catchall.rule=HostRegexp(`^.+\\.ilma4\\.local$`) || Host(`ilma4.local`)"
           - "traefik.http.routers.catchall.priority=1"
+          - "traefik.http.routers.catchall.entrypoints=websecure"
+          - "traefik.http.routers.catchall.tls=true"
           - "traefik.http.services.catchall.loadbalancer.server.port=80"
 
     networks:
