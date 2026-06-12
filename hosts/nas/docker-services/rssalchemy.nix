@@ -20,6 +20,7 @@
         depends_on:
           - nats
         networks:
+          - default
           - reverse_proxy
         expose:
           - "8080"
@@ -29,6 +30,7 @@
           - "traefik.http.routers.rssalchemy-webserver.rule=Host(`rssalchemy-webserver.ilma4.local`)"
           - "traefik.http.routers.rssalchemy-webserver.entrypoints=websecure"
           - "traefik.http.routers.rssalchemy-webserver.tls=true"
+          - "traefik.docker.network=reverse_proxy"
           - "traefik.http.services.rssalchemy-webserver.loadbalancer.server.port=8080"
         restart: unless-stopped
         environment:
