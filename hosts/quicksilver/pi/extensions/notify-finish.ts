@@ -36,7 +36,7 @@ function notify(title: string, body: string) {
                 $n.Icon = [System.Drawing.SystemIcons]::Information;
                 $n.BalloonTipTitle = ${JSON.stringify(title)};
                 $n.BalloonTipText = ${JSON.stringify(body)};
-                $n.Visible = true;
+                $n.Visible = $true;
                 $n.ShowBalloonTip(3000);
                 Start-Sleep -Milliseconds 3500;
                 $n.Dispose();
