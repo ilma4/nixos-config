@@ -53,9 +53,10 @@ fi
 
 input="$1"
 target="$input"
+# Match a literal leading "~"; unquoted ~ expands inside patterns/substitutions.
 case "$target" in
-  '~') target="$HOME" ;;
-  '~/'*) target="$HOME/${target#~/}" ;;
+  [~]) target="$HOME" ;;
+  [~]/*) target="$HOME/${target#\~/}" ;;
 esac
 
 if [[ "$target" != */* && ! -e "$target" ]]; then
