@@ -3,7 +3,7 @@
     composeText = builtins.readFile ../dockerCompose/syncthing.yml;
   };
   networking.firewall.allowedTCPPorts = [
-    8334 # web interface
+    8384 # web interface
     22000
   ];
   networking.firewall.allowedUDPPorts = [
