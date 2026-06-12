@@ -21,8 +21,6 @@ in {
       services:
         grafana:
           image: grafana/grafana:${version}
-          ports:
-            - "${port}:${port}"
           user: "''${GRAFANA_UID}:''${GRAFANA_GID}"
           volumes:
             - "/srv/grafana:/var/lib/grafana"
