@@ -53,7 +53,7 @@ SNAPSHOT_COUNT=$(docker run -it --rm \
     restic/restic:latest \
     snapshots \
     --host "$BACKUP_NAME" \
-    --tag docker,volume,"$VOLUME_NAME" \
+    --tag docker,volume,"$BACKUP_NAME" \
     --json | jq length 2>/dev/null || echo "0")
 
 if [ "$SNAPSHOT_COUNT" = "0" ]; then
