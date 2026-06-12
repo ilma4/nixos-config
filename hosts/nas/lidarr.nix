@@ -65,10 +65,10 @@
     uid = toString config.users.users.lidarr.uid;
     gid = toString config.users.groups.lidarr.gid;
   in [
-    "d 0755  /srv/lidarr ${uid} ${gid} - -"
-    "d 0755  /srv/lidarr/data ${uid} ${gid} - -"
-    "d 0755  /srv/lidarr/data/torrents/music ${uid} ${gid} - -"
-    "d 0755  /srv/lidarr/data/usenet/music ${uid} ${gid} - -"
+    "d /srv/lidarr 0755 ${uid} ${gid} - -"
+    "d /srv/lidarr/data 0755 ${uid} ${gid} - -"
+    "d /srv/lidarr/data/torrents/music 0755 ${uid} ${gid} - -"
+    "d /srv/lidarr/data/usenet/music 0755 ${uid} ${gid} - -"
   ];
 
   networking.firewall.allowedTCPPorts = [
