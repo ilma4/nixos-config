@@ -13,7 +13,7 @@
         "map to guest" = "bad user"; # Allows guest access on failed login
 
         # Restrict access to local network only (prevents external access)
-        "hosts allow" = "127.0.0.1 ::1 192.168.1.0/16 10.0.0.0/8 172.16.0.0/12";
+        "hosts allow" = "127.0.0.1 ::1 192.168.1.0/24 10.0.0.0/8 172.16.0.0/12";
       };
 
       # This is the share name (e.g., \\your-ip\myreadonlyshare)
@@ -38,7 +38,7 @@
         "comment" = "Writable share";
 
         # Restrict access to local network only (prevents external access)
-        "hosts allow" = "127.0.0.1 ::1 192.168.1.0/16 10.0.0.0/8 172.16.0.0/12";
+        "hosts allow" = "127.0.0.1 ::1 192.168.1.0/24 10.0.0.0/8 172.16.0.0/12";
         # Optional: force all access as a specific user for permission consistency
         "force user" = "ilma4";
       };
