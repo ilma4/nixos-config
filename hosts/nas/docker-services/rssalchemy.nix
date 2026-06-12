@@ -45,7 +45,7 @@
         ipc: host
         user: pwuser
         security_opt:
-          - seccomp: "''${SOURCE_PATH}/deploy/seccomp_profile.json"
+          - "seccomp=''${SOURCE_PATH}/deploy/seccomp_profile.json"
         deploy:
           replicas: 2
         restart: unless-stopped
