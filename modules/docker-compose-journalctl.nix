@@ -138,6 +138,7 @@ on 2025-02-21 journalctl doesn't support "exclude" feature, so this script filte
 
           let mut reader = BufReader::new(journalctl_stdout);
           let mut line = Vec::with_capacity(4096);
+          let mut output_closed = false;
           loop {
               line.clear();
               let bytes_read = match reader.read_until(b'\n', &mut line) {
@@ -158,6 +159,8 @@ on 2025-02-21 journalctl doesn't support "exclude" feature, so this script filte
 
               if let Err(err) = output.write_all(&line) {
                   if err.kind() == io::ErrorKind::BrokenPipe {
+                      output_closed = true;
+                      let _ = journalctl_child.kill();
                       break;
                   }
                   eprintln!("Failed writing filtered output: {err}");
@@ -167,6 +170,7 @@ on 2025-02-21 journalctl doesn't support "exclude" feature, so this script filte
 
           let _ = output.flush();
           drop(output);
+          drop(reader);
 
           let journalctl_status = match journalctl_child.wait() {
               Ok(status) => status,
@@ -184,12 +188,12 @@ on 2025-02-21 journalctl doesn't support "exclude" feature, so this script filte
                       std::process::exit(1);
                   }
               };
-              if !pager_status.success() {
+              if !output_closed && !pager_status.success() {
                   std::process::exit(pager_status.code().unwrap_or(1));
               }
           }
 
-          if !journalctl_status.success() {
+          if !output_closed && !journalctl_status.success() {
               std::process::exit(journalctl_status.code().unwrap_or(1));
           }
       }
