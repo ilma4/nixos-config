@@ -2,7 +2,7 @@
 autoinstall:
   version: 1
   interactive-sections:
-    - identify
+    - identity
     - network
     - storage # I have to manually type encryption password
   locale: en_US.UTF-8
@@ -13,11 +13,11 @@ autoinstall:
     layout:
       name: direct
       sizing-policy: all
-  identity:
-    # hostname: msi-modern
-    # username: ilma4
-    # please, type password manually
-    # password: "$6$6BqHUFaYbHAkhkQP$eyzG6pxg6DhxC/Rixps6dVSs2oGpT4T2.P.B5Y/1GDOITBZoz6kNHnz2H9.G9Zl.spghGqZyNT/OcU0d1Tb0J/"
+  # The identity screen is interactive; hostname, username and password are entered there.
+  # identity:
+  #   hostname: msi-modern
+  #   username: ilma4
+  #   password: "$6$6BqHUFaYbHAkhkQP$eyzG6pxg6DhxC/Rixps6dVSs2oGpT4T2.P.B5Y/1GDOITBZoz6kNHnz2H9.G9Zl.spghGqZyNT/OcU0d1Tb0J/"
   timezone: Europe/Berlin
   ssh:
     install-server: true
