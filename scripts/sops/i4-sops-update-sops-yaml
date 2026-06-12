@@ -45,5 +45,5 @@ if [[ "$text" != *"$old_key"* ]]; then
 fi
 
 tmp_file="$(mktemp "${sops_yaml}.tmp.XXXXXX")"
-printf '%s' "${text//$old_key/$new_key}" > "$tmp_file"
+printf '%s\n' "${text//$old_key/$new_key}" > "$tmp_file"
 mv "$tmp_file" "$sops_yaml"
