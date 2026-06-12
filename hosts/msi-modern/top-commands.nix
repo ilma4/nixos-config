@@ -23,15 +23,13 @@ in {
   };
 
   config = let
+    rustRawString = value: let
+      hashes = "########";
+    in ''r${hashes}"${value}"${hashes}'';
     commandsAsMap =
-      lib.attrsets.foldlAttrs
-      (acc: key: value: "${acc}\n(\"${key}\", \"${value}\"),")
-      ""
-      cfg.commands;
-    commandNames =
-      lib.attrsets.foldlAttrs
-      (acc: key: _: "${acc}\n${key}") ""
-      cfg.commands;
+      lib.concatStringsSep "\n"
+      (lib.mapAttrsToList (key: value: "(${rustRawString key}, ${rustRawString value}),") cfg.commands);
+    commandNameArgs = lib.concatStringsSep " " (map lib.escapeShellArg (lib.attrNames cfg.commands));
   in let
     launch-favorite =
       pkgs.writers.writeRustBin "launch-favorite" {rustcArgs = ["-C" "opt-level=3"];}
@@ -45,28 +43,41 @@ in {
         use std::collections::HashMap;
 
         fn main() {
-            let command_name = env::args().nth(1).unwrap();
+            let command_name = env::args().nth(1).unwrap_or_else(|| {
+                eprintln!("Usage: launch-favorite <command-name>");
+                std::process::exit(64);
+            });
             let name_to_command = HashMap::from([
                 ${commandsAsMap}
             ]);
-            let mut command = name_to_command[command_name.as_str()].split_whitespace();
-            let err = Command::new(command.next().unwrap())
-                .args(command)
+            let command = match name_to_command.get(command_name.as_str()) {
+                Some(command) => *command,
+                None => {
+                    eprintln!("Unknown favorite command: {command_name}");
+                    std::process::exit(64);
+                }
+            };
+            let err = Command::new("${pkgs.runtimeShell}")
+                .arg("-c")
+                .arg(command)
                 .stdout(Stdio::inherit())
                 .stderr(Stdio::inherit())
                 .stdin(Stdio::inherit())
                 .exec();
             eprintln!("Command {command_name} failed with error {err}");
+            std::process::exit(1);
         }
       '';
 
     select-favorite = pkgs.writeShellScriptBin "select-favorite" ''
       set -euo pipefail
-      printf "${commandNames}" | ${cfg.tofi-command}
+      printf '%s\n' ${commandNameArgs} | ${cfg.tofi-command}
     '';
     exec-favorite = pkgs.writeShellScriptBin "exec-favorite" ''
       set -euo pipefail
-      ${select-favorite}/bin/select-favorite | xargs -I{} ${launch-favorite}/bin/launch-favorite {}
+      selected="$(${select-favorite}/bin/select-favorite)" || exit 0
+      [ -n "$selected" ] || exit 0
+      exec ${launch-favorite}/bin/launch-favorite "$selected"
     '';
 
     sway-modifier = config.wayland.windowManager.sway.config.modifier;
