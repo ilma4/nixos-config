@@ -96,6 +96,8 @@ initReposCommand file = do
   case (allRepos, missingRepos, existingReposWithCurrentPassword) of
     ([], _, _) -> return () -- no repos, no init
     (_, [], _) -> return () -- every repo already exists, possibly with an old password to rotate later
+    -- I expect to have some remote repo to do the second copy. If I want to bootstrap a completely new repo
+    -- I'll do it manually
     (_, _, []) -> error "Can't init missing repos because no repo exists/accessible with the current password"
     (_, _, fromRepo : _) -> do
       let args = "init" : "--copy-chunker-params" : fromArgs fromRepo
