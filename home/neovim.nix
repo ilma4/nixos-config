@@ -62,9 +62,31 @@
     vim.opt.softtabstop = -1
 
     -- Treesitter
-    require("nvim-treesitter.configs").setup({
-      highlight = { enable = true },
-      indent = { enable = true },
+    require("nvim-treesitter").setup()
+
+    local treesitter_filetypes = {
+      "nix",
+      "lua",
+      "sh",
+      "bash",
+      "yaml",
+      "json",
+      "jsonc",
+      "toml",
+      "markdown",
+      "pandoc",
+      "vim",
+      "python",
+      "haskell",
+      "hs",
+    }
+
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = treesitter_filetypes,
+      callback = function(args)
+        vim.treesitter.start(args.buf)
+        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end,
     })
 
     -- tiny helper for builtin gc comments
