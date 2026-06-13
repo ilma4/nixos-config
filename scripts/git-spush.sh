@@ -80,6 +80,6 @@ fi
 
 git rebase "${rebase_args[@]}" --exec 'git commit --amend --no-edit -S --allow-empty' "$upstream"
 
-git log --show-signature --oneline "$upstream"..HEAD
+# git log --show-signature --oneline "$upstream"..HEAD
 
 git push "${push_args[@]}"
