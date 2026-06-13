@@ -81,7 +81,7 @@ in {
     kitty = macOnlyCask {};
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software
-    karabiner-elements = macOnlyCask {}; # keyboard remapping
+    # karabiner-elements = macOnlyCask {}; # keyboard remapping
     raycast = macOnlyCask {}; # cmd+space : search apps and commands
     caffeine = macOnlyCask {};
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
