@@ -2,6 +2,7 @@ name: immich
 networks:
   reverse_proxy:
     external: true
+  default:
 services:
   database:
     container_name: immich_postgres
