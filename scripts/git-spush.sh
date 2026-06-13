@@ -78,7 +78,7 @@ elif [ "$rebase_merges" = "auto" ] && [ -n "$(git rev-list --min-parents=2 --max
     rebase_args+=(--rebase-merges)
 fi
 
-git rebase "${rebase_args[@]}" --exec 'git commit --amend --no-edit -S' "$upstream"
+git rebase "${rebase_args[@]}" --exec 'git commit --amend --no-edit -S --allow-empty' "$upstream"
 
 git log --show-signature --oneline "$upstream"..HEAD
 
