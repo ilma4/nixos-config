@@ -21,6 +21,7 @@
 
   i4.avahi.enable = true;
   i4.initrd-ssh.enable = true;
+  i4.deploy.enable = true;
 
   # Prometheus node exporter: monitoring over Tailscale
   services.prometheus.exporters.node = {

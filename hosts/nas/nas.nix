@@ -75,6 +75,7 @@ in {
   i4.notifications.enable = true;
   i4.dockerComposeEnable = true;
   i4.initrd-ssh.enable = true;
+  i4.deploy.enable = true;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader = {

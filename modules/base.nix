@@ -35,6 +35,7 @@ in {
     ./home-manager.nix
     ./nix-settings.nix
     ./initrd-ssh.nix
+    ./deploy.nix
     ./backup/backup.nix
     ./swap.nix
     ./avahi.nix
