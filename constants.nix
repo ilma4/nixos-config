@@ -2,7 +2,7 @@
   main-pub-keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
   ];
-  github-pub-key = "TODO";
+  github-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7";
 
   telegram = {
     my-id-secret = "telegram/my_id";

@@ -2,6 +2,7 @@
   pkgs,
   inputs,
   pkgs-unstable,
+  constants,
   ...
 }: let
   containerName = "agent-dev-box";
@@ -69,6 +70,7 @@ in {
       home-manager.extraSpecialArgs = {
         inherit inputs;
         inherit pkgs-unstable;
+        inherit constants;
       };
 
       home-manager.users.ilma4 = {

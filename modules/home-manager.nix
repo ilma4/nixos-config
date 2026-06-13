@@ -2,6 +2,7 @@
   config,
   inputs,
   pkgs-unstable,
+  constants,
   lib,
   ...
 }: {
@@ -16,6 +17,7 @@
     home-manager.extraSpecialArgs = {
       inherit inputs;
       inherit pkgs-unstable;
+      inherit constants;
     };
   };
 }

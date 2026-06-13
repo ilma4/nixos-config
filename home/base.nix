@@ -4,6 +4,7 @@
   pkgs-unstable,
   lib,
   inputs,
+  constants,
   osConfig ? null,
   ...
 }: let
@@ -19,6 +20,7 @@
     set -euo pipefail
     echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
   '';
+  gitSpushPackage = pkgs.writeShellScriptBin "git-spush" (builtins.readFile ../scripts/git-spush.sh);
 in {
   imports = [
     ./dev.nix
@@ -112,14 +114,21 @@ in {
         ${config.rebuild-script}
       '')
       i4-revision-package
+      gitSpushPackage
     ];
 
     programs.git = {
       enable = true;
+      signing = {
+        format = "ssh";
+        key = constants.github-pub-key;
+        signByDefault = false;
+      };
       settings = {
         core = {
           autocrlf = "input"; # do not change line separators
         };
+        gpg.ssh.allowedSignersFile = toString (pkgs.writeText "allowed_signers" ("ilya.malakhov4@gmail.com " + constants.github-pub-key));
       };
       # config to commit located in `dev.nix`
     };
