@@ -27,7 +27,6 @@ in {
       '')
 
       nodejs_24
-      beads-ui
       monitor-input
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
     ];

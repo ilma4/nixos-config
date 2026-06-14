@@ -92,7 +92,6 @@
     commonOverlays = [
       inputs.rust-overlay.overlays.default
       (import ./overlays/monitor-input-overlay.nix)
-      (import ./overlays/beads-ui-overlay.nix)
       (import ./overlays/paperless-mcp-overlay.nix)
       (import ./overlays/prometheus-smartctl-exporter-overlay.nix)
       (import ./overlays/restic-exporter-overlay.nix)
@@ -203,7 +202,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
-        inherit (pkgs) monitor-input beads-ui paperless-mcp restic-exporter;
+        inherit (pkgs) monitor-input paperless-mcp restic-exporter;
       };
     }) (builtins.attrValues systems));
 
