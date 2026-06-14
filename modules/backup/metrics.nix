@@ -120,7 +120,7 @@ in {
     };
 
     metricServices = builtins.listToAttrs (
-      builtins.map (repoInfo: let
+      map (repoInfo: let
         dailyName = "i4-backup-metrics-${repoInfo.unitId}-daily";
       in
         nameValuePair dailyName (mkMetricsService repoInfo))
@@ -128,7 +128,7 @@ in {
     );
 
     metricTimers = builtins.listToAttrs (
-      builtins.map (repoInfo: let
+      map (repoInfo: let
         dailyName = "i4-backup-metrics-${repoInfo.unitId}-daily";
       in
         nameValuePair dailyName (mkMetricsTimer {

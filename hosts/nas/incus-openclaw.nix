@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}: {
+{...}: {
   virtualisation.incus.enable = true;
   networking.nftables.enable = true;
 

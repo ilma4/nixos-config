@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 import Control.Monad (filterM, void)
 import Data.Aeson (FromJSON, Result (Error, Success), Value, fromJSON, throwDecode)

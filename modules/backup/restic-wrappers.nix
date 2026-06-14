@@ -14,7 +14,7 @@
 
   mkWrapperName = name: "i4-restic-${name}";
 
-  generatedWrapperNames = ["i4-restic-local"] ++ builtins.map mkWrapperName remoteRepoNames;
+  generatedWrapperNames = ["i4-restic-local"] ++ map mkWrapperName remoteRepoNames;
 
   remoteRepoNamesAreValid = all isValidRemoteRepoName remoteRepoNames;
   hasLocalRemoteRepo = builtins.elem "local" remoteRepoNames;

@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  inherit (lib) mkIf mkMerge mkOption types;
+  inherit (lib) mkIf mkMerge;
 
   cfg = config.traefikReverseProxy or {};
 

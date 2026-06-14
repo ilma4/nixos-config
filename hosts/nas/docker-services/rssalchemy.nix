@@ -1,8 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: let
+{pkgs, ...}: let
   src = pkgs.fetchFromGitHub {
     owner = "egor3f";
     repo = "rssalchemy";

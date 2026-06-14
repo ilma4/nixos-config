@@ -1,4 +1,4 @@
-{lib, ...}: {
+{...}: {
   dockerCompose.syncthing = {
     composeText = builtins.readFile ../dockerCompose/syncthing.yml;
   };

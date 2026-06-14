@@ -1,4 +1,4 @@
-{pkgs, ...}: let
+{...}: let
   CONFIG_DIR = "/srv/homeassistant";
   home-assistant-version = "2026.6.3";
 in {

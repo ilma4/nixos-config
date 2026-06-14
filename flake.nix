@@ -197,7 +197,7 @@
   in {
     # use `nix run .#<package-name>` to run one of those packages
     # e.g. `nix run .#monitor-input`
-    packages = builtins.listToAttrs (builtins.map (system: {
+    packages = builtins.listToAttrs (map (system: {
       name = system;
       value = let
         pkgs = (pkgsSets system).stable;
@@ -206,7 +206,7 @@
       };
     }) (builtins.attrValues systems));
 
-    devShells = builtins.listToAttrs (builtins.map (system: {
+    devShells = builtins.listToAttrs (map (system: {
       name = system;
       value = let
         pkgs = (pkgsSets system).stable;

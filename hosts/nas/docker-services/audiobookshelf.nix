@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{...}: let
   version = "2.35.1";
 
   srvDir = "/srv/audiobookshelf";

@@ -1,5 +1,5 @@
 final: prev: {
-  paperless-mcp = final.buildNpmPackage rec {
+  paperless-mcp = final.buildNpmPackage {
     pname = "paperless-mcp";
     version = "0.4.1";
 

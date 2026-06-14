@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}: {
+{config, ...}: {
   users.users.lidarr = {
     isSystemUser = true;
     uid = 804;
