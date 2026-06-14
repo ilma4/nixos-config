@@ -45,7 +45,7 @@ in {
   boot.initrd.systemd.extraBin.systemd-tty-ask-password-agent = "${config.boot.initrd.systemd.package}/bin/systemd-tty-ask-password-agent";
 
   boot.initrd.network.hoopsnake = {
-    enable = true;
+    enable = false;
 
     ssh = {
       authorizedKeysFile = authorizedKeys;

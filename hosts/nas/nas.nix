@@ -36,7 +36,7 @@ in {
     ./samba.nix
 
     ./hdd-idle-guard.nix
-    ./hoopsnake.nix
+    # ./hoopsnake.nix
     # ./agent-dev-box.nix # issues with nixpkgs not having overlays in container unlike on host
 
     "${modules}/server.nix"
