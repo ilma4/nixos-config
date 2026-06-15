@@ -87,7 +87,7 @@ in {
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
     marta = macOnlyCask {}; # file manager
-    google-drive = macOnlyCask {};
+    # google-drive = macOnlyCask {};
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
     vial = macOnlyCask {}; # configure my split keyboard
     skim = macOnlyCask {}; # pdf viewer
