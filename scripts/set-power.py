@@ -11,7 +11,7 @@ PCI_MODE_FILE = Path("/sys/module/pcie_aspm/parameters/policy")
 MODES = {
     "power": ("power", "low-power", "powersave"),
     "balanced": ("balance_performance", "balanced", "default"),
-    "performance": ("balance_performance", "performance", "default"),
+    "performance": ("performance", "performance", "default"),
 }
 ALIASES = {
     "balance": "balanced",
