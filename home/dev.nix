@@ -26,6 +26,9 @@ in {
   options.i4.dev.enable = lib.mkEnableOption "development tools";
 
   config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
+    # Home Assistant MCP, scoped to ~/.config/ha-mcp / the ha-pi command. See home/ha-mcp.nix.
+    i4.ha-mcp.enable = lib.mkDefault true;
+
     home.packages = with pkgs; [
       docker # docker cli
       podman # podman cli

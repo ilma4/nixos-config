@@ -25,6 +25,7 @@ in {
   imports = [
     ./dev.nix
     ./fonts.nix
+    ./ha-mcp.nix
     ./neovim.nix
     ./personal.nix
     ./raycast.nix

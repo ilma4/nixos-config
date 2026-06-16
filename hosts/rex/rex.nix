@@ -17,6 +17,12 @@
   i4.avahi.enable = true;
   i4.sops.enable = true;
 
+  # HA long-lived token for the ha-mcp server (home/ha-mcp.nix), readable by the agent user.
+  sops.secrets."homeassistant/token" = {
+    owner = "ilma4";
+    mode = "0400";
+  };
+
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
