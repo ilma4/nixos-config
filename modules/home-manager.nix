@@ -3,6 +3,7 @@
   inputs,
   pkgs-unstable,
   constants,
+  myLib,
   lib,
   ...
 }: {
@@ -18,6 +19,7 @@
       inherit inputs;
       inherit pkgs-unstable;
       inherit constants;
+      inherit myLib;
     };
   };
 }
