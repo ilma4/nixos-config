@@ -1,11 +1,14 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 
 const title = process.env.PI_NOTIFY_TITLE ?? "Pi";
 const finishBody = process.env.PI_NOTIFY_BODY ?? "Agent finished";
 
 function run(cmd: string, args: string[]) {
-  execFile(cmd, args, { stdio: "ignore" }, () => {});
+  // Fire-and-forget: ignore the notifier's stdio and swallow spawn errors
+  // (e.g. notify-send not installed) so a failed notification never crashes Pi.
+  const child = spawn(cmd, args, { stdio: "ignore" });
+  child.on("error", () => {});
 }
 
 function osc777(title: string, body: string) {
