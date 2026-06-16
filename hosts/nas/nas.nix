@@ -17,8 +17,8 @@
   configureHddStandbyTimeout = ''
     set -euo pipefail
 
-    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sdb
-    ${pkgs.hdparm}/sbin/hdparm -S 12 /dev/sda
+    ${pkgs.hdparm}/bin/hdparm -S 12 /dev/sdb
+    ${pkgs.hdparm}/bin/hdparm -S 12 /dev/sda
   '';
 in {
   imports = let
