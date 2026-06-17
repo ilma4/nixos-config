@@ -92,6 +92,9 @@ in {
         "--python"
         "3.12"
         "--from"
+        # Intentionally unpinned: keep resolving the latest mlx-openai-server
+        # from PyPI on agent startup so local fixes and upstream compatibility
+        # updates are picked up without editing this flake.
         "mlx-openai-server"
         "mlx-openai-server"
         "launch"
