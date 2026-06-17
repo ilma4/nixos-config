@@ -7,14 +7,20 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from urllib.parse import urlparse
 
 import requests
 
 API_BASE_URL = "https://api.github.com"
+DEFAULT_TIMEOUT_SECONDS = 30
 DEFAULT_FIELD = "tag_name"
 FIELD_CHOICES = ("tag_name", "name", "html_url", "published_at", "body", "json")
+UNSTABLE_RELEASE_PATTERN = re.compile(
+    r"\b(alpha|alfa|beta|rc|pre[- ]?release|preview|nightly|dev|canary)\b",
+    re.IGNORECASE,
+)
 Release = dict[str, object]
 
 
@@ -71,17 +77,36 @@ def github_session(token: str | None) -> requests.Session:
 
 
 def fetch_latest_release(repo: str, token: str | None) -> Release:
-    url = f"{API_BASE_URL}/repos/{repo}/releases/latest"
+    next_url = f"{API_BASE_URL}/repos/{repo}/releases?per_page=100"
 
     with github_session(token) as session:
-        response = session.get(url, timeout=30)
-        response.raise_for_status()
-        payload = response.json()
+        while next_url:
+            response = session.get(next_url, timeout=DEFAULT_TIMEOUT_SECONDS)
+            response.raise_for_status()
+            payload = response.json()
 
-    if not isinstance(payload, dict):
-        raise RuntimeError(f"Unexpected GitHub API response for {repo}")
+            if not isinstance(payload, list):
+                raise RuntimeError(f"Unexpected GitHub API response for {repo}")
 
-    return payload
+            for release in payload:
+                if isinstance(release, dict) and is_stable_release(release):
+                    return release
+
+            next_url = response.links.get("next", {}).get("url")
+
+    raise ValueError(f"No stable GitHub releases found for {repo}")
+
+
+def is_stable_release(release: Release) -> bool:
+    if release.get("draft") or release.get("prerelease"):
+        return False
+
+    for field_name in ("tag_name", "name"):
+        value = release.get(field_name)
+        if isinstance(value, str) and UNSTABLE_RELEASE_PATTERN.search(value):
+            return False
+
+    return True
 
 
 def render_field(release: Release, field: str) -> str:
