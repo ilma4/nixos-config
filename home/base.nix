@@ -192,10 +192,14 @@ in {
         lib.mkIf (stdenv.isLinux && config.configure-ssh) # macOS works fine with ssh agent
         
         ''
-          if [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
+          if [ -n "''${SSH_AUTH_SOCK:-}" ] && [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
+              mkdir -p ${HOME}/.ssh
               ln -sf "$SSH_AUTH_SOCK" ${HOME}/.ssh/ssh_auth_sock
           fi
-          export SSH_AUTH_SOCK=${HOME}/.ssh/ssh_auth_sock
+
+          if [ -S ${HOME}/.ssh/ssh_auth_sock ]; then
+              export SSH_AUTH_SOCK=${HOME}/.ssh/ssh_auth_sock
+          fi
         '';
     };
 
