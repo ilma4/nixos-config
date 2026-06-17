@@ -8,7 +8,9 @@ usage() {
 }
 
 sql_quote() {
-  printf "'%s'" "${1//\'/\'\'}"
+  local escaped
+  escaped="${1//\'/''}"
+  printf "'%s'" "$escaped"
 }
 
 abs_path() {
