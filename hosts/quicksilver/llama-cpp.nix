@@ -9,20 +9,12 @@
   host = "127.0.0.1";
   port = 8001;
 
-  qwen36_35b_q6_modelName = "Qwen3.6-35B-A3B-UD-Q6_K_XL";
-  qwen36_35b_q6_modelId = "unsloth/Qwen3.6-35B-A3B-q6";
-  qwen36_35b_q6 = pkgs.fetchurl {
-    name = "${qwen36_35b_q6_modelName}.gguf";
-    url = "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/a483e9e6cbd595906af30beda3187c2663a1118c/${qwen36_35b_q6_modelName}.gguf";
-    hash = "sha256-9rbG1c+m8A2WTut63SjrFM50gXNNUGuQaBAHZ4zSxIQ=";
-  };
-
-  qwen36_27b_q6_modelName = "Qwen3.6-27B-UD-Q6_K_XL";
-  qwen36_27b_q6_modelId = "unsloth/Qwen3.6-27B-q6";
-  qwen36_27b_q6 = pkgs.fetchurl {
-    name = "${qwen36_27b_q6_modelName}.gguf";
-    url = "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/82d411acf4a06cfb8d9b073a5211bf410bfc29bf/${qwen36_27b_q6_modelName}.gguf";
-    hash = "sha256-h0aIHUDygLG2uFjGVqNHx1TtPZzI0uGtRrNjW4f2Efg=";
+  qwen36_35b_q8_modelName = "Qwen3.6-35B-A3B-UD-Q8_K_XL";
+  qwen36_35b_q8_modelId = "unsloth/Qwen3.6-35B-A3B-q8";
+  qwen36_35b_q8 = pkgs.fetchurl {
+    name = "${qwen36_35b_q8_modelName}.gguf";
+    url = "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/a483e9e6cbd595906af30beda3187c2663a1118c/${qwen36_35b_q8_modelName}.gguf";
+    hash = "sha256-t2IhXF9Qf0hl30rD0a+oA4KK+kHgXsrD+sQxpnu9iOg=";
   };
 
   modelsPreset = pkgs.writeText "qwen36-models.ini" ''
@@ -42,11 +34,8 @@
     chat-template-kwargs = {"preserve_thinking":true}
     load-on-startup = false
 
-    [${qwen36_35b_q6_modelId}]
-    model = ${qwen36_35b_q6}
-
-    [${qwen36_27b_q6_modelId}]
-    model = ${qwen36_27b_q6}
+    [${qwen36_35b_q8_modelId}]
+    model = ${qwen36_35b_q8}
   '';
 in {
   assertions = [
