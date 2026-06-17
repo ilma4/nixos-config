@@ -195,10 +195,9 @@ wait_for_vm_exit_if_backgrounded() {
   local timeout_seconds="$2"
   local deadline=$((SECONDS + timeout_seconds))
   local vm_pid=""
-  local try
 
   # On macOS quickemu may daemonize and return immediately; wait for PID file.
-  for try in $(seq 1 20); do
+  for _ in $(seq 1 20); do
     if [[ -f "$pid_file" ]]; then
       vm_pid="$(tr -d '[:space:]' < "$pid_file" || true)"
       break
@@ -282,12 +281,21 @@ wait_for_install_completion() {
   local ssh_key="$3"
   local disk_img="$4"
   local timeout_seconds="$5"
+  local pid_file_wait_seconds="${6:-0}"
   local deadline=$((SECONDS + timeout_seconds))
+  local pid_file_deadline=$((SECONDS + pid_file_wait_seconds))
   local vm_pid=""
   local install_hostname=""
   local disk_mb="0"
   local last_disk_mb="-1"
   local last_disk_change=$SECONDS
+
+  # On macOS quickemu may daemonize and return before the VM PID file is
+  # visible. Poll briefly when the caller observed a short quickemu run so we do
+  # not treat a still-installing background VM as completed.
+  while [[ ! -f "$pid_file" ]] && (( SECONDS < pid_file_deadline )); do
+    sleep 1
+  done
 
   # If quickemu is blocking (Linux), PID file may be absent by the time we get here.
   if [[ -f "$pid_file" ]]; then
@@ -517,6 +525,8 @@ main() {
   local install_vm_name
   local install_pid_file
   local install_monitor_socket
+  local install_started_seconds
+  local install_pid_wait_seconds
 
   base_conf="$(find_base_conf)"
   conf_dir="$(cd "$(dirname "$base_conf")" && pwd)"
@@ -637,11 +647,16 @@ EOF
 
   install_log="${vm_dir}/autoinstall-install.log"
   log "Running unattended installation (this can take a while)"
+  install_started_seconds=$SECONDS
   if ! quickemu --vm "$install_conf" >"$install_log" 2>&1; then
     tail -n 60 "$install_log" >&2 || true
     die "Install stage failed. Full log: ${install_log}"
   fi
-  if ! wait_for_install_completion "$install_pid_file" "$install_monitor_socket" "$ssh_key" "$disk_img_path" "$INSTALL_WAIT_TIMEOUT_SECONDS"; then
+  install_pid_wait_seconds=0
+  if (( SECONDS - install_started_seconds < 30 )); then
+    install_pid_wait_seconds=20
+  fi
+  if ! wait_for_install_completion "$install_pid_file" "$install_monitor_socket" "$ssh_key" "$disk_img_path" "$INSTALL_WAIT_TIMEOUT_SECONDS" "$install_pid_wait_seconds"; then
     tail -n 60 "$install_log" >&2 || true
     die "Timed out waiting for unattended install VM to finish. Full log: ${install_log}"
   fi
