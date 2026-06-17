@@ -40,6 +40,10 @@
   # idle timeout (replaces llama.cpp load-on-startup=false + sleep-idle=300).
   # Note: temperature/top-p/top-k are not config-file keys, so per-request
   # sampling is left to the client (model card: temp 0.6 / top-p 0.95 / top-k 20).
+  # TODO: mlx-openai-server 1.8.1 rejects the OpenAI `developer` message role
+  # (HTTP 422), so the pi client pins compat.supportsDeveloperRole = false in
+  # ~/.pi/agent/models.json and sends `system` instead. Re-enable the developer
+  # role there once a future mlx-openai-server version accepts it.
   serverConfig = (pkgs.formats.yaml {}).generate "mlx-openai-server.yaml" {
     server = {
       inherit host port;
