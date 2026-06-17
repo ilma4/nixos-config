@@ -5,7 +5,6 @@
   pkgs-unstable,
   ...
 }: let
-  simpleServiceUpdateScript = pkgs.writeShellScript "simple-service-update-source" (builtins.readFile ../scripts/simple-service-update);
   i4UpdateHostScript = pkgs.writeShellScriptBin "i4-update-host" (builtins.readFile ../scripts/i4-update-host.sh);
   i4UpdateHostZshCompletion = pkgs.writeTextFile {
     name = "i4-update-host-zsh-completion";
@@ -16,12 +15,6 @@
     name = "i4-update-host";
     paths = [i4UpdateHostScript i4UpdateHostZshCompletion];
   };
-  flakeSource = config.flake-source or null;
-  simpleServiceUpdateFlakeSource = lib.optionalString (flakeSource != null) ''
-    if [ -z "''${NIXOS_CONFIG_DIR:-}" ]; then
-      export NIXOS_CONFIG_DIR=${lib.escapeShellArg flakeSource}
-    fi
-  '';
 in {
   options.i4.dev.enable = lib.mkEnableOption "development tools";
 
@@ -59,13 +52,6 @@ in {
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
       i4UpdateHost
-      (
-        pkgs.writeShellScriptBin "simple-service-update" ''
-          set -euo pipefail
-          ${simpleServiceUpdateFlakeSource}
-          exec ${simpleServiceUpdateScript} "$@"
-        ''
-      )
       (lib.mkIf pkgs.stdenv.isDarwin (pkgs.writeShellScriptBin "codex" ''
         set -euo pipefail
         exec /opt/homebrew/bin/codex --yolo "$@"
