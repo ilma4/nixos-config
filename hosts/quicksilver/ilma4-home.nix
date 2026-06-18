@@ -44,6 +44,7 @@
 
       blueutil # bluetooth CLI, used by the WH-1000XM5 Raycast script
       terminal-notifier # auto-dismissing notifications for the WH-1000XM5 Raycast script
+      switchaudio-osx # SwitchAudioSource, used by the mic-switching Raycast scripts
 
       (let
         bw = "${pkgs.bitwarden-cli}/bin/bw";

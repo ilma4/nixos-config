@@ -15,6 +15,8 @@ with lib; let
     "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;
     "chrome.applescript" = ./raycast-scripts/chrome.applescript;
     "wh-1000xm5-connect.applescript" = ./raycast-scripts/wh-1000xm5-connect.applescript;
+    "external-mic.applescript" = ./raycast-scripts/external-mic.applescript;
+    "builtin-mic.applescript" = ./raycast-scripts/builtin-mic.applescript;
 
     "monitor-displayport.applescript" = pkgs.writeText "monitor-displayport.applescript" ''
       #!/usr/bin/osascript
