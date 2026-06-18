@@ -43,11 +43,12 @@
   # `set -euo pipefail` per repo convention; both generators were verified to run
   # without $HOME, so the build stays hermetic.
   #
-  # NOTE: atuin is intentionally NOT precomputed. `atuin init zsh` output depends
-  # on atuin's config (e.g. the tmux popup integration), which the build sandbox
-  # can't read, so a precomputed snippet could silently diverge from the user's
-  # hand-maintained ~/.config/atuin/config.toml. atuin therefore keeps Home
-  # Manager's runtime integration (programs.atuin.enableZshIntegration = true).
+  # atuin is precomputed too (see atuinInitSnippet below). `atuin init zsh`
+  # output DOES depend on atuin's config (e.g. the tmux popup integration emits
+  # ATUIN_TMUX_POPUP*), so to keep the precomputed snippet faithful we now ship
+  # the config itself in the Nix store (dotfiles/atuin/config.toml, deployed
+  # read-only to ~/.config/atuin/config.toml) and generate the init against it.
+  # Build-time config == deployed config by construction, so they can't diverge.
 
   # `direnv hook zsh` installs the precmd/chpwd hook that runs `direnv export`
   # on directory changes. The hook body is static (the per-prompt `direnv export`
@@ -70,6 +71,28 @@
     mkdir -p "$out"
     ${lib.getExe' config.programs.fzf.package "fzf"} --zsh > "$out/fzf-init.zsh"
     ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/fzf-init.zsh.zwc' '$out/fzf-init.zsh'"
+  '';
+
+  # `atuin init zsh` emits atuin's hooks and the Ctrl-R / up-arrow bindings. Its
+  # output depends on atuin's config, so we point ATUIN_CONFIG_DIR at the same
+  # store copy of config.toml that gets deployed to ~/.config/atuin (see
+  # xdg.configFile below) — build-time and runtime config are then identical by
+  # construction. The session block it emits (`export ATUIN_SESSION=$(atuin
+  # uuid)`) is still guarded, so the fork-free ATUIN_SESSION pre-seed in the
+  # `early` block keeps skipping that ~16ms `atuin uuid` fork; precomputing here
+  # additionally removes the ~17ms `atuin init zsh` generation fork. The flags
+  # mirror programs.atuin.flags (single source of truth). writableTmpDirAsHomeHook
+  # gives atuin a writable HOME at build time (it best-effort mkdir's its data
+  # dirs), matching Home Manager's own fish/nu init generators. Shipped as a dir
+  # with an adjacent .zwc so `source <basename>` loads bytecode (see fzf above).
+  atuinInitSnippet = pkgs.runCommandLocal "i4-atuin-init" {
+    nativeBuildInputs = [pkgs.writableTmpDirAsHomeHook];
+  } ''
+    set -euo pipefail
+    mkdir -p "$out"
+    ATUIN_CONFIG_DIR=${../dotfiles/atuin} \
+      ${lib.getExe' config.programs.atuin.package "atuin"} init zsh ${lib.escapeShellArgs config.programs.atuin.flags} > "$out/atuin-init.zsh"
+    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/atuin-init.zsh.zwc' '$out/atuin-init.zsh'"
   '';
 
   # Powerlevel10k ships source files and tries to zcompile them at runtime only
@@ -440,18 +463,16 @@ in {
           zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
           zstyle ':completion:*' menu select
 
-          # direnv/fzf integrations, precomputed at build time (see the *Snippet
-          # derivations in the let-block). Each is sourced only when its program
-          # is enabled, mirroring Home Manager (which emits an integration only
-          # for an enabled program). The guard matters for direnv: it is enabled
-          # only via home/dev.nix behind i4.dev.enable, so sourcing it
+          # direnv/fzf/atuin integrations, precomputed at build time (see the
+          # *Snippet derivations in the let-block). Each is sourced only when its
+          # program is enabled, mirroring Home Manager (which emits an integration
+          # only for an enabled program). The guard matters for direnv: it is
+          # enabled only via home/dev.nix behind i4.dev.enable, so sourcing it
           # unconditionally would start running direnv on every prompt on hosts
           # (e.g. nas, msi-modern) that never opted in. enableZshIntegration is
-          # false for both, so these static sources replace HM's own per-startup
-          # `direnv hook` / `fzf --zsh` forks. Runs after compinit (HM emits that
-          # earlier). atuin keeps its HM runtime integration, which HM appends
-          # later than this block, so atuin's Ctrl-R binding still wins over
-          # fzf's — preserving the previous behavior.
+          # false for all three, so these static sources replace HM's own
+          # per-startup `direnv hook` / `fzf --zsh` / `atuin init zsh` forks. Runs
+          # after compinit (HM emits that earlier).
           ${lib.optionalString config.programs.direnv.enable "source ${direnvHookSnippet}"}
 
           # fzf defines ZLE widgets, so guard on the line editor being active
@@ -459,6 +480,16 @@ in {
           ${lib.optionalString config.programs.fzf.enable ''
             if [[ $options[zle] = on ]]; then
               source ${fzfInitSnippet}/fzf-init.zsh
+            fi
+          ''}
+
+          # atuin is sourced AFTER fzf so its Ctrl-R binding wins, exactly as
+          # before when HM appended its own `eval "$(atuin init zsh)"` after this
+          # block — only now it's a static, zcompiled source with no startup fork.
+          # The `$options[zle]` guard mirrors HM's wrapper.
+          ${lib.optionalString config.programs.atuin.enable ''
+            if [[ $options[zle] = on ]]; then
+              source ${atuinInitSnippet}/atuin-init.zsh
             fi
           ''}
         '';
@@ -504,17 +535,25 @@ in {
 
     programs.atuin = {
       enable = true;
-      # Keep Home Manager's runtime `eval "$(atuin init zsh)"` (NOT precomputed):
-      # atuin's init output depends on its config, which a build-time snippet
-      # with an empty $HOME can't see, so precomputing could silently diverge
-      # from ~/.config/atuin/config.toml. direnv/fzf are precomputed instead,
-      # since their output is config-independent.
-      enableZshIntegration = true;
+      # Integration is precomputed into atuinInitSnippet and sourced from
+      # initContent above; disabling this stops Home Manager from emitting its
+      # own `eval "$(atuin init zsh)"`, which forks atuin to GENERATE the init
+      # script on every startup (~17ms). The precompute is faithful because the
+      # config it reads is the store-managed dotfiles/atuin/config.toml deployed
+      # below — see atuinInitSnippet.
+      enableZshIntegration = false;
       enableBashIntegration = false;
       flags = [
         "--disable-up-arrow"
       ];
     };
+
+    # Deploy the atuin config read-only from the Nix store. This is the exact
+    # file atuinInitSnippet reads at build time, so the precomputed init can
+    # never drift from the runtime config. Kept as a verbatim dotfile (not
+    # programs.atuin.settings) so comments/upstream defaults are preserved; an
+    # empty settings means Home Manager writes nothing here, so no conflict.
+    xdg.configFile."atuin/config.toml".source = ../dotfiles/atuin/config.toml;
 
     programs.ripgrep.enable = true;
     programs.fd.enable = true;
