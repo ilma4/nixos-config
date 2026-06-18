@@ -41,81 +41,17 @@
     prompt_char             # prompt symbol
   )
 
-  # The list of segments shown on the right. Fill it with less important segments.
-  # Right prompt on the last prompt line (where you are typing your commands) gets
-  # automatically hidden when the input line reaches it. Right prompt above the
-  # last prompt line gets hidden if it would overlap with left prompt.
+  # Right prompt: keep only segments that are actually useful in daily use.
+  # The generated template used to include dozens of language/cloud/tool segments.
+  # Even when they don't render, their POWERLEVEL9K_* parameters are part of
+  # Powerlevel10k's state-cache signature, so they slow down cold init and warm
+  # cache validation.
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
-    # =========================[ Line #1 ]=========================
     status                  # exit code of the last command
-    command_execution_time  # duration of the last command
+    command_execution_time  # duration of long-running commands
     background_jobs         # presence of background jobs
-    direnv                  # direnv status (https://direnv.net/)
-    asdf                    # asdf version manager (https://github.com/asdf-vm/asdf)
-    virtualenv              # python virtual environment (https://docs.python.org/3/library/venv.html)
-    anaconda                # conda environment (https://conda.io/)
-    pyenv                   # python environment (https://github.com/pyenv/pyenv)
-    goenv                   # go environment (https://github.com/syndbg/goenv)
-    nodenv                  # node.js version from nodenv (https://github.com/nodenv/nodenv)
-    nvm                     # node.js version from nvm (https://github.com/nvm-sh/nvm)
-    nodeenv                 # node.js environment (https://github.com/ekalinin/nodeenv)
-    # node_version          # node.js version
-    # go_version            # go version (https://golang.org)
-    # rust_version          # rustc version (https://www.rust-lang.org)
-    # dotnet_version        # .NET version (https://dotnet.microsoft.com)
-    # php_version           # php version (https://www.php.net/)
-    # laravel_version       # laravel php framework version (https://laravel.com/)
-    # java_version          # java version (https://www.java.com/)
-    # package               # name@version from package.json (https://docs.npmjs.com/files/package.json)
-    rbenv                   # ruby version from rbenv (https://github.com/rbenv/rbenv)
-    rvm                     # ruby version from rvm (https://rvm.io)
-    fvm                     # flutter version management (https://github.com/leoafarias/fvm)
-    luaenv                  # lua version from luaenv (https://github.com/cehoffman/luaenv)
-    jenv                    # java version from jenv (https://github.com/jenv/jenv)
-    plenv                   # perl version from plenv (https://github.com/tokuhirom/plenv)
-    perlbrew                # perl version from perlbrew (https://github.com/gugod/App-perlbrew)
-    phpenv                  # php version from phpenv (https://github.com/phpenv/phpenv)
-    scalaenv                # scala version from scalaenv (https://github.com/scalaenv/scalaenv)
-    haskell_stack           # haskell version from stack (https://haskellstack.org/)
-    kubecontext             # current kubernetes context (https://kubernetes.io/)
-    terraform               # terraform workspace (https://www.terraform.io)
-    # terraform_version     # terraform version (https://www.terraform.io)
-    aws                     # aws profile (https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
-    aws_eb_env              # aws elastic beanstalk environment (https://aws.amazon.com/elasticbeanstalk/)
-    azure                   # azure account name (https://docs.microsoft.com/en-us/cli/azure)
-    gcloud                  # google cloud cli account and project (https://cloud.google.com/)
-    google_app_cred         # google application credentials (https://cloud.google.com/docs/authentication/production)
-    toolbox                 # toolbox name (https://github.com/containers/toolbox)
-    # context                 # user@hostname
-    nordvpn                 # nordvpn connection status, linux only (https://nordvpn.com/)
-    ranger                  # ranger shell (https://github.com/ranger/ranger)
-    yazi                    # yazi shell (https://github.com/sxyazi/yazi)
-    nnn                     # nnn shell (https://github.com/jarun/nnn)
-    lf                      # lf shell (https://github.com/gokcehan/lf)
-    xplr                    # xplr shell (https://github.com/sayanarijit/xplr)
-    vim_shell               # vim shell indicator (:sh)
-    midnight_commander      # midnight commander shell (https://midnight-commander.org/)
-    nix_shell               # nix shell (https://nixos.org/nixos/nix-pills/developing-with-nix-shell.html)
-    chezmoi_shell           # chezmoi shell (https://www.chezmoi.io/)
-    # vpn_ip                # virtual private network indicator
-    # load                  # CPU load
-    # disk_usage            # disk usage
-    # ram                   # free RAM
-    # swap                  # used swap
-    todo                    # todo items (https://github.com/todotxt/todo.txt-cli)
-    timewarrior             # timewarrior tracking status (https://timewarrior.net/)
-    taskwarrior             # taskwarrior task count (https://taskwarrior.org/)
-    per_directory_history   # Oh My Zsh per-directory-history local/global indicator
-    # cpu_arch              # CPU architecture
-    # time                  # current time
-    # =========================[ Line #2 ]=========================
-    newline
-    # ip                    # ip address and bandwidth usage for a specified network interface
-    # public_ip             # public IP address
-    # proxy                 # system-wide http/https/ftp proxy
-    # battery               # internal battery
-    # wifi                  # wifi speed
-    # example               # example user-defined segment (see prompt_example function below)
+    direnv                  # direnv status
+    nix_shell               # nix shell / dev shell indicator
   )
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
@@ -1745,6 +1681,72 @@
   # can slow down prompt by 1-2 milliseconds, so it's better to keep it turned off unless you
   # really need it.
   typeset -g POWERLEVEL9K_DISABLE_HOT_RELOAD=true
+
+  # Drop generated parameters for segments that aren't in the prompt above. P10k
+  # includes every POWERLEVEL9K_* parameter in its state-cache signature, so
+  # keeping knobs for hidden template segments makes both cold init and warm
+  # cache validation slower. If any of these segments are re-enabled later, just
+  # remove the matching pattern here and the defaults/config above will apply.
+  unset -m \
+    'POWERLEVEL9K_ANACONDA*' \
+    'POWERLEVEL9K_ASDF*' \
+    'POWERLEVEL9K_AWS*' \
+    'POWERLEVEL9K_AZURE*' \
+    'POWERLEVEL9K_BATTERY*' \
+    'POWERLEVEL9K_CHEZMOI_SHELL*' \
+    'POWERLEVEL9K_CPU_ARCH*' \
+    'POWERLEVEL9K_DISK_USAGE*' \
+    'POWERLEVEL9K_DOTNET_VERSION*' \
+    'POWERLEVEL9K_FVM*' \
+    'POWERLEVEL9K_GCLOUD*' \
+    'POWERLEVEL9K_GOENV*' \
+    'POWERLEVEL9K_GOOGLE_APP_CRED*' \
+    'POWERLEVEL9K_GO_VERSION*' \
+    'POWERLEVEL9K_HASKELL_STACK*' \
+    'POWERLEVEL9K_IP*' \
+    'POWERLEVEL9K_JAVA_VERSION*' \
+    'POWERLEVEL9K_JENV*' \
+    'POWERLEVEL9K_KUBECONTEXT*' \
+    'POWERLEVEL9K_LARAVEL_VERSION*' \
+    'POWERLEVEL9K_LF*' \
+    'POWERLEVEL9K_LOAD*' \
+    'POWERLEVEL9K_LUAENV*' \
+    'POWERLEVEL9K_MIDNIGHT_COMMANDER*' \
+    'POWERLEVEL9K_NNN*' \
+    'POWERLEVEL9K_NODEENV*' \
+    'POWERLEVEL9K_NODENV*' \
+    'POWERLEVEL9K_NODE_VERSION*' \
+    'POWERLEVEL9K_NORDVPN*' \
+    'POWERLEVEL9K_NVM*' \
+    'POWERLEVEL9K_PACKAGE*' \
+    'POWERLEVEL9K_PERLBREW*' \
+    'POWERLEVEL9K_PER_DIRECTORY_HISTORY*' \
+    'POWERLEVEL9K_PHPENV*' \
+    'POWERLEVEL9K_PHP_VERSION*' \
+    'POWERLEVEL9K_PLENV*' \
+    'POWERLEVEL9K_PROXY*' \
+    'POWERLEVEL9K_PUBLIC_IP*' \
+    'POWERLEVEL9K_PYENV*' \
+    'POWERLEVEL9K_RAM*' \
+    'POWERLEVEL9K_RANGER*' \
+    'POWERLEVEL9K_RBENV*' \
+    'POWERLEVEL9K_RUST_VERSION*' \
+    'POWERLEVEL9K_RVM*' \
+    'POWERLEVEL9K_SCALAENV*' \
+    'POWERLEVEL9K_SWAP*' \
+    'POWERLEVEL9K_TASKWARRIOR*' \
+    'POWERLEVEL9K_TERRAFORM*' \
+    'POWERLEVEL9K_TIMEWARRIOR*' \
+    'POWERLEVEL9K_TIME_*' \
+    'POWERLEVEL9K_TODO*' \
+    'POWERLEVEL9K_TOOLBOX*' \
+    'POWERLEVEL9K_VCS*' \
+    'POWERLEVEL9K_VIM_SHELL*' \
+    'POWERLEVEL9K_VIRTUALENV*' \
+    'POWERLEVEL9K_VPN_IP*' \
+    'POWERLEVEL9K_WIFI*' \
+    'POWERLEVEL9K_XPLR*' \
+    'POWERLEVEL9K_YAZI*'
 
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
