@@ -283,6 +283,26 @@ in {
           fi
           typeset -gx _P9K_SSH_TTY=$TTY
 
+          # Pre-seed atuin's session id so Home Manager's later
+          # `eval "$(atuin init zsh)"` skips its `export ATUIN_SESSION=$(atuin
+          # uuid)` — that command substitution forks the ~16ms atuin binary on
+          # every startup. atuin's init only runs it when ATUIN_SESSION is unset
+          # or this is a new shell level, so we replicate that exact guard and
+          # fill the var ourselves, fork-free. The value mimics `atuin uuid` (a
+          # UUIDv7): 32 lowercase hex chars = a 48-bit millisecond timestamp +
+          # $RANDOM, byte-for-byte the same format atuin emits, so it still
+          # parses as a UUID downstream. The anon function scopes the temp;
+          # printf is a builtin (no fork).
+          if [[ -z ''${ATUIN_SESSION:-} || ''${ATUIN_SHLVL:-} != $SHLVL ]]; then
+            zmodload zsh/datetime
+            () {
+              local -i ms=$(( EPOCHREALTIME * 1000 ))
+              printf -v ATUIN_SESSION '%012x%04x%04x%04x%04x%04x' \
+                $ms $RANDOM $RANDOM $RANDOM $RANDOM $RANDOM
+            }
+            export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
+          fi
+
           # Powerlevel10k theme (precompiled with zcompile in the let-block).
           source ${p10kCompiledTheme}/powerlevel10k.zsh-theme
           source ${p10kCompiledConfig}/p10k.zsh # Powerlevel10k config
