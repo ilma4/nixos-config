@@ -253,8 +253,8 @@ in {
       shellAliases = {
         ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
         # dirsize = "${pkgs.ncdu}/bin/ncdu";
-        # l = "ls -lah";
-        # ll = "ls -lh";
+        l = "ls -lah";
+        ll = "ls -lh";
       };
 
       initContent = let
