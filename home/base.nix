@@ -137,16 +137,15 @@ in {
     programs.zsh = {
       enable = true;
       enableCompletion = true;
+      # Skip compinit's per-startup security audit (compaudit) and staleness
+      # check; fpath only changes on nix-rebuild. Run `rm ~/.zcompdump*` after a
+      # rebuild that adds new completions.
+      completionInit = ''autoload -U compinit && compinit -C -d "$HOME/.zcompdump"'';
 
-      oh-my-zsh = {
-        enable = lib.mkDefault true;
-        theme = "";
-        plugins = [
-          "vi-mode"
-          # "zsh-autosuggestions"
-          # "zsh-syntax-highlighting"
-        ];
-      };
+      # oh-my-zsh was loaded only for the vi-mode plugin but cost ~190ms at
+      # startup (framework sourcing + the compinit/compaudit it drives). Native
+      # `bindkey -v` in initContent below replaces it.
+      oh-my-zsh.enable = false;
 
       # Add Powerlevel10k theme and your custom config as plugins
       shellAliases = {
@@ -158,6 +157,12 @@ in {
 
       initContent = let
         early = lib.mkOrder 500 ''
+          # Powerlevel10k instant prompt — must stay near the top and before any
+          # console output/input so the prompt renders immediately at startup.
+          if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+            source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+          fi
+
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
           ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
 
@@ -181,9 +186,60 @@ in {
           ''}
         '';
 
-        normal =
-          lib.mkOrder 1000 ''
-          '';
+        normal = lib.mkOrder 1000 ''
+          # Native vi mode (replaces the oh-my-zsh vi-mode plugin).
+          bindkey -v
+
+          # disable ZLE execute-named-cmd prompt (like ":" in normal mode in (neo)vim)
+          bindkey -M vicmd ':' undefined-key
+
+          # 10milliseconds delay after seeing Esc character
+          export KEYTIMEOUT=1
+
+
+          # Integrate vi-mode yank/put with the system clipboard. Pick the
+          # first available clipboard tool; if none exists (e.g. headless
+          # server) the widgets are left unbound and vi falls back to its
+          # internal register.
+          if (( $+commands[pbcopy] )); then
+            function _clip_copy { pbcopy }
+            function _clip_paste { pbpaste }
+          elif (( $+commands[wl-copy] )); then
+            function _clip_copy { wl-copy }
+            function _clip_paste { wl-paste --no-newline }
+          elif (( $+commands[xclip] )); then
+            function _clip_copy { xclip -selection clipboard }
+            function _clip_paste { xclip -selection clipboard -o }
+          elif (( $+commands[xsel] )); then
+            function _clip_copy { xsel --clipboard --input }
+            function _clip_paste { xsel --clipboard --output }
+          fi
+
+          if (( $+functions[_clip_copy] )); then
+            function vi-yank-clip { zle vi-yank; printf '%s' "$CUTBUFFER" | _clip_copy }
+            function vi-yank-eol-clip { zle vi-yank-eol; printf '%s' "$CUTBUFFER" | _clip_copy }
+            function vi-delete-clip { zle vi-delete; printf '%s' "$CUTBUFFER" | _clip_copy }
+            function vi-put-after-clip { CUTBUFFER="$(_clip_paste)"; zle vi-put-after }
+            function vi-put-before-clip { CUTBUFFER="$(_clip_paste)"; zle vi-put-before }
+            zle -N vi-yank-clip
+            zle -N vi-yank-eol-clip
+            zle -N vi-delete-clip
+            zle -N vi-put-after-clip
+            zle -N vi-put-before-clip
+            bindkey -M vicmd 'y' vi-yank-clip
+            bindkey -M vicmd 'Y' vi-yank-eol-clip
+            bindkey -M vicmd 'd' vi-delete-clip
+            bindkey -M vicmd 'p' vi-put-after-clip
+            bindkey -M vicmd 'P' vi-put-before-clip
+            bindkey -M visual 'y' vi-yank-clip
+          fi
+
+          # Completion: colorize file listings using LS_COLORS (set above by
+          # dircolors), and show an interactive menu that highlights the
+          # currently selected item.
+          zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
+          zstyle ':completion:*' menu select
+        '';
       in
         lib.mkMerge [early normal beforeCompinit];
 
