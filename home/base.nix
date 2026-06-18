@@ -292,9 +292,6 @@ in {
           elif (( $+commands[wl-copy] )); then
             function _clip_copy { wl-copy }
             function _clip_paste { wl-paste --no-newline }
-          elif (( $+commands[xclip] )); then
-            function _clip_copy { xclip -selection clipboard }
-            function _clip_paste { xclip -selection clipboard -o }
           elif (( $+commands[xsel] )); then
             function _clip_copy { xsel --clipboard --input }
             function _clip_paste { xsel --clipboard --output }
