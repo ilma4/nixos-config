@@ -232,6 +232,21 @@ in {
           export KEYTIMEOUT=1
 
 
+          ## Arrow up/down behavior like in oh-my-zsh (search by prefix)
+          autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+          zle -N up-line-or-beginning-search
+          zle -N down-line-or-beginning-search
+
+          # Normal terminal arrow sequences
+          bindkey -M viins '^[[A' up-line-or-beginning-search
+          bindkey -M viins '^[[B' down-line-or-beginning-search
+
+          # Sometimes used by terminals via terminfo
+          zmodload zsh/terminfo
+          [[ -n "''${terminfo[kcuu1]}" ]] && bindkey -M viins "''${terminfo[kcuu1]}" up-line-or-beginning-search
+          [[ -n "''${terminfo[kcud1]}" ]] && bindkey -M viins "''${terminfo[kcud1]}" down-line-or-beginning-search
+
+
           # Integrate vi-mode yank/put with the system clipboard. Pick the
           # first available clipboard tool; if none exists (e.g. headless
           # server) the widgets are left unbound and vi falls back to its
