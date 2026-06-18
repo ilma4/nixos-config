@@ -21,6 +21,15 @@
     echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
   '';
   gitSpushPackage = pkgs.writeShellScriptBin "git-spush" (builtins.readFile ../scripts/git-spush.sh);
+  dircolorsConfigText = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: value: "${name} ${toString value}") config.programs.dircolors.settings
+    ++ [""]
+    ++ lib.optional (config.programs.dircolors.extraConfig != "") config.programs.dircolors.extraConfig
+  );
+  lsColorsShellSnippet = pkgs.runCommandLocal "i4-ls-colors.sh" {} ''
+    set -euo pipefail
+    ${lib.getExe' config.programs.dircolors.package "dircolors"} -b ${pkgs.writeText "dir_colors" dircolorsConfigText} > "$out"
+  '';
 in {
   imports = [
     ./dev.nix
@@ -205,6 +214,11 @@ in {
           done
           fpath=("''${i4_deduped_fpath[@]}")
           unset i4_seen_fpath i4_deduped_fpath i4_fpath_dir i4_fpath_key
+
+          # LS_COLORS is computed by dircolors at Nix build time, so zsh only
+          # sources a static assignment instead of spawning dircolors on every
+          # interactive shell startup.
+          source ${lsColorsShellSnippet}
         '';
 
         normal = lib.mkOrder 1000 ''
@@ -255,9 +269,8 @@ in {
             bindkey -M visual 'y' vi-yank-clip
           fi
 
-          # Completion: colorize file listings using LS_COLORS (set above by
-          # dircolors), and show an interactive menu that highlights the
-          # currently selected item.
+          # Completion: colorize file listings using precomputed LS_COLORS, and
+          # show an interactive menu that highlights the currently selected item.
           zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
           zstyle ':completion:*' menu select
         '';
@@ -326,7 +339,17 @@ in {
       ".config/htop/htoprc".source = ../dotfiles/htoprc;
     };
 
-    programs.dircolors.enable = true;
+    programs.dircolors = {
+      enable = true;
+      enableBashIntegration = false;
+      enableZshIntegration = false;
+    };
+
+    programs.bash.initExtra = ''
+      # Same precomputed LS_COLORS snippet used by zsh; avoids running
+      # dircolors for every interactive bash startup.
+      source ${lsColorsShellSnippet}
+    '';
 
     # Home Manager can also manage your environment variables through
     # 'home.sessionVariables'. These will be explicitly sourced when using a
