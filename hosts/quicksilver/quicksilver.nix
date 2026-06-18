@@ -194,6 +194,12 @@ in {
   # Create /etc/zshrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
   programs.zsh.enableGlobalCompInit = false;
+  # nix-darwin's default /etc/zshrc runs `promptinit && prompt suse` and
+  # `bashcompinit` on every interactive shell. Powerlevel10k replaces the prompt
+  # anyway, so the prompt setup is wasted work; drop it. bashcompinit is only
+  # needed for bash-style completion scripts, which this setup doesn't use.
+  programs.zsh.promptInit = "";
+  programs.zsh.enableBashCompletion = false;
 
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or "null";

@@ -30,6 +30,41 @@
     set -euo pipefail
     ${lib.getExe' config.programs.dircolors.package "dircolors"} -b ${pkgs.writeText "dir_colors" dircolorsConfigText} > "$out"
   '';
+
+  # Shell-integration snippets for direnv/fzf, precomputed at Nix build time
+  # instead of being regenerated on every interactive shell.
+  #
+  # Home Manager normally wires these tools up with `eval "$(direnv hook zsh)"` /
+  # `source <(fzf --zsh)`, which forks the tool binary on every startup. On macOS
+  # a single fork+exec of a Nix-store binary costs ~6-9ms. Their generated output
+  # depends only on the binary (a fixed store path), not on user config, so —
+  # exactly like `lsColorsShellSnippet` above — we capture it once at build time
+  # and `source` the static result, turning startup forks into cheap file reads.
+  # `set -euo pipefail` per repo convention; both generators were verified to run
+  # without $HOME, so the build stays hermetic.
+  #
+  # NOTE: atuin is intentionally NOT precomputed. `atuin init zsh` output depends
+  # on atuin's config (e.g. the tmux popup integration), which the build sandbox
+  # can't read, so a precomputed snippet could silently diverge from the user's
+  # hand-maintained ~/.config/atuin/config.toml. atuin therefore keeps Home
+  # Manager's runtime integration (programs.atuin.enableZshIntegration = true).
+
+  # `direnv hook zsh` installs the precmd/chpwd hook that runs `direnv export`
+  # on directory changes. The hook body is static (the per-prompt `direnv export`
+  # still runs live, as it must); precomputing only removes the hook-generation
+  # fork from startup.
+  direnvHookSnippet = pkgs.runCommandLocal "i4-direnv-hook.zsh" {} ''
+    set -euo pipefail
+    ${lib.getExe' config.programs.direnv.package "direnv"} hook zsh > "$out"
+  '';
+
+  # `fzf --zsh` emits fzf's completion and key bindings (Ctrl-T, Ctrl-R, Alt-C).
+  # Fully static output. Sourced before the atuin snippet (see initContent) so
+  # atuin's Ctrl-R binding still wins, preserving the previous load order.
+  fzfInitSnippet = pkgs.runCommandLocal "i4-fzf-init.zsh" {} ''
+    set -euo pipefail
+    ${lib.getExe' config.programs.fzf.package "fzf"} --zsh > "$out"
+  '';
 in {
   imports = [
     ./dev.nix
@@ -288,6 +323,28 @@ in {
           # show an interactive menu that highlights the currently selected item.
           zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
           zstyle ':completion:*' menu select
+
+          # direnv/fzf integrations, precomputed at build time (see the *Snippet
+          # derivations in the let-block). Each is sourced only when its program
+          # is enabled, mirroring Home Manager (which emits an integration only
+          # for an enabled program). The guard matters for direnv: it is enabled
+          # only via home/dev.nix behind i4.dev.enable, so sourcing it
+          # unconditionally would start running direnv on every prompt on hosts
+          # (e.g. nas, msi-modern) that never opted in. enableZshIntegration is
+          # false for both, so these static sources replace HM's own per-startup
+          # `direnv hook` / `fzf --zsh` forks. Runs after compinit (HM emits that
+          # earlier). atuin keeps its HM runtime integration, which HM appends
+          # later than this block, so atuin's Ctrl-R binding still wins over
+          # fzf's — preserving the previous behavior.
+          ${lib.optionalString config.programs.direnv.enable "source ${direnvHookSnippet}"}
+
+          # fzf defines ZLE widgets, so guard on the line editor being active
+          # (mirrors HM's `$options[zle]` guard).
+          ${lib.optionalString config.programs.fzf.enable ''
+            if [[ $options[zle] = on ]]; then
+              source ${fzfInitSnippet}
+            fi
+          ''}
         '';
       in
         lib.mkMerge [early normal beforeCompinit];
@@ -331,6 +388,11 @@ in {
 
     programs.atuin = {
       enable = true;
+      # Keep Home Manager's runtime `eval "$(atuin init zsh)"` (NOT precomputed):
+      # atuin's init output depends on its config, which a build-time snippet
+      # with an empty $HOME can't see, so precomputing could silently diverge
+      # from ~/.config/atuin/config.toml. direnv/fzf are precomputed instead,
+      # since their output is config-independent.
       enableZshIntegration = true;
       enableBashIntegration = false;
       flags = [
@@ -344,6 +406,10 @@ in {
     programs.htop.enable = true;
 
     programs.fzf.enable = true;
+    # Integration is precomputed into fzfInitSnippet and sourced from
+    # initContent above; this stops Home Manager from emitting its own
+    # `source <(fzf --zsh)`, which forks fzf on every startup.
+    programs.fzf.enableZshIntegration = false;
     programs.tmux = {
       enable = true;
       keyMode = "vi";
