@@ -40,6 +40,31 @@
   # idle timeout (replaces llama.cpp load-on-startup=false + sleep-idle=300).
   # Note: temperature/top-p/top-k are not config-file keys, so per-request
   # sampling is left to the client (model card: temp 0.6 / top-p 0.95 / top-k 20).
+  #
+  # reasoning_parser = "qwen3_moe" is required for the thinking block to be
+  # parsed correctly. The Qwen3.6 chat template prefills the opening "<think>\n"
+  # into the *prompt* (see chat_template.jinja: add_generation_prompt branch),
+  # so the model's completion contains only the reasoning body + a dangling
+  # "</think>" and never an opening tag. Without a reasoning parser
+  # mlx-openai-server returns that raw text in `content`, so clients (pi) print
+  # the chain-of-thought and a literal "</think>" as the answer. The qwen3_moe
+  # parser sets needs_redacted_reasoning_prefix(), so the handler re-inserts the
+  # synthetic "<think>" before parsing and splits the reasoning out into the
+  # OpenAI `reasoning_content` field, leaving `content` clean. The plain "qwen3"
+  # parser does NOT work here: it expects a literal "<think>...</think>" pair.
+  #
+  # tool_call_parser = "qwen3_coder" is required for two reasons:
+  #   1. Tool calls. Qwen3.6's template emits the XML function/parameter format
+  #      (<tool_call><function=NAME><parameter=K>V</parameter></function>
+  #      </tool_call>), handled by qwen3_coder's FunctionParameterToolParser.
+  #      The "qwen3"/"qwen3_moe" tool parsers are Hermes (JSON) parsers that run
+  #      json.loads() on that XML and silently drop every call (tool_calls=[]).
+  #   2. It is mandatory whenever reasoning_parser is set, even with no tools.
+  #      mlx-openai-server's handler only writes the post-</think> answer back
+  #      into `content` inside the `if tool_parser:` branch; with a reasoning
+  #      parser but no tool parser the answer is dropped (content=null). The
+  #      FunctionParameter parser returns {"content": text} when no tool call is
+  #      present, restoring the plain answer.
   # TODO: mlx-openai-server 1.8.1 rejects the OpenAI `developer` message role
   # (HTTP 422), so the pi client pins compat.supportsDeveloperRole = false in
   # ~/.pi/agent/models.json and sends `system` instead. Re-enable the developer
@@ -54,6 +79,8 @@
         model_path = modelId;
         model_type = "lm";
         served_model_name = "qwen3.6-35b-a3b";
+        reasoning_parser = "qwen3_moe";
+        tool_call_parser = "qwen3_coder";
         context_length = 128000;
         default_max_tokens = 32768;
         on_demand = true;
