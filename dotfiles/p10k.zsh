@@ -1650,50 +1650,40 @@
   # Custom prefix.
   # typeset -g POWERLEVEL9K_TIME_PREFIX='%fat '
 
-  # --- Branch-only git segment (no gitstatusd, no repo scanning) ---
-  autoload -Uz add-zsh-hook
+  # --- Branch-only git segment (no gitstatusd, no git command) ---
+  prompt_git_branch_only() {
+    local dir=$PWD head_file head branch
 
-  typeset -g P10K_GIT_BRANCH_ONLY=""
+    # Walk up from $PWD looking for a normal Git checkout. The branch is
+    # computed only when Powerlevel10k renders this segment, using cheap
+    # zsh file tests and one read of .git/HEAD instead of a hook-maintained
+    # global.
+    while true; do
+      head_file=$dir/.git/HEAD
+      if [[ -r $head_file ]]; then
+        break
+      fi
 
-  _p10k_update_git_branch_only() {
-    local head_path head
+      [[ $dir == / ]] && return
+      dir=${dir:h}
+    done
 
-    # If not in a git worktree, clear segment.
-    head_path=$(command git rev-parse --git-path HEAD 2>/dev/null) || {
-      P10K_GIT_BRANCH_ONLY=""
-      return
-    }
-
-    # Read HEAD without invoking "git status".
-    head=$(<"$head_path") || { P10K_GIT_BRANCH_ONLY=""; return }
+    head=$(<"$head_file") || return
     head=${head//$'\n'/}
 
-    if [[ $head == ref:\ * ]]; then
-      # On a branch: "ref: refs/heads/main" -> "main"
-      P10K_GIT_BRANCH_ONLY=${head#ref: refs/heads/}
+    if [[ $head == ref:\ refs/heads/* ]]; then
+      branch=${head#ref: refs/heads/}
+    elif [[ $head == ref:\ * ]]; then
+      branch=${head#ref: }
     else
-      # Detached HEAD: show short SHA
-      P10K_GIT_BRANCH_ONLY=${head[1,8]}
+      # Detached HEAD: show short SHA.
+      branch=${head[1,8]}
     fi
-  }
 
-  # Update on directory change and before each prompt.
-  add-zsh-hook chpwd  _p10k_update_git_branch_only
-  add-zsh-hook precmd _p10k_update_git_branch_only
-
-  prompt_git_branch_only() {
-    [[ -n $P10K_GIT_BRANCH_ONLY ]] || return
+    [[ -n $branch ]] || return
     # Icon is optional; remove -i '' if you don't want it.
-    p10k segment -i '' -t "$P10K_GIT_BRANCH_ONLY"
+    p10k segment -i '' -t "$branch"
   }
-
-  # Compute branch immediately for the current directory.
-  _p10k_update_git_branch_only
-
-  # If we're in ZLE (interactive prompt), redraw so the segment appears right away.
-  if [[ -n $ZLE ]]; then
-    zle reset-prompt
-  fi
 
   # --- end of branch only ---
 
