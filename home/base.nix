@@ -65,6 +65,43 @@
     set -euo pipefail
     ${lib.getExe' config.programs.fzf.package "fzf"} --zsh > "$out"
   '';
+
+  # Powerlevel10k ships source files and tries to zcompile them at runtime only
+  # when its install directory is writable. The Nix store is intentionally not
+  # writable, so copy the theme tree into a small derivation and precompile the
+  # files that upstream would otherwise compile on first use.
+  p10kCompiledTheme = pkgs.runCommandLocal "i4-powerlevel10k-compiled" {} ''
+    set -euo pipefail
+    cp -R -L ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k "$out"
+    chmod -R u+w "$out"
+
+    for p10k_file in \
+      powerlevel9k.zsh-theme \
+      powerlevel10k.zsh-theme \
+      internal/p10k.zsh \
+      internal/icons.zsh \
+      internal/configure.zsh \
+      internal/worker.zsh \
+      internal/parser.zsh \
+      gitstatus/gitstatus.plugin.zsh \
+      gitstatus/install
+    do
+      if [[ -f "$out/$p10k_file" ]]; then
+        ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/$p10k_file.zwc' '$out/$p10k_file'"
+      fi
+    done
+  '';
+
+  # Also precompile the user's P10K config. It is sourced as a script, so zsh
+  # will automatically prefer the adjacent .zwc when it is at least as new as
+  # the source file (true for Nix store outputs with normalized mtimes).
+  p10kCompiledConfig = pkgs.runCommandLocal "i4-p10k-config-compiled" {} ''
+    set -euo pipefail
+    mkdir -p "$out"
+    cp ${../dotfiles/p10k.zsh} "$out/p10k.zsh"
+    chmod u+w "$out/p10k.zsh"
+    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/p10k.zsh.zwc' '$out/p10k.zsh'"
+  '';
 in {
   imports = [
     ./dev.nix
@@ -210,9 +247,9 @@ in {
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
           ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
 
-          # Powerlevel10k theme
-          source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-          source ${../dotfiles/p10k.zsh} # Powerlevel10k config
+          # Powerlevel10k theme (precompiled with zcompile in the let-block).
+          source ${p10kCompiledTheme}/powerlevel10k.zsh-theme
+          source ${p10kCompiledConfig}/p10k.zsh # Powerlevel10k config
         '';
 
         beforeCompinit = lib.mkOrder 550 ''
