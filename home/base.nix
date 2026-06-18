@@ -184,6 +184,27 @@ in {
             done
             unset default_profile_fpath
           ''}
+
+          # Collapse fpath entries that resolve to the same directory. Nix can
+          # expose zsh's builtin functions through several profile symlinks
+          # ($HOME/.nix-profile, /run/current-system/sw, and the store path);
+          # `typeset -U fpath` only removes exact string duplicates, so compinit
+          # would otherwise scan and dump the same ~1k files multiple times.
+          typeset -A i4_seen_fpath
+          typeset -a i4_deduped_fpath
+          for i4_fpath_dir in "''${fpath[@]}"; do
+            if [[ -d $i4_fpath_dir ]]; then
+              i4_fpath_key="''${i4_fpath_dir:A}"
+            else
+              i4_fpath_key="$i4_fpath_dir"
+            fi
+
+            [[ -n ''${i4_seen_fpath[$i4_fpath_key]-} ]] && continue
+            i4_seen_fpath[$i4_fpath_key]=1
+            i4_deduped_fpath+=("$i4_fpath_dir")
+          done
+          fpath=("''${i4_deduped_fpath[@]}")
+          unset i4_seen_fpath i4_deduped_fpath i4_fpath_dir i4_fpath_key
         '';
 
         normal = lib.mkOrder 1000 ''
