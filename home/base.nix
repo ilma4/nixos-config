@@ -61,9 +61,15 @@
   # `fzf --zsh` emits fzf's completion and key bindings (Ctrl-T, Ctrl-R, Alt-C).
   # Fully static output. Sourced before the atuin snippet (see initContent) so
   # atuin's Ctrl-R binding still wins, preserving the previous load order.
-  fzfInitSnippet = pkgs.runCommandLocal "i4-fzf-init.zsh" {} ''
+  # Output is a directory so the snippet can ship with its own .zwc: zsh's
+  # `source <basename>` transparently loads an adjacent, not-older .zwc (Nix's
+  # equal epoch mtimes count as not-older), turning the ~2-3ms parse into a
+  # bytecode load — same mechanism that already speeds up p10kCompiledConfig.
+  fzfInitSnippet = pkgs.runCommandLocal "i4-fzf-init" {} ''
     set -euo pipefail
-    ${lib.getExe' config.programs.fzf.package "fzf"} --zsh > "$out"
+    mkdir -p "$out"
+    ${lib.getExe' config.programs.fzf.package "fzf"} --zsh > "$out/fzf-init.zsh"
+    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/fzf-init.zsh.zwc' '$out/fzf-init.zsh'"
   '';
 
   # Powerlevel10k ships source files and tries to zcompile them at runtime only
@@ -221,7 +227,22 @@ in {
       # Skip compinit's per-startup security audit (compaudit) and staleness
       # check; fpath only changes on nix-rebuild. Run `rm ~/.zcompdump*` after a
       # rebuild that adds new completions.
-      completionInit = ''autoload -U compinit && compinit -C -d "$HOME/.zcompdump"'';
+      completionInit = ''
+        autoload -U compinit && compinit -C -d "$HOME/.zcompdump"
+        # Precompile the completion dump to bytecode. `compinit -C` loads the
+        # dump but, unlike a full compinit, never (re)compiles it, so do it here
+        # when the .zwc is missing or stale; the next startup's `. $dump` then
+        # transparently loads the adjacent .zwc (~2ms faster). The stat tests
+        # are builtins (no fork); the compile runs only on the first startup
+        # after the dump changes (e.g. after `rm ~/.zcompdump*`). Write to a
+        # temp then rename so a half-written .zwc can't be picked up if two
+        # shells start at once. NB: the temp name MUST end in .zwc, else
+        # `zcompile` appends .zwc itself and the rename would miss the file.
+        if [[ -s "$HOME/.zcompdump" && ( ! -s "$HOME/.zcompdump.zwc" || "$HOME/.zcompdump" -nt "$HOME/.zcompdump.zwc" ) ]]; then
+          zcompile -R -- "$HOME/.zcompdump.$$.zwc" "$HOME/.zcompdump" 2>/dev/null &&
+            mv -f "$HOME/.zcompdump.$$.zwc" "$HOME/.zcompdump.zwc" 2>/dev/null
+        fi
+      '';
 
       # oh-my-zsh was loaded only for the vi-mode plugin but cost ~190ms at
       # startup (framework sourcing + the compinit/compaudit it drives). Native
@@ -246,6 +267,21 @@ in {
 
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
           ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
+
+          # Pre-seed Powerlevel10k's SSH detection. p10k's _p9k_init_ssh forks
+          # `who -m` (~13-19ms) on every startup whenever no SSH_* vars are set
+          # — i.e. on every local shell — to cover the rare case of a remote
+          # session that lost SSH_CONNECTION (e.g. `sudo -i`). Derive the same
+          # flag from the environment ourselves (fork-free) and mark this TTY as
+          # already-probed so _p9k_init_ssh early-returns at its guard. SSH_* is
+          # accurate for every normal local and SSH session, so the prompt's ssh
+          # segment still works on the servers that share this config (nas etc).
+          if [[ -n $SSH_CONNECTION || -n $SSH_CLIENT || -n $SSH_TTY ]]; then
+            typeset -gix P9K_SSH=1
+          else
+            typeset -gix P9K_SSH=0
+          fi
+          typeset -gx _P9K_SSH_TTY=$TTY
 
           # Powerlevel10k theme (precompiled with zcompile in the let-block).
           source ${p10kCompiledTheme}/powerlevel10k.zsh-theme
@@ -291,9 +327,25 @@ in {
           # sources a static assignment instead of spawning dircolors on every
           # interactive shell startup.
           source ${lsColorsShellSnippet}
+
+          # Home Manager appends an unconditional `mkdir -p "$(dirname
+          # "$HISTFILE")"` just after this block. $HISTFILE always lives in
+          # $HOME (which exists), yet that line forks both `dirname` (~8ms) and
+          # `mkdir` (~7ms) on every startup. Make `mkdir` a shell builtin and
+          # shadow `dirname` with a :h expansion so the line runs fork-free.
+          # Both are reverted in the `normal` block once HM's line has run, so
+          # the interactive shell keeps the real external mkdir/dirname.
+          zmodload -F zsh/files b:mkdir
+          function dirname { print -r -- "''${1:h}" }
         '';
 
         normal = lib.mkOrder 1000 ''
+          # Undo the fork-free shadows set up in beforeCompinit: Home Manager's
+          # HISTFILE mkdir has run by now, so restore the external mkdir/dirname
+          # for interactive use.
+          zmodload -F zsh/files -b:mkdir 2>/dev/null
+          unfunction dirname 2>/dev/null
+
           # Native vi mode (replaces the oh-my-zsh vi-mode plugin).
           bindkey -v
 
@@ -323,16 +375,26 @@ in {
           # first available clipboard tool; if none exists (e.g. headless
           # server) the widgets are left unbound and vi falls back to its
           # internal register.
-          if (( $+commands[pbcopy] )); then
-            function _clip_copy { pbcopy }
-            function _clip_paste { pbpaste }
-          elif (( $+commands[wl-copy] )); then
-            function _clip_copy { wl-copy }
-            function _clip_paste { wl-paste --no-newline }
-          elif (( $+commands[xsel] )); then
-            function _clip_copy { xsel --clipboard --input }
-            function _clip_paste { xsel --clipboard --output }
-          fi
+          ${
+            if isDarwin
+            then ''
+              # macOS always ships pbcopy/pbpaste, so bind them directly. Done
+              # without a $+commands probe on purpose: that probe forces zsh to
+              # build the full command hash (a $PATH scan, ~2ms) during startup;
+              # skipping it defers the scan to first completion/command use.
+              function _clip_copy { pbcopy }
+              function _clip_paste { pbpaste }
+            ''
+            else ''
+              if (( $+commands[wl-copy] )); then
+                function _clip_copy { wl-copy }
+                function _clip_paste { wl-paste --no-newline }
+              elif (( $+commands[xsel] )); then
+                function _clip_copy { xsel --clipboard --input }
+                function _clip_paste { xsel --clipboard --output }
+              fi
+            ''
+          }
 
           if (( $+functions[_clip_copy] )); then
             function vi-yank-clip { zle vi-yank; printf '%s' "$CUTBUFFER" | _clip_copy }
@@ -376,7 +438,7 @@ in {
           # (mirrors HM's `$options[zle]` guard).
           ${lib.optionalString config.programs.fzf.enable ''
             if [[ $options[zle] = on ]]; then
-              source ${fzfInitSnippet}
+              source ${fzfInitSnippet}/fzf-init.zsh
             fi
           ''}
         '';
