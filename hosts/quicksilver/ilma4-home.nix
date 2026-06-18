@@ -42,6 +42,9 @@
       sops # for managing secrets
       age # for age key management
 
+      blueutil # bluetooth CLI, used by the WH-1000XM5 Raycast script
+      terminal-notifier # auto-dismissing notifications for the WH-1000XM5 Raycast script
+
       (let
         bw = "${pkgs.bitwarden-cli}/bin/bw";
       in

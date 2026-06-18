@@ -14,6 +14,7 @@ with lib; let
     "nix-rebuild.applescript" = ./raycast-scripts/nix-rebuild.applescript;
     "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;
     "chrome.applescript" = ./raycast-scripts/chrome.applescript;
+    "wh-1000xm5-connect.applescript" = ./raycast-scripts/wh-1000xm5-connect.applescript;
 
     "monitor-displayport.applescript" = pkgs.writeText "monitor-displayport.applescript" ''
       #!/usr/bin/osascript
