@@ -76,5 +76,5 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - `./utils/flake-check.sh` - to check that the configuration is correct
 - `nix-rebuild` - to switch to the new configuration
 - `i4-update-host <flake-location>#<configuration> [targetHost]` - to switch a remote NixOS host to the selected flake configuration
-  - examples: `i4-update-host .#nas`, `i4-update-host .#rex ilma4-bkp`
+  - examples: `i4-update-host .#nas`, `i4-update-host .#<configuration> [targetHost]`
   - `configuration` is the flake output name, `targetHost` overrides the SSH host when it differs from the configuration name

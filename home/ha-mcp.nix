@@ -11,7 +11,7 @@
   haUrl = "https://home-assistant.ilma4.local";
 
   # Long-lived HA access token, from sops. Declared as a SYSTEM secret per host (owner = "ilma4"),
-  # so it is read uniformly via osConfig on both NixOS (rex) and darwin (quicksilver).
+  # so it is read uniformly via osConfig on both NixOS and darwin (e.g. quicksilver).
   # `or ""` keeps the module safe on hosts where the secret isn't declared (e.g. the agent-dev-box
   # container has no sops): tokenPath becomes "" and the launcher exits with a clear message at
   # runtime, rather than failing eval/activation.

@@ -238,11 +238,6 @@
 
     # NixOS Configurations
     nixosConfigurations = {
-      rex = mkNixosSystem {
-        system = systems.x86-linux;
-        module = ./hosts/rex/rex.nix;
-      };
-
       nas = mkNixosSystem {
         system = systems.x86-linux;
         module = ./hosts/nas/nas.nix;
