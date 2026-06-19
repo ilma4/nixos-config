@@ -14,7 +14,7 @@ in {
     ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
     ./backup.nix
-    ./mlx.nix
+    # ./mlx.nix
     ./llama.nix
     ./restic-full-disk-access-wrapper.nix
 
