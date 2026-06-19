@@ -137,9 +137,15 @@
   #     old "qwen3.6-35b-a3b" alias no longer resolves, so clients must send
   #     `model: "${modelId}"` or omit `model` (which uses the loaded default).
   #
-  # Sampling (temp/top-p/top-k) is intentionally left to the client, as before
-  # (model card: temp 0.6 / top-p 0.95 / top-k 20); mlx-lm's --temp etc. only
-  # set server-side defaults for requests that don't specify their own.
+  # Sampling defaults follow the Qwen3 model card (temp 0.6 / top-p 0.95 /
+  # top-k 20). mlx-lm's --temp/--top-p/--top-k set the server-side defaults used
+  # whenever a client omits its own sampling (a client that sends explicit
+  # values still overrides them). These were previously injected client-side by
+  # a pi extension (pi/extensions/lmstudio-inference-params.ts); setting them on
+  # the server makes that extension redundant and applies to every client. mlx-lm
+  # otherwise defaults to --temp 0.0 (greedy), which Qwen3 warns against. min-p
+  # and the presence/repetition penalties already default to no-op in mlx-lm,
+  # matching the model card, so they need no flags.
   #
   # The OpenAI `developer` message role now works: mlx-lm forwards roles
   # straight to apply_chat_template (no HTTP 422 like mlx-openai-server 1.8.1),
@@ -157,6 +163,12 @@
     "INFO"
     "--max-tokens"
     "32768"
+    "--temp"
+    "0.6"
+    "--top-p"
+    "0.95"
+    "--top-k"
+    "20"
     "--idle-timeout"
     "300"
   ];
