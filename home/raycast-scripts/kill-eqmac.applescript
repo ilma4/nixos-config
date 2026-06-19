@@ -14,6 +14,8 @@
 # directly, so no root is needed there; any other user (e.g. malakhov) must
 # escalate with sudo. malakhov is granted passwordless sudo for exactly this
 # command via security.sudo.extraConfig in hosts/quicksilver/quicksilver.nix.
+# Prints "killed" to stdout when an eqMac instance was actually stopped, and ""
+# otherwise, so callers (e.g. the mic-switch scripts) can report it in a notification.
 set currentUser to do shell script "/usr/bin/id -un"
 
 set eqmacPid to ""
@@ -28,4 +30,7 @@ if eqmacPid is not "" then
 	else
 		do shell script "/usr/bin/sudo -n /usr/bin/pkill -x eqMac"
 	end if
+	return "killed"
 end if
+
+return ""

@@ -60,15 +60,21 @@ end try
 
 if headphonesReady then
 	# eqMac left running by the ilma4 session hijacks the headphone audio, so stop it.
+	# The kill script reports "killed" only when an instance was actually running.
+	set eqmacKilled to false
 	try
-		do shell script "osascript " & quoted form of killEqmac
+		if (do shell script "osascript " & quoted form of killEqmac) is "killed" then
+			set eqmacKilled to true
+		end if
 	end try
 	# With eqMac gone, take the input first (this breaks macOS's HFP headset grab),
 	# then route output to the real headphones at full quality.
 	try
 		assertInput(inputDevice)
 		do shell script quoted form of switchAudio & " -t output -s " & quoted form of outputDevice
-		showNotification("WH-1000XM5 ready", outputDevice & " out · " & inputDevice & " in")
+		set statusMessage to outputDevice & " out · " & inputDevice & " in"
+		if eqmacKilled then set statusMessage to statusMessage & " · eqMac stopped"
+		showNotification("WH-1000XM5 ready", statusMessage)
 	on error errorMessage
 		showNotification("Audio switch failed", errorMessage)
 	end try
