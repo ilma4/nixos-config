@@ -28,6 +28,7 @@ in {
 
       nodejs_24
       monitor-input
+      md4c # provides md2html, used by the "Paste from Markdown" Raycast script
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
     ];
 

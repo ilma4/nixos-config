@@ -12,6 +12,7 @@
       scripts = [
         "monitor-displayport.applescript"
         "kill-eqmac.applescript"
+        "paste-from-markdown.sh"
       ];
     };
     programs.zsh.localVariables = {
