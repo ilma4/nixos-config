@@ -74,11 +74,16 @@
     '';
   };
 
-  # Logs live in /var/log. A launchd *user* agent can't create files in the
-  # root-owned directory itself, so they are pre-created by a root activation
-  # script (see system.activationScripts.extraActivation below).
-  stdoutLog = "/var/log/mlx.log";
-  stderrLog = "/var/log/mlx.err.log";
+  # Logs live in /tmp, which is world-writable (sticky bit), so this launchd
+  # *user* agent creates them itself on spawn (launchd opens StandardOutPath /
+  # StandardErrorPath with O_CREAT). Root-owned /var/log instead required a
+  # root activation script to pre-create and chown the files; that chown raced
+  # the agent's RunAtLoad spawn during a darwin switch and intermittently left
+  # launchd unable to open the log paths, failing the spawn with EX_CONFIG (78)
+  # until the job was throttled into launchd's "penalty box" and stopped
+  # restarting (leaving the server down). /tmp removes that whole class of race.
+  stdoutLog = "/tmp/mlx.log";
+  stderrLog = "/tmp/mlx.err.log";
 
   # Authenticate to the HuggingFace hub when this token file is present. The
   # token is read at runtime so it never lands in the world-readable Nix store;
@@ -198,15 +203,4 @@ in {
       StandardErrorPath = stderrLog;
     };
   };
-
-  # The user agent above cannot create files in root-owned /var/log, so create
-  # them here as root and hand ownership to ${user} so the agent can append.
-  # This runs in extraActivation (not postActivation) because nix-darwin loads
-  # launchd.user.agents during userLaunchd, which runs *before* postActivation;
-  # extraActivation runs earlier still, so the files exist before the RunAtLoad
-  # agent first starts.
-  system.activationScripts.extraActivation.text = ''
-    touch ${stdoutLog} ${stderrLog}
-    chown ${user} ${stdoutLog} ${stderrLog}
-  '';
 }
