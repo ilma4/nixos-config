@@ -20,7 +20,13 @@
     set -euo pipefail
     echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
   '';
-  gitSpushPackage = pkgs.writeShellScriptBin "git-spush" (builtins.readFile ../scripts/git-spush.sh);
+  gitResignPackage = pkgs.writeShellScriptBin "git-resign" (builtins.readFile ../scripts/git-resign.sh);
+  # git-spush reuses git-resign for the signing step; @gitResign@ in the script
+  # is replaced with git-resign's store path so the call works regardless of
+  # whether git-resign is on $PATH at runtime.
+  gitSpushPackage = pkgs.writeShellScriptBin "git-spush" (
+    builtins.replaceStrings ["@gitResign@"] ["${lib.getExe gitResignPackage}"] (builtins.readFile ../scripts/git-spush.sh)
+  );
   dircolorsConfigText = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (name: value: "${name} ${toString value}") config.programs.dircolors.settings
     ++ [""]
@@ -227,6 +233,7 @@ in {
       '')
       i4-revision-package
       gitSpushPackage
+      gitResignPackage
     ];
 
     programs.git = {
