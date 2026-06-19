@@ -15,6 +15,7 @@ in {
     ./homebrew-auto-upgrade.nix
     ./backup.nix
     ./mlx.nix
+    ./llama.nix
     ./restic-full-disk-access-wrapper.nix
 
     ../../modules/apps.nix
