@@ -138,6 +138,18 @@
     chmod u+w "$out/p10k.zsh"
     ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/p10k.zsh.zwc' '$out/p10k.zsh'"
   '';
+
+  # Fingerprint of the Nix-managed inputs that determine zsh's completion dump:
+  # the zsh-completions package and the home profile (the latter is where Home
+  # Manager installs each enabled program's completion functions, so it changes
+  # whenever a program that ships completions is added/removed/updated). The
+  # invalidateZcompdump activation script compares this against the last-applied
+  # copy and drops ~/.zcompdump when it differs — see programs.zsh.completionInit
+  # for why the dump is otherwise never rebuilt (compinit -C).
+  zcompdumpFingerprint = pkgs.writeText "i4-zcompdump-fingerprint" ''
+    ${pkgs.zsh-completions}
+    ${config.home.path}
+  '';
 in {
   imports = [
     ./dev.nix
@@ -256,8 +268,11 @@ in {
       enable = true;
       enableCompletion = true;
       # Skip compinit's per-startup security audit (compaudit) and staleness
-      # check; fpath only changes on nix-rebuild. Run `rm ~/.zcompdump*` after a
-      # rebuild that adds new completions.
+      # check; fpath only changes on nix-rebuild. The invalidateZcompdump
+      # activation script below deletes the dump whenever the Nix-managed
+      # completion set changes, so the next shell rebuilds it; a manual
+      # `rm ~/.zcompdump*` is only needed for completions added outside Nix
+      # (e.g. Homebrew on macOS).
       completionInit = ''
         autoload -U compinit && compinit -C -d "$HOME/.zcompdump"
         # Precompile the completion dump to bytecode. `compinit -C` loads the
@@ -482,6 +497,9 @@ in {
           # show an interactive menu that highlights the currently selected item.
           zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
           zstyle ':completion:*' menu select
+          # Case-insensitive matching: lowercase input matches both cases, so
+          # `foo<tab>` completes `Foo`/`FOO` too. Uppercase input stays exact.
+          zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
           # direnv/fzf/atuin integrations, precomputed at build time (see the
           # *Snippet derivations in the let-block). Each is sourced only when its
@@ -531,6 +549,21 @@ in {
           fi
         '';
     };
+
+    # Invalidate the zsh completion dump when the Nix-managed completion set
+    # changes. compinit -C (see programs.zsh.completionInit) never rebuilds the
+    # dump on its own, so without this newly added completions would not appear
+    # until ~/.zcompdump was deleted by hand. Comparing a fingerprint instead of
+    # deleting unconditionally keeps the dump cached across rebuilds that don't
+    # touch completions, preserving the startup-time win it provides. The
+    # fingerprint is installed (not echoed) so $DRY_RUN_CMD makes `--dry-run` a
+    # true no-op.
+    home.activation.invalidateZcompdump = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      if ! ${lib.getExe' pkgs.diffutils "cmp"} -s ${zcompdumpFingerprint} "$HOME/.zcompdump.fingerprint" 2>/dev/null; then
+        $DRY_RUN_CMD rm -f $VERBOSE_ARG "$HOME/.zcompdump" "$HOME/.zcompdump.zwc"
+        $DRY_RUN_CMD install $VERBOSE_ARG -m644 ${zcompdumpFingerprint} "$HOME/.zcompdump.fingerprint"
+      fi
+    '';
 
     programs.ssh = lib.mkIf config.configure-ssh {
       enable = true;
