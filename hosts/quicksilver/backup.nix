@@ -74,6 +74,10 @@
     "/Users/ilma4/.unsloth"
     "/Users/ilma4/.gemini" # oauth creds for gemini-cli
     "/Users/ilma4/.junie"
+    "/Users/ilma4/.pi/agent/npm/node_modules"
+    "/Users/ilma4/.local/lib/node_modules"
+
+    "/Users/ilma4/Library/pnpm"
     "/Users/ilma4/.konan" # c++
     "/Users/ilma4/.lldb" # lldb
     "/Users/ilma4/.npm" # javascript!
@@ -84,6 +88,8 @@
     "/Users/ilma4/sdk" # go
     "/Users/ilma4/go" # go
     "/Users/ilma4/.sbt" # scala
+    "/Users/ilma4/.stack" # haskell
+    "/Users/ilma4/.cabal" # haskell
     "/Users/ilma4/golangci-lint" # go
     "/Users/ilma4/.skiko" # idk, just a guess, https://github.com/JetBrains/skiko
     "/Users/ilma4/.cargo" # rust
@@ -94,6 +100,11 @@
     "/Users/ilma4/.jupyter_kotlin"
     "/Users/ilma4/.bundle" # ruby(?)
     "/Users/ilma4/Applications"
+
+    "/Users/ilma4/Projects/AeroSpace/.xcode-build"
+    "/Users/ilma4/Projects/AeroSpace/.deps"
+    "/Users/ilma4/Projects/AeroSpace/.release"
+    "/Users/ilma4/Projects/AeroSpace/.debug"
   ];
 in {
   imports = [
