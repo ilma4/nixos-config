@@ -1587,6 +1587,12 @@
   # typeset -g POWERLEVEL9K_TIME_PREFIX='%fat '
 
   # --- Branch-only git segment (no gitstatusd, no git command) ---
+  # Render the branch in the terminal's default foreground color instead of
+  # p10k's fallback (color 0 / black), which is invisible on dark themes. An
+  # empty FOREGROUND makes p10k emit `%f`, so the color follows whatever the
+  # current terminal theme uses for default text and stays readable on both
+  # light and dark backgrounds.
+  typeset -g POWERLEVEL9K_GIT_BRANCH_ONLY_FOREGROUND=
   prompt_git_branch_only() {
     local dir=$PWD head_file head branch
 
