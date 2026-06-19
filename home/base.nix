@@ -398,6 +398,17 @@ in {
           # 10milliseconds delay after seeing Esc character
           export KEYTIMEOUT=1
 
+          # Report the current directory's name as the terminal title. A precmd
+          # hook re-emits it before every prompt so it tracks `cd`. The OSC
+          # `\e]0;…\a` escape sets both the icon name and window/tab title, which
+          # terminal emulators show as the session name and tmux uses as the
+          # window name. `print -P` does the prompt expansion: %1~ is the last
+          # path component, keeping ~ / ~user named-directory substitution (so
+          # $HOME shows as `~`). All builtins, so no startup or per-prompt fork.
+          autoload -Uz add-zsh-hook
+          function i4-set-term-title { print -Pn '\e]0;%1~\a' }
+          add-zsh-hook precmd i4-set-term-title
+
 
           ## Arrow up/down behavior like in oh-my-zsh (search by prefix)
           autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
