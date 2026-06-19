@@ -3,15 +3,18 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: git spush [--rebase-merges|--no-rebase-merges] [upstream] [-- push-args...]
+Usage: git spush [--rebase-merges|--no-rebase-merges] [base] [-- push-args...]
 
-Signs all commits in upstream..HEAD with the configured Git signing key
-(via 'git resign'), then runs git push.
+Signs your local (unpushed) commits with the configured Git signing key
+(via 'git resign'), then runs git push. Only commits absent from every
+remote-tracking branch are signed, and signing never rebases over the remote,
+so commits dropped from local history are not brought back. No upstream needs
+to be configured.
 
 Examples:
   git spush
-  git spush origin/main
-  git spush origin/main -- --set-upstream origin my-branch
+  git spush -- --force-with-lease
+  git spush -- --set-upstream origin my-branch
 EOF
 }
 
@@ -47,9 +50,10 @@ while (($# > 0)); do
     esac
 done
 
-# Sign every commit in upstream..HEAD. The signing logic and all its
-# preconditions (inside a work tree, upstream exists, clean tree, no-op when
-# there is nothing unpublished) live in git-resign, which is reused here. The
+# Sign every local (unpushed) commit. The signing logic and all its
+# preconditions (inside a work tree, clean tree, selecting only local commits
+# without depending on an upstream, never rebasing over the remote, no-op when
+# there is nothing to sign) live in git-resign, which is reused here. The
 # placeholder on the next line is replaced with git-resign's store path at
 # build time (see home/base.nix), so git spush always invokes the matching
 # git-resign regardless of $PATH.
