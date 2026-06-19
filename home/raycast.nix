@@ -17,6 +17,7 @@ with lib; let
     "wh-1000xm5-connect.applescript" = ./raycast-scripts/wh-1000xm5-connect.applescript;
     "external-mic.applescript" = ./raycast-scripts/external-mic.applescript;
     "builtin-mic.applescript" = ./raycast-scripts/builtin-mic.applescript;
+    "kill-eqmac.applescript" = ./raycast-scripts/kill-eqmac.applescript;
 
     "monitor-displayport.applescript" = pkgs.writeText "monitor-displayport.applescript" ''
       #!/usr/bin/osascript

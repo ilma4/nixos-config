@@ -40,6 +40,7 @@ in {
     # coding agents
     claude-code = asLinuxPackage {macName = "claude-code@latest";};
     codex = asLinuxPackage {};
+    antigravity-cli = asLinuxPackage {};
 
     # comfyui = macOnlyCask {}; # tool for generating images/videos
     # cherry-studio = {}; # tool for LLMs

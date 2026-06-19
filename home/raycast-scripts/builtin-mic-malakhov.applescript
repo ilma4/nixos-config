@@ -8,11 +8,14 @@
 # Optional parameters:
 # @raycast.icon 💻
 # @raycast.packageName Audio
-# @raycast.description Connect WH-1000XM5, then switch input to the built-in microphone
+# @raycast.description Connect WH-1000XM5, stop the ilma4 eqMac, switch input to the built-in microphone
 
-property connectScript : "/Users/ilma4/Scripts/wh-1000xm5-connect.applescript"
-property switchAudio : "/Users/ilma4/.nix-profile/bin/SwitchAudioSource"
-property notifier : "/Users/ilma4/.nix-profile/bin/terminal-notifier"
+property blueutil : "/Users/malakhov/.nix-profile/bin/blueutil"
+property switchAudio : "/Users/malakhov/.nix-profile/bin/SwitchAudioSource"
+property notifier : "/Users/malakhov/.nix-profile/bin/terminal-notifier"
+property killEqmac : "/Users/malakhov/Scripts/kill-eqmac.applescript"
+property deviceAddress : "AC:80:0A:93:B1:08"
+property outputDevice : "WH-1000XM5"
 # Built-in mic device name as reported by macOS on this MacBook Pro.
 property inputDevice : "MacBook Pro Microphone"
 property notifyGroup : "mic-switch"
@@ -42,13 +45,32 @@ on assertInput(device)
 		"/bin/sleep 0.2; done; [ \"$ok\" = 1 ]"
 end assertInput
 
-# Connect the headphones first; the connect script notifies about its own result.
-do shell script "osascript " & quoted form of connectScript
-
-# Switch (and hold) the input device regardless of whether the connection succeeded.
+# Connect the headphones; only proceed if they end up connected.
+set headphonesReady to false
 try
-	assertInput(inputDevice)
-	showNotification("Input device", inputDevice)
+	set connectedState to do shell script quoted form of blueutil & " --is-connected " & deviceAddress
+	if connectedState is "1" then
+		set headphonesReady to true
+	else
+		do shell script quoted form of blueutil & " --connect " & deviceAddress
+		set headphonesReady to true
+	end if
 on error errorMessage
-	showNotification("Input switch failed", errorMessage)
+	showNotification("WH-1000XM5 connection failed", errorMessage)
 end try
+
+if headphonesReady then
+	# eqMac left running by the ilma4 session hijacks the headphone audio, so stop it.
+	try
+		do shell script "osascript " & quoted form of killEqmac
+	end try
+	# With eqMac gone, take the input first (this breaks macOS's HFP headset grab),
+	# then route output to the real headphones at full quality.
+	try
+		assertInput(inputDevice)
+		do shell script quoted form of switchAudio & " -t output -s " & quoted form of outputDevice
+		showNotification("WH-1000XM5 ready", outputDevice & " out · " & inputDevice & " in")
+	on error errorMessage
+		showNotification("Audio switch failed", errorMessage)
+	end try
+end if
