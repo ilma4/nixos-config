@@ -85,15 +85,16 @@
   # gives atuin a writable HOME at build time (it best-effort mkdir's its data
   # dirs), matching Home Manager's own fish/nu init generators. Shipped as a dir
   # with an adjacent .zwc so `source <basename>` loads bytecode (see fzf above).
-  atuinInitSnippet = pkgs.runCommandLocal "i4-atuin-init" {
-    nativeBuildInputs = [pkgs.writableTmpDirAsHomeHook];
-  } ''
-    set -euo pipefail
-    mkdir -p "$out"
-    ATUIN_CONFIG_DIR=${../dotfiles/atuin} \
-      ${lib.getExe' config.programs.atuin.package "atuin"} init zsh ${lib.escapeShellArgs config.programs.atuin.flags} > "$out/atuin-init.zsh"
-    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/atuin-init.zsh.zwc' '$out/atuin-init.zsh'"
-  '';
+  atuinInitSnippet =
+    pkgs.runCommandLocal "i4-atuin-init" {
+      nativeBuildInputs = [pkgs.writableTmpDirAsHomeHook];
+    } ''
+      set -euo pipefail
+      mkdir -p "$out"
+      ATUIN_CONFIG_DIR=${../dotfiles/atuin} \
+        ${lib.getExe' config.programs.atuin.package "atuin"} init zsh ${lib.escapeShellArgs config.programs.atuin.flags} > "$out/atuin-init.zsh"
+      ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/atuin-init.zsh.zwc' '$out/atuin-init.zsh'"
+    '';
 
   # Powerlevel10k ships source files and tries to zcompile them at runtime only
   # when its install directory is writable. The Nix store is intentionally not
