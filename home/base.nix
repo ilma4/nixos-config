@@ -279,6 +279,13 @@ in {
         # dirsize = "${pkgs.ncdu}/bin/ncdu";
         l = "ls -lah";
         ll = "ls -lh";
+
+        # Quick parent-directory navigation: `..` → up one level, each extra dot
+        # goes one level higher, up to `.....` (5 dots) → up four levels.
+        ".." = "cd ..";
+        "..." = "cd ../..";
+        "...." = "cd ../../..";
+        "....." = "cd ../../../..";
       };
 
       initContent = let
