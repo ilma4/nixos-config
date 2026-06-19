@@ -297,12 +297,6 @@ in {
 
       initContent = let
         early = lib.mkOrder 500 ''
-          # Powerlevel10k instant prompt — must stay near the top and before any
-          # console output/input so the prompt renders immediately at startup.
-          if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-            source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
-          fi
-
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
           ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
 
