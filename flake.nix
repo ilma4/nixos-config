@@ -228,6 +228,10 @@
             pkgs.haskellPackages.hie-bios
             pkgs.haskell-language-server
           ];
+
+          shellHook = ''
+            export FLAKE_LOCATION="$PWD"
+          '';
         };
       };
     }) (builtins.attrValues systems));
