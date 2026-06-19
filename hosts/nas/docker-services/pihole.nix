@@ -1,5 +1,5 @@
 {...}: let
-  version = "2026.05.0";
+  version = "2026.06.0";
   dataDir = "/srv/pihole";
 in {
   dockerCompose.pihole.composeText = ''
