@@ -37,7 +37,7 @@ in {
       stack
 
       uv
-      mcp-nixos
+      # mcp-nixos # build failure, don't use like this anyway
       pkgs-unstable.ha-mcp
 
       android-tools # adb
