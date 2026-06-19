@@ -84,7 +84,6 @@ in {
         home.packages = with pkgs; [
           codex
           claude-code
-          gemini-cli
           opencode
           (mkJunieCli pkgs)
         ];

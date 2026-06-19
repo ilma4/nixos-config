@@ -72,7 +72,6 @@
     "/Users/ilma4/.ollama" # LLMs
     "/Users/ilma4/.lmstudio" # LLMs
     "/Users/ilma4/.unsloth"
-    "/Users/ilma4/.gemini" # oauth creds for gemini-cli
     "/Users/ilma4/.junie"
     "/Users/ilma4/.pi/agent/npm/node_modules"
     "/Users/ilma4/.local/lib/node_modules"

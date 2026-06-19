@@ -89,7 +89,6 @@
       ".config/rclone".source = symlink "rclone";
       ".config/karabiner".source = symlink "karabiner";
       ".config/zed".source = symlink "zed";
-      ".gemini/settings.json".source = symlink "gemini_cli_settings.json";
     };
   };
 }
