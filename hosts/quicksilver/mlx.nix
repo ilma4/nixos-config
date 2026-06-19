@@ -9,14 +9,74 @@
   host = "127.0.0.1";
   port = 8001;
 
-  # MLX 8-bit conversion of Qwen3.6-35B-A3B. mlx-openai-server downloads it from
-  # the HuggingFace hub (into the HF cache under $HOME) the first time the model
-  # is requested; nothing is pinned in the Nix store.
+  # MLX 8-bit conversion of Qwen3.6-35B-A3B. mlx-lm downloads it from the
+  # HuggingFace hub (into the HF cache under $HOME) the first time the model is
+  # requested; nothing is pinned in the Nix store.
   modelId = "unsloth/Qwen3.6-35B-A3B-MLX-8bit";
+
+  # mlx-lm's HTTP server (`mlx_lm.server`), built from current upstream master
+  # with ml-explore/mlx-lm#1274 ("feat: add --idle-timeout to unload model after
+  # inactivity") applied on top. That PR is still open and its --idle-timeout is
+  # the mlx-lm equivalent of the on-demand idle unloading this host relied on
+  # before, so we carry just the patch until it lands in a release.
+  #
+  # We patch master rather than install the PR's fork branch because that branch
+  # trails upstream (it was ~12 commits / about a month behind at the time of
+  # writing) and would pin a stale mlx-lm. `rev` is the upstream main commit this
+  # was last bumped to; the patch is fetched from the PR and re-applied against
+  # that tree at build time (the test-only hunks are dropped — they are not
+  # needed to run the server and only add conflict surface on future bumps). To
+  # move forward, bump `rev`/`hash` to a newer master and refresh the patch
+  # `hash`. When #1274 ships in a released mlx-lm, drop all of this and use the
+  # plain `mlx-lm` package as the uv `--from`.
+  mlxLmSrc = pkgs.applyPatches {
+    name = "mlx-lm-master-pr1274";
+    src = pkgs.fetchFromGitHub {
+      owner = "ml-explore";
+      repo = "mlx-lm";
+      rev = "2c008fd0252b2c569227d12568356ab88ab0560a";
+      hash = "sha256-K6gQrfMFNWPv84TI9q4sXOp0MOgSiMS7Im5EYWhgppY=";
+    };
+    patches = [
+      (pkgs.fetchpatch {
+        name = "idle-timeout-pr1274.patch";
+        url = "https://github.com/ml-explore/mlx-lm/pull/1274.patch";
+        excludes = ["tests/test_idle_unload.py" "tests/test_server.py"];
+        hash = "sha256-8wtc1CMneV8yUzUwjBf8yEAmCPUN1U3H9x+AQ1su4UM=";
+      })
+    ];
+  };
+
+  # uv builds a *directory* `--from` source in-tree (setuptools writes
+  # mlx_lm.egg-info next to setup.py), which fails on the read-only Nix store
+  # path with "could not create 'mlx_lm.egg-info': Permission denied". So build
+  # the wheel here — in a writable sandbox, offline, with nixpkgs setuptools —
+  # and hand uv the finished wheel instead; uv then only resolves the runtime
+  # deps (mlx, transformers, ...) from PyPI and never builds in-tree.
+  mlxLmWheel = pkgs.stdenvNoCC.mkDerivation {
+    name = "mlx-lm-master-pr1274-wheel";
+    dontUnpack = true;
+    nativeBuildInputs = [
+      (pkgs.python312.withPackages (ps: with ps; [build setuptools wheel]))
+    ];
+    buildPhase = ''
+      runHook preBuild
+      cp -r ${mlxLmSrc} src
+      chmod -R u+w src
+      (cd src && python -m build --wheel --no-isolation --outdir dist)
+      runHook postBuild
+    '';
+    installPhase = ''
+      runHook preInstall
+      mkdir -p "$out"
+      cp src/dist/*.whl "$out"/
+      runHook postInstall
+    '';
+  };
 
   # Logs live in /var/log. A launchd *user* agent can't create files in the
   # root-owned directory itself, so they are pre-created by a root activation
-  # script (see system.activationScripts.postActivation below).
+  # script (see system.activationScripts.extraActivation below).
   stdoutLog = "/var/log/mlx.log";
   stderrLog = "/var/log/mlx.err.log";
 
@@ -25,69 +85,81 @@
   # if the file is absent the server still runs (the model is public). HF_TOKEN
   # is the variable huggingface_hub (used to download the model) looks for.
   hfTokenFile = "${userHome}/NoBackup/hf-token";
-  withHfToken = pkgs.writeShellScript "mlx-with-hf-token" ''
+  # Launch wrapper for the agent: inject HF_TOKEN when available (see above),
+  # then exec the server via uv. uv installs the prebuilt wheel plus its runtime
+  # deps (mlx, transformers, ...) into a tool env cached under $HOME, so HOME
+  # must be set in the agent environment. The wheel filename carries the
+  # version, so glob it rather than hardcode. --python 3.12 pins an interpreter
+  # with prebuilt mlx/transformers wheels; unpinned, uv may pick a newer CPython
+  # lacking an mlx wheel and try to build mlx (native) from source. Server flags
+  # are appended by ProgramArguments and arrive via "$@".
+  mlxLaunch = pkgs.writeShellScript "mlx-launch" ''
     set -euo pipefail
     if [ -r "${hfTokenFile}" ]; then
       HF_TOKEN="$(<"${hfTokenFile}")"
       export HF_TOKEN
     fi
-    exec "$@"
+    wheel="$(echo ${mlxLmWheel}/*.whl)"
+    exec ${lib.getExe' pkgs.uv "uv"} tool run \
+      --python 3.12 \
+      --from "$wheel" \
+      mlx_lm.server "$@"
   '';
 
-  # mlx-openai-server only exposes on-demand idle unloading through its
-  # config-file mode, so the server is driven by YAML rather than CLI flags.
-  # on_demand = lazy-load the model on first request and unload it after the
-  # idle timeout (replaces llama.cpp load-on-startup=false + sleep-idle=300).
-  # Note: temperature/top-p/top-k are not config-file keys, so per-request
-  # sampling is left to the client (model card: temp 0.6 / top-p 0.95 / top-k 20).
+  # mlx-lm is configured entirely through CLI flags (no YAML config file).
   #
-  # reasoning_parser = "qwen3_moe" is required for the thinking block to be
-  # parsed correctly. The Qwen3.6 chat template prefills the opening "<think>\n"
-  # into the *prompt* (see chat_template.jinja: add_generation_prompt branch),
-  # so the model's completion contains only the reasoning body + a dangling
-  # "</think>" and never an opening tag. Without a reasoning parser
-  # mlx-openai-server returns that raw text in `content`, so clients (pi) print
-  # the chain-of-thought and a literal "</think>" as the answer. The qwen3_moe
-  # parser sets needs_redacted_reasoning_prefix(), so the handler re-inserts the
-  # synthetic "<think>" before parsing and splits the reasoning out into the
-  # OpenAI `reasoning_content` field, leaving `content` clean. The plain "qwen3"
-  # parser does NOT work here: it expects a literal "<think>...</think>" pair.
+  # --idle-timeout 300 (from PR #1274) unloads the model weights after 300s
+  # without requests and reloads transparently on the next request, replacing
+  # mlx-openai-server's on_demand + on_demand_idle_timeout. Note the lifecycle
+  # differs slightly: mlx-lm loads the model eagerly at startup (the generation
+  # thread calls load_default()), then unloads once idle; the old on_demand
+  # deferred the *first* load until the first request. Steady-state behaviour
+  # (idle -> unloaded -> reload on demand) is the same.
   #
-  # tool_call_parser = "qwen3_coder" is required for two reasons:
-  #   1. Tool calls. Qwen3.6's template emits the XML function/parameter format
-  #      (<tool_call><function=NAME><parameter=K>V</parameter></function>
-  #      </tool_call>), handled by qwen3_coder's FunctionParameterToolParser.
-  #      The "qwen3"/"qwen3_moe" tool parsers are Hermes (JSON) parsers that run
-  #      json.loads() on that XML and silently drop every call (tool_calls=[]).
-  #   2. It is mandatory whenever reasoning_parser is set, even with no tools.
-  #      mlx-openai-server's handler only writes the post-</think> answer back
-  #      into `content` inside the `if tool_parser:` branch; with a reasoning
-  #      parser but no tool parser the answer is dropped (content=null). The
-  #      FunctionParameter parser returns {"content": text} when no tool call is
-  #      present, restoring the plain answer.
-  # TODO: mlx-openai-server 1.8.1 rejects the OpenAI `developer` message role
-  # (HTTP 422), so the pi client pins compat.supportsDeveloperRole = false in
-  # ~/.pi/agent/models.json and sends `system` instead. Re-enable the developer
-  # role there once a future mlx-openai-server version accepts it.
-  serverConfig = (pkgs.formats.yaml {}).generate "mlx-openai-server.yaml" {
-    server = {
-      inherit host port;
-      log_level = "INFO";
-    };
-    models = [
-      {
-        model_path = modelId;
-        model_type = "lm";
-        served_model_name = "qwen3.6-35b-a3b";
-        reasoning_parser = "qwen3_moe";
-        tool_call_parser = "qwen3_coder";
-        context_length = 128000;
-        default_max_tokens = 32768;
-        on_demand = true;
-        on_demand_idle_timeout = 300;
-      }
-    ];
-  };
+  # Reasoning and tool calls need NO parser flags here: mlx-lm auto-detects both
+  # from the model itself, where mlx-openai-server required explicit
+  # reasoning_parser/tool_call_parser keys.
+  #   * Reasoning: Qwen3.6 has <think>/</think> in its vocab, so mlx-lm runs a
+  #     token-level state machine that splits the chain-of-thought into the
+  #     response's `message.reasoning` field, leaving `content` clean. (Field
+  #     name is `reasoning`, not mlx-openai-server's `reasoning_content` — the
+  #     pi client may need to read the new key.)
+  #   * Tool calls: the chat template emits the XML "<tool_call>\n<function=..."
+  #     format, which mlx-lm's _infer_tool_parser maps to the qwen3_coder tool
+  #     parser automatically (the same parser the old config named by hand).
+  #
+  # --max-tokens 32768 replaces default_max_tokens (mlx-lm's own default is 512)
+  # and caps generation when a client omits max_tokens.
+  #
+  # Dropped vs the old YAML, with no mlx-lm equivalent and no behaviour loss:
+  #   * context_length: governed by the model's own config; mlx-lm has no flag.
+  #   * served_model_name: mlx-lm reports/accepts the model by its repo id. The
+  #     old "qwen3.6-35b-a3b" alias no longer resolves, so clients must send
+  #     `model: "${modelId}"` or omit `model` (which uses the loaded default).
+  #
+  # Sampling (temp/top-p/top-k) is intentionally left to the client, as before
+  # (model card: temp 0.6 / top-p 0.95 / top-k 20); mlx-lm's --temp etc. only
+  # set server-side defaults for requests that don't specify their own.
+  #
+  # The OpenAI `developer` message role now works: mlx-lm forwards roles
+  # straight to apply_chat_template (no HTTP 422 like mlx-openai-server 1.8.1),
+  # and this model's chat template handles `developer` (treated as `system`). So
+  # the pi client can re-enable compat.supportsDeveloperRole in
+  # ~/.pi/agent/models.json.
+  serverArgs = [
+    "--model"
+    modelId
+    "--host"
+    host
+    "--port"
+    (toString port)
+    "--log-level"
+    "INFO"
+    "--max-tokens"
+    "32768"
+    "--idle-timeout"
+    "300"
+  ];
 in {
   assertions = [
     {
@@ -96,38 +168,17 @@ in {
     }
   ];
 
-  # OpenAI-compatible MLX server (mlx-openai-server), installed and run via uv
-  # (uvx) rather than nixpkgs. uv caches the tool environment and a managed
-  # Python under $HOME, so HOME must be present in the agent environment. The
-  # withHfToken shim injects HF_TOKEN (when available) before exec'ing uv.
+  # OpenAI-compatible MLX server (mlx-lm's mlx_lm.server), run via uv (uvx)
+  # rather than nixpkgs. mlxLaunch handles the HF token, the prebuilt wheel and
+  # the uv invocation; the agent just appends the server flags. uv caches its
+  # tool environment and a managed Python under $HOME, so HOME must be present
+  # in the agent environment.
   launchd.user.agents.mlx = {
     serviceConfig = {
       EnvironmentVariables = {
         HOME = userHome;
       };
-      ProgramArguments = [
-        "${withHfToken}"
-        "${lib.getExe' pkgs.uv "uv"}"
-        "tool"
-        "run"
-        # Pin Python 3.12. mlx-openai-server 1.8.1 requires >=3.11,<3.13, and
-        # its transitive dep outlines-core 0.1.26 only ships wheels up to
-        # cp312. Without this, uv picks Python 3.13 and falls back to building
-        # outlines-core from source, which needs a Rust compiler that is not in
-        # the agent's PATH (build_rust -> "can't find Rust compiler"). uv
-        # auto-downloads a managed CPython 3.12 under $HOME on first run.
-        "--python"
-        "3.12"
-        "--from"
-        # Intentionally unpinned: keep resolving the latest mlx-openai-server
-        # from PyPI on agent startup so local fixes and upstream compatibility
-        # updates are picked up without editing this flake.
-        "mlx-openai-server"
-        "mlx-openai-server"
-        "launch"
-        "--config"
-        "${serverConfig}"
-      ];
+      ProgramArguments = ["${mlxLaunch}"] ++ serverArgs;
       RunAtLoad = true;
       KeepAlive = true;
       WorkingDirectory = userHome;
