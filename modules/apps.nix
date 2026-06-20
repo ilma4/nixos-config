@@ -61,7 +61,8 @@ in {
     prismlauncher = asLinuxPackage {macInstallation = null;}; # minecraft launcher
     dolphin-emu = asLinuxPackage {macInstallation = null;}; # Wii emulator
 
-    qbittorrent = asLinuxPackage {};
+    qbittorrent = asLinuxPackage {macInstallation = null;};
+    transmission = macOnlyCask {};
     bitwarden-cli = asLinuxPackage {macInstallation = "package";};
     android-file-transfer = macOnlyCask {}; # app to transfer files between android and mac via usb
     utm = macOnlyCask {}; # qemu for mac
