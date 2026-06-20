@@ -1,14 +1,14 @@
 {
   "providers": {
-    "mlx": {
-      "name": "MLX (local)",
-      "baseUrl": "http://127.0.0.1:8001/v1",
+    "llama-cpp": {
+      "name": "llama.cpp (local)",
+      "baseUrl": "http://127.0.0.1:8002/v1",
       "apiKey": "local",
       "api": "openai-completions",
       "models": [
         {
-          "id": "unsloth/Qwen3.6-35B-A3B-MLX-8bit",
-          "name": "Qwen3.6 35B A3B (MLX)",
+          "id": "unsloth/Qwen3.6-35B-A3B-q8",
+          "name": "Qwen3.6 35B A3B (llama.cpp Q8)",
           "reasoning": true,
           "input": ["text"],
           "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
