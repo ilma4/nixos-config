@@ -1,8 +1,17 @@
 {
   main-pub-keys = [
+    # quicksilver secretive 'main-key'
+    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBC53cFbtJbKNxzktt68EAli91ithRY2IvgunmYPpe6RXDLLzRs4iFjJKnZqrCBxwC54rrXKto8JqWokFISYvmgU= ilya.malakhov4@gmail.com"
+
+    # Bitwarden 'main-key'
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
   ];
-  github-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7";
+  github-pub-keys = [
+    # quicksilver secretive 'github-key'
+    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIpJ1f6e1rMESqF6VyzQa1NYAVFgKXV5Kx8sJbr91T5uVMo0CErJfmuYMYwENxEIXhMlqXLyqGIcN6MUl03qKzk= ilya.malakhov4@gmail.com"
+
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7"
+  ];
 
   telegram = {
     my-id-secret = "telegram/my_id";

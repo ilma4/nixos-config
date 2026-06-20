@@ -252,14 +252,14 @@ in {
       enable = true;
       signing = {
         format = "ssh";
-        key = constants.github-pub-key;
+        key = builtins.head constants.github-pub-keys;
         signByDefault = false;
       };
       settings = {
         core = {
           autocrlf = "input"; # do not change line separators
         };
-        gpg.ssh.allowedSignersFile = toString (pkgs.writeText "allowed_signers" ("ilya.malakhov4@gmail.com " + constants.github-pub-key));
+        gpg.ssh.allowedSignersFile = toString (pkgs.writeText "allowed_signers" (lib.concatMapStrings (key: "ilya.malakhov4@gmail.com " + key + "\n") constants.github-pub-keys));
       };
       # config to commit located in `dev.nix`
     };

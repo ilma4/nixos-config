@@ -7,7 +7,7 @@
 }: let
   cfg = config.i4.deploy;
   repoUrl = "https://github.com/ilma4/nixos-config";
-  githubPubKey = constants.github-pub-key;
+  githubAllowedSigners = lib.concatMapStrings (key: "* " + key + "\n") constants.github-pub-keys;
   updateToLatest = pkgs.writeShellScriptBin "update-to-latest.sh" ''
     set -euo pipefail
 
@@ -27,7 +27,7 @@
 
     repo_url=${lib.escapeShellArg repoUrl}
     host_config=${lib.escapeShellArg config.networking.hostName}
-    github_pub_key=${lib.escapeShellArg githubPubKey}
+    github_allowed_signers=${lib.escapeShellArg githubAllowedSigners}
     state_dir="/var/lib/i4-deploy"
     repo_dir="''${state_dir}/nixos-config"
     allowed_signers="$(mktemp)"
@@ -38,7 +38,7 @@
     trap cleanup EXIT
 
     mkdir -p "''${state_dir}"
-    printf '* %s\n' "''${github_pub_key}" >"''${allowed_signers}"
+    printf '%s' "''${github_allowed_signers}" >"''${allowed_signers}"
     chmod 0600 "''${allowed_signers}"
 
     if [[ ! -d "''${repo_dir}/.git" ]]; then
