@@ -5,7 +5,10 @@
   pkgs-unstable,
   inputs,
   ...
-}: {
+}: let
+  # Secretive SSH agent socket (replaces the Bitwarden agent)
+  secretiveSocket = "${config.home.homeDirectory}/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh";
+in {
   imports = [
     inputs.sops-nix-darwin.homeManagerModules.sops
 
@@ -66,7 +69,7 @@
 
     programs.ssh.settings = {
       "*" = {
-        IdentityAgent = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        IdentityAgent = secretiveSocket;
       };
       "hetzer-storage" = {
         header = "Host u478838.your-storagebox.de";
@@ -77,7 +80,7 @@
     };
 
     home.sessionVariables = {
-      SSH_AUTH_SOCK = "/Users/ilma4/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+      SSH_AUTH_SOCK = secretiveSocket;
       # JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
 
