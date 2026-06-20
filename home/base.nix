@@ -419,8 +419,16 @@ in {
           # disable ZLE execute-named-cmd prompt (like ":" in normal mode in (neo)vim)
           bindkey -M vicmd ':' undefined-key
 
-          # 10milliseconds delay after seeing Esc character
-          export KEYTIMEOUT=1
+          # Delay after seeing the Esc character before ZLE treats it as a
+          # lone Esc (units are centiseconds). Default to 1 (10ms) locally;
+          # over SSH raise to 10 (100ms) so network latency doesn't split a
+          # multi-byte escape sequence (e.g. an arrow key) into a bare Esc
+          # plus stray characters. Same SSH probe as the P9K_SSH pre-seed.
+          if [[ -n $SSH_CONNECTION || -n $SSH_CLIENT || -n $SSH_TTY ]]; then
+            export KEYTIMEOUT=10
+          else
+            export KEYTIMEOUT=1
+          fi
 
           # Report the current directory's name as the terminal title. A precmd
           # hook re-emits it before every prompt so it tracks `cd`. The OSC
