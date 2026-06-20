@@ -22,6 +22,7 @@ in {
 
     inputs.home-manager-darwin.darwinModules.home-manager
     inputs.sops-nix-darwin.darwinModules.sops
+    inputs.nix-homebrew.darwinModules.nix-homebrew
   ];
 
   # environment.systemPackages = with pkgs; [
@@ -124,6 +125,28 @@ in {
   fonts.packages = with pkgs; [
     meslo-lgs-nf
   ];
+
+  # nix-homebrew installs and owns the Homebrew prefix itself (the `brew`
+  # binary and its source), pinned via the `brew-src` flake input. The
+  # `homebrew` block below still declares which formulae/casks/masApps to
+  # install on top of it.
+  nix-homebrew = {
+    enable = true;
+    user = "ilma4"; # owner of the existing /opt/homebrew prefix (group: admin)
+
+    # Keep imperative tap management. The private `jetbrains/junie` and
+    # `jetbrains/utils` taps (plus `nikitabobko/tap`) can't be public flake
+    # inputs, so fully-declarative taps (mutableTaps = false) isn't viable.
+    # Defaults to true; kept explicit to document the decision.
+    mutableTaps = true;
+
+    # Homebrew's PATH is added deliberately *after* Nix in
+    # hosts/quicksilver/common-home.nix. Don't let nix-homebrew prepend it via
+    # a slow `eval "$(brew shellenv)"` on every interactive shell.
+    enableZshIntegration = false;
+    enableBashIntegration = false;
+    enableFishIntegration = false;
+  };
 
   homebrew = {
     enable = true;
