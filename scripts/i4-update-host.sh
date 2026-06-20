@@ -9,6 +9,11 @@
 #   [targetHost]                      Optional SSH target host (defaults to <configuration>)
 #   [nixos-rebuild-args...]           Extra arguments forwarded to nixos-rebuild
 #
+# Environment:
+#   USE_BITWARDEN=1  Use the Bitwarden SSH agent socket instead of the default
+#                    agent (e.g. Secretive). Requires the Bitwarden desktop app
+#                    running with the SSH agent enabled.
+#
 # Notes:
 # - Uses `nix shell nixpkgs#nixos-rebuild` so it works on macOS/Linux without nixos-rebuild pre-installed.
 # - Connects to the remote host as `ilma4` and uses sudo for activation.
@@ -38,6 +43,21 @@ if [[ ${1-} != "" && ${1-} != --* ]]; then
     shift
 fi
 nixosRebuildArgs=("$@")
+
+# Optionally route all SSH connections through the Bitwarden agent socket. This
+# overrides the IdentityAgent set in ~/.ssh/config (which points at Secretive).
+sshAgentOpts=()
+if [[ "${USE_BITWARDEN:-}" == "1" ]]; then
+    bitwardenSocket="${HOME}/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
+    if [[ ! -S "$bitwardenSocket" ]]; then
+        echo "Error: USE_BITWARDEN=1 but Bitwarden SSH agent socket not found at ${bitwardenSocket}" >&2
+        echo "Make sure the Bitwarden desktop app is running with the SSH agent enabled." >&2
+        exit 1
+    fi
+    echo "Using Bitwarden SSH agent socket"
+    sshAgentOpts=(-o "IdentityAgent=${bitwardenSocket}")
+    export NIX_SSHOPTS="${NIX_SSHOPTS:-} -o IdentityAgent=${bitwardenSocket}"
+fi
 
 has_nixos_rebuild_arg() {
     local expectedArg="$1"
@@ -78,7 +98,7 @@ fi
 
 remoteTarget="ilma4@${sshTarget}"
 sudoPasswordArgs=()
-if ssh "${remoteTarget}" "sudo -n true" &>/dev/null; then
+if ssh "${sshAgentOpts[@]}" "${remoteTarget}" "sudo -n true" &>/dev/null; then
     echo "Remote sudo is available without password"
 elif ! has_nixos_rebuild_arg "--ask-sudo-password"; then
     echo "Remote sudo requires a password; adding --ask-sudo-password"
