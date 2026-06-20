@@ -39,6 +39,7 @@ in {
     ./backup/backup.nix
     ./swap.nix
     ./avahi.nix
+    ./tpm2.nix
   ];
 
   config = {
