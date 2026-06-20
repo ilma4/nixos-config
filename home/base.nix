@@ -252,7 +252,12 @@ in {
       enable = true;
       signing = {
         format = "ssh";
-        key = builtins.head constants.github-pub-keys;
+        # Pass the literal public key as user.signingkey. Git only auto-detects
+        # an inline key when it starts with "ssh-" or "key::"; an "ecdsa-…" key
+        # (our Secretive key) is otherwise treated as a file path and signing
+        # fails with "Couldn't load public key …: No such file or directory".
+        # The "key::" prefix marks it as a literal key for every key type.
+        key = "key::" + builtins.head constants.github-pub-keys;
         signByDefault = false;
       };
       settings = {
