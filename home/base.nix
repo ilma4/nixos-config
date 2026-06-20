@@ -16,6 +16,16 @@
     if osConfig != null && osConfig ? homebrew
     then osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix)
     else "/opt/homebrew";
+  # Homebrew's own `brew` completion (`_brew`) ships inside the brew source
+  # tree, not in `$prefix/share/zsh/site-functions`: under nix-homebrew the
+  # prefix and the repository differ, and the prefix's site-functions only
+  # receives formula/cask completions (e.g. `_rg`, `_swiftly`). Point fpath at
+  # the source's completions dir as well so `brew <TAB>` completes. Null off
+  # Homebrew hosts (Linux / standalone Home Manager).
+  homebrewCompletions =
+    if osConfig != null && osConfig ? nix-homebrew
+    then "${osConfig.nix-homebrew.package}/completions/zsh"
+    else null;
   i4-revision-package = pkgs.writeShellScriptBin "i4-revision" ''
     set -euo pipefail
     echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
@@ -140,16 +150,23 @@
   '';
 
   # Fingerprint of the Nix-managed inputs that determine zsh's completion dump:
-  # the zsh-completions package and the home profile (the latter is where Home
-  # Manager installs each enabled program's completion functions, so it changes
-  # whenever a program that ships completions is added/removed/updated). The
-  # invalidateZcompdump activation script compares this against the last-applied
-  # copy and drops ~/.zcompdump when it differs — see programs.zsh.completionInit
-  # for why the dump is otherwise never rebuilt (compinit -C).
-  zcompdumpFingerprint = pkgs.writeText "i4-zcompdump-fingerprint" ''
-    ${pkgs.zsh-completions}
-    ${config.home.path}
-  '';
+  # the zsh-completions package, the home profile (where Home Manager installs
+  # each enabled program's completion functions, so it changes whenever a
+  # program that ships completions is added/removed/updated), and — on Homebrew
+  # hosts — the brew source whose completions/zsh is on fpath (so a brew version
+  # bump refreshes `_brew`). The invalidateZcompdump activation script compares
+  # this against the last-applied copy and drops ~/.zcompdump when it differs —
+  # see programs.zsh.completionInit for why the dump is otherwise never rebuilt
+  # (compinit -C).
+  zcompdumpFingerprint = pkgs.writeText "i4-zcompdump-fingerprint" (
+    lib.concatLines (
+      [
+        "${pkgs.zsh-completions}"
+        "${config.home.path}"
+      ]
+      ++ lib.optional (homebrewCompletions != null) homebrewCompletions
+    )
+  );
 in {
   imports = [
     ./dev.nix
@@ -319,6 +336,7 @@ in {
         early = lib.mkOrder 500 ''
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
           ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
+          ${lib.optionalString (homebrewCompletions != null) "fpath+=(${homebrewCompletions})"}
 
           # Pre-seed Powerlevel10k's SSH detection. p10k's _p9k_init_ssh forks
           # `who -m` (~13-19ms) on every startup whenever no SSH_* vars are set
