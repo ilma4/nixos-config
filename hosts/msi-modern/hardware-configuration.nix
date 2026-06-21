@@ -40,7 +40,9 @@
   fileSystems."/boot" = {
     device = "/dev/disk/by-uuid/68CD-58E9";
     fsType = "vfat";
-    options = ["fmask=0022" "dmask=0022"];
+    # Root-only so systemd-boot's random seed on the ESP isn't world-readable
+    # (otherwise bootctl warns it's "world accessible, a security hole").
+    options = ["umask=0077"];
   };
 
   swapDevices = [];
