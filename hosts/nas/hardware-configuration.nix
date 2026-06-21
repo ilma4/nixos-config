@@ -31,14 +31,11 @@
   };
 
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/fe7ccc35-d3d4-4573-827e-2ec637f16754";
-    fsType = "ext4";
-  };
-
-  fileSystems."/boot/efi" = {
     device = "/dev/disk/by-uuid/F9AD-C657";
     fsType = "vfat";
-    options = ["fmask=0022" "dmask=0022"];
+    # Root-only so systemd-boot's random seed on the ESP isn't world-readable
+    # (otherwise bootctl warns it's "world accessible, a security hole").
+    options = ["umask=0077"];
   };
 
   swapDevices = [];

@@ -81,13 +81,9 @@ in {
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot/efi";
     };
-    grub = {
+    systemd-boot = {
       enable = true;
-      efiSupport = true;
-      # efiInstallAsRemovable = true; # in case canTouchEfiVariables doesn't work for your system
-      device = "nodev";
     };
   };
 
