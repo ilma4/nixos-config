@@ -69,6 +69,9 @@ in {
     services.tailscale = {
       enable = mkDefault true;
       openFirewall = config.services.tailscale.enable;
+      # Encrypt tailscaled's state file at rest, sealing the key to the TPM.
+      # Only enable when a TPM 2.0 device is present, otherwise tailscaled fails to start.
+      extraDaemonFlags = lib.optionals config.security.tpm2.enable ["--encrypt-state"];
     };
 
     services.openssh = {
