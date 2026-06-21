@@ -18,6 +18,17 @@ in {
       hostKeys = lib.mkDefault [keyPath];
 
       authorizedKeys = lib.mkDefault constants.main-pub-keys;
+
+      # With UsePAM disabled (default in initrd), sshd prints /etc/motd
+      # itself right before dropping to the shell. `lines` type, so this
+      # concatenates with any host-specific extraConfig instead of clobbering it.
+      extraConfig = "PrintMotd yes\n";
     };
+
+    # Shown to anyone who SSHes into the initrd, printed by sshd (PrintMotd)
+    # just before the interactive shell starts.
+    boot.initrd.systemd.contents."/etc/motd".text = ''
+      run systemd-tty-ask-password-agent to unlock encrypted drive
+    '';
   };
 }
