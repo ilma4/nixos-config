@@ -442,6 +442,19 @@ in {
           # disable ZLE execute-named-cmd prompt (like ":" in normal mode in (neo)vim)
           bindkey -M vicmd ':' undefined-key
 
+          # Backspace in insert mode should delete freely, not just within the
+          # current insert session. After `bindkey -v`, viins binds Backspace to
+          # `vi-backward-delete-char`, which (like historical vi) refuses to delete
+          # past `viinsbegin` — the cursor position zsh records every time insert
+          # mode is (re)entered. On a fresh prompt viinsbegin is 0, so Backspace
+          # works everywhere; but after Esc then i/a/I/A/... it equals the cursor,
+          # so an immediate Backspace has nothing to delete and is a no-op (you can
+          # only erase characters typed since re-entering insert). backward-delete-char
+          # has no such boundary, matching vim's `backspace=indent,eol,start`. Bind
+          # both DEL (^?, sent by most terminals for Backspace) and BS (^H).
+          bindkey -M viins '^?' backward-delete-char
+          bindkey -M viins '^h' backward-delete-char
+
           # Delay after seeing the Esc character before ZLE treats it as a
           # lone Esc (units are centiseconds). Default to 1 (10ms) locally;
           # over SSH raise to 10 (100ms) so network latency doesn't split a
