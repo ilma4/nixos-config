@@ -1,0 +1,29 @@
+[package]
+name = "keyboard-watcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies.objc2-core-foundation]
+version = "0.3.2"
+default-features = false
+features = [
+  "std",
+  "CFDictionary",
+  "CFNumber",
+  "CFRunLoop",
+  "CFString",
+]
+
+[dependencies.objc2-io-kit]
+version = "0.3.2"
+default-features = false
+features = ["hid"]
+
+# This is a tiny daemon that spends ~all its life blocked in CFRunLoop, so trade
+# compile time and raw speed for a small binary and low memory footprint.
+[profile.release]
+opt-level = "z"   # optimize for size (smaller code => smaller resident text pages)
+lto = "fat"       # fat (whole-program) link-time optimization: drops dead code
+codegen-units = 1 # one codegen unit: better cross-unit optimization, smaller output
+panic = "abort"   # no unwinding tables/landing pads; launchd KeepAlive relaunches on panic
+strip = true      # strip symbols from the installed binary

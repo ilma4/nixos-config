@@ -10,6 +10,7 @@ in {
   imports = [
     ../../modules/nix-settings.nix
     ../../darwin-modules/launchd-agents.nix
+    ../../darwin-modules/keyboard-watcher.nix
     ../../modules/home-manager.nix
     ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
@@ -52,6 +53,7 @@ in {
   */
 
   i4.launchd-agents.enable = true;
+  i4.keyboard-watcher.enable = true;
   i4.sops.enable = true;
   i4.apps.enable = true;
 

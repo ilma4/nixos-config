@@ -71,56 +71,5 @@
         StandardErrorPath = "/tmp/obsidian-auto-commit.log";
       };
     };
-
-    launchd.user.agents.keyboard-remap = {
-      serviceConfig = {
-        ProgramArguments = [
-          "/bin/bash"
-          "-c"
-          ''
-            set -euo pipefail
-
-            device_match='{"VendorID":0x46d,"ProductID":0xb369}'
-            key_mapping='{
-              "UserKeyMapping": [
-                {
-                  "HIDKeyboardModifierMappingSrc": 0x700000064,
-                  "HIDKeyboardModifierMappingDst": 0x700000035
-                },
-                {
-                  "HIDKeyboardModifierMappingSrc": 0x700000035,
-                  "HIDKeyboardModifierMappingDst": 0xFF00000003
-                }
-              ]
-            }'
-            max_wait_seconds=30
-            deadline=$((SECONDS + max_wait_seconds))
-            attempt=1
-
-            # Logitech MX Keys Mini keyboard (VendorID 0x46d, ProductID 0xb369):
-            #   Non-US \| (ISO key by left Shift) -> Grave/Tilde (`)
-            #   Grave/Tilde (`)                   -> Fn / Globe
-            while [ "$SECONDS" -lt "$deadline" ]; do
-              if device_status=$(/usr/bin/hidutil property --matching "$device_match" --get UserKeyMapping) && /usr/bin/grep -q '^RegistryID' <<< "$device_status"; then
-                echo "$(/bin/date): Logitech MX Keys Mini found; applying keyboard mapping"
-                /usr/bin/hidutil property --matching "$device_match" --set "$key_mapping"
-                echo "$(/bin/date): Keyboard mapping applied"
-                exit 0
-              fi
-
-              echo "$(/bin/date): Logitech MX Keys Mini not found (attempt $attempt/$max_wait_seconds)"
-              attempt=$((attempt + 1))
-              /bin/sleep 1
-            done
-
-            echo "$(/bin/date): Logitech MX Keys Mini not found after $max_wait_seconds seconds; exiting"
-            exit 1
-          ''
-        ];
-        RunAtLoad = true;
-        StandardOutPath = "/tmp/keyboard-remap.log";
-        StandardErrorPath = "/tmp/keyboard-remap.log";
-      };
-    };
   };
 }
