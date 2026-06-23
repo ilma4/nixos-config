@@ -20,7 +20,7 @@
 
   modelsPreset = pkgs.writeText "qwen36-models.ini" ''
     [*]
-    ctx-size = 128000
+    ctx-size = 262144
     predict = 32768
     temp = 0.6
     top-p = 0.95
