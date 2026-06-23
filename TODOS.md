@@ -1,5 +1,3 @@
-# Make git_branch_only visible in dark theme
-
 # Can I bike to the office without rain?
 
 use openweather prescription map to check if I can go to the office without rain
