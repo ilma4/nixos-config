@@ -18,12 +18,14 @@ features = [
 [dependencies.objc2-io-kit]
 version = "0.3.2"
 default-features = false
-# hid: IOHIDManager, used to detect (re)connect of the watched keyboard.
+# libc: IOKitLib registry-matching notifications (IONotificationPort,
+# IOServiceAddMatchingNotification) used to detect the keyboard (re)connecting
+# without opening it — so no Input Monitoring permission is required.
 # hidsystem: IOHIDEventSystemClient/IOHIDServiceClient, used to apply the key
 # remapping at the HID event-system level (where macOS actually consumes it),
 # i.e. what `hidutil property --set` does, but in-process.
 features = [
-  "hid",
+  "libc",
   "hidsystem",
 ]
 

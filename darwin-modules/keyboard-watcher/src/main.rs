@@ -4,7 +4,8 @@ use std::{
     ffi::{c_char, c_int, c_long, c_void, OsStr},
     mem::MaybeUninit,
     path::PathBuf,
-    ptr::{self, NonNull},
+    ptr, thread,
+    time::Duration,
 };
 
 use objc2_core_foundation::{
@@ -12,8 +13,9 @@ use objc2_core_foundation::{
     CFString, CFType,
 };
 use objc2_io_kit::{
-    kIOHIDOptionsTypeNone, kIOReturnSuccess, IOHIDDevice, IOHIDEventSystemClient,
-    IOHIDManager, IOHIDServiceClient, IOReturn,
+    kIOFirstMatchNotification, kIOMainPortDefault, io_iterator_t, IOHIDEventSystemClient,
+    IOHIDServiceClient, IONotificationPort, IOIteratorNext, IOObjectRelease,
+    IOServiceAddMatchingNotification,
 };
 
 type AnyError = Box<dyn Error>;
@@ -181,6 +183,18 @@ struct State {
     mappings: Vec<KeyMapping>,
 }
 
+/// Outcome of one attempt to set `UserKeyMapping` on the matching services.
+enum ApplyResult {
+    /// Applied to at least one matching event service.
+    Applied,
+    /// No event service matched (yet) — on a fresh reconnect the service is
+    /// usually just not published yet, so the caller may retry.
+    NoServiceYet,
+    /// Matching service(s) were found but the property could not be set; the
+    /// specific error has already been logged, and retrying will not help.
+    Failed,
+}
+
 impl State {
     /// Build the `UserKeyMapping` property value that `hidutil property --set`
     /// would take: an array of `{src, dst}` dictionaries holding the 64-bit HID
@@ -211,21 +225,21 @@ impl State {
         CFArray::from_objects(&entry_refs)
     }
 
-    /// Re-apply the remapping on every (re)connect.
-    ///
-    /// macOS resets `UserKeyMapping` whenever the keyboard disconnects, and the
-    /// remap is consumed at the HID event-system level (the IOHIDServiceClient),
-    /// not on the raw IOHIDDevice — so this sets the property on every event
-    /// service that matches the watched vendor/product, exactly like
-    /// `hidutil property --matching ... --set` does, but in-process.
-    fn apply(&self, device_desc: &str) {
+    /// Attempt to re-apply the remapping once. macOS discards `UserKeyMapping`
+    /// whenever the keyboard disconnects, and the remap is consumed at the HID
+    /// event-system level (the `IOHIDServiceClient`), not on the raw
+    /// `IOHIDDevice` — so this sets the property on every event service matching
+    /// the watched vendor/product, exactly like `hidutil property --matching
+    /// ... --set`.
+    fn try_apply(&self) -> ApplyResult {
         // A fresh simple client mirrors hidutil's per-invocation behaviour and
-        // always reflects the services present right now.
+        // always reflects the services present right now. Creating it (and
+        // setting service properties) needs no Input Monitoring permission.
         let client = IOHIDEventSystemClient::new_simple_client(None);
 
         let Some(services) = client.services() else {
-            log!("error: could not copy HID event services; {device_desc} not remapped");
-            return;
+            log!("error: could not copy HID event services");
+            return ApplyResult::Failed;
         };
 
         // `IOHIDEventSystemClientCopyServices` yields an array of
@@ -274,14 +288,12 @@ impl State {
             }
         }
 
-        if matched == 0 {
-            log!(
-                "error: no HID event service matched {:04x}:{:04x}; {device_desc} not remapped",
-                self.vendor_id,
-                self.product_id,
-            );
-        } else if applied == 0 {
-            log!("error: matched {matched} service(s) for {device_desc} but applied none");
+        if applied > 0 {
+            ApplyResult::Applied
+        } else if matched == 0 {
+            ApplyResult::NoServiceYet
+        } else {
+            ApplyResult::Failed
         }
     }
 }
@@ -298,13 +310,6 @@ fn number_value(value: Option<CFRetained<CFType>>) -> Option<i64> {
         .and_then(|value| value.as_i64())
 }
 
-fn device_property(
-    device: &IOHIDDevice,
-    key: &'static str,
-) -> Option<CFRetained<CFType>> {
-    device.property(&CFString::from_static_str(key))
-}
-
 fn service_property(
     service: &IOHIDServiceClient,
     key: &'static str,
@@ -312,74 +317,98 @@ fn service_property(
     service.property(&CFString::from_static_str(key))
 }
 
-unsafe extern "C-unwind" fn device_connected(
-    context: *mut c_void,
-    result: IOReturn,
-    _sender: *mut c_void,
-    device: NonNull<IOHIDDevice>,
-) {
-    if result != kIOReturnSuccess {
-        log!("error: HID matching callback failed: {result:#x}");
+/// Matching dictionary equivalent to `IOServiceMatching("IOHIDDevice")` plus a
+/// VendorID/ProductID filter: `{IOProviderClass, VendorID, ProductID}`. The
+/// returned dictionary is owned and ready to be consumed by
+/// `IOServiceAddMatchingNotification`.
+fn matching_dictionary(vendor_id: u32, product_id: u32) -> CFRetained<CFDictionary> {
+    let provider_key = CFString::from_static_str("IOProviderClass");
+    let provider_value = CFString::from_static_str("IOHIDDevice");
+    let vendor_key = CFString::from_static_str("VendorID");
+    let product_key = CFString::from_static_str("ProductID");
+    let vendor_value = CFNumber::new_i64(i64::from(vendor_id));
+    let product_value = CFNumber::new_i64(i64::from(product_id));
+
+    let provider_value: &CFType = &provider_value;
+    let vendor_value: &CFType = &vendor_value;
+    let product_value: &CFType = &product_value;
+
+    let dict = CFDictionary::<CFString, CFType>::from_slices(
+        &[&provider_key, &vendor_key, &product_key],
+        &[provider_value, vendor_value, product_value],
+    );
+
+    // Erase the generic parameters to the untyped `CFDictionary` that
+    // `IOServiceAddMatchingNotification` expects. Ownership transfers intact.
+    unsafe { CFRetained::from_raw(CFRetained::into_raw(dict).cast::<CFDictionary>()) }
+}
+
+// When a keyboard (re)connects, its IOHIDDevice IORegistry node — which triggers
+// our notification — is published slightly before its IOHIDEventSystem service,
+// so the first apply can find no matching service. Retry until it shows up.
+// 25 * 200ms ≈ 5s, comfortably longer than the observed publish delay.
+const RETRY_ATTEMPTS: u32 = 25;
+const RETRY_INTERVAL: Duration = Duration::from_millis(200);
+
+/// Drain a matching iterator — required to re-arm the notification — and, if it
+/// produced any matching IORegistry nodes, (re)apply the remapping.
+fn process_matches(state: &'static State, iterator: io_iterator_t) {
+    let mut count = 0usize;
+    loop {
+        let object = IOIteratorNext(iterator);
+        if object == 0 {
+            break;
+        }
+        count += 1;
+        IOObjectRelease(object);
+    }
+
+    if count == 0 {
         return;
     }
 
-    // Safety:
-    //
-    // `context` points to the boxed State in main(). The box remains alive
-    // while the manager is registered and the run loop is running.
-    let state = unsafe { &*context.cast::<State>() };
+    log!("matching HID device connected ({count} IORegistry node(s)); applying remap");
 
-    // Safety:
-    //
-    // IOKit guarantees that the callback's device reference is valid for
-    // the duration of the callback.
-    let device = unsafe { device.as_ref() };
+    if let ApplyResult::NoServiceYet = state.try_apply() {
+        // The event service is not published yet. Retry on a background thread
+        // so the run loop stays free to receive further connect notifications.
+        let budget_s = (u128::from(RETRY_ATTEMPTS) * RETRY_INTERVAL.as_millis()) / 1000;
+        log!("event service not published yet; retrying for up to ~{budget_s}s");
 
-    let product = string_value(device_property(device, "Product"))
-        .unwrap_or_else(|| "unknown keyboard".to_owned());
+        thread::spawn(move || {
+            for _ in 0..RETRY_ATTEMPTS {
+                thread::sleep(RETRY_INTERVAL);
+                if !matches!(state.try_apply(), ApplyResult::NoServiceYet) {
+                    return;
+                }
+            }
+            log!(
+                "error: no HID event service matched {:04x}:{:04x} after ~{budget_s}s; remap not applied",
+                state.vendor_id,
+                state.product_id,
+            );
+        });
+    }
+}
 
-    // The primary usage identifies which interface of a composite keyboard this
-    // is (0x1:0x6 is GenericDesktop/Keyboard), keeping the logs unambiguous.
-    let usage_page = number_value(device_property(device, "PrimaryUsagePage"));
-    let usage = number_value(device_property(device, "PrimaryUsage"));
-
-    let device_desc = match (usage_page, usage) {
-        (Some(page), Some(usage)) => {
-            format!("{product} [usage {page:#x}:{usage:#x}]")
-        }
-        _ => product,
-    };
-
-    log!("keyboard connected: {device_desc}");
-
-    state.apply(&device_desc);
+unsafe extern "C-unwind" fn device_appeared(ref_con: *mut c_void, iterator: io_iterator_t) {
+    // Safety: `ref_con` is the leaked State from run(); it lives for the whole
+    // program, so treating it as `'static` is sound.
+    let state: &'static State = unsafe { &*ref_con.cast::<State>() };
+    process_matches(state, iterator);
 }
 
 fn run() -> Result<(), AnyError> {
     let config = Config::from_args()?;
 
-    let vendor_key = CFString::from_static_str("VendorID");
-    let product_key = CFString::from_static_str("ProductID");
-
-    let vendor_id = CFNumber::new_i64(i64::from(config.vendor_id));
-    let product_id = CFNumber::new_i64(i64::from(config.product_id));
-
-    let matching = CFDictionary::<CFString, CFNumber>::from_slices(
-        &[&vendor_key, &product_key],
-        &[&vendor_id, &product_id],
-    );
-
-    let state = Box::new(State {
+    // Leak the State: it must outlive every notification (the run loop never
+    // returns, and retry threads may still be running), and a long-lived daemon
+    // never frees it anyway. This lets the callback treat it as `'static`.
+    let state: &'static State = Box::leak(Box::new(State {
         vendor_id: config.vendor_id,
         product_id: config.product_id,
         mappings: config.mappings,
-    });
-
-    let context = std::ptr::from_ref(state.as_ref())
-        .cast_mut()
-        .cast::<c_void>();
-
-    let manager = IOHIDManager::new(None, kIOHIDOptionsTypeNone);
+    }));
 
     let run_loop =
         CFRunLoop::current().ok_or("failed to get current run loop")?;
@@ -388,35 +417,50 @@ fn run() -> Result<(), AnyError> {
     let run_loop_mode = unsafe { kCFRunLoopDefaultMode }
         .ok_or("default run-loop mode is unavailable")?;
 
-    // Safety:
-    //
-    // - The matching dictionary contains valid IOHID matching key/value types.
-    // - `context` remains valid while the manager is registered.
-    // - The manager and run loop are used on this thread.
-    unsafe {
-        manager.set_device_matching(Some(matching.as_opaque()));
-
-        manager.register_device_matching_callback(
-            Some(device_connected),
-            context,
-        );
-
-        manager.schedule_with_run_loop(
-            &run_loop,
-            run_loop_mode,
-        );
+    // Watch the IORegistry for the keyboard appearing, rather than opening it
+    // through IOHIDManager: registry matching needs no Input Monitoring
+    // permission, so this works as a background launchd job.
+    let notify_port = IONotificationPort::create(unsafe { kIOMainPortDefault });
+    if notify_port.is_null() {
+        return Err("failed to create IONotificationPort".into());
     }
 
-    let result = manager.open(kIOHIDOptionsTypeNone);
+    // Safety: `notify_port` was just created and is non-null.
+    let source = unsafe { IONotificationPort::run_loop_source(notify_port) }
+        .ok_or("notification port has no run-loop source")?;
+    run_loop.add_source(Some(&source), Some(run_loop_mode));
 
-    if result != kIOReturnSuccess {
+    let context = ptr::from_ref(state)
+        .cast_mut()
+        .cast::<c_void>();
+
+    let mut iterator: io_iterator_t = 0;
+
+    // Safety:
+    //
+    // - `notify_port` is valid and scheduled on this run loop.
+    // - The matching dictionary is well-formed and consumed by the call.
+    // - `context` stays valid while the notification is registered.
+    // - `iterator` is a valid out-pointer.
+    let result = unsafe {
+        IOServiceAddMatchingNotification(
+            notify_port,
+            kIOFirstMatchNotification.as_ptr().cast::<[c_char; 128]>().cast_mut(),
+            Some(matching_dictionary(config.vendor_id, config.product_id)),
+            Some(device_appeared),
+            context,
+            &mut iterator,
+        )
+    };
+
+    if result != 0 {
         return Err(
-            format!("failed to open IOHIDManager: {result:#x}").into()
+            format!("IOServiceAddMatchingNotification failed: {result:#x}").into(),
         );
     }
 
     log!(
-        "watching HID device {:04x}:{:04x}",
+        "watching for HID device {:04x}:{:04x}",
         config.vendor_id,
         config.product_id,
     );
@@ -428,17 +472,17 @@ fn run() -> Result<(), AnyError> {
         );
     }
 
+    // Drain the initial iterator: this both arms the notification and applies
+    // the remapping to a keyboard that is already connected at startup.
+    process_matches(state, iterator);
+
     CFRunLoop::run();
 
     // Normally unreachable unless the run loop is explicitly stopped.
-    unsafe {
-        manager.unschedule_from_run_loop(
-            &run_loop,
-            run_loop_mode,
-        );
-    }
+    run_loop.remove_source(Some(&source), Some(run_loop_mode));
 
-    manager.close(kIOHIDOptionsTypeNone);
+    // Safety: `notify_port` is still valid; this also releases `source`.
+    unsafe { IONotificationPort::destroy(notify_port) };
 
     Ok(())
 }

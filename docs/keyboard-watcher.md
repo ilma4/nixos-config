@@ -4,7 +4,8 @@ An event-driven launchd agent that re-applies a key remapping to the Logitech MX
 Keys Mini **every time it connects** — on login, after sleep, after a Bluetooth
 re-pair, or after re-plugging USB. The remapping is applied **in-process** (no
 `hidutil` subprocess): the watcher sets the same `UserKeyMapping` property that
-`hidutil property --set` writes, using IOKit directly.
+`hidutil property --set` writes, using IOKit directly. It needs **no Input
+Monitoring permission**, so it works as a background launchd job.
 
 ## Why
 
@@ -13,12 +14,11 @@ keyboard disconnects. The previous approach — a one-shot `keyboard-remap` agen
 only polled for the keyboard once at login and then exited, so the custom mapping
 was lost on the first disconnect and not restored until the next login.
 
-`keyboard-watcher` closes that gap. It is a small Rust daemon that uses
-`IOHIDManager`, whose device-matching callback fires for **already-connected and
-newly connected** matching devices. On each connect it re-applies the remapping, so
-the mapping is restored immediately on every reconnect. Because it also fires for
-the already-connected keyboard at login, it fully **replaces** the old one-shot
-`keyboard-remap` poll.
+`keyboard-watcher` closes that gap. It asks IOKit to notify it whenever a matching
+HID device appears in the IORegistry (including the one already connected at
+launch), and re-applies the remapping on each such event. Because it also fires
+for the already-connected keyboard at startup, it fully **replaces** the old
+one-shot `keyboard-remap` poll.
 
 ## What it remaps
 
@@ -52,14 +52,16 @@ darwin-modules/
   keyboard-watcher/
     Cargo.toml                  # edition 2024; deps: objc2-io-kit, objc2-core-foundation
     Cargo.lock                  # committed; buildRustPackage vendors deps offline by checksum
-    src/main.rs                 # IOHIDManager watcher + in-process remap
+    src/main.rs                 # IORegistry watcher + in-process remap
 ```
 
-Dependencies are only `objc2-io-kit` (`hid` for `IOHIDManager`, `hidsystem` for
-`IOHIDEventSystemClient`/`IOHIDServiceClient`) and `objc2-core-foundation`
-(`CFArray`/`CFDictionary`/`CFNumber`/`CFRunLoop`/`CFString`/`std`), which link IOKit
-and CoreFoundation directly. No extra `buildInputs` are needed under the modern
-Apple SDK in nixpkgs (the default `apple-sdk` provides the frameworks).
+Dependencies are `objc2-io-kit` (`libc` for the IOKitLib registry-matching
+notifications, `hidsystem` for `IOHIDEventSystemClient`/`IOHIDServiceClient`) and
+`objc2-core-foundation` (`CFArray`/`CFDictionary`/`CFNumber`/`CFRunLoop`/`CFString`/
+`std`), which link IOKit and CoreFoundation directly. The `libc` feature pulls in
+the `libc` crate (vendored from `Cargo.lock`); no extra `buildInputs` are needed
+under the modern Apple SDK in nixpkgs (the default `apple-sdk` provides the
+frameworks).
 
 ### Release profile (small binary / low RAM)
 
@@ -79,24 +81,44 @@ This keeps the binary small (~375K stripped).
 remappings — e.g. `keyboard-watcher 0x46d 0xb369 0x700000064:0x700000035 …` (all
 values in decimal or `0x` hex) — and:
 
-1. builds a `{VendorID, ProductID}` matching dictionary,
-2. registers an `IOHIDManager` device-matching callback and schedules it on the
-   current `CFRunLoop`,
-3. on each connect, creates an `IOHIDEventSystemClient`, finds every HID **event
+1. builds a matching dictionary `{IOProviderClass: "IOHIDDevice", VendorID,
+   ProductID}` (the same thing `IOServiceMatching` + a property filter produces),
+2. creates an `IONotificationPort`, schedules its run-loop source on the current
+   `CFRunLoop`, and registers a `kIOFirstMatchNotification` via
+   `IOServiceAddMatchingNotification`,
+3. drains the returned iterator once — which both arms the notification and
+   handles a keyboard that is **already connected** at startup — and drains it
+   again inside the callback on every later (re)connect,
+4. on each match, creates an `IOHIDEventSystemClient`, finds every HID **event
    service** matching the vendor/product, and sets their `UserKeyMapping`
    property — the same property `hidutil property --matching … --set` writes,
-4. blocks in `CFRunLoop::run()` for the life of the process.
+5. blocks in `CFRunLoop::run()` for the life of the process.
 
-The remap **must** be applied at the HID event-system level (the
-`IOHIDServiceClient`), not on the raw `IOHIDDevice`: setting `UserKeyMapping`
+### Reconnect race — why the apply retries
+
+The notification fires when the keyboard's **`IOHIDDevice` IORegistry node**
+appears, but the matching **`IOHIDEventSystem` service** (what step 4 enumerates)
+is published a moment *later*. So on a fresh reconnect the first apply finds no
+matching service. When that happens the watcher retries the apply on a background
+thread (every 200 ms for ~5 s, so the run loop stays free) until the service shows
+up. The already-connected-at-startup case has the service present immediately and
+applies on the first try.
+
+### Permissions — why it avoids `IOHIDManager`
+
+The obvious way to detect the keyboard is `IOHIDManager`, but **opening HID devices
+requires the Input Monitoring privacy permission** (`kTCCServiceListenEvent`). A
+background launchd job can't raise the approval prompt, and the grant is keyed to
+the binary's code signature — which changes on every Nix rebuild — so an
+`IOHIDManager`-based watcher fails with `kIOReturnNotPermitted` (`0xe00002e2`).
+
+Watching the **IORegistry** with `IOServiceAddMatchingNotification` only observes
+the registry; it never opens the device, so it needs no Input Monitoring. The
+remap itself **must** be applied at the HID event-system level (the
+`IOHIDServiceClient`), not on the raw `IOHIDDevice` — setting `UserKeyMapping`
 directly on the device via `IOHIDDeviceSetProperty` returns success but has no
-effect — macOS consumes the property on the service. This is why the watcher
-enumerates services and sets the property on each match, exactly as `hidutil`
-does internally.
-
-It only reads device/service **properties** (e.g. `Product`, `VendorID`) and sets
-the `UserKeyMapping` configuration property; it never opens devices for input, so
-it does **not** require Input Monitoring permission.
+effect. Setting it on the service (as `hidutil` does) also needs no Input
+Monitoring. The result runs cleanly as an unattended agent.
 
 ## Configuration
 
@@ -130,7 +152,7 @@ nix-rebuild
 After switching:
 
 ```sh
-# Should show: watching HID device 046d:b369
+# Should show: watching for HID device 046d:b369
 cat /tmp/keyboard-watcher.log
 
 # Re-power the keyboard, then confirm the mapping is live:
@@ -139,6 +161,9 @@ cat /tmp/keyboard-watcher.log
   --get UserKeyMapping
 ```
 
-Disconnect and reconnect the keyboard — the log shows `keyboard connected: …`
-followed by `applied N key remapping(s) to service "…"`, and the mapping reappears
-immediately. This is the gap the old one-shot `keyboard-remap` poll could not cover.
+Disconnect and reconnect the keyboard — the log shows `matching HID device
+connected (N IORegistry node(s)); applying remap` followed by `applied N key
+remapping(s) to service "…"` (sometimes with a `event service not published yet;
+retrying …` line in between, see the reconnect race above), and the mapping
+reappears within a few seconds. This is the gap the old one-shot `keyboard-remap`
+poll could not cover.
