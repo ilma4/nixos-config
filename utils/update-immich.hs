@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i "runghc -iutils" -p "haskellPackages.ghcWithPackages (p: with p; [ aeson bytestring containers directory extra filepath http-client http-conduit text yaml ])"
+#!/usr/bin/env -S runhaskell -iutils
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
