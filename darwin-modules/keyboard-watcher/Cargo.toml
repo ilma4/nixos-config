@@ -8,6 +8,7 @@ version = "0.3.2"
 default-features = false
 features = [
   "std",
+  "CFArray",
   "CFDictionary",
   "CFNumber",
   "CFRunLoop",
@@ -17,7 +18,14 @@ features = [
 [dependencies.objc2-io-kit]
 version = "0.3.2"
 default-features = false
-features = ["hid"]
+# hid: IOHIDManager, used to detect (re)connect of the watched keyboard.
+# hidsystem: IOHIDEventSystemClient/IOHIDServiceClient, used to apply the key
+# remapping at the HID event-system level (where macOS actually consumes it),
+# i.e. what `hidutil property --set` does, but in-process.
+features = [
+  "hid",
+  "hidsystem",
+]
 
 # This is a tiny daemon that spends ~all its life blocked in CFRunLoop, so trade
 # compile time and raw speed for a small binary and low memory footprint.

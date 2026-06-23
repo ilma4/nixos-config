@@ -4,28 +4,22 @@ use std::{
     ffi::{c_char, c_int, c_long, c_void, OsStr},
     mem::MaybeUninit,
     path::PathBuf,
-    process::Command,
     ptr::{self, NonNull},
-    sync::Mutex,
-    thread,
-    time::{Duration, Instant},
 };
 
 use objc2_core_foundation::{
-    kCFRunLoopDefaultMode, CFDictionary, CFNumber, CFRunLoop, CFString,
+    kCFRunLoopDefaultMode, CFArray, CFDictionary, CFNumber, CFRetained, CFRunLoop,
+    CFString, CFType,
 };
 use objc2_io_kit::{
-    kIOHIDOptionsTypeNone, kIOReturnSuccess, IOHIDDevice, IOHIDManager,
-    IOReturn,
+    kIOHIDOptionsTypeNone, kIOReturnSuccess, IOHIDDevice, IOHIDEventSystemClient,
+    IOHIDManager, IOHIDServiceClient, IOReturn,
 };
 
 type AnyError = Box<dyn Error>;
 
-const CALLBACK_DEBOUNCE: Duration = Duration::from_secs(1);
-
 /// Prepend a local timestamp (in `/bin/date`'s default format) to every log
-/// line, so the watcher's output in /tmp/keyboard-watcher.log lines up with the
-/// remap script's own `$(date)` lines.
+/// line, so the watcher's output in /tmp/keyboard-watcher.log is easy to follow.
 macro_rules! log {
     ($($arg:tt)*) => {
         eprintln!("{}: {}", timestamp(), format_args!($($arg)*))
@@ -87,11 +81,20 @@ fn timestamp() -> String {
     String::from_utf8_lossy(&buf[..len]).into_owned()
 }
 
+/// One `hidutil`-style key remapping: a source HID usage that is rewritten to a
+/// destination HID usage. The values are the 64-bit codes hidutil uses, e.g.
+/// `0x700000064` (Non-US `\|`) or `0xFF00000003` (Fn / Globe).
+#[derive(Debug)]
+struct KeyMapping {
+    src: u64,
+    dst: u64,
+}
+
 #[derive(Debug)]
 struct Config {
     vendor_id: u32,
     product_id: u32,
-    script: PathBuf,
+    mappings: Vec<KeyMapping>,
 }
 
 impl Config {
@@ -119,88 +122,194 @@ impl Config {
             .into_string()
             .map_err(|_| "product ID is not valid UTF-8")?;
 
-        let script = args
-            .next()
-            .map(PathBuf::from)
-            .ok_or_else(|| usage(&program))?;
+        let mut mappings = Vec::new();
+        for arg in args {
+            let arg = arg
+                .into_string()
+                .map_err(|_| "key mapping is not valid UTF-8")?;
+            mappings.push(parse_mapping(&arg)?);
+        }
 
-        if args.next().is_some() {
+        if mappings.is_empty() {
             return Err(usage(&program).into());
         }
 
-        if !script.is_absolute() {
-            return Err("script path must be absolute".into());
-        }
-
         Ok(Self {
-            vendor_id: parse_id(&vendor_id)?,
-            product_id: parse_id(&product_id)?,
-            script,
+            vendor_id: parse_u32(&vendor_id)?,
+            product_id: parse_u32(&product_id)?,
+            mappings,
         })
     }
 }
 
 fn usage(program: &OsStr) -> String {
     format!(
-        "usage: {} <vendor-id> <product-id> <absolute-script-path>",
+        "usage: {} <vendor-id> <product-id> <src:dst>...",
         program.to_string_lossy()
     )
 }
 
-fn parse_id(value: &str) -> Result<u32, AnyError> {
+fn parse_u32(value: &str) -> Result<u32, AnyError> {
+    u32::try_from(parse_u64(value)?)
+        .map_err(|_| format!("value {value} does not fit in 32 bits").into())
+}
+
+fn parse_u64(value: &str) -> Result<u64, AnyError> {
     let (digits, radix) = value
         .strip_prefix("0x")
         .or_else(|| value.strip_prefix("0X"))
         .map_or((value, 10), |digits| (digits, 16));
 
-    Ok(u32::from_str_radix(digits, radix)?)
+    Ok(u64::from_str_radix(digits, radix)?)
+}
+
+fn parse_mapping(arg: &str) -> Result<KeyMapping, AnyError> {
+    let (src, dst) = arg
+        .split_once(':')
+        .ok_or_else(|| format!("key mapping {arg:?} must be in <src>:<dst> form"))?;
+
+    Ok(KeyMapping {
+        src: parse_u64(src)?,
+        dst: parse_u64(dst)?,
+    })
 }
 
 #[derive(Debug)]
 struct State {
-    script: PathBuf,
-
-    // A composite keyboard may expose multiple HID interfaces, producing
-    // several matching callbacks for one physical connection.
-    last_run: Mutex<Option<Instant>>,
+    vendor_id: u32,
+    product_id: u32,
+    mappings: Vec<KeyMapping>,
 }
 
 impl State {
-    fn should_run(&self) -> bool {
-        let mut last_run = self
-            .last_run
-            .lock()
-            .unwrap_or_else(|poisoned| poisoned.into_inner());
+    /// Build the `UserKeyMapping` property value that `hidutil property --set`
+    /// would take: an array of `{src, dst}` dictionaries holding the 64-bit HID
+    /// usage codes.
+    fn user_key_mapping(&self) -> CFRetained<CFArray<CFType>> {
+        let src_key = CFString::from_static_str("HIDKeyboardModifierMappingSrc");
+        let dst_key = CFString::from_static_str("HIDKeyboardModifierMappingDst");
 
-        if last_run.is_some_and(|last| last.elapsed() < CALLBACK_DEBOUNCE) {
-            return false;
-        }
+        // One dictionary per remapping. Keep them alive until the array has
+        // retained them (`CFArrayCreate` retains every element).
+        let entries: Vec<CFRetained<CFDictionary<CFString, CFNumber>>> = self
+            .mappings
+            .iter()
+            .map(|mapping| {
+                let src = CFNumber::new_i64(mapping.src as i64);
+                let dst = CFNumber::new_i64(mapping.dst as i64);
 
-        *last_run = Some(Instant::now());
-        true
+                CFDictionary::<CFString, CFNumber>::from_slices(
+                    &[&src_key, &dst_key],
+                    &[&src, &dst],
+                )
+            })
+            .collect();
+
+        let entry_refs: Vec<&CFType> =
+            entries.iter().map(|entry| -> &CFType { entry }).collect();
+
+        CFArray::from_objects(&entry_refs)
     }
 
-    fn run_script(&self) {
-        let script = self.script.clone();
+    /// Re-apply the remapping on every (re)connect.
+    ///
+    /// macOS resets `UserKeyMapping` whenever the keyboard disconnects, and the
+    /// remap is consumed at the HID event-system level (the IOHIDServiceClient),
+    /// not on the raw IOHIDDevice — so this sets the property on every event
+    /// service that matches the watched vendor/product, exactly like
+    /// `hidutil property --matching ... --set` does, but in-process.
+    fn apply(&self, device_desc: &str) {
+        // A fresh simple client mirrors hidutil's per-invocation behaviour and
+        // always reflects the services present right now.
+        let client = IOHIDEventSystemClient::new_simple_client(None);
 
-        // Do not block the Core Foundation run loop. Waiting in this thread
-        // also ensures that the child process is reaped.
-        thread::spawn(move || {
-            match Command::new(&script).status() {
-                Ok(status) if status.success() => {
-                    log!("mapping script completed successfully");
-                }
+        let Some(services) = client.services() else {
+            log!("error: could not copy HID event services; {device_desc} not remapped");
+            return;
+        };
 
-                Ok(status) => {
-                    log!("mapping script exited with {status}");
-                }
+        // `IOHIDEventSystemClientCopyServices` yields an array of
+        // IOHIDServiceClientRef, so retyping the opaque array is sound.
+        let services: &CFArray<IOHIDServiceClient> =
+            unsafe { services.cast_unchecked() };
 
-                Err(error) => {
-                    log!("failed to execute {}: {error}", script.display());
+        let key = CFString::from_static_str("UserKeyMapping");
+        let mapping = self.user_key_mapping();
+        let mapping: &CFType = &mapping;
+
+        let mut matched = 0usize;
+        let mut applied = 0usize;
+
+        for service in services.iter() {
+            let vendor = number_value(service_property(&service, "VendorID"));
+            let product = number_value(service_property(&service, "ProductID"));
+
+            if vendor != Some(i64::from(self.vendor_id))
+                || product != Some(i64::from(self.product_id))
+            {
+                continue;
+            }
+
+            matched += 1;
+
+            let service_desc = string_value(service_property(&service, "Product"))
+                .unwrap_or_else(|| "unknown service".to_owned());
+
+            // Safety: `key` and `mapping` are valid CF objects of the type the
+            // "UserKeyMapping" property expects; the call only reads them.
+            if unsafe { service.set_property(&key, mapping) } {
+                applied += 1;
+                log!(
+                    "applied {} key remapping(s) to service \"{service_desc}\"",
+                    self.mappings.len(),
+                );
+            } else {
+                log!(
+                    "error: IOHIDServiceClientSetProperty(\"UserKeyMapping\") \
+                     returned false for service \"{service_desc}\"",
+                );
+                for mapping in &self.mappings {
+                    log!("  not applied: {:#x} -> {:#x}", mapping.src, mapping.dst);
                 }
             }
-        });
+        }
+
+        if matched == 0 {
+            log!(
+                "error: no HID event service matched {:04x}:{:04x}; {device_desc} not remapped",
+                self.vendor_id,
+                self.product_id,
+            );
+        } else if applied == 0 {
+            log!("error: matched {matched} service(s) for {device_desc} but applied none");
+        }
     }
+}
+
+fn string_value(value: Option<CFRetained<CFType>>) -> Option<String> {
+    value
+        .and_then(|value| value.downcast::<CFString>().ok())
+        .map(|value| value.to_string())
+}
+
+fn number_value(value: Option<CFRetained<CFType>>) -> Option<i64> {
+    value
+        .and_then(|value| value.downcast::<CFNumber>().ok())
+        .and_then(|value| value.as_i64())
+}
+
+fn device_property(
+    device: &IOHIDDevice,
+    key: &'static str,
+) -> Option<CFRetained<CFType>> {
+    device.property(&CFString::from_static_str(key))
+}
+
+fn service_property(
+    service: &IOHIDServiceClient,
+    key: &'static str,
+) -> Option<CFRetained<CFType>> {
+    service.property(&CFString::from_static_str(key))
 }
 
 unsafe extern "C-unwind" fn device_connected(
@@ -210,7 +319,7 @@ unsafe extern "C-unwind" fn device_connected(
     device: NonNull<IOHIDDevice>,
 ) {
     if result != kIOReturnSuccess {
-        log!("HID matching callback failed: {result:#x}");
+        log!("error: HID matching callback failed: {result:#x}");
         return;
     }
 
@@ -220,27 +329,30 @@ unsafe extern "C-unwind" fn device_connected(
     // while the manager is registered and the run loop is running.
     let state = unsafe { &*context.cast::<State>() };
 
-    if !state.should_run() {
-        return;
-    }
-
     // Safety:
     //
     // IOKit guarantees that the callback's device reference is valid for
     // the duration of the callback.
     let device = unsafe { device.as_ref() };
 
-    let product_key = CFString::from_static_str("Product");
-
-    let product_name = device
-        .property(&product_key)
-        .and_then(|value| value.downcast::<CFString>().ok())
-        .map(|value| value.to_string())
+    let product = string_value(device_property(device, "Product"))
         .unwrap_or_else(|| "unknown keyboard".to_owned());
 
-    log!("keyboard connected: {product_name}");
+    // The primary usage identifies which interface of a composite keyboard this
+    // is (0x1:0x6 is GenericDesktop/Keyboard), keeping the logs unambiguous.
+    let usage_page = number_value(device_property(device, "PrimaryUsagePage"));
+    let usage = number_value(device_property(device, "PrimaryUsage"));
 
-    state.run_script();
+    let device_desc = match (usage_page, usage) {
+        (Some(page), Some(usage)) => {
+            format!("{product} [usage {page:#x}:{usage:#x}]")
+        }
+        _ => product,
+    };
+
+    log!("keyboard connected: {device_desc}");
+
+    state.apply(&device_desc);
 }
 
 fn run() -> Result<(), AnyError> {
@@ -258,8 +370,9 @@ fn run() -> Result<(), AnyError> {
     );
 
     let state = Box::new(State {
-        script: config.script,
-        last_run: Mutex::new(None),
+        vendor_id: config.vendor_id,
+        product_id: config.product_id,
+        mappings: config.mappings,
     });
 
     let context = std::ptr::from_ref(state.as_ref())
@@ -307,6 +420,13 @@ fn run() -> Result<(), AnyError> {
         config.vendor_id,
         config.product_id,
     );
+    for mapping in &state.mappings {
+        log!(
+            "will remap on connect: {:#x} -> {:#x}",
+            mapping.src,
+            mapping.dst,
+        );
+    }
 
     CFRunLoop::run();
 
