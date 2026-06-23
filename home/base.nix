@@ -682,6 +682,10 @@ in {
       baseIndex = 1; # enumerate windows from 1 instead of 0
       terminal = "tmux-256color";
       extraConfig = ''
+        # Enable extended keys in csi-u format
+        set -g extended-keys on
+        set -s extended-keys-format csi-u
+
         # Force tmux clients to use UTF-8 output (the package wrapper adds -u)
         # and enable 24-bit/true-color passthrough for capable terminals.
         set -as terminal-features ",*:RGB"
