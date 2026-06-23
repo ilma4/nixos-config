@@ -37,6 +37,19 @@
   gitSpushPackage = pkgs.writeShellScriptBin "git-spush" (
     builtins.replaceStrings ["@gitResign@"] ["${lib.getExe gitResignPackage}"] (builtins.readFile ../scripts/git-spush.sh)
   );
+  tmuxUtf8Wrapper = pkgs.writeShellScriptBin "tmux" ''
+    set -euo pipefail
+    exec ${lib.getExe pkgs.tmux} -u "$@"
+  '';
+  tmuxUtf8Package = pkgs.symlinkJoin {
+    name = "${pkgs.tmux.pname}-utf8-${pkgs.tmux.version}";
+    paths = [pkgs.tmux];
+    postBuild = ''
+      set -euo pipefail
+      rm "$out/bin/tmux"
+      ln -s ${lib.getExe tmuxUtf8Wrapper} "$out/bin/tmux"
+    '';
+  };
   dircolorsConfigText = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (name: value: "${name} ${toString value}") config.programs.dircolors.settings
     ++ [""]
@@ -664,8 +677,15 @@ in {
     programs.fzf.enableZshIntegration = false;
     programs.tmux = {
       enable = true;
+      package = tmuxUtf8Package;
       keyMode = "vi";
       baseIndex = 1; # enumerate windows from 1 instead of 0
+      terminal = "tmux-256color";
+      extraConfig = ''
+        # Force tmux clients to use UTF-8 output (the package wrapper adds -u)
+        # and enable 24-bit/true-color passthrough for capable terminals.
+        set -as terminal-features ",*:RGB"
+      '';
     };
 
     home.file = {
