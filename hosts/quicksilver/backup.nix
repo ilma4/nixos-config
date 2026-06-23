@@ -8,6 +8,14 @@
   backupHome = "/Users/ilma4";
   backupCache = "${backupHome}/Library/Caches/restic";
   backupLocalRepo = "${backupHome}/NoBackup/restic";
+  backupWakeLeadMinutes = 5;
+  backupWakeWeekdays = "MTWRFSU";
+  backupTimeTotalMinutes = config.i4.backup.backupHour * 60 + config.i4.backup.backupMinute;
+  backupWakeTotalMinutes = lib.mod (backupTimeTotalMinutes - backupWakeLeadMinutes + 24 * 60) (24 * 60);
+  backupWakeHour = builtins.div backupWakeTotalMinutes 60;
+  backupWakeMinute = lib.mod backupWakeTotalMinutes 60;
+  formatTwoDigits = n: lib.fixedWidthString 2 "0" (toString n);
+  backupWakeTime = "${formatTwoDigits backupWakeHour}:${formatTwoDigits backupWakeMinute}:00";
   localResticPasswordSecret = "restic_password/quicksilver_local";
   remoteResticPasswordSecret = constants.nas.restic-ilma4.password-secret;
   hetzerResticPasswordSecret = constants.hetzer-restic.password-secret;
@@ -181,5 +189,10 @@ in {
     mkdir -p ${lib.escapeShellArg backupCache}
     chown ${lib.escapeShellArg "ilma4:staff"} ${lib.escapeShellArg backupCache}
     chmod 0750 ${lib.escapeShellArg backupCache}
+
+    # Ensure macOS wakes shortly before launchd starts the backup. pmset has a
+    # single global repeating wake/power-on schedule, so this declares
+    # quicksilver's intended repeating wake event.
+    /usr/bin/pmset repeat wakeorpoweron ${lib.escapeShellArg backupWakeWeekdays} ${lib.escapeShellArg backupWakeTime}
   '';
 }
