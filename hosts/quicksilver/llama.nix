@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }: let
   user = "ilma4";
@@ -51,7 +52,7 @@ in {
         HOME = userHome;
       };
       ProgramArguments = [
-        "${lib.getExe' pkgs.llama-cpp "llama-server"}"
+        "${lib.getExe' pkgs-unstable.llama-cpp "llama-server"}"
         "--models-preset"
         "${modelsPreset}"
         "--models-max"
