@@ -28,7 +28,7 @@
     min-p = 0.00
     presence-penalty = 0.0
     repeat-penalty = 1.0
-    sleep-idle-seconds = 300
+    sleep-idle-seconds = 900
     parallel = 1
     n-gpu-layers = 99
     jinja = true
