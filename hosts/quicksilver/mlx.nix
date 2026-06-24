@@ -8,6 +8,8 @@
   userHome = config.users.users.${user}.home;
   host = "127.0.0.1";
   port = 8003;
+  launchdLabel = "org.nixos.mlx";
+  launchdPlist = "${userHome}/Library/LaunchAgents/${launchdLabel}.plist";
 
   # MLX 8-bit conversion of Qwen3.6-35B-A3B. mlx-lm downloads it from the
   # HuggingFace hub (into the HF cache under $HOME) the first time the model is
@@ -47,6 +49,47 @@
       --python 3.12 \
       --from mlx-lm \
       mlx_lm.server "$@"
+  '';
+
+  mkMlxControlScript = name: action:
+    pkgs.writeShellScriptBin name ''
+      set -euo pipefail
+
+      launchd_user=${lib.escapeShellArg user}
+      launchd_label=${lib.escapeShellArg launchdLabel}
+      launchd_plist=${lib.escapeShellArg launchdPlist}
+
+      if [ "$(/usr/bin/id -un)" != "$launchd_user" ] && [ "$(/usr/bin/id -u)" -ne 0 ]; then
+        exec /usr/bin/sudo -n /run/current-system/sw/bin/${name} "$@"
+      fi
+
+      launchd_uid="$(/usr/bin/id -u "$launchd_user")"
+
+      if [ ! -f "$launchd_plist" ]; then
+        echo "MLX LaunchAgent plist not found: $launchd_plist" >&2
+        exit 1
+      fi
+
+      run_launchctl() {
+        if [ "$(/usr/bin/id -un)" = "$launchd_user" ]; then
+          /bin/launchctl "$@"
+        else
+          /bin/launchctl asuser "$launchd_uid" /usr/bin/sudo --user="$launchd_user" -- /bin/launchctl "$@"
+        fi
+      }
+
+      ${action}
+    '';
+  startMlx = mkMlxControlScript "start-mlx" ''
+    if ! run_launchctl print "gui/$launchd_uid/$launchd_label" >/dev/null 2>&1; then
+      run_launchctl load -w "$launchd_plist"
+    fi
+    run_launchctl kickstart -k "gui/$launchd_uid/$launchd_label"
+  '';
+  stopMlx = mkMlxControlScript "stop-mlx" ''
+    if run_launchctl print "gui/$launchd_uid/$launchd_label" >/dev/null 2>&1; then
+      run_launchctl unload -w "$launchd_plist"
+    fi
   '';
 
   # mlx-lm is configured entirely through CLI flags (no YAML config file).
@@ -114,15 +157,15 @@ in {
   ];
 
   # OpenAI-compatible MLX server (mlx-lm's mlx_lm.server), run via uv (uvx)
-  # rather than nixpkgs. mlxLaunch handles the HF token, the prebuilt wheel and
-  # the uv invocation; the agent just appends the server flags. uv caches its
-  # tool environment and a managed Python under $HOME, so HOME must be present
-  # in the agent environment.
+  # rather than nixpkgs. mlxLaunch handles the HF token and uv invocation; the
+  # agent just appends the server flags. uv caches its tool environment and a
+  # managed Python under $HOME, so HOME must be present in the agent environment.
   launchd.user.agents.mlx = {
     serviceConfig = {
       EnvironmentVariables = {
         HOME = userHome;
       };
+      Label = launchdLabel;
       ProgramArguments = ["${mlxLaunch}"] ++ serverArgs;
       RunAtLoad = true;
       KeepAlive = true;
@@ -131,4 +174,13 @@ in {
       StandardErrorPath = stderrLog;
     };
   };
+
+  environment.systemPackages = [
+    startMlx
+    stopMlx
+  ];
+
+  security.sudo.extraConfig = ''
+    malakhov ALL=(root) NOPASSWD: /run/current-system/sw/bin/start-mlx, /run/current-system/sw/bin/stop-mlx
+  '';
 }
