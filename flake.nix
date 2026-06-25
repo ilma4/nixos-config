@@ -227,6 +227,8 @@
               ]))
             pkgs.haskellPackages.hie-bios
             pkgs.haskell-language-server
+
+            pkgs.mcp-nixos
           ];
 
           shellHook = ''
