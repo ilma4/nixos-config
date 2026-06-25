@@ -3,6 +3,7 @@
   lib,
   pkgs,
   inputs,
+  constants,
   ...
 }: let
   homebrewPrefix = config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
@@ -71,6 +72,7 @@ in {
     ilma4 = {
       home = "/Users/ilma4";
       shell = pkgs.zsh;
+      openssh.authorizedKeys.keys = [constants.ios-pub-key];
     };
     malakhov = {
       uid = 502;
@@ -79,6 +81,7 @@ in {
       shell = pkgs.zsh;
       createHome = true;
       isHidden = false;
+      openssh.authorizedKeys.keys = [constants.ios-pub-key];
     };
   };
 
@@ -222,6 +225,19 @@ in {
 
   # VPN to access homelab
   services.tailscale.enable = true;
+
+  # SSH access from the iOS key only, for personal and work users.
+  services.openssh = {
+    enable = true;
+    extraConfig = ''
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PubkeyAuthentication yes
+      AuthenticationMethods publickey
+      AuthorizedKeysFile none
+      AllowUsers ilma4 malakhov
+    '';
+  };
 
   # Create /etc/zshrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina

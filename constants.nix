@@ -13,6 +13,8 @@
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7"
   ];
 
+  ios-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOKaUONhI8X/55/+nNWKvFdvQlGcipI+WUGY/OuveceC ios-key";
+
   telegram = {
     my-id-secret = "telegram/my_id";
     mallard = {
