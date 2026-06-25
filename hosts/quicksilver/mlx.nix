@@ -4,6 +4,9 @@
   pkgs,
   ...
 }: let
+  homebrewPrefix =
+    config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
+
   user = "ilma4";
   userHome = config.users.users.${user}.home;
   host = "127.0.0.1";
@@ -11,10 +14,13 @@
   launchdLabel = "org.nixos.mlx";
   launchdPlist = "${userHome}/Library/LaunchAgents/${launchdLabel}.plist";
 
-  # MLX 8-bit conversion of Qwen3.6-35B-A3B. mlx-lm downloads it from the
-  # HuggingFace hub (into the HF cache under $HOME) the first time the model is
-  # requested; nothing is pinned in the Nix store.
+  # oMLX discovers local MLX model directories under ~/.omlx/models and, by
+  # default, compatible MLX snapshots in the standard HuggingFace cache. Keep
+  # the old HuggingFace repo id as an oMLX model alias so existing clients do
+  # not need to change their configured model name.
+  modelDir = "${userHome}/.omlx/models";
   modelId = "unsloth/Qwen3.6-35B-A3B-MLX-8bit";
+  hfCacheModelId = "unsloth--Qwen3.6-35B-A3B-MLX-8bit";
 
   # Logs live in /tmp, which is world-writable (sticky bit), so this launchd
   # *user* agent creates them itself on spawn (launchd opens StandardOutPath /
@@ -33,22 +39,77 @@
   # is the variable huggingface_hub (used to download the model) looks for.
   hfTokenFile = "${userHome}/NoBackup/hf-token";
   # Launch wrapper for the agent: inject HF_TOKEN when available (see above),
-  # then exec the server via uv. uv installs mlx-lm plus its runtime
-  # deps (mlx, transformers, ...) into a tool env cached under $HOME, so HOME
-  # must be set in the agent environment. --python 3.12 pins an interpreter with
-  # prebuilt mlx/transformers wheels; unpinned, uv may pick a newer CPython
-  # lacking an mlx wheel and try to build mlx (native) from source. Server flags
-  # are appended by ProgramArguments and arrive via "$@".
-  mlxLaunch = pkgs.writeShellScript "mlx-launch" ''
+  # then exec the Homebrew-installed oMLX server. Server flags are appended by
+  # ProgramArguments and arrive via "$@".
+  omlxLaunch = pkgs.writeShellScript "omlx-launch" ''
     set -euo pipefail
     if [ -r "${hfTokenFile}" ]; then
       HF_TOKEN="$(<"${hfTokenFile}")"
       export HF_TOKEN
     fi
-    exec ${lib.getExe' pkgs.uv "uv"} tool run \
-      --python 3.12 \
-      --from mlx-lm \
-      mlx_lm.server "$@"
+    exec "${homebrewPrefix}/bin/omlx" serve "$@"
+  '';
+
+  omlxModelSettings = pkgs.writeShellScript "omlx-model-settings" ''
+    set -euo pipefail
+
+    settings_dir=${lib.escapeShellArg "${userHome}/.omlx"}
+    settings_path="$settings_dir/model_settings.json"
+
+    /usr/bin/install -d -m 0700 -o ${lib.escapeShellArg user} -g staff "$settings_dir"
+
+    ${lib.getExe pkgs.python3} - \
+      "$settings_path" \
+      ${lib.escapeShellArg hfCacheModelId} \
+      ${lib.escapeShellArg modelId} <<'PY'
+import json
+import sys
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+hf_cache_model_id = sys.argv[2]
+model_alias = sys.argv[3]
+
+if settings_path.exists():
+    with settings_path.open(encoding="utf-8") as f:
+        data = json.load(f)
+else:
+    data = {}
+
+if not isinstance(data, dict):
+    raise SystemExit(f"{settings_path} must contain a JSON object")
+
+data.setdefault("version", 1)
+models = data.setdefault("models", {})
+if not isinstance(models, dict):
+    raise SystemExit(f"{settings_path}: 'models' must be a JSON object")
+
+model = models.setdefault(hf_cache_model_id, {})
+if not isinstance(model, dict):
+    raise SystemExit(
+        f"{settings_path}: settings for {hf_cache_model_id!r} must be a JSON object"
+    )
+
+model.update(
+    {
+        "model_alias": model_alias,
+        "max_context_window": 262144,
+        "max_tokens": 32768,
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "top_k": 20,
+    }
+)
+
+tmp_path = settings_path.with_suffix(settings_path.suffix + ".tmp")
+with tmp_path.open("w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+tmp_path.replace(settings_path)
+PY
+
+    /usr/sbin/chown ${lib.escapeShellArg user}:staff "$settings_path"
+    /bin/chmod 0600 "$settings_path"
   '';
 
   mkMlxControlScript = name: action:
@@ -66,7 +127,7 @@
       launchd_uid="$(/usr/bin/id -u "$launchd_user")"
 
       if [ ! -f "$launchd_plist" ]; then
-        echo "MLX LaunchAgent plist not found: $launchd_plist" >&2
+        echo "oMLX LaunchAgent plist not found: $launchd_plist" >&2
         exit 1
       fi
 
@@ -92,81 +153,57 @@
     fi
   '';
 
-  # mlx-lm is configured entirely through CLI flags (no YAML config file).
-  #
-  # Reasoning and tool calls need NO parser flags here: mlx-lm auto-detects both
-  # from the model itself, where mlx-openai-server required explicit
-  # reasoning_parser/tool_call_parser keys.
-  #   * Reasoning: Qwen3.6 has <think>/</think> in its vocab, so mlx-lm runs a
-  #     token-level state machine that splits the chain-of-thought into the
-  #     response's `message.reasoning` field, leaving `content` clean. (Field
-  #     name is `reasoning`, not mlx-openai-server's `reasoning_content` — the
-  #     pi client may need to read the new key.)
-  #   * Tool calls: the chat template emits the XML "<tool_call>\n<function=..."
-  #     format, which mlx-lm's _infer_tool_parser maps to the qwen3_coder tool
-  #     parser automatically (the same parser the old config named by hand).
-  #
-  # --max-tokens 32768 replaces default_max_tokens (mlx-lm's own default is 512)
-  # and caps generation when a client omits max_tokens.
-  #
-  # Dropped vs the old YAML, with no mlx-lm equivalent and no behaviour loss:
-  #   * context_length: governed by the model's own config; mlx-lm has no flag.
-  #   * served_model_name: mlx-lm reports/accepts the model by its repo id. The
-  #     old "qwen3.6-35b-a3b" alias no longer resolves, so clients must send
-  #     `model: "${modelId}"` or omit `model` (which uses the loaded default).
-  #
-  # Sampling defaults follow the Qwen3 model card (temp 0.6 / top-p 0.95 /
-  # top-k 20). mlx-lm's --temp/--top-p/--top-k set the server-side defaults used
-  # whenever a client omits its own sampling (a client that sends explicit
-  # values still overrides them). These were previously injected client-side by
-  # a pi extension (pi/extensions/lmstudio-inference-params.ts); setting them on
-  # the server makes that extension redundant and applies to every client. mlx-lm
-  # otherwise defaults to --temp 0.0 (greedy), which Qwen3 warns against. min-p
-  # and the presence/repetition penalties already default to no-op in mlx-lm,
-  # matching the model card, so they need no flags.
-  #
-  # The OpenAI `developer` message role now works: mlx-lm forwards roles
-  # straight to apply_chat_template (no HTTP 422 like mlx-openai-server 1.8.1),
-  # and this model's chat template handles `developer` (treated as `system`). So
-  # the pi client can re-enable compat.supportsDeveloperRole in
-  # ~/.pi/agent/models.json.
+  # oMLX is a multi-model OpenAI/Anthropic-compatible server. It discovers MLX
+  # model directories rather than taking one --model argument. Server bind
+  # options stay in launchd; per-model alias/sampling defaults are kept in
+  # ~/.omlx/model_settings.json by omlxModelSettings below.
   serverArgs = [
-    "--model"
-    modelId
+    "--model-dir"
+    modelDir
     "--host"
     host
     "--port"
     (toString port)
     "--log-level"
-    "INFO"
-    "--max-tokens"
-    "32768"
-    "--temp"
-    "0.6"
-    "--top-p"
-    "0.95"
-    "--top-k"
-    "20"
+    "info"
   ];
 in {
   assertions = [
     {
       assertion = config.system.primaryUser == user;
-      message = "mlx uses launchd.user.agents and must run as the ${user} primary user.";
+      message = "oMLX uses launchd.user.agents and must run as the ${user} primary user.";
     }
   ];
 
-  # OpenAI-compatible MLX server (mlx-lm's mlx_lm.server), run via uv (uvx)
-  # rather than nixpkgs. mlxLaunch handles the HF token and uv invocation; the
-  # agent just appends the server flags. uv caches its tool environment and a
-  # managed Python under $HOME, so HOME must be present in the agent environment.
+  homebrew = {
+    taps = [
+      {
+        name = "jundot/omlx";
+        clone_target = "https://github.com/jundot/omlx";
+        trusted = true;
+      }
+    ];
+    brews = [
+      "jundot/omlx/omlx"
+    ];
+  };
+
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    set -euo pipefail
+    ${omlxModelSettings}
+  '';
+
+  # OpenAI/Anthropic-compatible oMLX server, installed by Homebrew and launched
+  # by nix-darwin so it keeps the existing start-mlx/stop-mlx controls and port.
+  # HOME must be present so oMLX uses the user's ~/.omlx and HF cache.
   launchd.user.agents.mlx = {
     serviceConfig = {
       EnvironmentVariables = {
         HOME = userHome;
       };
       Label = launchdLabel;
-      ProgramArguments = ["${mlxLaunch}"] ++ serverArgs;
+      ProgramArguments = ["${omlxLaunch}"] ++ serverArgs;
+      # Keep oMLX stopped by default; use start-mlx to launch it manually.
       RunAtLoad = true;
       KeepAlive = true;
       WorkingDirectory = userHome;
