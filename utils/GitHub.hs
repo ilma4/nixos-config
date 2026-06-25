@@ -7,7 +7,10 @@
 
 module GitHub
   ( latestTag,
+    latestTagAfterWhere,
+    latestTagWhere,
     changelog,
+    changelogWhere,
     downloadText,
     downloadFirstText,
   )
@@ -15,16 +18,17 @@ where
 
 import Control.Applicative ((<|>))
 import Control.Exception (catch, displayException)
-import Control.Monad (guard)
+import Control.Monad (guard, unless)
 import Data.Aeson (FromJSON, eitherDecode)
 import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy qualified as BL
 import Data.ByteString.Lazy.Char8 qualified as BL8
-import Data.Char (isAlphaNum, toLower)
+import Data.Char (isAlphaNum, isDigit, toLower)
 import Data.Foldable (asum)
-import Data.List (isInfixOf, sortOn)
+import Data.List (isInfixOf, maximumBy, sortOn)
 import Data.List.Extra (trim)
-import Data.Maybe (fromMaybe, maybeToList)
+import Data.Maybe (fromMaybe, mapMaybe, maybeToList)
+import Data.Ord (comparing)
 import GHC.Generics (Generic)
 import Network.HTTP.Client (HttpException, responseTimeoutMicro)
 import Network.HTTP.Simple
@@ -52,8 +56,39 @@ latestTag repo = do
   maybe (die $ "Error: latest GitHub release for " <> repo <> " has no tag_name") pure $
     tag_name r >>= nonEmpty
 
+-- | Highest-version stable release tag whose tag satisfies the predicate.
+-- All release pages are scanned and the winner is chosen by numeric version,
+-- so a low-minor LTS back-port published after a newer minor on the same major
+-- (e.g. Prometheus' v3.5.x vs v3.12.x) does not win over the higher version.
+latestTagWhere :: String -> (String -> Bool) -> IO String
+latestTagWhere repo keep = do
+  tags <- mapMaybe tagOf <$> stableReleasesWhere repo keep
+  case tags of
+    [] -> die $ "Error: no stable GitHub release for " <> repo <> " matched the requested version"
+    ts -> pure $ maximumBy (comparing versionKey) ts
+
+-- | Highest-version stable release tag after the current tag that satisfies
+-- the predicate. If no post-current release is relevant, keep the current tag.
+latestTagAfterWhere :: String -> String -> (String -> Bool) -> IO String
+latestTagAfterWhere repo from keep = do
+  tags <- mapMaybe tagOf . filter wanted <$> releasesAfter repo from
+  case tags of
+    [] -> pure from
+    ts -> pure $ maximumBy (comparing versionKey) ts
+  where
+    lo = versionKey from
+    wanted r =
+      stable r
+        && maybe False (\tag -> keep tag && versionKey tag > lo) (tagOf r)
+
 changelog :: String -> String -> String -> IO String
-changelog repo from to = render repo from to <$> releasesBetween repo from to
+changelog repo from to = changelogWhere repo from to (const True)
+
+-- | Like 'changelog', but limited to stable releases whose tag satisfies the
+-- predicate and whose version lies in @(from, to]@.
+changelogWhere :: String -> String -> String -> (String -> Bool) -> IO String
+changelogWhere repo from to keep =
+  render repo from to <$> changelogReleasesWhere repo from to keep
 
 downloadText :: String -> IO String
 downloadText url = BL8.unpack <$> fetchBytes url
@@ -70,25 +105,54 @@ downloadFirstText candidates = go [] candidates
 
     failure label url err = "- " <> label <> " (" <> url <> "): " <> err
 
-releasesBetween :: String -> String -> String -> IO [Release]
-releasesBetween _ from to | from == to = pure []
-releasesBetween repo from to = go 1 False []
+changelogReleasesWhere :: String -> String -> String -> (String -> Bool) -> IO [Release]
+changelogReleasesWhere _ from to _ | from == to = pure []
+changelogReleasesWhere repo from to keep = do
+  let lo = versionKey from
+      hi = versionKey to
+  unless (hi > lo) $
+    die $
+      "Error: target release "
+        <> show to
+        <> " is not newer than current release "
+        <> show from
+        <> " for "
+        <> repo
+
+  releases <- releasesAfter repo from
+  let tagged = mapMaybe (\r -> fmap (\tag -> (tag, r)) (tagOf r)) releases
+      foundTarget = any ((== to) . fst) tagged
+      wanted (tag, r) = stable r && keep tag && versionKey tag > lo && versionKey tag <= hi
+  unless foundTarget $
+    die $ "Error: Release tag " <> show to <> " was not found after " <> show from <> " in GitHub releases for " <> repo
+  pure $ snd <$> filter wanted tagged
+
+-- | Releases published after the current tag, newest first. This bounds
+-- changelog fetching at the current version before any relevance filtering.
+releasesAfter :: String -> String -> IO [Release]
+releasesAfter repo from = go 1 []
   where
-    go :: Int -> Bool -> [Release] -> IO [Release]
-    go page seen acc =
+    go :: Int -> [Release] -> IO [Release]
+    go page acc =
       fetchJson (api repo $ "/releases?per_page=100&page=" <> show page) >>= \case
         [] -> die $ "Error: Release tag " <> show from <> " was not found in GitHub releases for " <> repo
-        rs -> scan page seen acc rs
+        rs -> scan page acc rs
 
-    scan :: Int -> Bool -> [Release] -> [Release] -> IO [Release]
-    scan page seen acc = \case
-      [] -> go (page + 1) seen acc
+    scan :: Int -> [Release] -> [Release] -> IO [Release]
+    scan page acc = \case
+      [] -> go (page + 1) acc
       r : rs
-        | tag_name r == Just from ->
-            if seen then pure acc else die $ "Error: Release tag " <> show to <> " was not found before " <> show from
-        | tag_name r == Just to || seen ->
-            scan page True (if stable r then r : acc else acc) rs
-        | otherwise -> scan page seen acc rs
+        | tagOf r == Just from -> pure $ reverse acc
+        | otherwise -> scan page (r : acc) rs
+
+allReleases :: String -> IO [Release]
+allReleases repo = go 1 []
+  where
+    go :: Int -> [Release] -> IO [Release]
+    go page acc =
+      fetchJson (api repo $ "/releases?per_page=100&page=" <> show page) >>= \case
+        [] -> pure acc
+        rs -> go (page + 1) (acc <> rs)
 
 fetchJson :: (FromJSON a) => String -> IO a
 fetchJson url =
@@ -112,6 +176,21 @@ fetchBytesEither url = (Right <$> action) `catch` \(e :: HttpException) -> pure 
               . setRequestHeader "X-GitHub-Api-Version" ["2022-11-28"]
 
       getResponseBody <$> httpLBS (auth $ headers req)
+
+-- | All stable releases whose tag satisfies the predicate, across all pages.
+stableReleasesWhere :: String -> (String -> Bool) -> IO [Release]
+stableReleasesWhere repo keep = filter wanted <$> allReleases repo
+  where
+    wanted r = stable r && maybe False keep (tagOf r)
+
+-- | A release's tag name if it is present and non-empty.
+tagOf :: Release -> Maybe String
+tagOf r = tag_name r >>= nonEmpty
+
+-- | Numeric version components of a tag, e.g. @"v3.12.0" -> [3, 12, 0]@.
+-- Compared lexicographically this orders releases by version.
+versionKey :: String -> [Int]
+versionKey = map read . words . map (\c -> if isDigit c then c else ' ')
 
 stable :: Release -> Bool
 stable R {..} =

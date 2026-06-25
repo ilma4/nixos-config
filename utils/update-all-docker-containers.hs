@@ -9,7 +9,7 @@ import Data.Char (isDigit)
 import Data.Foldable (traverse_)
 import Data.List (intercalate, isPrefixOf, stripPrefix)
 import Data.List.Extra (splitOn)
-import GitHub (changelog, latestTag)
+import GitHub (changelog, changelogWhere, latestTag, latestTagAfterWhere)
 import NixValue (Assign (..), assigns, select, writeAssign)
 import System.Directory (doesFileExist, makeAbsolute)
 import System.Environment (getArgs)
@@ -17,22 +17,26 @@ import System.Exit (ExitCode (..), die, exitSuccess)
 import System.FilePath (makeRelative, takeDirectory, (</>))
 import System.IO (hPutStr, hPutStrLn, stderr)
 import System.Process (readProcessWithExitCode)
+import Text.Read (readMaybe)
 
-data Service = S {name, file, repo, var, prefix :: String, dockerBuild :: Bool}
+-- | A docker-compose service tracked in a Nix file. 'major', when set, pins the
+-- service to that major version: updates stay within it and a newer major is
+-- reported instead of applied.
+data Service = S {name, file, repo, var, prefix :: String, dockerBuild :: Bool, major :: Maybe Int}
 
 services :: [Service]
 services =
-  [ S "actual-budget" "hosts/nas/docker-services/actual-budget.nix" "actualbudget/actual" "actual-version" "" False,
-    S "audiobookshelf" "hosts/nas/docker-services/audiobookshelf.nix" "advplyr/audiobookshelf" "version" "v" False,
-    S "homer" "hosts/nas/dashboard.nix" "bastienwirtz/homer" "version" "" False,
-    S "grafana" "hosts/nas/docker-services/grafana.nix" "grafana/grafana" "version" "v" True,
-    S "home-assistant" "hosts/nas/docker-services/home-assistant.nix" "home-assistant/core" "home-assistant-version" "" False,
-    S "node-exporter" "hosts/nas/docker-services/node-exporter.nix" "prometheus/node_exporter" "node-exporter-version" "" False,
-    S "stirling-pdf" "hosts/nas/docker-services/pdf-tools.nix" "Stirling-Tools/Stirling-PDF" "version" "v" False,
-    S "pihole" "hosts/nas/docker-services/pihole.nix" "pi-hole/docker-pi-hole" "version" "" False,
-    S "traefik" "hosts/nas/docker-services/traefik.nix" "traefik/traefik" "version" "" False,
-    S "alertmanager" "hosts/nas/prometheus/prometheus.nix" "prometheus/alertmanager" "alertmanagerVersion" "" False,
-    S "prometheus" "hosts/nas/prometheus/prometheus.nix" "prometheus/prometheus" "version" "" False
+  [ S "actual-budget" "hosts/nas/docker-services/actual-budget.nix" "actualbudget/actual" "actual-version" "" False Nothing,
+    S "audiobookshelf" "hosts/nas/docker-services/audiobookshelf.nix" "advplyr/audiobookshelf" "version" "v" False Nothing,
+    S "homer" "hosts/nas/dashboard.nix" "bastienwirtz/homer" "version" "" False Nothing,
+    S "grafana" "hosts/nas/docker-services/grafana.nix" "grafana/grafana" "version" "v" True (Just 13),
+    S "home-assistant" "hosts/nas/docker-services/home-assistant.nix" "home-assistant/core" "home-assistant-version" "" False Nothing,
+    S "node-exporter" "hosts/nas/docker-services/node-exporter.nix" "prometheus/node_exporter" "node-exporter-version" "" False Nothing,
+    S "stirling-pdf" "hosts/nas/docker-services/pdf-tools.nix" "Stirling-Tools/Stirling-PDF" "version" "v" False Nothing,
+    S "pihole" "hosts/nas/docker-services/pihole.nix" "pi-hole/docker-pi-hole" "version" "" False Nothing,
+    S "traefik" "hosts/nas/docker-services/traefik.nix" "traefik/traefik" "version" "" False (Just 3),
+    S "alertmanager" "hosts/nas/prometheus/prometheus.nix" "prometheus/alertmanager" "alertmanagerVersion" "" False Nothing,
+    S "prometheus" "hosts/nas/prometheus/prometheus.nix" "prometheus/prometheus" "version" "" False (Just 3)
   ]
 
 usage :: String
@@ -69,8 +73,13 @@ update root apply s@S {..} = do
   text <- readFile path
   a@A {..} <- select var $ assigns text
   latest <- latestTag repo
-  target <- tagToVersion s latest
   let current = versionToTag s aValue
+      keep = withinMajor major
+  targetTag <- case major of
+    Nothing -> pure latest
+    Just m | maybe False (> m) (majorOf current) -> pure current
+    Just _ -> latestTagAfterWhere repo current keep
+  target <- tagToVersion s targetTag
 
   putStr . unlines $
     [ "Service: " <> name,
@@ -79,21 +88,41 @@ update root apply s@S {..} = do
       "Version variable: " <> var,
       "Current file version: " <> aValue,
       "Current GitHub release: " <> current,
-      "Latest GitHub release: " <> latest,
-      "Target file version: " <> target,
-      "Mode: " <> if apply then "apply" else "dry-run"
+      "Latest GitHub release: " <> latest
     ]
+      <> ["Pinned major version: " <> show m | Just m <- [major]]
+      <> [ "Target GitHub release: " <> targetTag,
+           "Target file version: " <> target,
+           "Mode: " <> if apply then "apply" else "dry-run"
+         ]
 
-  if current == latest
-    then putStrLn "Already up to date."
-    else do
-      cleanBefore <- if apply then gitFileClean root file else pure False
-      putStrLn "\nChangelog:"
-      putStr =<< changelog repo current latest
-      putStrLn ""
-      writeAssign apply path text a target
-      when (apply && aValue /= target) $
-        commitIfClean root file cleanBefore name aValue target
+  case major of
+    Just m | maybe False (> m) (majorOf latest) ->
+      putStrLn $
+        "\nNote: newer major release "
+          <> latest
+          <> " is available but the service is pinned to major "
+          <> show m
+          <> "; not crossing major versions."
+    _ -> pure ()
+
+  if maybe False (\m -> maybe False (> m) (majorOf current)) major
+    then
+      hPutStrLn stderr $
+        "Warning: current version " <> current <> " for " <> name <> " is beyond its pinned major; leaving it unchanged."
+    else
+      if current == targetTag
+        then putStrLn "Already up to date."
+        else do
+          cleanBefore <- if apply then gitFileClean root file else pure False
+          putStrLn "\nChangelog:"
+          putStr =<< case major of
+            Nothing -> changelog repo current targetTag
+            Just _ -> changelogWhere repo current targetTag keep
+          putStrLn ""
+          writeAssign apply path text a target
+          when (apply && aValue /= target) $
+            commitIfClean root file cleanBefore name aValue target
 
 commitIfClean :: FilePath -> FilePath -> Bool -> String -> String -> String -> IO ()
 commitIfClean root file cleanBefore serviceName oldVersion newVersion =
@@ -122,6 +151,15 @@ runGit root args = do
   case code of
     ExitSuccess -> pure ()
     ExitFailure n -> die $ "Error: git " <> unwords args <> " failed with exit code " <> show n
+
+-- | Whether a tag belongs to the pinned major version (always true when unpinned).
+withinMajor :: Maybe Int -> String -> Bool
+withinMajor Nothing _ = True
+withinMajor (Just m) tag = majorOf tag == Just m
+
+-- | The major version number of a tag, e.g. @"v3.7.5" -> Just 3@.
+majorOf :: String -> Maybe Int
+majorOf = readMaybe . takeWhile isDigit . dropWhile (not . isDigit)
 
 versionToTag :: Service -> String -> String
 versionToTag S {..} = addPrefix . if dockerBuild then dockerToSemVer else id
