@@ -1,4 +1,14 @@
-{
+{pkgs, ...}: let
+  configureZigbeeSockets = pkgs.writeShellApplication {
+    name = "i4-configure-zigbee-sockets";
+    runtimeInputs = with pkgs; [
+      coreutils
+      jq
+      mosquitto
+    ];
+    text = builtins.readFile ../../scripts/i4-configure-zigbee-sockets.sh;
+  };
+in {
   services.mosquitto = {
     enable = true;
     listeners = [
@@ -30,4 +40,8 @@
     wants = ["mosquitto.service"];
     after = ["mosquitto.service"];
   };
+
+  environment.systemPackages = [
+    configureZigbeeSockets
+  ];
 }
