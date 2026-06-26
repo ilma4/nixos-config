@@ -79,6 +79,8 @@
     # caches
     "/Users/ilma4/.ollama" # LLMs
     "/Users/ilma4/.lmstudio" # LLMs
+    "/Users/ilma4/.omlx/cache" # LLMs
+    "/Users/ilma4/.omlx/models" # LLMs
     "/Users/ilma4/.unsloth"
     "/Users/ilma4/.junie"
     "/Users/ilma4/.pi/agent/npm/node_modules"
