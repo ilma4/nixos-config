@@ -112,8 +112,17 @@ in {
         };
       };
 
+      ignores = [
+        ".idea/inspectionProfiles"
+        ".idea/runConfigurations"
+        ".idea/workspace.xml"
+        ".claude/settings.local.json"
+      ];
+
       lfs.enable = true;
     };
+
+    # xdg.configFile."git/ignore".force = true;
 
     home.sessionVariables = {
       LIBRARY_PATH = "$LIBRARY_PATH:${config.home.profileDirectory}/lib";
