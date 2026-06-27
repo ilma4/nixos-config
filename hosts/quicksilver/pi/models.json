@@ -1,24 +1,5 @@
 {
   "providers": {
-    "omlx": {
-      "name": "oMLX (local)",
-      "baseUrl": "http://127.0.0.1:8003/v1",
-      "apiKey": "local",
-      "authHeader": true,
-      "api": "openai-completions",
-      "models": [
-        {
-          "id": "unsloth--Qwen3.6-35B-A3B-MLX-8bit",
-          "name": "Qwen3.6 35B A3B (oMLX)",
-          "reasoning": true,
-          "input": ["text"],
-          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
-          "contextWindow": 262144,
-          "maxTokens": 32768,
-          "compat": { "supportsDeveloperRole": true }
-        }
-      ]
-    },
     "llama-cpp": {
       "name": "llama.cpp (local)",
       "baseUrl": "http://127.0.0.1:8002/v1",
@@ -26,7 +7,7 @@
       "api": "openai-completions",
       "models": [
         {
-          "id": "unsloth/Qwen3.6-35B-A3B-q8",
+          "id": "unsloth/Qwen3.6-27B-q4",
           "name": "Qwen3.6 35B A3B (llama.cpp Q8)",
           "reasoning": true,
           "input": ["text"],
