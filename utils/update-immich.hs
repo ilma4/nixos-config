@@ -1,7 +1,6 @@
 #!/usr/bin/env -S runhaskell -iutils
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import Control.Monad (forM_, unless, when)
@@ -35,15 +34,16 @@ type ImageChange = (String, String, String) -- service, old, new
 usage :: String
 usage =
   unlines
-    [ "Usage: update-immich.hs [--dry-run|--apply]",
+    [ "Usage: update-immich.hs [--dry-run|--apply] [--force]",
       "",
       "Updates Immich docker-compose image pins and immich-version in immich.nix.",
-      "Apply is the default; pass --dry-run to preview changes without writing."
+      "Apply is the default; pass --dry-run to preview changes without writing.",
+      "Pass --force to continue even when potential breaking changes are detected."
     ]
 
 main :: IO ()
 main = do
-  apply <- parseArgs
+  (apply, force) <- parseArgs
 
   root <- takeDirectory . takeDirectory <$> makeAbsolute __FILE__
   let relNix = "hosts/nas/docker-services/immich/immich.nix"
@@ -75,7 +75,7 @@ main = do
     notes <- changelog repo current latest
     putStrLn "\nChangelog:"
     putStr notes
-    gateBreakingChanges notes
+    gateBreakingChanges force notes
 
   (assetName, upstreamText) <- downloadCompose latest
   putStrLn $ "\nDownloaded upstream " <> assetName <> " for " <> latest <> "."
@@ -101,14 +101,15 @@ main = do
 
   writeAssign apply nixFile nixText versionAssign latest
 
-parseArgs :: IO Bool
-parseArgs =
-  getArgs >>= \case
-    [] -> pure True
-    ["--dry-run"] -> pure False
-    ["--apply"] -> pure True
-    [x] | x `elem` ["-h", "--help"] -> putStr usage >> exitSuccess
-    xs -> die $ "Error: unknown arguments: " <> unwords xs <> "\n" <> usage
+parseArgs :: IO (Bool, Bool)
+parseArgs = do
+  args <- getArgs
+  when (any (`elem` ["-h", "--help"]) args) $ putStr usage >> exitSuccess
+  let unknown = filter (`notElem` ["--apply", "--dry-run", "--force"]) args
+  unless (null unknown) $ die $ "Error: unknown arguments: " <> unwords unknown <> "\n" <> usage
+  when ("--apply" `elem` args && "--dry-run" `elem` args) $
+    die $ "Error: --apply and --dry-run are mutually exclusive\n" <> usage
+  pure ("--dry-run" `notElem` args, "--force" `elem` args)
 
 requireFile :: FilePath -> IO ()
 requireFile path =
@@ -234,13 +235,16 @@ reportEnvMigration apply envFile changed =
   where
     action = if apply then "Updated" else "Would update"
 
-gateBreakingChanges :: String -> IO ()
-gateBreakingChanges notes =
+gateBreakingChanges :: Bool -> String -> IO ()
+gateBreakingChanges force notes =
   case filter suspicious $ splitMarkdownSections notes of
     [] -> putStrLn "\nNo obvious breaking/migration/manual-action sections detected in release notes."
     xs -> do
       putStrLn "\nPotential breaking changes or migration/manual-action notes were detected."
-      putStrLn "No files were written. Review the excerpts below before applying the update.\n"
+      putStrLn $
+        if force
+          then "Continuing anyway (--force). Review the excerpts below.\n"
+          else "No files were written. Review the excerpts below before applying the update.\n"
 
       forM_ (zip [1 :: Int ..] $ take 10 xs) $ \(n, section) -> do
         putStrLn $ "--- Potential issue " <> show n <> " ---"
@@ -250,7 +254,7 @@ gateBreakingChanges notes =
         putStrLn $
           "\n... " <> show (length xs - 10) <> " additional suspicious section(s) omitted."
 
-      exitFailure
+      unless force exitFailure
 
 suspicious :: String -> Bool
 suspicious section =

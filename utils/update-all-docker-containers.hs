@@ -1,7 +1,6 @@
 #!/usr/bin/env -S runhaskell -iutils
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -22,7 +21,7 @@ import Text.Read (readMaybe)
 
 -- | A docker-compose service tracked in a Nix file. 'major', when set, pins the
 -- service to that major version: updates stay within it and a newer major is
--- reported instead of applied.
+-- reported instead of applied, unless --force lifts the pin.
 data Service = S {name, file, repo, var, prefix :: String, dockerBuild :: Bool, major :: Maybe Int}
 
 -- | Per-service result for the end-of-run overview; the last component holds
@@ -47,29 +46,33 @@ services =
   ]
 
 main :: IO ()
-main =
-  getArgs >>= \case
-    [] -> run True
-    ["--apply"] -> run True
-    ["--dry-run"] -> run False
-    [x] | x `elem` ["-h", "--help"] -> putStr usage
-    xs -> die $ "Error: unknown arguments: " <> unwords xs <> "\n" <> usage
+main = do
+  args <- getArgs
+  if any (`elem` ["-h", "--help"]) args
+    then putStr usage
+    else do
+      let unknown = filter (`notElem` ["--apply", "--dry-run", "--force"]) args
+      unless (null unknown) $ die $ "Error: unknown arguments: " <> unwords unknown <> "\n" <> usage
+      when ("--apply" `elem` args && "--dry-run" `elem` args) $
+        die $ "Error: --apply and --dry-run are mutually exclusive\n" <> usage
+      run ("--dry-run" `notElem` args) ("--force" `elem` args)
   where
-    run apply = do
+    run apply force = do
       root <- takeDirectory . takeDirectory <$> makeAbsolute __FILE__
-      results <- traverse (update root apply) services
+      results <- traverse (update root apply force) services
       overview apply results
     usage =
       unlines
-        [ "Usage: update-all-docker-containers.hs [--dry-run|--apply]",
+        [ "Usage: update-all-docker-containers.hs [--dry-run|--apply] [--force]",
           "",
           "Updates simple docker-compose service versions in Nix files.",
           "Apply is the default; pass --dry-run to preview changes without writing or committing.",
+          "Pass --force to ignore pinned major versions and update to the latest release.",
           "Applied updates are committed only when the service file was clean before that update."
         ]
 
-update :: FilePath -> Bool -> Service -> IO Result
-update root apply s@S {..} = do
+update :: FilePath -> Bool -> Bool -> Service -> IO Result
+update root apply force s@S {..} = do
   putStrLn $ "\n==> " <> name <> " (" <> repo <> ")"
   let path = root </> file
   doesFileExist path >>= (`unless` die ("Error: service Nix file does not exist: " <> file))
@@ -77,15 +80,16 @@ update root apply s@S {..} = do
   text <- readFile path
   a@A {..} <- select var $ assigns text
   latest <- latestTag repo
-  let current = versionToTag s aValue
-      keep tag = all (\m -> majorOf tag == Just m) major
+  let pin = if force then Nothing else major
+      current = versionToTag s aValue
+      keep tag = all (\m -> majorOf tag == Just m) pin
       exceeds tag m = any (> m) (majorOf tag)
-      beyond = any (exceeds current) major
-      newerMajor = major >>= \m -> (latest, m) <$ guard (exceeds latest m)
+      beyond = any (exceeds current) pin
+      newerMajor = pin >>= \m -> (latest, m) <$ guard (exceeds latest m)
   targetTag <-
     if
       | beyond -> pure current
-      | Just _ <- major -> latestTagAfterWhere repo current keep
+      | Just _ <- pin -> latestTagAfterWhere repo current keep
       | otherwise -> pure latest
   target <- tagToVersion s targetTag
 
@@ -98,7 +102,7 @@ update root apply s@S {..} = do
       "Current GitHub release: " <> current,
       "Latest GitHub release: " <> latest
     ]
-      <> ["Pinned major version: " <> show m | Just m <- [major]]
+      <> ["Pinned major version: " <> show m <> (if force then " (ignored: --force)" else "") | Just m <- [major]]
       <> [ "Target GitHub release: " <> targetTag,
            "Target file version: " <> target,
            "Mode: " <> if apply then "apply" else "dry-run"
