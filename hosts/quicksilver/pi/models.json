@@ -16,6 +16,16 @@
           "contextWindow": 131072,
           "maxTokens": 32768,
           "compat": { "supportsDeveloperRole": true }
+        },
+        {
+          "id": "Qwen3.6-35B-A3B-UD-MLX-4bit",
+          "name": "Qwen3.6 35B A3B (oMLX)",
+          "reasoning": true,
+          "input": ["text"],
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "contextWindow": 131072,
+          "maxTokens": 32768,
+          "compat": { "supportsDeveloperRole": true }
         }
       ]
     },
