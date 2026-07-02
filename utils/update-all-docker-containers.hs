@@ -2,18 +2,19 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE RecordWildCards #-}
 
-import Control.Monad (unless, when)
+import Control.Monad (guard, unless, when)
 import Data.Char (isDigit)
-import Data.Foldable (traverse_)
-import Data.List (intercalate, isPrefixOf, stripPrefix)
+import Data.Foldable (for_, traverse_)
+import Data.List (isPrefixOf, stripPrefix)
 import Data.List.Extra (splitOn)
-import GitHub (changelog, changelogWhere, latestTag, latestTagAfterWhere)
+import GitHub (changelogWhere, latestTag, latestTagAfterWhere)
 import NixValue (Assign (..), assigns, select, writeAssign)
 import System.Directory (doesFileExist, makeAbsolute)
 import System.Environment (getArgs)
-import System.Exit (ExitCode (..), die, exitSuccess)
+import System.Exit (ExitCode (..), die)
 import System.FilePath (makeRelative, takeDirectory, (</>))
 import System.IO (hPutStr, hPutStrLn, stderr)
 import System.Process (readProcessWithExitCode)
@@ -24,9 +25,9 @@ import Text.Read (readMaybe)
 -- reported instead of applied.
 data Service = S {name, file, repo, var, prefix :: String, dockerBuild :: Bool, major :: Maybe Int}
 
--- | Per-service result of an update run, used for the end-of-run overview.
--- 'rNewerMajor' holds the latest tag and the pinned major it would cross.
-data Result = R {rName :: String, rOutcome :: Outcome, rNewerMajor :: Maybe (String, Int)}
+-- | Per-service result for the end-of-run overview; the last component holds
+-- the latest tag and the pinned major it would cross, when that applies.
+type Result = (String, Outcome, Maybe (String, Int))
 
 data Outcome = Updated String String | UpToDate | BeyondPinned String
 
@@ -45,47 +46,47 @@ services =
     S "prometheus" "hosts/nas/prometheus/prometheus.nix" "prometheus/prometheus" "version" "" False (Just 3)
   ]
 
-usage :: String
-usage =
-  unlines
-    [ "Usage: update-all-docker-containers.hs [--dry-run|--apply]",
-      "",
-      "Updates simple docker-compose service versions in Nix files.",
-      "Apply is the default; pass --dry-run to preview changes without writing or committing.",
-      "Applied updates are committed only when the service file was clean before that update."
-    ]
-
 main :: IO ()
-main = do
-  apply <-
-    getArgs >>= \case
-      [] -> pure True
-      ["--dry-run"] -> pure False
-      ["--apply"] -> pure True
-      [x] | x `elem` ["-h", "--help"] -> putStr usage >> exitSuccess
-      xs -> die $ "Error: unknown arguments: " <> unwords xs <> "\n" <> usage
-
-  root <- takeDirectory . takeDirectory <$> makeAbsolute __FILE__
-  results <- traverse (update root apply) services
-  overview apply results
+main =
+  getArgs >>= \case
+    [] -> run True
+    ["--apply"] -> run True
+    ["--dry-run"] -> run False
+    [x] | x `elem` ["-h", "--help"] -> putStr usage
+    xs -> die $ "Error: unknown arguments: " <> unwords xs <> "\n" <> usage
+  where
+    run apply = do
+      root <- takeDirectory . takeDirectory <$> makeAbsolute __FILE__
+      results <- traverse (update root apply) services
+      overview apply results
+    usage =
+      unlines
+        [ "Usage: update-all-docker-containers.hs [--dry-run|--apply]",
+          "",
+          "Updates simple docker-compose service versions in Nix files.",
+          "Apply is the default; pass --dry-run to preview changes without writing or committing.",
+          "Applied updates are committed only when the service file was clean before that update."
+        ]
 
 update :: FilePath -> Bool -> Service -> IO Result
 update root apply s@S {..} = do
   putStrLn $ "\n==> " <> name <> " (" <> repo <> ")"
-
   let path = root </> file
-  exists <- doesFileExist path
-  unless exists $ die $ "Error: service Nix file does not exist: " <> file
+  doesFileExist path >>= (`unless` die ("Error: service Nix file does not exist: " <> file))
 
   text <- readFile path
   a@A {..} <- select var $ assigns text
   latest <- latestTag repo
   let current = versionToTag s aValue
-      keep = withinMajor major
-  targetTag <- case major of
-    Nothing -> pure latest
-    Just m | maybe False (> m) (majorOf current) -> pure current
-    Just _ -> latestTagAfterWhere repo current keep
+      keep tag = all (\m -> majorOf tag == Just m) major
+      exceeds tag m = any (> m) (majorOf tag)
+      beyond = any (exceeds current) major
+      newerMajor = major >>= \m -> (latest, m) <$ guard (exceeds latest m)
+  targetTag <-
+    if
+      | beyond -> pure current
+      | Just _ <- major -> latestTagAfterWhere repo current keep
+      | otherwise -> pure latest
   target <- tagToVersion s targetTag
 
   putStr . unlines $
@@ -102,100 +103,64 @@ update root apply s@S {..} = do
            "Target file version: " <> target,
            "Mode: " <> if apply then "apply" else "dry-run"
          ]
-
-  let newerMajor = case major of
-        Just m | maybe False (> m) (majorOf latest) -> Just (latest, m)
-        _ -> Nothing
-  case newerMajor of
-    Just (l, m) ->
-      putStrLn $
-        "\nNote: newer major release "
-          <> l
-          <> " is available but the service is pinned to major "
-          <> show m
-          <> "; not crossing major versions."
-    Nothing -> pure ()
+  for_ newerMajor $ \(l, m) ->
+    putStrLn $
+      "\nNote: newer major release " <> l <> " is available but the service is pinned to major " <> show m
+        <> "; not crossing major versions."
 
   outcome <-
-    if maybe False (\m -> maybe False (> m) (majorOf current)) major
-      then do
-        hPutStrLn stderr $
-          "Warning: current version " <> current <> " for " <> name <> " is beyond its pinned major; leaving it unchanged."
-        pure $ BeyondPinned current
-      else
-        if current == targetTag
-          then UpToDate <$ putStrLn "Already up to date."
-          else do
-            cleanBefore <- if apply then gitFileClean root file else pure False
-            putStrLn "\nChangelog:"
-            putStr =<< case major of
-              Nothing -> changelog repo current targetTag
-              Just _ -> changelogWhere repo current targetTag keep
-            putStrLn ""
-            writeAssign apply path text a target
-            when (apply && aValue /= target) $
-              commitIfClean root file cleanBefore name aValue target
-            pure $ Updated aValue target
-  pure R {rName = name, rOutcome = outcome, rNewerMajor = newerMajor}
+    if
+      | beyond -> do
+          hPutStrLn stderr $
+            "Warning: current version " <> current <> " for " <> name <> " is beyond its pinned major; leaving it unchanged."
+          pure $ BeyondPinned current
+      | current == targetTag -> UpToDate <$ putStrLn "Already up to date."
+      | otherwise -> do
+          clean <- if apply then null <$> git root ["status", "--porcelain", "--", file] else pure False
+          putStrLn "\nChangelog:"
+          putStr =<< changelogWhere repo current targetTag keep
+          putStrLn ""
+          writeAssign apply path text a target
+          when (apply && aValue /= target) $
+            if clean
+              then do
+                let msg = "update " <> name <> " " <> aValue <> " -> " <> target
+                putStrLn $ "Committing: " <> msg
+                putStr =<< git root ["commit", "--only", "-m", msg, "--", file]
+              else
+                hPutStrLn stderr $
+                  "Warning: " <> file <> " was not clean before update started; not committing " <> name <> "."
+          pure $ Updated aValue target
+  pure (name, outcome, newerMajor)
 
 overview :: Bool -> [Result] -> IO ()
 overview apply results = do
   putStrLn $ "\n==> Overview (" <> (if apply then "apply" else "dry-run") <> ")"
   section
     (if apply then "Updated" else "Would update")
-    [rName <> ": " <> old <> " -> " <> new | R {..} <- results, Updated old new <- [rOutcome]]
-  section
-    "Kept as is (already up to date)"
-    [rName | R {..} <- results, UpToDate <- [rOutcome], Nothing <- [rNewerMajor]]
+    [n <> ": " <> old <> " -> " <> new | (n, Updated old new, _) <- results]
+  section "Kept as is (already up to date)" [n | (n, UpToDate, Nothing) <- results]
   section
     "New major version available (updated within pinned major only)"
-    [newerMajorItem rName nm | R {..} <- results, Updated _ _ <- [rOutcome], Just nm <- [rNewerMajor]]
+    [pinned n nm | (n, Updated _ _, Just nm) <- results]
   section
     "Not updated (newer release crosses the pinned major)"
-    [newerMajorItem rName nm | R {..} <- results, UpToDate <- [rOutcome], Just nm <- [rNewerMajor]]
+    [pinned n nm | (n, UpToDate, Just nm) <- results]
   section
     "Left unchanged (current version is beyond its pinned major)"
-    [rName <> ": " <> current | R {..} <- results, BeyondPinned current <- [rOutcome]]
+    [n <> ": " <> v | (n, BeyondPinned v, _) <- results]
   where
-    newerMajorItem rName (latest, m) =
-      rName <> ": latest is " <> latest <> ", pinned to major " <> show m
+    section title items = unless (null items) $ putStrLn (title <> ":") >> traverse_ (putStrLn . ("  " <>)) items
+    pinned n (latest, m) = n <> ": latest is " <> latest <> ", pinned to major " <> show m
 
-section :: String -> [String] -> IO ()
-section _ [] = pure ()
-section title items = putStrLn (title <> ":") >> traverse_ (putStrLn . ("  " <>)) items
-
-commitIfClean :: FilePath -> FilePath -> Bool -> String -> String -> String -> IO ()
-commitIfClean root file cleanBefore serviceName oldVersion newVersion =
-  if cleanBefore
-    then do
-      putStrLn $ "Committing: " <> message
-      runGit root ["commit", "--only", "-m", message, "--", file]
-    else
-      hPutStrLn stderr $
-        "Warning: " <> file <> " was not clean before update started; not committing " <> serviceName <> "."
-  where
-    message = "update " <> serviceName <> " " <> oldVersion <> " -> " <> newVersion
-
-gitFileClean :: FilePath -> FilePath -> IO Bool
-gitFileClean root file = do
-  (code, out, err) <- readProcessWithExitCode "git" ["-C", root, "status", "--porcelain", "--", file] ""
-  case code of
-    ExitSuccess -> pure $ null out
-    ExitFailure n -> die $ "Error: git status failed for " <> file <> " with exit code " <> show n <> ":\n" <> out <> err
-
-runGit :: FilePath -> [String] -> IO ()
-runGit root args = do
+-- | Run git in the repo root, passing stderr through; dies if git fails.
+git :: FilePath -> [String] -> IO String
+git root args = do
   (code, out, err) <- readProcessWithExitCode "git" ("-C" : root : args) ""
-  putStr out
   unless (null err) $ hPutStr stderr err
   case code of
-    ExitSuccess -> pure ()
+    ExitSuccess -> pure out
     ExitFailure n -> die $ "Error: git " <> unwords args <> " failed with exit code " <> show n
-
--- | Whether a tag belongs to the pinned major version (always true when unpinned).
-withinMajor :: Maybe Int -> String -> Bool
-withinMajor Nothing _ = True
-withinMajor (Just m) tag = majorOf tag == Just m
 
 -- | The major version number of a tag, e.g. @"v3.7.5" -> Just 3@.
 majorOf :: String -> Maybe Int
@@ -211,20 +176,20 @@ tagToVersion S {..} tag = maybe err check $ stripPrefix prefix tag
   where
     err = die $ "Error: latest release " <> tag <> " does not start with " <> prefix
     check v = do
-      let x = if dockerBuild then replaceFirst '+' '-' v else v
+      let x = if dockerBuild then semVerToDocker v else v
       when ('+' `elem` x) $ die $ "Error: target Docker image version contains '+': " <> x
       pure x
 
-dockerToSemVer :: String -> String
+-- | Docker-build tags spell the semver @+build@ suffix with a @-@,
+-- e.g. Grafana's image @12.1.1-security-01@ is release @12.1.1+security-01@.
+dockerToSemVer, semVerToDocker :: String -> String
 dockerToSemVer v
   | (nums, '-' : build) <- break (== '-') v,
     parts@[_, _, _] <- splitOn "." nums,
     all (not . null) parts,
     all (all isDigit) parts =
-      intercalate "." parts <> "+" <> build
+      nums <> "+" <> build
   | otherwise = v
-
-replaceFirst :: (Eq a) => a -> a -> [a] -> [a]
-replaceFirst old new xs = case break (== old) xs of
-  (a, _ : b) -> a ++ new : b
-  _ -> xs
+semVerToDocker v = case break (== '+') v of
+  (a, '+' : b) -> a <> "-" <> b
+  _ -> v
