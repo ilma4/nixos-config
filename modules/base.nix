@@ -40,6 +40,7 @@ in {
     ./swap.nix
     ./avahi.nix
     ./tpm2.nix
+    ./console-disable-screen-timeout.nix
   ];
 
   config = {
