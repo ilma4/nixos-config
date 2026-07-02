@@ -24,6 +24,12 @@ import Text.Read (readMaybe)
 -- reported instead of applied.
 data Service = S {name, file, repo, var, prefix :: String, dockerBuild :: Bool, major :: Maybe Int}
 
+-- | Per-service result of an update run, used for the end-of-run overview.
+-- 'rNewerMajor' holds the latest tag and the pinned major it would cross.
+data Result = R {rName :: String, rOutcome :: Outcome, rNewerMajor :: Maybe (String, Int)}
+
+data Outcome = Updated String String | UpToDate | BeyondPinned String
+
 services :: [Service]
 services =
   [ S "actual-budget" "hosts/nas/docker-services/actual-budget.nix" "actualbudget/actual" "actual-version" "" False Nothing,
@@ -60,9 +66,10 @@ main = do
       xs -> die $ "Error: unknown arguments: " <> unwords xs <> "\n" <> usage
 
   root <- takeDirectory . takeDirectory <$> makeAbsolute __FILE__
-  traverse_ (update root apply) services
+  results <- traverse (update root apply) services
+  overview apply results
 
-update :: FilePath -> Bool -> Service -> IO ()
+update :: FilePath -> Bool -> Service -> IO Result
 update root apply s@S {..} = do
   putStrLn $ "\n==> " <> name <> " (" <> repo <> ")"
 
@@ -96,33 +103,66 @@ update root apply s@S {..} = do
            "Mode: " <> if apply then "apply" else "dry-run"
          ]
 
-  case major of
-    Just m | maybe False (> m) (majorOf latest) ->
+  let newerMajor = case major of
+        Just m | maybe False (> m) (majorOf latest) -> Just (latest, m)
+        _ -> Nothing
+  case newerMajor of
+    Just (l, m) ->
       putStrLn $
         "\nNote: newer major release "
-          <> latest
+          <> l
           <> " is available but the service is pinned to major "
           <> show m
           <> "; not crossing major versions."
-    _ -> pure ()
+    Nothing -> pure ()
 
-  if maybe False (\m -> maybe False (> m) (majorOf current)) major
-    then
-      hPutStrLn stderr $
-        "Warning: current version " <> current <> " for " <> name <> " is beyond its pinned major; leaving it unchanged."
-    else
-      if current == targetTag
-        then putStrLn "Already up to date."
-        else do
-          cleanBefore <- if apply then gitFileClean root file else pure False
-          putStrLn "\nChangelog:"
-          putStr =<< case major of
-            Nothing -> changelog repo current targetTag
-            Just _ -> changelogWhere repo current targetTag keep
-          putStrLn ""
-          writeAssign apply path text a target
-          when (apply && aValue /= target) $
-            commitIfClean root file cleanBefore name aValue target
+  outcome <-
+    if maybe False (\m -> maybe False (> m) (majorOf current)) major
+      then do
+        hPutStrLn stderr $
+          "Warning: current version " <> current <> " for " <> name <> " is beyond its pinned major; leaving it unchanged."
+        pure $ BeyondPinned current
+      else
+        if current == targetTag
+          then UpToDate <$ putStrLn "Already up to date."
+          else do
+            cleanBefore <- if apply then gitFileClean root file else pure False
+            putStrLn "\nChangelog:"
+            putStr =<< case major of
+              Nothing -> changelog repo current targetTag
+              Just _ -> changelogWhere repo current targetTag keep
+            putStrLn ""
+            writeAssign apply path text a target
+            when (apply && aValue /= target) $
+              commitIfClean root file cleanBefore name aValue target
+            pure $ Updated aValue target
+  pure R {rName = name, rOutcome = outcome, rNewerMajor = newerMajor}
+
+overview :: Bool -> [Result] -> IO ()
+overview apply results = do
+  putStrLn $ "\n==> Overview (" <> (if apply then "apply" else "dry-run") <> ")"
+  section
+    (if apply then "Updated" else "Would update")
+    [rName <> ": " <> old <> " -> " <> new | R {..} <- results, Updated old new <- [rOutcome]]
+  section
+    "Kept as is (already up to date)"
+    [rName | R {..} <- results, UpToDate <- [rOutcome], Nothing <- [rNewerMajor]]
+  section
+    "New major version available (updated within pinned major only)"
+    [newerMajorItem rName nm | R {..} <- results, Updated _ _ <- [rOutcome], Just nm <- [rNewerMajor]]
+  section
+    "Not updated (newer release crosses the pinned major)"
+    [newerMajorItem rName nm | R {..} <- results, UpToDate <- [rOutcome], Just nm <- [rNewerMajor]]
+  section
+    "Left unchanged (current version is beyond its pinned major)"
+    [rName <> ": " <> current | R {..} <- results, BeyondPinned current <- [rOutcome]]
+  where
+    newerMajorItem rName (latest, m) =
+      rName <> ": latest is " <> latest <> ", pinned to major " <> show m
+
+section :: String -> [String] -> IO ()
+section _ [] = pure ()
+section title items = putStrLn (title <> ":") >> traverse_ (putStrLn . ("  " <>)) items
 
 commitIfClean :: FilePath -> FilePath -> Bool -> String -> String -> String -> IO ()
 commitIfClean root file cleanBefore serviceName oldVersion newVersion =
