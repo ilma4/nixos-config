@@ -1,13 +1,13 @@
 name: immich
 networks:
+  default: null
   reverse_proxy:
     external: true
-  default:
 services:
   database:
     container_name: immich_postgres
     env_file:
-      - ${IMMICH_SECRET_ENV_FILE}
+    - ${IMMICH_SECRET_ENV_FILE}
     environment:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: --data-checksums
@@ -16,50 +16,50 @@ services:
     restart: always
     shm_size: 128mb
     volumes:
-      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
   immich-machine-learning:
     container_name: immich_machine_learning
     env_file:
-      - ${IMMICH_ENV_FILE}
-      - ${IMMICH_SECRET_ENV_FILE}
+    - ${IMMICH_ENV_FILE}
+    - ${IMMICH_SECRET_ENV_FILE}
     healthcheck:
       disable: false
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
     restart: always
     volumes:
-      - model-cache:/cache
+    - model-cache:/cache
   immich-server:
     container_name: immich
     depends_on:
-      - redis
-      - database
+    - redis
+    - database
     env_file:
-      - ${IMMICH_ENV_FILE}
-      - ${IMMICH_SECRET_ENV_FILE}
+    - ${IMMICH_ENV_FILE}
+    - ${IMMICH_SECRET_ENV_FILE}
     expose:
-      - "2283"
+    - '2283'
     healthcheck:
       disable: false
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.immich.rule=Host(`immich.ilma4.local`)
-      - traefik.http.routers.immich.entrypoints=websecure
-      - traefik.http.routers.immich.tls=true
-      - traefik.docker.network=reverse_proxy
-      - traefik.http.services.immich.loadbalancer.server.port=2283
+    - traefik.enable=true
+    - traefik.http.routers.immich.rule=Host(`immich.ilma4.local`)
+    - traefik.http.routers.immich.entrypoints=websecure
+    - traefik.http.routers.immich.tls=true
+    - traefik.docker.network=reverse_proxy
+    - traefik.http.services.immich.loadbalancer.server.port=2283
     networks:
       default: null
       reverse_proxy: null
     restart: always
     volumes:
-      - ${UPLOAD_LOCATION}:/data
-      - /etc/localtime:/etc/localtime:ro
+    - ${UPLOAD_LOCATION}:/data
+    - /etc/localtime:/etc/localtime:ro
   redis:
     container_name: immich_redis
     healthcheck:
       test: redis-cli ping || exit 1
-    image: docker.io/valkey/valkey:9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9
+    image: docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9
     restart: always
 volumes:
   model-cache: null
