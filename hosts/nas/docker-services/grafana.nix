@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  version = "13.0.2";
+  version = "13.1.0";
   port = "3000";
 in {
   users.users.grafana = {
