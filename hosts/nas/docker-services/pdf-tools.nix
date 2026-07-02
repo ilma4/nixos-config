@@ -1,5 +1,5 @@
 {pkgs, ...}: let
-  version = "2.13.1";
+  version = "2.14.0";
   srvDir = "/srv/stirling-pdf";
   trainingDataDir = "${srvDir}/trainingData";
   extraConfigsDir = "${srvDir}/extraConfigs";
