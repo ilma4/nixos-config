@@ -5,7 +5,7 @@
   ...
 }: let
   inherit (lib) mkIf mkMerge mkOption types;
-  version = "v3.7.5";
+  version = "v3.7.6";
 
   cfg = config.traefikReverseProxy or {};
 
