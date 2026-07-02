@@ -32,10 +32,13 @@ in {
 
       serviceConfig = {
         Type = "oneshot";
-        StandardInput = "tty";
+        RemainAfterExit = true;
+        # Output-only: taking stdin from the tty would make this unit wait to become
+        # the controlling process, deadlocking against getty@tty1 during activation
         StandardOutput = "tty";
         TTYPath = "/dev/tty1";
-        RemainAfterExit = true;
+        # oneshot defaults to an infinite start timeout; never wedge activation
+        TimeoutStartSec = "15s";
       };
 
       # --powerdown (VESA power-off, not just blanking) can only be set via setterm
