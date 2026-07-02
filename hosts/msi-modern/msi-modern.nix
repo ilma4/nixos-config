@@ -36,6 +36,22 @@
 
   networking.hostName = "msi-modern"; # Define your hostname.
 
+  boot.initrd.availableKernelModules = [
+    "xhci_pci"
+
+    # Replace with the driver reported by ethtool.
+    "r8152"
+  ];
+
+  # DHCP for ethernet to usb adapters
+  boot.initrd.systemd.network.networks."10-lan" = {
+    matchConfig.Name = "en*";
+    # "ipv4" to start dhcp client only on ipv4 and speed up the boot
+    # "yes" will start two dhcp clients (both on ipv4 and ipv6) which works
+    # but may be slower
+    networkConfig.DHCP = "ipv4";
+  };
+
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
 
