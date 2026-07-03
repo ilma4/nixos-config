@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: git resign [--rebase-merges|--no-rebase-merges] [base]
+Usage: git resign [--dry-run] [--rebase-merges|--no-rebase-merges] [base]
 
 Signs your local (unpushed) commits with the configured Git signing key by
 amending each one. "Local" means reachable from HEAD but on no remote-tracking
@@ -29,8 +29,12 @@ they still exist on the remote.
 With an explicit [base] (a commit or branch), signing starts at the merge base
 of [base] and HEAD, which keeps the base an ancestor of HEAD as well.
 
+With --dry-run nothing is rewritten: the commits that would be signed are
+listed (hash and date) and the command exits.
+
 Examples:
   git resign
+  git resign --dry-run
   git resign HEAD~3
 EOF
 }
@@ -48,6 +52,7 @@ update_range() {
 
 rebase_merges="auto"
 base_arg=""
+dry_run="no"
 
 while (($# > 0)); do
     case "$1" in
@@ -61,6 +66,10 @@ while (($# > 0)); do
             ;;
         --no-rebase-merges)
             rebase_merges="no"
+            shift
+            ;;
+        --dry-run)
+            dry_run="yes"
             shift
             ;;
         -*)
@@ -142,6 +151,15 @@ fi
 
 to_sign=$(git rev-list --count "$range")
 skipped=$((total - to_sign))
+
+if [ "$dry_run" = "yes" ]; then
+    if [ "$skipped" -gt 0 ]; then
+        echo "git resign: would leave $skipped already-signed commit(s) untouched"
+    fi
+    echo "git resign: would sign $to_sign commit(s):"
+    git log --topo-order --date=iso --format='%h %ad' "$range"
+    exit 0
+fi
 
 rebase_args=()
 if [ "$rebase_merges" = "yes" ]; then
