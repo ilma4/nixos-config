@@ -479,6 +479,29 @@ in {
             export KEYTIMEOUT=1
           fi
 
+          # Remote tmux (extended-keys on, see programs.tmux below) switches the
+          # LOCAL terminal into an extended-keys mode via the ssh byte stream.
+          # tmux disables it again on clean detach, but when the connection dies
+          # abruptly (network loss, server reboot, `~.`) nothing does, and the
+          # terminal is left with broken hotkeys. Reset the mode whenever ssh
+          # exits: the `always` block runs even when ssh is interrupted and
+          # keeps ssh's exit status. \e[>4;0m resets xterm modifyOtherKeys
+          # (iTerm2); \e[=0;1u zeroes kitty keyboard-protocol flags (kitty
+          # doesn't implement modifyOtherKeys). Each terminal ignores the
+          # sequence it doesn't support. Skipped inside tmux: there the bytes
+          # would disable extended keys for the surrounding pane, and tmux
+          # already restores the outer terminal itself when it detaches or
+          # exits. Relies on the ServerAliveInterval keepalive in
+          # programs.ssh: without it a dead connection leaves ssh hanging and
+          # no reset ever runs.
+          function ssh {
+            {
+              command ssh "$@"
+            } always {
+              [[ -t 1 && -z $TMUX ]] && printf '\033[>4;0m\033[=0;1u'
+            }
+          }
+
           # Report the current directory's name as the terminal title. A precmd
           # hook re-emits it before every prompt so it tracks `cd`. The OSC
           # `\e]0;…\a` escape sets both the icon name and window/tab title, which
@@ -630,7 +653,12 @@ in {
       # Keep the current effective defaults explicit in this repo.
       settings."*" = {
         ForwardAgent = false;
-        ServerAliveInterval = 0;
+        # Keepalives make ssh exit ~45s (15s * 3) after the network path dies
+        # instead of hanging until TCP gives up. The ssh wrapper in
+        # programs.zsh.initContent relies on this: it resets the terminal's
+        # extended-keys mode when ssh exits, which never happens while a dead
+        # connection hangs.
+        ServerAliveInterval = 15;
         ServerAliveCountMax = 3;
         Compression = false;
         AddKeysToAgent = "no";
