@@ -1,4 +1,5 @@
 {
+  # How to add a new key: docs/new-main-ssh-key.md
   main-pub-keys = [
     # quicksilver secretive 'main-key'
     "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBC53cFbtJbKNxzktt68EAli91ithRY2IvgunmYPpe6RXDLLzRs4iFjJKnZqrCBxwC54rrXKto8JqWokFISYvmgU= ilya.malakhov4@gmail.com"
