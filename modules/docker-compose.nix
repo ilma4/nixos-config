@@ -9,6 +9,7 @@
   enabledComposeServices = lib.filterAttrs (_: svc: svc.enable) cfg;
 in {
   imports = [
+    ./docker-compose-auto-update.nix
     ./docker-compose-journalctl.nix
   ];
 

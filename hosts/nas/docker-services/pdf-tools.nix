@@ -1,5 +1,4 @@
 {pkgs, ...}: let
-  version = "2.14.0";
   srvDir = "/srv/stirling-pdf";
   trainingDataDir = "${srvDir}/trainingData";
   extraConfigsDir = "${srvDir}/extraConfigs";
@@ -12,7 +11,7 @@ in {
       name: stirling-pdf
       services:
         stirling-pdf:
-          image: docker.io/stirlingtools/stirling-pdf:${version}-ultra-lite
+          image: docker.io/stirlingtools/stirling-pdf:latest-ultra-lite
           container_name: pdf-tools
           labels:
             - "traefik.enable=true"

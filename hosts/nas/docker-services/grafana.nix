@@ -3,7 +3,6 @@
   lib,
   ...
 }: let
-  version = "13.1.0";
   port = "3000";
 in {
   users.users.grafana = {
@@ -19,7 +18,7 @@ in {
     composeText = ''
       services:
         grafana:
-          image: grafana/grafana:${version}
+          image: grafana/grafana:latest
           user: "''${GRAFANA_UID}:''${GRAFANA_GID}"
           volumes:
             - "/srv/grafana:/var/lib/grafana"

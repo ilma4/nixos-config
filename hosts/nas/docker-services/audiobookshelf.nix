@@ -1,6 +1,4 @@
 {...}: let
-  version = "2.35.1";
-
   srvDir = "/srv/audiobookshelf";
   configDir = "${srvDir}/config";
   metadataDir = "${srvDir}/metadata";
@@ -10,7 +8,7 @@
   composeText = ''
     services:
       audiobookshelf:
-        image: ghcr.io/advplyr/audiobookshelf:${version}
+        image: ghcr.io/advplyr/audiobookshelf:latest
         container_name: audiobookshelf
         labels:
           - "traefik.enable=true"

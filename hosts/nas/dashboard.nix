@@ -1,6 +1,4 @@
-{config, ...}: let
-  version = "v26.4.2";
-in {
+{config, ...}: {
   users.users.homer = {
     isSystemUser = true;
     uid = 989;
@@ -19,7 +17,7 @@ in {
       name: "homer"
       services:
         homer:
-          image: b4bz/homer:${version}
+          image: b4bz/homer:latest
           container_name: homer
           labels:
             - "traefik.enable=true"

@@ -1,11 +1,6 @@
-{
-  config,
-  lib,
-  ...
-}: let
+{config, ...}: let
   UID_GID = "${toString config.users.users.actual-budget.uid}:${toString config.users.groups.actual-budget.gid}";
-  actual-version = "v26.7.0";
-  tag = "${lib.removePrefix "v" actual-version}-alpine";
+  tag = "latest-alpine";
 in {
   users.users.actual-budget = {
     isSystemUser = true;

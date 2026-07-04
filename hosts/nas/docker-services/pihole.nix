@@ -1,5 +1,4 @@
 {...}: let
-  version = "2026.06.0";
   dataDir = "/srv/pihole";
 in {
   dockerCompose.pihole.composeText = ''
@@ -7,7 +6,7 @@ in {
     services:
       pihole:
         container_name: pihole
-        image: pihole/pihole:${version}
+        image: pihole/pihole:latest
         environment:
           TZ: "Europe/Berlin"
           FTLCONF_webserver_api_password: "correct horse battery staple"

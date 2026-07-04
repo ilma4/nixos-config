@@ -1,6 +1,5 @@
 {...}: let
   CONFIG_DIR = "/srv/homeassistant";
-  home-assistant-version = "2026.7.0";
 in {
   users.users.homeassistant = {
     isSystemUser = true;
@@ -14,7 +13,7 @@ in {
     services:
       home-assistant:
         container_name: home-assistant
-        image: "ghcr.io/home-assistant/home-assistant:${home-assistant-version}"
+        image: "ghcr.io/home-assistant/home-assistant:stable"
         volumes:
           - ${CONFIG_DIR}:/config
           - /etc/localtime:/etc/localtime:ro

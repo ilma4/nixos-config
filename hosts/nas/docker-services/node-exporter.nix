@@ -5,7 +5,6 @@
 }:
 with lib; let
   cfg = config.services.prometheus.node-exporter-docker;
-  node-exporter-version = "v1.11.1";
   port = 9100;
 in {
   options.services.prometheus.node-exporter-docker = {
@@ -30,7 +29,7 @@ in {
       composeText = ''
         services:
           node-exporter:
-            image: "prom/node-exporter:${node-exporter-version}"
+            image: "prom/node-exporter:latest"
             user: "${toString config.users.users.node-exporter.uid}:${toString config.users.groups.node-exporter.gid}"
             container_name: "node-exporter"
             volumes:
