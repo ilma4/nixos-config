@@ -268,6 +268,7 @@ in {
 
       tree
       ncdu
+      btop
 
       (pkgs.writeShellScriptBin "nix-rebuild" ''
         set -euo pipefail
