@@ -16,7 +16,10 @@
     };
 
     "com.apple.spaces" = {
-      spans-displays = false;
+      # Disable "Displays have separate Spaces"
+      # Fixes some issues with AeroSpace
+      # However, makes fullscreen windows to blacken all other monitors
+      spans-displays = true;
     };
 
     "com.apple.menuextra.clock" = {
