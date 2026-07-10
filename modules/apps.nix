@@ -39,7 +39,7 @@ in {
 
     # coding agents
     claude-code = asLinuxPackage {macName = "claude-code@latest";};
-    codex = asLinuxPackage {};
+    # codex = asLinuxPackage {};
     antigravity-cli = asLinuxPackage {};
 
     # comfyui = macOnlyCask {}; # tool for generating images/videos

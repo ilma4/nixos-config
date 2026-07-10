@@ -52,10 +52,12 @@ in {
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
       i4UpdateHost
+      /*
       (lib.mkIf pkgs.stdenv.isDarwin (pkgs.writeShellScriptBin "codex" ''
         set -euo pipefail
         exec /opt/homebrew/bin/codex --yolo "$@"
       ''))
+      */
       (lib.mkIf pkgs.stdenv.isDarwin (pkgs.writeShellScriptBin "claude" ''
         set -euo pipefail
         exec /opt/homebrew/bin/claude --dangerously-skip-permissions "$@"
@@ -65,7 +67,7 @@ in {
     ];
 
     home.shellAliases = lib.mkIf pkgs.stdenv.isDarwin {
-      codex = "/opt/homebrew/bin/codex --yolo";
+      # codex = "/opt/homebrew/bin/codex --yolo";
       claude = "/opt/homebrew/bin/claude --dangerously-skip-permissions";
     };
 
