@@ -189,9 +189,11 @@ in {
       /usr/bin/sudo --user=ilma4 -- ${homebrewPrefix}/bin/aerospace reload-config
     ''
     + lib.optionalString haveReverseProxyCert ''
-      /usr/bin/security add-trusted-cert -d -r trustRoot \
-        -k /Library/Keychains/System.keychain \
-        ${reverseProxyCert}
+      if ! /usr/bin/security verify-cert -c ${reverseProxyCert} >/dev/null 2>&1; then
+        /usr/bin/security add-trusted-cert -d -r trustRoot \
+          -k /Library/Keychains/System.keychain \
+          ${reverseProxyCert}
+      fi
     ''
   );
 
