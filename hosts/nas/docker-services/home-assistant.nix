@@ -20,7 +20,7 @@ in {
           - /run/dbus:/run/dbus:ro
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.home-assistant.rule=Host(`home-assistant.ilma4.local`)"
+          - "traefik.http.routers.home-assistant.rule=Host(`home-assistant.home.arpa`)"
           - "traefik.http.routers.home-assistant.entrypoints=websecure"
           - "traefik.http.routers.home-assistant.tls=true"
           - "traefik.http.services.home-assistant.loadbalancer.server.port=8123"

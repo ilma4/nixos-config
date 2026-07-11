@@ -53,7 +53,7 @@
           - reverse_proxy
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.catchall.rule=HostRegexp(`^.+\\.ilma4\\.local$`) || Host(`ilma4.local`)"
+          - "traefik.http.routers.catchall.rule=HostRegexp(`^.+\\.home\\.arpa$`) || Host(`home.arpa`)"
           - "traefik.http.routers.catchall.priority=1"
           - "traefik.http.routers.catchall.entrypoints=websecure"
           - "traefik.http.routers.catchall.tls=true"

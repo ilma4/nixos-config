@@ -25,7 +25,7 @@ in {
           network_mode: host
           labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.grafana.rule=Host(`grafana.ilma4.local`)"
+            - "traefik.http.routers.grafana.rule=Host(`grafana.home.arpa`)"
             - "traefik.http.routers.grafana.entrypoints=websecure"
             - "traefik.http.routers.grafana.tls=true"
             - "traefik.http.services.grafana.loadbalancer.server.port=${port}"

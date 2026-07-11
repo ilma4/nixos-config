@@ -29,6 +29,12 @@
       rm -f "$KEY" "$CERT"
     fi
 
+    # Rotate certificates left over from the previous reverse-proxy domain.
+    if [ -f "$CERT" ] && ! ${pkgs.openssl}/bin/openssl x509 \
+      -in "$CERT" -noout -checkhost home-assistant.home.arpa >/dev/null 2>&1; then
+      rm -f "$KEY" "$CERT"
+    fi
+
     if [ ! -f "$KEY" ] || [ ! -f "$CERT" ]; then
       ${pkgs.openssl}/bin/openssl req -x509 -nodes -days 365 \
         -newkey ec \
@@ -36,8 +42,8 @@
         -pkeyopt ec_paramgen_curve:P-384 \
         -keyout "$KEY" \
         -out "$CERT" \
-        -subj "/CN=*.ilma4.local/O=ilma4/C=US" \
-        -addext "subjectAltName=DNS:*.ilma4.local,DNS:ilma4.local"
+        -subj "/CN=*.home.arpa/O=ilma4/C=US" \
+        -addext "subjectAltName=DNS:*.home.arpa,DNS:home.arpa"
       chmod 600 "$KEY"
       chmod 644 "$CERT"
     fi

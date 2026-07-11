@@ -8,7 +8,7 @@
 }: let
   cfg = config.i4.ha-mcp;
 
-  haUrl = "https://home-assistant.ilma4.local";
+  haUrl = "https://home-assistant.home.arpa";
 
   # Long-lived HA access token, from sops. Declared as a SYSTEM secret per host (owner = "ilma4"),
   # so it is read uniformly via osConfig on both NixOS and darwin (e.g. quicksilver).
@@ -17,7 +17,7 @@
   # runtime, rather than failing eval/activation.
   tokenPath = osConfig.sops.secrets."homeassistant/token".path or "";
 
-  # Self-signed *.ilma4.local cert that Traefik serves on the NAS (certs/wildcard-ec.crt, public,
+  # Self-signed *.home.arpa cert that Traefik serves on the NAS (certs/wildcard-ec.crt, public,
   # no private key — see certs/README.md). When present we build a trust bundle + an SSL shim so
   # ha-mcp's httpx (REST) and websockets (WS) clients trust it WITHOUT disabling verification.
   # When absent, ha-mcp runs with default verification (HTTPS would fail until the cert is added).
@@ -121,7 +121,7 @@ in {
     lib.mkEnableOption "Home Assistant MCP server scoped to ~/.config/ha-mcp (and the ha-pi/ha-claude commands)";
 
   config = lib.mkIf cfg.enable (lib.warnIf (!haveCert) ''
-    i4.ha-mcp: certs/wildcard-ec.crt is missing — add the *.ilma4.local cert (see certs/README.md).
+    i4.ha-mcp: certs/wildcard-ec.crt is missing — add the *.home.arpa cert (see certs/README.md).
     HTTPS to ${haUrl} will fail certificate verification until then.
   '' {
     home.packages = [

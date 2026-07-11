@@ -23,7 +23,7 @@
         container_name: rssalchemy-webserver
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.rssalchemy-webserver.rule=Host(`rssalchemy-webserver.ilma4.local`)"
+          - "traefik.http.routers.rssalchemy-webserver.rule=Host(`rssalchemy-webserver.home.arpa`)"
           - "traefik.http.routers.rssalchemy-webserver.entrypoints=websecure"
           - "traefik.http.routers.rssalchemy-webserver.tls=true"
           - "traefik.docker.network=reverse_proxy"

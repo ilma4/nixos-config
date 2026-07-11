@@ -75,7 +75,7 @@ in {
           image: ghcr.io/hotio/qbittorrent:release-${version}
           labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.qbittorrent.rule=Host(`torrent.ilma4.local`)"
+            - "traefik.http.routers.qbittorrent.rule=Host(`torrent.home.arpa`)"
             - "traefik.http.routers.qbittorrent.entrypoints=websecure"
             - "traefik.http.routers.qbittorrent.tls=true"
             - "traefik.http.routers.qbittorrent.middlewares=qbittorrent-headers"
