@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: let
-  immich-version = "v3.0.0";
+  immich-version = "v3.0.2";
   secretName = "immich/db_password";
   publicEnvFile = pkgs.copyPathToStore ./.env;
 in {
