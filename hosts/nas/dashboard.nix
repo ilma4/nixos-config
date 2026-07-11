@@ -21,7 +21,7 @@
           container_name: homer
           labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.dashboard.rule=Host(`dashboard.home.arpa`)"
+            - "traefik.http.routers.dashboard.rule=Host(`dashboard.ilma4.home.arpa`)"
             - "traefik.http.routers.dashboard.entrypoints=websecure"
             - "traefik.http.routers.dashboard.tls=true"
             - "traefik.http.services.dashboard.loadbalancer.server.port=8080"

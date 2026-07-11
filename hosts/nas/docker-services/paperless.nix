@@ -19,7 +19,7 @@ in {
         container_name: paperless
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.paperless.rule=Host(`paperless.home.arpa`)"
+          - "traefik.http.routers.paperless.rule=Host(`paperless.ilma4.home.arpa`)"
           - "traefik.http.routers.paperless.entrypoints=websecure"
           - "traefik.http.routers.paperless.tls=true"
           - "traefik.docker.network=reverse_proxy"
@@ -48,7 +48,7 @@ in {
           PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
           PAPERLESS_TIKA_ENDPOINT: http://tika:9998
 
-          PAPERLESS_URL: "https://paperless.home.arpa"
+          PAPERLESS_URL: "https://paperless.ilma4.home.arpa"
           PAPERLESS_USE_X_FORWARD_PORT: "true"
           PAPERLESS_USE_X_FORWARD_HOST: "true"
           PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'

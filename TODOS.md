@@ -11,7 +11,7 @@ use openweather prescription map to check if I can go to the office without rain
 
 - check status of podman containers
   - or even status of selected systemd services
-- check availability of services (i.e. curl of `myservice.home.arpa` returns 200)
+- check availability of services (i.e. curl of `myservice.ilma4.home.arpa` returns 200)
 - check S.M.A.R.T. of disks
 - check available disk space
 - check free RAM

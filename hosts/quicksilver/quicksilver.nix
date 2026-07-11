@@ -7,6 +7,8 @@
   ...
 }: let
   homebrewPrefix = config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
+  reverseProxyCert = ../../certs/wildcard-ec.crt;
+  haveReverseProxyCert = builtins.pathExists reverseProxyCert;
 in {
   imports = [
     ../../modules/nix-settings.nix
@@ -122,10 +124,7 @@ in {
   # security.pki.enable = true;
 
   # Add your .pem CA certificate
-  security.pki.certificateFiles = [
-    ../../certs/wildcard-ec.crt
-    # You can add more certificates here
-  ];
+  security.pki.certificateFiles = lib.optional haveReverseProxyCert reverseProxyCert;
 
   fonts.packages = with pkgs; [
     meslo-lgs-nf
@@ -184,19 +183,17 @@ in {
     };
   };
 
-  system.activationScripts.aerospace-config.text = ''
-    set -euo pipefail
-    sudo --user=ilma4 -- ${homebrewPrefix}/bin/aerospace reload-config
-  '';
-
-  /*
-  system.activationScripts.trust-reverse-proxy-ca.text = ''
-    set -euo pipefail
-    security add-trusted-cert -d -r trustRoot \
-      -k /Library/Keychains/System.keychain \
-      ${../../certs/wildcard-ec.crt}
-  '';
-  */
+  system.activationScripts.extraActivation.text = lib.mkAfter (
+    ''
+      set -euo pipefail
+      /usr/bin/sudo --user=ilma4 -- ${homebrewPrefix}/bin/aerospace reload-config
+    ''
+    + lib.optionalString haveReverseProxyCert ''
+      /usr/bin/security add-trusted-cert -d -r trustRoot \
+        -k /Library/Keychains/System.keychain \
+        ${reverseProxyCert}
+    ''
+  );
 
   /*
   environment.etc.hosts.text = lib.mkIf false ''

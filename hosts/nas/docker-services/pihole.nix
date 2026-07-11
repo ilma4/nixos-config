@@ -12,7 +12,7 @@ in {
           FTLCONF_webserver_api_password: "correct horse battery staple"
           FTLCONF_dns_listeningMode: "all"
           FTLCONF_misc_dnsmasq_lines: |-
-            address=/home.arpa/192.168.1.33
+            address=/ilma4.home.arpa/192.168.1.33
             address=/news.ycombinator.com/0.0.0.0
             address=/habr.com/0.0.0.0
             address=/www.phoronix.com/0.0.0.0

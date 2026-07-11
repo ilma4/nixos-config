@@ -25,7 +25,7 @@ in let
 
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.prometheus.rule=Host(`prometheus.home.arpa`)"
+          - "traefik.http.routers.prometheus.rule=Host(`prometheus.ilma4.home.arpa`)"
           - "traefik.http.routers.prometheus.entrypoints=websecure"
           - "traefik.http.routers.prometheus.tls=true"
           - "traefik.http.services.prometheus.loadbalancer.server.port=${port}"

@@ -12,7 +12,7 @@
         container_name: audiobookshelf
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.home.arpa`)"
+          - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.ilma4.home.arpa`)"
           - "traefik.http.routers.audiobookshelf.entrypoints=websecure"
           - "traefik.http.routers.audiobookshelf.tls=true"
           - "traefik.http.services.audiobookshelf.loadbalancer.server.port=80"

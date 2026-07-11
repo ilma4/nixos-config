@@ -20,7 +20,7 @@ in {
         container_name: actual-budget
         labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.actual-budget.rule=Host(`actual-budget.home.arpa`)"
+          - "traefik.http.routers.actual-budget.rule=Host(`actual-budget.ilma4.home.arpa`)"
           - "traefik.http.routers.actual-budget.entrypoints=websecure"
           - "traefik.http.routers.actual-budget.tls=true"
           - "traefik.http.services.actual-budget.loadbalancer.server.port=5006"

@@ -15,7 +15,7 @@ in {
           container_name: pdf-tools
           labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.pdf-tools.rule=Host(`pdf-tools.home.arpa`)"
+            - "traefik.http.routers.pdf-tools.rule=Host(`pdf-tools.ilma4.home.arpa`)"
             - "traefik.http.routers.pdf-tools.entrypoints=websecure"
             - "traefik.http.routers.pdf-tools.tls=true"
             - "traefik.http.services.pdf-tools.loadbalancer.server.port=8080"

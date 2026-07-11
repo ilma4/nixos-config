@@ -43,7 +43,7 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     labels:
     - traefik.enable=true
-    - traefik.http.routers.immich.rule=Host(`immich.home.arpa`)
+    - traefik.http.routers.immich.rule=Host(`immich.ilma4.home.arpa`)
     - traefik.http.routers.immich.entrypoints=websecure
     - traefik.http.routers.immich.tls=true
     - traefik.docker.network=reverse_proxy
