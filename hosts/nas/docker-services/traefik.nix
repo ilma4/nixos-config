@@ -109,6 +109,18 @@ in {
         };
       };
 
+      systemd.services.traefik-reverse-proxy-pki = {
+        description = "Generate the Traefik reverse proxy certificate";
+        before = ["docker-compose-reverse_proxy.service"];
+        requiredBy = ["docker-compose-reverse_proxy.service"];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${genScript}";
+        };
+      };
+
+      systemd.services.docker-compose-reverse_proxy.restartTriggers = [genScript];
+
       dockerCompose."reverse_proxy" = {
         composeText = composeYaml;
       };
@@ -127,8 +139,6 @@ in {
         "d ${certsDir} 0755 root root -"
         "d ${privateDir} 0700 root root -"
       ];
-
-      system.activationScripts.traefikReverseProxyPki.text = "${genScript}";
     }
   ]);
 }
