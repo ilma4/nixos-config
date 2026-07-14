@@ -1,3 +1,7 @@
+# Setup ntfy server to send notification
+
+
+
 # msi-modern
 
 - disable wifi, when ethernet is connected
