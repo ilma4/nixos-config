@@ -77,6 +77,17 @@ in {
   i4.initrd-ssh.enable = true;
   i4.deploy.enable = true;
 
+  services.ntfy-sh = {
+    enable = true;
+    settings = {
+      base-url = constants.ntfy.base-url;
+      listen-http = "0.0.0.0:${toString constants.ntfy.port}";
+      behind-proxy = true;
+      # Forward poll requests through ntfy.sh for instant iOS delivery.
+      upstream-base-url = "https://ntfy.sh";
+    };
+  };
+
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
     efi = {
@@ -151,6 +162,7 @@ in {
 
   # accept all incoming connections from tailscale
   networking.firewall.trustedInterfaces = ["tailscale0"];
+  networking.firewall.allowedTCPPorts = [constants.ntfy.port];
 
   services.btrfs.autoScrub.enable = true;
 

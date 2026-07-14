@@ -1,5 +1,6 @@
 {
   config,
+  constants,
   lib,
   pkgs,
   ...
@@ -11,6 +12,8 @@
   baseCertDir = "/var/lib/nginx-reverse-proxy";
   certsDir = "/var/lib/nginx-reverse-proxy/certs";
   privateDir = "/var/lib/nginx-reverse-proxy/private";
+  reverseProxySubnet = "10.20.0.0/24";
+  reverseProxyGateway = "10.20.0.1";
 
   genScript = pkgs.writeShellScript "traefik-rp-gen-certs.sh" ''
     set -euo pipefail
@@ -50,6 +53,20 @@
   '';
 
   dynamicYaml = pkgs.writeText "traefik-dynamic.yaml" ''
+    http:
+      routers:
+        ntfy:
+          rule: "Host(`${constants.ntfy.host}`)"
+          entryPoints:
+            - websecure
+          service: ntfy
+          tls: {}
+      services:
+        ntfy:
+          loadBalancer:
+            servers:
+              - url: "http://${reverseProxyGateway}:${toString constants.ntfy.port}"
+
     tls:
       certificates:
         - certFile: /certs/wildcard-ec.crt
@@ -105,7 +122,7 @@ in {
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
-          ExecStart = "${pkgs.bash}/bin/bash -euo pipefail -c '${pkgs.podman}/bin/podman network exists reverse_proxy || ${pkgs.podman}/bin/podman network create --subnet=10.20.0.0/24 --gateway=10.20.0.1 --ip-range=10.20.0.32/27 reverse_proxy'";
+          ExecStart = "${pkgs.bash}/bin/bash -euo pipefail -c '${pkgs.podman}/bin/podman network exists reverse_proxy || ${pkgs.podman}/bin/podman network create --subnet=${reverseProxySubnet} --gateway=${reverseProxyGateway} --ip-range=10.20.0.32/27 reverse_proxy'";
         };
       };
 

@@ -6,10 +6,27 @@
   ...
 }: let
   port = "9090";
-  telegramMyIdSecret = constants.telegram.my-id-secret;
-  notificationsApiKeySecret = constants.telegram.notifications-api-key-secret;
+  ntfyWebhookUrl = "${constants.ntfy.local-base-url}/${constants.ntfy.topic}?template=alertmanager";
 in let
   alertmanagerUidGid = "${toString config.users.users.alertmanager.uid}:${toString config.users.groups.alertmanager.gid}";
+  alertmanagerConfig = pkgs.writeText "alertmanager.yml" ''
+    route:
+      receiver: ntfy
+      group_by:
+        - alertname
+        - host
+        - repo
+        - job
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+
+    receivers:
+      - name: ntfy
+        webhook_configs:
+          - url: "${ntfyWebhookUrl}"
+            send_resolved: true
+  '';
   prometheusCompose = ''
     services:
       prometheus:
@@ -39,7 +56,7 @@ in let
         user: "${alertmanagerUidGid}"
         container_name: alertmanager
         volumes:
-          - "${config.sops.templates."alertmanager.yml".path}:/etc/alertmanager/alertmanager.yml:ro"
+          - "${alertmanagerConfig}:/etc/alertmanager/alertmanager.yml:ro"
           - "/srv/alertmanager:/alertmanager"
         command:
           - "--config.file=/etc/alertmanager/alertmanager.yml"
@@ -64,36 +81,6 @@ in {
     port = 9633;
     maxInterval = "5m";
     extraFlags = ["--smartctl.powermode-check=standby"];
-  };
-
-  sops.secrets.${telegramMyIdSecret} = {};
-  sops.secrets.${notificationsApiKeySecret} = {};
-
-  sops.templates."alertmanager.yml" = {
-    content = ''
-      route:
-        receiver: telegram
-        group_by:
-          - alertname
-          - host
-          - repo
-          - job
-        group_wait: 30s
-        group_interval: 5m
-        repeat_interval: 12h
-
-      receivers:
-        - name: telegram
-          telegram_configs:
-            - bot_token: ${config.sops.placeholder.${notificationsApiKeySecret}}
-              chat_id: ${config.sops.placeholder.${telegramMyIdSecret}}
-              parse_mode: HTML
-              send_resolved: true
-    '';
-    mode = "0400";
-    owner = config.users.users.alertmanager.name;
-    group = config.users.groups.alertmanager.name;
-    restartUnits = ["alertmanager.service"];
   };
 
   users.users.alertmanager = {

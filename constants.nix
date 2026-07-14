@@ -21,7 +21,14 @@
     mallard = {
       api-key-secret = "telegram/mallard/api_key";
     };
-    notifications-api-key-secret = "telegram/notifications_api_key";
+  };
+
+  ntfy = rec {
+    host = "ntfy.ilma4.home.arpa";
+    port = 2586;
+    base-url = "https://${host}";
+    local-base-url = "http://127.0.0.1:${toString port}";
+    topic = "notifications";
   };
 
   hetzer-restic = rec {
