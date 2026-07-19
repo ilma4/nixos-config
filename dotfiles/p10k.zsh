@@ -1594,18 +1594,29 @@
   # light and dark backgrounds.
   typeset -g POWERLEVEL9K_GIT_BRANCH_ONLY_FOREGROUND=
   prompt_git_branch_only() {
-    local dir=$PWD head_file head branch
+    local dir=$PWD git_file git_dir head_file head branch
 
-    # Walk up from $PWD looking for a normal Git checkout. The branch is
-    # computed only when Powerlevel10k renders this segment, using cheap
-    # zsh file tests and one read of .git/HEAD instead of a hook-maintained
-    # global.
+    # Walk up from $PWD looking for a Git checkout. In a linked worktree,
+    # .git is a file whose `gitdir:` entry points to the directory containing
+    # HEAD; in a regular checkout, .git is that directory itself.
     while true; do
-      head_file=$dir/.git/HEAD
-      if [[ -r $head_file ]]; then
-        break
+      git_file=$dir/.git
+      head_file=
+
+      if [[ -d $git_file ]]; then
+        head_file=$git_file/HEAD
+      elif [[ -f $git_file && -r $git_file ]]; then
+        git_dir=$(<"$git_file") || return
+        git_dir=${git_dir%%$'\n'*}
+        git_dir=${git_dir%$'\r'}
+        if [[ $git_dir == gitdir:\ * ]]; then
+          git_dir=${git_dir#gitdir: }
+          [[ $git_dir == /* ]] || git_dir=$dir/$git_dir
+          head_file=$git_dir/HEAD
+        fi
       fi
 
+      [[ -n $head_file && -r $head_file ]] && break
       [[ $dir == / ]] && return
       dir=${dir:h}
     done
