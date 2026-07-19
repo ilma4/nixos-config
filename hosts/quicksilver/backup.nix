@@ -149,6 +149,7 @@ in {
     backupMinute = 0;
     paths = ["/Users/ilma4"];
     excludes = backupExcludePaths;
+    keepWithin = "7d";
     localRepo = {
       location = backupLocalRepo;
       passwordFile = config.sops.secrets.${localResticPasswordSecret}.path;
