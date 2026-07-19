@@ -30,6 +30,11 @@
         type = types.nullOr (types.enum ["cask" "brew" "package"]);
         default = "cask";
       };
+      package = mkOption {
+        type = types.nullOr types.package;
+        default = null;
+        description = "Package to use when the app is installed as a package";
+      };
     };
   };
 in {
@@ -61,26 +66,40 @@ in {
         )
         config.i4.apps.apps;
 
+      packageAssertions = lib.mapAttrsToList (name: app: {
+        assertion = app.package == null || app.linuxInstallation == "package" || app.macInstallation == "package";
+        message = "i4.apps.apps.${name}.package can only be set when linuxInstallation or macInstallation is package";
+      }) appsFixedNames;
+
       enabledApps = lib.mapAttrsToList (_: app: app) (lib.filterAttrs (_: app: app.enable) appsFixedNames);
 
       linuxProgramNames = map (app: app.linuxName) (lib.filter (app: app.linuxInstallation == "program") enabledApps);
-
-      linuxPackageNames = map (app: app.linuxName) (lib.filter (app: app.linuxInstallation == "package") enabledApps);
 
       macCaskNames = map (app: app.macName) (lib.filter (app: app.macInstallation == "cask") enabledApps);
 
       macBrewNames = map (app: app.macName) (lib.filter (app: app.macInstallation == "brew") enabledApps);
 
-      macPackageNames = map (app: app.macName) (lib.filter (app: app.macInstallation == "package") enabledApps);
+      packageApps = lib.filter (
+        app:
+          (isLinux && app.linuxInstallation == "package")
+          || (isDarwin && app.macInstallation == "package")
+      ) enabledApps;
 
-      packageNames =
-        if isLinux
-        then linuxPackageNames
-        else macPackageNames;
-
-      packageList = map (name: pkgs.${name}) packageNames;
+      packageList = map (
+        app:
+          if app.package != null
+          then app.package
+          else pkgs.${
+            if isLinux
+            then app.linuxName
+            else app.macName
+          }
+      ) packageApps;
     in
-      lib.optionalAttrs (!isHomeManager) {
+      {
+        assertions = packageAssertions;
+      }
+      // lib.optionalAttrs (!isHomeManager) {
         environment.systemPackages = packageList;
       }
       // lib.optionalAttrs isHomeManager {
