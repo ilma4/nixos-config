@@ -1,94 +1,70 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Remote hosts that enable modules/deploy.nix and provide update-to-latest.sh.
-deploy_hosts=(
-    nas
-    msi-modern
-)
+jobs=(nix-rebuild nas msi-modern)
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-repo_dir="$(cd -- "${script_dir}/.." && pwd -P)"
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
-assert_repo_clear() {
-    local status
+run_job() {
+    local job="$1"
+    local status=0
 
-    status="$(git status --porcelain=v1 --untracked-files=all)"
-    if [[ -n "${status}" ]]; then
-        echo "Repository has uncommitted or untracked changes:" >&2
-        git status --short >&2
-        exit 1
-    fi
-}
+    if [[ "$job" == nix-rebuild ]]; then
+        nix-rebuild || status=$?
+    else
+        local target="$job"
 
-prime_local_sudo() {
-    if command -v sudo >/dev/null 2>&1; then
-        sudo -v
-    fi
-}
+        if ssh -o BatchMode=yes -o ConnectTimeout=3 "ilma4@$job.local" true >/dev/null 2>&1; then
+            target="$job.local"
+        fi
 
-update_host_to_latest() {
-    local host="$1"
-    local ssh_target="${host}"
-
-    if ssh -o BatchMode=yes -o ConnectTimeout=3 "ilma4@${host}.local" true >/dev/null 2>&1; then
-        ssh_target="${host}.local"
+        echo "Updating $job via $target"
+        ssh -o BatchMode=yes "ilma4@$target" \
+            'sudo -n /run/current-system/sw/bin/update-to-latest.sh' || status=$?
     fi
 
-    echo "Updating ${host} via ${ssh_target}"
-    ssh -o BatchMode=yes "ilma4@${ssh_target}" \
-        "sudo -n /run/current-system/sw/bin/update-to-latest.sh"
+    printf '%s\n' "$status" >"$DEPLOY_STATUS_DIR/$job"
+    return "$status"
 }
 
-job_pids=()
-job_names=()
+if [[ "${1:-}" == --run-job ]]; then
+    run_job "$2"
+    exit
+fi
 
-start_job() {
-    local name="$1"
-    shift
-
-    echo "Starting ${name}"
-    "$@" &
-    job_pids+=("$!")
-    job_names+=("${name}")
-}
-
-stop_jobs() {
-    local pid
-
-    for pid in "${job_pids[@]}"; do
-        kill "${pid}" 2>/dev/null || true
-    done
-}
-
-trap stop_jobs INT TERM
-
-cd "${repo_dir}"
-
-assert_repo_clear
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Repository has uncommitted or untracked changes:" >&2
+    git status --short >&2
+    exit 1
+fi
 
 git spush
+sudo -v
 
-prime_local_sudo
+# mprocs does not propagate process failures, so each job records its status.
+DEPLOY_STATUS_DIR="$(mktemp -d)"
+export DEPLOY_STATUS_DIR
+trap 'rm -rf -- "$DEPLOY_STATUS_DIR"' EXIT
 
-start_job "nix-rebuild" nix-rebuild
-for host in "${deploy_hosts[@]}"; do
-    start_job "update-to-latest:${host}" update_host_to_latest "${host}"
+commands=()
+for job in "${jobs[@]}"; do
+    commands+=("utils/deploy-all.sh --run-job $job")
 done
 
+mprocs \
+    --names "$(IFS=,; printf '%s' "${jobs[*]}")" \
+    --on-all-finished '{c: quit}' \
+    "${commands[@]}"
+
 failed=0
-for index in "${!job_pids[@]}"; do
-    if wait "${job_pids[${index}]}"; then
-        echo "Finished ${job_names[${index}]}"
-    else
-        status="$?"
-        echo "Failed ${job_names[${index}]} with exit code ${status}" >&2
+for job in "${jobs[@]}"; do
+    status="not finished"
+    [[ -f "$DEPLOY_STATUS_DIR/$job" ]] && status="$(<"$DEPLOY_STATUS_DIR/$job")"
+    if [[ "$status" != 0 ]]; then
+        echo "Failed $job ($status)" >&2
         failed=1
     fi
 done
 
-if [[ "${failed}" -ne 0 ]]; then
-    exit 1
-fi
-
+((failed == 0)) || exit 1
 echo "Deploy completed successfully."
