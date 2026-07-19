@@ -1,4 +1,4 @@
-{...}: let
+{pkgs-unstable, ...}: let
   asLinuxPackage = x: {linuxInstallation = "package";} // x;
   macOnlyCask = x:
     {
@@ -82,6 +82,7 @@ in {
     # iterm2 = macOnlyCask {}; # managed by corporate software
     itermai = macOnlyCask {};
     kitty = macOnlyCask {};
+    handy = asLinuxPackage {package = pkgs-unstable.handy;}; # speech-to-text
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software
     # karabiner-elements = macOnlyCask {}; # keyboard remapping
