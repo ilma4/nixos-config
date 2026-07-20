@@ -137,8 +137,8 @@ in {
       };
 
       ignores = [
-        ".idea/inspectionProfiles"
-        ".idea/runConfigurations"
+        ".idea/inspectionProfiles/"
+        ".idea/runConfigurations/"
         ".idea/workspace.xml"
         ".claude/settings.local.json"
       ];
