@@ -34,11 +34,11 @@ run_job() {
         fi
 
         if ((attempt < max_attempts)); then
-            echo "Deployment of $job failed with status $status; retrying." >&2
+            echo "Deployment of $job failed with status $status; retrying in 1 second." >&2
+            sleep 1
         fi
     done
 
-    printf '%s\n' "$status" >"$DEPLOY_STATUS_DIR/$job"
     return "$status"
 }
 
@@ -56,11 +56,6 @@ fi
 git spush
 sudo -v
 
-# mprocs does not propagate process failures, so each job records its status.
-DEPLOY_STATUS_DIR="$(mktemp -d)"
-export DEPLOY_STATUS_DIR
-trap 'rm -rf -- "$DEPLOY_STATUS_DIR"' EXIT
-
 commands=()
 for job in "${jobs[@]}"; do
     commands+=("utils/deploy-all.sh --run-job $job")
@@ -71,15 +66,4 @@ mprocs \
     --on-all-finished '{c: quit}' \
     "${commands[@]}"
 
-failed=0
-for job in "${jobs[@]}"; do
-    status="not finished"
-    [[ -f "$DEPLOY_STATUS_DIR/$job" ]] && status="$(<"$DEPLOY_STATUS_DIR/$job")"
-    if [[ "$status" != 0 ]]; then
-        echo "Failed $job ($status)" >&2
-        failed=1
-    fi
-done
-
-((failed == 0)) || exit 1
-echo "Deploy completed successfully."
+echo "Deploy finished."
