@@ -51,8 +51,28 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
+    devshell = {
+      url = "github:numtide/devshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    generate-go-sri = {
+      url = "github:antifuchs/generate-go-sri";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.tailscale.follows = "tailscale";
+    };
+    tailscale = {
+      url = "github:tailscale/tailscale";
+      flake = false;
+    };
     hoopsnake = {
       url = "github:boinkor-net/hoopsnake";
+      inputs.devshell.follows = "devshell";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.generate-go-sri.follows = "generate-go-sri";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     yaml = {
