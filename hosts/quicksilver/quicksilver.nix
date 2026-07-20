@@ -150,6 +150,14 @@ in {
     enableZshIntegration = false;
     enableBashIntegration = false;
     enableFishIntegration = false;
+
+    trust = {
+      formulae = ["jetbrains/junie/junie" "jundot/omlx/omlx"];
+      taps = [
+        "jetbrains/utils"
+        "nikitabobko/tap"
+      ];
+    };
   };
 
   homebrew = {
