@@ -7,21 +7,36 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
 run_job() {
     local job="$1"
+    local max_attempts=3
     local status=0
+    local target="$job"
+    local attempt
 
-    if [[ "$job" == nix-rebuild ]]; then
-        nix-rebuild || status=$?
-    else
-        local target="$job"
+    if [[ "$job" != nix-rebuild ]] &&
+        ssh -o BatchMode=yes -o ConnectTimeout=3 "ilma4@$job.local" true >/dev/null 2>&1; then
+        target="$job.local"
+    fi
 
-        if ssh -o BatchMode=yes -o ConnectTimeout=3 "ilma4@$job.local" true >/dev/null 2>&1; then
-            target="$job.local"
+    for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+        status=0
+        echo "Deploying $job (attempt $attempt/$max_attempts)"
+
+        if [[ "$job" == nix-rebuild ]]; then
+            nix-rebuild || status=$?
+        else
+            echo "Updating $job via $target"
+            ssh -o BatchMode=yes "ilma4@$target" \
+                'sudo -n /run/current-system/sw/bin/update-to-latest.sh' || status=$?
         fi
 
-        echo "Updating $job via $target"
-        ssh -o BatchMode=yes "ilma4@$target" \
-            'sudo -n /run/current-system/sw/bin/update-to-latest.sh' || status=$?
-    fi
+        if ((status == 0)); then
+            break
+        fi
+
+        if ((attempt < max_attempts)); then
+            echo "Deployment of $job failed with status $status; retrying." >&2
+        fi
+    done
 
     printf '%s\n' "$status" >"$DEPLOY_STATUS_DIR/$job"
     return "$status"
