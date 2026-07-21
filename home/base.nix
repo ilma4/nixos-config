@@ -37,6 +37,19 @@
   gitSpushPackage = pkgs.writeShellScriptBin "git-spush" (
     builtins.replaceStrings ["@gitResign@"] ["${lib.getExe gitResignPackage}"] (builtins.readFile ../scripts/git-spush.sh)
   );
+  # Work around both patool completion packaging bugs: argcomplete is missing
+  # at runtime, and the generated scripts register the absolute Nix store path
+  # instead of the command name. Remove once the upstream fix is available.
+  # https://github.com/NixOS/nixpkgs/issues/448393
+  patoolWithCompletions = pkgs.patool.overridePythonAttrs (old: {
+    dependencies = (old.dependencies or []) ++ [pkgs.python3Packages.argcomplete];
+    postInstall = ''
+      installShellCompletion --cmd patool \
+        --bash <(${pkgs.python3Packages.argcomplete}/bin/register-python-argcomplete -s bash patool) \
+        --fish <(${pkgs.python3Packages.argcomplete}/bin/register-python-argcomplete -s fish patool) \
+        --zsh <(${pkgs.python3Packages.argcomplete}/bin/register-python-argcomplete -s zsh patool)
+    '';
+  });
   tmuxUtf8Wrapper = pkgs.writeShellScriptBin "tmux" ''
     set -euo pipefail
     exec ${lib.getExe pkgs.tmux} -u "$@"
@@ -252,7 +265,7 @@ in {
       rclone
       rsync
 
-      patool # archive universal extract utility
+      patoolWithCompletions # archive universal extract utility
 
       curl
       wget
@@ -312,6 +325,7 @@ in {
       # (e.g. Homebrew on macOS).
       completionInit = ''
         autoload -U compinit && compinit -C -d "$HOME/.zcompdump"
+
         # Precompile the completion dump to bytecode. `compinit -C` loads the
         # dump but, unlike a full compinit, never (re)compiles it, so do it here
         # when the .zwc is missing or stale; the next startup's `. $dump` then
