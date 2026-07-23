@@ -19,6 +19,20 @@
       ZSH_DISABLE_COMPFIX = "true";
     };
 
+    launchd.agents.central-proxy = {
+      enable = true;
+      config = {
+        ProgramArguments = [
+          "/Users/malakhov/.local/bin/central"
+          "proxy"
+          "start"
+        ];
+        RunAtLoad = true;
+        AbandonProcessGroup = true;
+        WorkingDirectory = "/Users/malakhov";
+      };
+    };
+
     rebuild-script = ''
       set -euo pipefail
 
