@@ -199,6 +199,7 @@ in {
     ./fonts.nix
     ./ha-mcp.nix
     ./neovim.nix
+    ./neovim-ide.nix
     ./personal.nix
     ./raycast.nix
     ./zed.nix

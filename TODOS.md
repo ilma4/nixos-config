@@ -66,7 +66,7 @@ Define more constants to simplify secrets/path/locations etc. management
 # Better neovim config
 - make `neovim` to run simple neovim with minimal config
 
-- make `neovim-ide` to run with heavy config
+- make `nvim-ide` to run with heavy config
 
 - theme, both light and dark and autoswitch
 - tabs
