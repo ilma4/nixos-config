@@ -42,16 +42,7 @@ in {
     '';
 
     # Do not use home.sessionPath for Homebrew; it places Homebrew before Nix.
-    home.sessionVariables = {
-      PATH = "$PATH:${homebrewPrefix}/bin";
-
-      # brew is pinned and read-only under nix-homebrew, so skip its
-      # auto-update before install/upgrade/tap. The var is presence-checked
-      # (any non-empty value disables it), so use the documented "1" — not
-      # "0", which reads as "enabled" and would mislead. Run `brew update`
-      # manually when you want fresh formulae.
-      HOMEBREW_NO_AUTO_UPDATE = "1";
-    };
+    home.sessionVariables.PATH = "$PATH:${homebrewPrefix}/bin";
 
     home.file = {
       ".config/aerospace/aerospace.toml".source = ../../dotfiles/aerospace.toml;

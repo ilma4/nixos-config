@@ -26,7 +26,6 @@ in {
 
     inputs.home-manager-darwin.darwinModules.home-manager
     inputs.sops-nix-darwin.darwinModules.sops
-    inputs.nix-homebrew.darwinModules.nix-homebrew
   ];
 
   # environment.systemPackages = with pkgs; [
@@ -130,36 +129,8 @@ in {
     meslo-lgs-nf
   ];
 
-  # nix-homebrew installs and owns the Homebrew prefix itself (the `brew`
-  # binary and its source), pinned via the `brew-src` flake input. The
-  # `homebrew` block below still declares which formulae/casks/masApps to
-  # install on top of it.
-  nix-homebrew = {
-    enable = true;
-    user = "ilma4"; # owner of the existing /opt/homebrew prefix (group: admin)
-
-    # Keep imperative tap management. The private `jetbrains/junie` and
-    # `jetbrains/utils` taps (plus `nikitabobko/tap`) can't be public flake
-    # inputs, so fully-declarative taps (mutableTaps = false) isn't viable.
-    # Defaults to true; kept explicit to document the decision.
-    mutableTaps = true;
-
-    # Homebrew's PATH is added deliberately *after* Nix in
-    # hosts/quicksilver/common-home.nix. Don't let nix-homebrew prepend it via
-    # a slow `eval "$(brew shellenv)"` on every interactive shell.
-    enableZshIntegration = false;
-    enableBashIntegration = false;
-    enableFishIntegration = false;
-
-    trust = {
-      formulae = ["jetbrains/junie/junie" "jundot/omlx/omlx"];
-      taps = [
-        "jetbrains/utils"
-        "nikitabobko/tap"
-      ];
-    };
-  };
-
+  # Homebrew itself is installed by the official installer. nix-darwin only
+  # manages taps, formulae, casks, and App Store applications on top of it.
   homebrew = {
     enable = true;
     onActivation = {
@@ -173,6 +144,23 @@ in {
 
     # TODO: enable with 25.11 release
     # greedyCasks = true; # always upgrade casks
+
+    # Preserve the tap trust previously configured through nix-homebrew.
+    # `jundot/omlx` is declared separately in mlx.nix.
+    taps = [
+      {
+        name = "jetbrains/junie";
+        trusted = true;
+      }
+      {
+        name = "jetbrains/utils";
+        trusted = true;
+      }
+      {
+        name = "nikitabobko/tap";
+        trusted = true;
+      }
+    ];
 
     # common apps are configured in `modules/apps.nix`
     casks = [
