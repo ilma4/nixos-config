@@ -56,7 +56,7 @@ in {
     ./docker-services/traefik.nix
     ./docker-services/error-page.nix
 
-    ./docker-services/audiobookshelf.nix
+    # ./docker-services/audiobookshelf.nix
     ./docker-services/mallard.nix
     ./incus-openclaw.nix
 
