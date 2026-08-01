@@ -48,6 +48,7 @@
   };
 
   nas = {
+    # for personal backups
     restic-ilma4 = rec {
       location = "/mnt/hdd/restic";
       password-secret = "restic_password/ilma4_legacy";
@@ -58,7 +59,8 @@
         then null
         else "/run/secrets/${old-password-secret}";
     };
-    restic = {
+    # for servers data backup
+    restic-server = {
       repo = "/mnt/hdd/restic";
       password-file = "restic/server";
       old-password-file = null; # used to migrate password on repo
