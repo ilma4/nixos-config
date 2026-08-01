@@ -55,8 +55,6 @@ in {
     programs.nano.enable = true;
     programs.zsh.enable = true;
 
-    services.dbus.implementation = "broker"; # better dbus, also required for home-assistant bluetooth integration
-
     services.fstrim.enable = mkDefault (!config.boot.isContainer); # Enable background periodic TRIM
     services.printing.enable = mkDefault (!config.boot.isContainer); # Enable CUPS to print documents.
 
