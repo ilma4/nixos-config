@@ -17,6 +17,10 @@
   commonAfter = ["network-online.target" "sops-nix.service"];
   tmpfilesSetupService = "systemd-tmpfiles-setup.service";
   backupCalendar = "*-*-* ${fixedWidthNumber 2 cfg.backupHour}:${fixedWidthNumber 2 cfg.backupMinute}:00";
+  backupServiceDescription =
+    if cfg.createSnapshots
+    then "Run local restic backup, remote copy, and retention"
+    else "Copy received restic snapshots to remotes and apply local retention";
 
   mkBackupService = description: execStart: extraConfig:
     {
@@ -49,7 +53,7 @@ in {
         requires = ["i4-backup-init-local.service"];
       };
 
-      i4-backup = mkBackupService "Run local restic backup, remote copy, and retention" internal.runBackupScript {
+      i4-backup = mkBackupService backupServiceDescription internal.runBackupScript {
         after = commonAfter ++ ["i4-backup-rotate-keys.service"];
         requires = ["i4-backup-rotate-keys.service"];
       };

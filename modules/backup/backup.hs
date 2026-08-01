@@ -32,6 +32,7 @@ data Repo = Repo {location :: String, passwordFile :: PasswordFile, oldPasswordF
 data BackupConfig = BackupConfig
   { localRepo :: Repo,
     remoteRepos :: [Repo],
+    createSnapshots :: Bool,
     paths :: [String],
     excludes :: [String],
     keepWithin :: Maybe String
@@ -117,11 +118,12 @@ requireChunckerMatching chunker repo = do
 runBackupCommand :: String -> IO ()
 runBackupCommand file = do
   BackupConfig {..} <- Lazy.readFile file >>= throwDecode :: IO BackupConfig
-  let backupArgs = ["backup"] ++ concatMap (\path -> ["--exclude", path]) excludes ++ paths
-  (exitCode, _, stderr) <- runRestic localRepo backupArgs
-  when (exitCode /= ExitSuccess && exitCode /= ExitFailure 3) (error $ "error while running backup\n" ++ stderr)
-  when (exitCode == ExitFailure 3) (logInfo $ "backup can't read some paths:\n" ++ stderr)
-  logInfo "backup successfully made"
+  when createSnapshots $ do
+    let backupArgs = ["backup"] ++ concatMap (\path -> ["--exclude", path]) excludes ++ paths
+    (exitCode, _, stderr) <- runRestic localRepo backupArgs
+    when (exitCode /= ExitSuccess && exitCode /= ExitFailure 3) (error $ "error while running backup\n" ++ stderr)
+    when (exitCode == ExitFailure 3) (logInfo $ "backup can't read some paths:\n" ++ stderr)
+    logInfo "backup successfully made"
 
   localChunker <- readRepoChunker localRepo
   for_ remoteRepos (requireChunckerMatching localChunker)

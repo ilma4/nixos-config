@@ -17,13 +17,10 @@
   formatTwoDigits = n: lib.fixedWidthString 2 "0" (toString n);
   backupWakeTime = "${formatTwoDigits backupWakeHour}:${formatTwoDigits backupWakeMinute}:00";
   localResticPasswordSecret = "restic_password/quicksilver_local";
-  remoteResticPasswordSecret = constants.nas.restic-ilma4.password-secret;
-  hetzerResticPasswordSecret = constants.hetzer-restic.password-secret;
-  backupSshKey = config.sops.secrets."quicksilver-backup-key".path;
+  quicksilverToNasSshKeySecret = "quicksilver-backup-key";
+  backupSshKey = config.sops.secrets.${quicksilverToNasSshKeySecret}.path;
   rcloneSshProgram = "${lib.getExe pkgs.openssh} -F /dev/null -i ${backupSshKey} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=${backupHome}/.ssh/known_hosts";
-  rcloneProgram = "${rcloneSshProgram} ilma4@nas.local";
-  hetzerStorageBoxResticRepo = constants.hetzer-restic.repo;
-  hetzerStorageBoxRcloneProgram = "${rcloneSshProgram} -p 23 u478838@u478838.your-storagebox.de rclone";
+  nasRcloneProgram = "${rcloneSshProgram} ilma4@nas.local";
   backupExcludePaths = [
     "/Users/ilma4/Games"
     "/Users/ilma4/Library/Application Support/Steam"
@@ -120,22 +117,12 @@ in {
     ../../modules/backup/backup.nix
   ];
 
-  sops.secrets."quicksilver-backup-key" = {
+  sops.secrets.${quicksilverToNasSshKeySecret} = {
     owner = "ilma4";
     group = "staff";
     mode = "0400";
   };
   sops.secrets.${localResticPasswordSecret} = {
-    owner = "ilma4";
-    group = "staff";
-    mode = "0400";
-  };
-  sops.secrets.${remoteResticPasswordSecret} = {
-    owner = "ilma4";
-    group = "staff";
-    mode = "0400";
-  };
-  sops.secrets.${hetzerResticPasswordSecret} = {
     owner = "ilma4";
     group = "staff";
     mode = "0400";
@@ -154,27 +141,15 @@ in {
       location = backupLocalRepo;
       passwordFile = config.sops.secrets.${localResticPasswordSecret}.path;
     };
-    remoteRepos = {
-      nas = {
-        location = "rclone:nas";
-        passwordFile = config.sops.secrets.${remoteResticPasswordSecret}.path;
-        extraResticArgs = [
-          "-o"
-          "rclone.program=${rcloneProgram}"
-          "-o"
-          "rclone.args=serve restic --stdio"
-        ];
-      };
-      hetzer-storage-box = {
-        location = "rclone:hetzer";
-        passwordFile = config.sops.secrets.${hetzerResticPasswordSecret}.path;
-        extraResticArgs = [
-          "-o"
-          "rclone.program=${hetzerStorageBoxRcloneProgram}"
-          "-o"
-          "rclone.args=serve restic --stdio --append-only ${hetzerStorageBoxResticRepo}"
-        ];
-      };
+    remoteRepos.nas-ssd = {
+      location = "rclone:nas-ssd";
+      passwordFile = config.sops.secrets.${localResticPasswordSecret}.path;
+      extraResticArgs = [
+        "-o"
+        "rclone.program=${nasRcloneProgram}"
+        "-o"
+        "rclone.args=serve restic --stdio"
+      ];
     };
   };
 

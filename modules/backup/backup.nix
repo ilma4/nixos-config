@@ -54,6 +54,7 @@
   runBackupConfigFile = pkgs.writeText "i4-backup-run-backup.json" (builtins.toJSON {
     localRepo = translateRepo cfg.localRepo;
     remoteRepos = map translateRepo remoteRepos;
+    createSnapshots = cfg.createSnapshots;
     paths = cfg.paths;
     excludes = cfg.excludes;
     keepWithin = cfg.keepWithin;
@@ -116,7 +117,7 @@ in {
   ];
 
   options.i4.backup = {
-    enable = mkEnableOption "local restic backups with remote copies";
+    enable = mkEnableOption "restic backups or snapshot relays with remote copies";
 
     backupUser = mkOption {
       type = types.singleLineStr;
@@ -142,10 +143,16 @@ in {
       description = "Minute of the hour in local time when the periodic backup runs.";
     };
 
+    createSnapshots = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Whether to create local snapshots before copying the repository to remotes. Disable this for a repository that receives snapshots from another host.";
+    };
+
     paths = mkOption {
       type = types.listOf types.str;
       default = [];
-      description = "Paths that are backed up into the local repository.";
+      description = "Paths that are backed up into the local repository when createSnapshots is enabled.";
     };
 
     excludes = mkOption {
@@ -162,7 +169,7 @@ in {
 
     localRepo = mkOption {
       type = repoType;
-      description = "Local restic repository used for backups before snapshots are copied to remotes.";
+      description = "Local restic repository used to create or receive snapshots before they are copied to remotes.";
     };
 
     remoteRepos = mkOption {
@@ -187,7 +194,7 @@ in {
       runBackupScript = mkOption {
         type = types.path;
         readOnly = true;
-        description = "Generated script that runs the local backup, remote copy, and retention steps.";
+        description = "Generated script that runs the configured snapshot creation, remote copy, and retention steps.";
       };
 
       runConfiguredBackupScript = mkOption {
@@ -243,8 +250,12 @@ in {
 
       assertions = [
         {
-          assertion = cfg.paths != [];
-          message = "i4.backup.paths must contain at least one path when i4.backup.enable = true";
+          assertion = !cfg.createSnapshots || cfg.paths != [];
+          message = "i4.backup.paths must contain at least one path when i4.backup.createSnapshots is enabled";
+        }
+        {
+          assertion = cfg.createSnapshots || cfg.paths == [];
+          message = "i4.backup.paths must be empty when i4.backup.createSnapshots is disabled";
         }
       ];
     })

@@ -43,8 +43,15 @@
   };
 
   quicksilver = {
-    # public ssh key to send backups to remote machines
+    # Existing key used to send Quicksilver backups to NAS.
     backup-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMvrzYraYfx9T5iQOrsU19YvfdgUCZlANxdSjJTKaRBR qucksilver-backup-key";
+  };
+
+  backup-ssh-keys = {
+    nas-to-hetzer-storage = {
+      private-secret = "backup_ssh/nas_to_hetzer_storage/private_key";
+      public-secret = "backup_ssh/nas_to_hetzer_storage/public_key";
+    };
   };
 
   nas = {
