@@ -153,10 +153,6 @@ in {
         trusted = true;
       }
       {
-        name = "jetbrains/junie/junie";
-        trusted = true;
-      }
-      {
         name = "jetbrains/utils";
         trusted = true;
       }
