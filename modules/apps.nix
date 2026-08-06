@@ -36,6 +36,7 @@ in {
     todoist-electron = {macName = "todoist-app";};
 
     zed-editor = {macName = "zed";};
+    vscode = {macName = "visual-studio-code";};
 
     # coding agents
     claude-code = asLinuxPackage {macName = "claude-code@latest";};
