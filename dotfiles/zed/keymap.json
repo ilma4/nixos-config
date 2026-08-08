@@ -1,48 +1,203 @@
 [
+  // Complements Zed's JetBrains base keymap with IntelliJ IDEA's default
+  // macOS shortcuts. Bindings already covered by the base keymap are omitted.
+  // IntelliJ-only features without a safe Zed equivalent are intentionally not
+  // mapped (for example hierarchy views, services, and column selection mode).
+  // Vim-reserved control chords stay available because vim_mode is enabled.
   {
+    "context": "Workspace",
+    "use_key_equivalents": true,
     "bindings": {
+      // General and tool windows
       "cmd-1": "project_panel::ToggleFocus",
       "cmd-9": "git_panel::ToggleFocus",
-      "shift-F12": "workspace::CloseAllDocks",
+      "shift-f12": "workspace::CloseAllDocks", // Existing convenient alias; IntelliJ uses cmd-shift-f12.
       "cmd-n": "workspace::NewFile",
+      "cmd-s": "workspace::SaveAll",
+      "cmd-;": "zed::OpenProjectSettings",
+
+      // Build, run, and debug. Zed tasks are the closest equivalent to IDEA's
+      // project build and run configurations.
+      "cmd-f9": "task::Spawn",
+      "cmd-shift-f9": "task::Rerun",
+      "ctrl ctrl": "task::Spawn",
+      "ctrl-alt-d": "debugger::Start",
+      "alt-shift-f5": "debugger::Start",
+      "cmd-f2": "debugger::Stop",
+      "cmd-shift-f2": "debugger::Stop",
+      "cmd-shift-f8": "debug_panel::ToggleFocus",
+
+      // VCS
+      "cmd-t": "git::Pull",
     },
-    "context": "Workspace",
   },
   {
+    // Resume and force-step shortcuts only make sense during a debug session.
+    // Zed has no separate force-step actions, so use the normal step actions.
+    "context": "Workspace && debugger_session",
     "bindings": {
-      "cmd-1": "workspace::ToggleLeftDock",
-      "shift-escape": "workspace::ToggleLeftDock",
+      "cmd-alt-r": "debugger::Continue",
+      "alt-shift-f8": "debugger::StepOver",
+      "shift-f7": "debugger::StepInto",
+      "alt-shift-f7": "debugger::StepInto",
+      "alt-f10": "debug_panel::ToggleFocus",
     },
+  },
+  {
+    // IDEA's numbered tool windows and editor-tab navigation.
+    "context": "Pane",
+    "use_key_equivalents": true,
+    "bindings": {
+      "cmd-1": "project_panel::ToggleFocus",
+      "cmd-2": "editor::ViewBookmarks",
+      "cmd-3": "pane::DeploySearch",
+      "cmd-4": "workspace::ToggleBottomDock",
+      "cmd-9": "git_panel::ToggleFocus",
+      "cmd-shift-[": "pane::ActivatePreviousItem",
+      "cmd-shift-]": "pane::ActivateNextItem",
+    },
+  },
+  {
+    "context": "Editor",
+    "use_key_equivalents": true,
+    "bindings": {
+      // General shortcuts that would otherwise be shadowed by Zed's Editor defaults
+      "shift-f12": "workspace::CloseAllDocks",
+      "cmd-;": "zed::OpenProjectSettings",
+
+      // Basic editing
+      "cmd-shift-v": "editor::Paste", // Zed has no clipboard-history picker; paste the latest item.
+      "cmd-alt-shift-v": "editor::Paste", // Editor paste is always plain text.
+      "cmd-shift-c": "workspace::CopyPath",
+      "cmd-alt-shift-c": "workspace::CopyRelativePath", // Closest equivalent to Copy Reference.
+      "ctrl-alt-i": "editor::AutoIndent",
+      "cmd-alt-/": "editor::ToggleBlockComments",
+
+      // Caret and structural navigation
+      "ctrl-shift-up": "editor::GoToPreviousSymbol",
+      "ctrl-shift-down": "editor::GoToNextSymbol",
+      "cmd-alt-[": "editor::MoveToStartOfLargerSyntaxNode",
+      "cmd-alt-]": "editor::MoveToEndOfLargerSyntaxNode",
+      "cmd-alt-shift-[": "editor::SelectToStartOfLargerSyntaxNode",
+      "cmd-alt-shift-]": "editor::SelectToEndOfLargerSyntaxNode",
+      "cmd-shift-up": "editor::MoveLineUp",
+      "cmd-shift-down": "editor::MoveLineDown",
+      "alt-f1": "pane::RevealInProjectPanel",
+      "alt-shift-c": "git::OpenModifiedFiles", // Closest equivalent to Recent Changes.
+      "cmd-shift-backspace": "pane::GoBack", // Closest equivalent to Last Edit Location.
+
+      // Occurrences and multiple selections
+      "ctrl-cmd-g": "editor::SelectAllMatches",
+      "cmd-alt-up": "editor::GoToPreviousDocumentHighlight",
+      "cmd-alt-down": "editor::GoToNextDocumentHighlight",
+
+      // Folding. Zed cannot distinguish the numpad variants used by IDEA for
+      // Expand All and Collapse All.
+      "cmd-.": "editor::FoldSelectedRanges",
+      "cmd-alt--": "editor::FoldRecursive",
+      "cmd-alt-+": "editor::UnfoldRecursive",
+
+      // Documentation, usages, and bookmarks
+      "f1": "editor::Hover",
+      "cmd-f1": "editor::Hover",
+      "shift-f1": "editor::OpenDocs",
+      "cmd-u": "editor::GoToDefinition", // Closest equivalent to Go to Super Method.
+      "cmd-f7": "editor::FindAllReferences",
+      "cmd-shift-f7": "editor::FindAllReferences",
+      "f2": "editor::GoToDiagnostic",
+      "f3": "editor::ToggleBookmark",
+      "alt-f3": "editor::ToggleBookmarkWithLabel",
+      "cmd-f3": "editor::ViewBookmarks",
+      "cmd-alt-f3": "editor::ViewBookmarks",
+
+      // Debugging
+      "ctrl-alt-d": "debugger::Start",
+      "cmd-f2": "debugger::Stop",
+      "cmd-shift-f2": "debugger::Stop",
+      "cmd-shift-f8": [
+        "action::Sequence",
+        ["debug_panel::ToggleFocus", "debugger::FocusBreakpointList"],
+      ],
+      "cmd-f8": "editor::ToggleBreakpoint",
+      "cmd-alt-shift-f8": "editor::ToggleBreakpoint", // Zed has no temporary breakpoint action.
+      "alt-f9": "debugger::RunToCursor",
+      "cmd-alt-f9": "debugger::RunToCursor",
+      "alt-f8": "debugger::EvaluateSelectedText",
+      "cmd-alt-f8": "debugger::EvaluateSelectedText",
+    },
+  },
+  {
+    "context": "Editor && mode == full",
+    "use_key_equivalents": true,
+    "bindings": {
+      // Completion and generation
+      "ctrl-alt-space": "editor::ShowCompletions",
+      "cmd-shift-enter": "editor::NewlineBelow", // Closest equivalent to Complete Current Statement.
+      "cmd-n": "editor::ToggleCodeActions",
+      "cmd-shift-n": "workspace::NewFile", // Scratch File
+      "cmd-alt-t": "editor::ToggleCodeActions", // Surround With
+
+      // Refactorings exposed by the active language server appear as code actions.
+      "cmd-f6": "editor::ToggleCodeActions", // Change Signature
+      "cmd-alt-n": "editor::ToggleCodeActions", // Inline
+      "cmd-alt-m": "editor::ToggleCodeActions", // Extract Method
+      "cmd-alt-c": "editor::ToggleCodeActions", // Extract Constant
+      "cmd-alt-f": "editor::ToggleCodeActions", // Introduce Field
+      "cmd-alt-p": "editor::ToggleCodeActions", // Introduce Parameter
+      "cmd-alt-v": "editor::ToggleCodeActions", // Introduce Variable
+
+      // Run and inspect the task nearest to the caret.
+      "ctrl-shift-r": "editor::SpawnNearestTask",
+      "cmd-shift-t": "editor::SpawnNearestTask", // Go to Test / run nearest test
+      "alt-shift-i": "editor::RunFlycheck",
+      "cmd-alt-shift-i": "editor::RunFlycheck",
+    },
+  },
+  {
     "context": "ProjectPanel",
-  },
-  {
+    "use_key_equivalents": true,
     "bindings": {
-      "cmd-9": "git_panel::Close",
+      "cmd-1": "workspace::CloseActiveDock",
+      "shift-escape": "workspace::CloseActiveDock",
+      "ctrl-alt-n": "project_panel::NewDirectory",
+      "cmd-shift-c": "workspace::CopyPath",
+      "cmd-alt-shift-c": "workspace::CopyRelativePath",
+      "cmd-d": "project_panel::CompareMarkedFiles",
+      "f5": "project_panel::Duplicate", // IDEA's Refactor > Copy
     },
-    "context": "GitPanel",
   },
   {
+    "context": "GitPanel",
+    "bindings": {
+      "cmd-9": "workspace::CloseActiveDock",
+      "cmd-d": "git::Diff",
+      "shift-escape": "workspace::CloseActiveDock",
+    },
+  },
+  {
+    "context": "GitDiff > Editor",
+    "bindings": {
+      "f7": "editor::GoToHunk",
+      "shift-f7": "editor::GoToPreviousHunk",
+    },
+  },
+  {
+    // Vim consumes Escape in the commit editor, so explicitly return focus to
+    // the Git panel when Escape is pressed from normal mode.
+    "context": "(CommitEditor > Editor) && vim_mode == normal",
     "bindings": {
       "escape": "git_panel::ToggleFocus",
     },
-    "context": "(CommitEditor > Editor) && vim_mode==normal",
   },
   {
-    "bindings": {
-      "F2": "editor::GoToDiagnostic",
-      "alt-F12": "terminal_panel::ToggleFocus",
-    },
-    "context": "Editor",
-  },
-  {
-    "bindings": {
-      "alt-F12": "workspace::ToggleBottomDock",
-      "cmd-shift-[": "workspace::ActivatePreviousWindow",
-      "cmd-shift-]": "workspace::ActivateNextWindow",
-      "cmd-t": "workspace::NewTerminal",
-      // "escape": "terminal_panel::ToggleFocus",
-      "shift-escape": "workspace::ToggleBottomDock",
-    },
     "context": "Terminal",
+    "use_key_equivalents": true,
+    "bindings": {
+      "alt-f12": "workspace::CloseActiveDock",
+      "cmd-shift-[": "pane::ActivatePreviousItem",
+      "cmd-shift-]": "pane::ActivateNextItem",
+      "cmd-t": "workspace::NewTerminal",
+      "shift-escape": "workspace::CloseActiveDock",
+    },
   },
 ]
