@@ -7,6 +7,8 @@
   cfg = config.i4.zed;
   isDarwin = pkgs.stdenv.isDarwin;
   languageServers = with pkgs; [
+    nodejs # zed might need node and npm anyway
+
     bash-language-server
     basedpyright
     docker-language-server
