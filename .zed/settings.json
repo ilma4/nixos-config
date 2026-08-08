@@ -1,0 +1,19 @@
+{
+  "lsp": {
+    "nixd": {
+      "settings": {
+        "options": {
+          "home-manager": {
+            "expr": "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.quicksilver.options.home-manager.users.type.getSubOptions []"
+          },
+          "nix-darwin": {
+            "expr": "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.quicksilver.options"
+          },
+          "nixos": {
+            "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nas.options"
+          }
+        }
+      }
+    }
+  }
+}
