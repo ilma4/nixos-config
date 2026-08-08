@@ -1,12 +1,5 @@
 # Setup ntfy server to send notification
 
-
-
-# msi-modern
-
-- disable wifi, when ethernet is connected
-- enable, when disconnected
-
 # Can I bike to the office without rain?
 
 use openweather prescription map to check if I can go to the office without rain
