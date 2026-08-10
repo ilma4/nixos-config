@@ -13,6 +13,8 @@
       "cmd-9": "git_panel::ToggleFocus",
       "shift-f12": "workspace::CloseAllDocks", // Existing convenient alias; IntelliJ uses cmd-shift-f12.
       "cmd-n": "workspace::NewFile",
+      "cmd-o": "project_symbols::Toggle",
+      "ctrl-o": "project_symbols::Toggle",
       "cmd-s": "workspace::SaveAll",
       "cmd-;": "zed::OpenProjectSettings",
 
@@ -131,6 +133,8 @@
     "use_key_equivalents": true,
     "bindings": {
       // Completion and generation
+      "cmd-o": "project_symbols::Toggle",
+      "ctrl-o": "project_symbols::Toggle", // Intentionally overrides Vim's ctrl-o.
       "ctrl-alt-space": "editor::ShowCompletions",
       "cmd-shift-enter": "editor::NewlineBelow", // Closest equivalent to Complete Current Statement.
       "cmd-n": "editor::ToggleCodeActions",
