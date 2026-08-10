@@ -8,6 +8,7 @@
   in [
     inputs.home-manager.nixosModules.home-manager
     inputs.sops-nix.nixosModules.sops
+    inputs.disko.nixosModules.disko
 
     "${modules}/sops.nix"
 
@@ -16,6 +17,56 @@
     ./llama.nix
     ./disable-wifi-when-ethernet-connected.nix
   ];
+
+  disko.devices.disk.main = {
+    type = "disk";
+    device = "/dev/disk/by-path/pci-0000:01:00.0-nvme-1";
+    content = {
+      type = "gpt";
+      partitions = {
+        ESP = {
+          size = "1G";
+          type = "EF00";
+          content = {
+            type = "filesystem";
+            format = "vfat";
+            mountpoint = "/boot";
+            mountOptions = ["umask=0077"];
+          };
+        };
+        luks = {
+          # Leave the final 100 GiB of the SSD unpartitioned.
+          end = "-100G";
+          content = {
+            type = "luks";
+            name = "crypted";
+            settings.allowDiscards = true;
+            content = {
+              type = "btrfs";
+              extraArgs = ["-f"];
+              subvolumes = {
+                "@root" = {
+                  mountpoint = "/";
+                  mountOptions = ["compress=zstd"];
+                };
+                "@home" = {
+                  mountpoint = "/home";
+                  mountOptions = ["compress=zstd"];
+                };
+                "@nix" = {
+                  mountpoint = "/nix";
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+  };
 
   i4.swap.zswapEnable = true;
   i4.swap.swapEnable = true;

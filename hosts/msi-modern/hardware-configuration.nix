@@ -17,34 +17,6 @@
   boot.kernelModules = ["kvm-intel"];
   boot.extraModulePackages = [];
 
-  fileSystems."/" = {
-    device = "/dev/mapper/rootfs";
-    fsType = "btrfs";
-    options = ["subvol=@root" "compress=zstd"];
-  };
-
-  boot.initrd.luks.devices."rootfs".device = "/dev/disk/by-uuid/e4c7097d-c710-4f2b-9e2a-fee79acf77a5";
-
-  fileSystems."/home" = {
-    device = "/dev/mapper/rootfs";
-    fsType = "btrfs";
-    options = ["subvol=@home" "compress=zstd"];
-  };
-
-  fileSystems."/nix" = {
-    device = "/dev/mapper/rootfs";
-    fsType = "btrfs";
-    options = ["subvol=@nix" "noatime" "compress=zstd"];
-  };
-
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/68CD-58E9";
-    fsType = "vfat";
-    # Root-only so systemd-boot's random seed on the ESP isn't world-readable
-    # (otherwise bootctl warns it's "world accessible, a security hole").
-    options = ["umask=0077"];
-  };
-
   swapDevices = [];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
