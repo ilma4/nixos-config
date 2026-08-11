@@ -58,6 +58,7 @@ in {
       alejandra
       sops
       gh
+      nodejs
 
       ghc
       stack
