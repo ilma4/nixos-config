@@ -12,9 +12,13 @@ after-startup-command = [
   'exec-and-forget open /Applications/ActivityWatch.app',
 ]
 
-# Notify Sketchybar about workspace change
 exec-on-workspace-change = [
 ]
+
+# List of workspaces that should stay alive even when they contain no windows,
+# even when they are invisible.
+# need this to prevent second monitor from stealing workspaces (because it need at least one)
+persistent-workspaces = ["1", "20"]
 
 # Start AeroSpace at login
 start-at-login = true
