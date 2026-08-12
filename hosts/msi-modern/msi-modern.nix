@@ -68,8 +68,12 @@
     };
   };
 
-  i4.swap.zswapEnable = true;
-  i4.swap.swapEnable = true;
+  i4.swap = {
+    zswapEnable = true;
+    swapEnable = true;
+    swapSize = 48 * 1024; # 48 GiB
+  };
+  boot.zswap.maxPoolPercent = 50;
 
   i4.avahi.enable = true;
   i4.initrd-ssh.enable = true;
