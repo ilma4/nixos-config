@@ -15,6 +15,9 @@
     name = "i4-update-host";
     paths = [i4UpdateHostScript i4UpdateHostZshCompletion];
   };
+  gitBreakLockPackage = pkgs.writeShellScriptBin "git-break-lock" (
+    builtins.replaceStrings ["@lsof@"] ["${lib.getExe pkgs.lsof}"] (builtins.readFile ../scripts/git-break-lock.sh)
+  );
   codexWrapper = pkgs.writeShellScriptBin "codex" ''
     set -euo pipefail
 
@@ -131,6 +134,7 @@ in {
     programs.git = {
       settings = {
         alias = {
+          break-lock = "!${lib.getExe gitBreakLockPackage}";
           fetch-once = "!f() { git fetch origin +refs/heads/$1:refs/remotes/origin/$1; }; f";
           push-force-safe = "push --force-with-lease --force-if-includes";
           nuke = "!git reset --hard && git clean -fdx"; # clean everything
