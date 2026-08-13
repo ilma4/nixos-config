@@ -11,12 +11,6 @@
   # TODO: dedicated key
   containerOnlySshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4gqAl3ZqveXhNkOrOb6tv9EBbSfV3RlvvP778PzAyN ilma4@DE-UNIT-1832";
 
-  mkJunieCli = pkgs:
-    pkgs.writeShellScriptBin "junie" ''
-      set -euo pipefail
-      exec ${pkgs.nodejs}/bin/npx --yes @jetbrains/junie-cli "$@"
-    '';
-
   enterScript = pkgs.writeShellScriptBin "agent-dev-box-enter" ''
     set -euo pipefail
 
@@ -82,10 +76,7 @@ in {
         configure-ssh = false;
 
         home.packages = with pkgs; [
-          codex
-          claude-code
           opencode
-          (mkJunieCli pkgs)
         ];
       };
 

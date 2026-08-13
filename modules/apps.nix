@@ -39,7 +39,6 @@ in {
     vscode = {macName = "visual-studio-code";};
 
     # coding agents
-    claude-code = asLinuxPackage {macName = "claude-code@latest";};
     # codex = asLinuxPackage {};
     antigravity-cli = asLinuxPackage {};
 
@@ -70,7 +69,6 @@ in {
     macfuse = macOnlyCask {}; # FUSE for macOS, uses kernel extension
 
     displayplacer = macOnlyBrew {}; # cli to configure display resolution
-    junie = macOnlyBrew {};
     shottr = macOnlyCask {};
 
     "1password-cli" = macOnlyCask {};

@@ -18,36 +18,14 @@
   gitBreakLockPackage = pkgs.writeShellScriptBin "git-break-lock" (
     builtins.replaceStrings ["@lsof@"] ["${lib.getExe pkgs.lsof}"] (builtins.readFile ../scripts/git-break-lock.sh)
   );
-  codexWrapper = pkgs.writeShellScriptBin "codex" ''
-    set -euo pipefail
-
-    wrapper_path="''${BASH_SOURCE[0]}"
-    if [[ "$wrapper_path" != */* ]]; then
-      wrapper_path="$(command -v codex)"
-    fi
-
-    codex_path=
-    IFS=: read -r -a path_entries <<< "''${PATH-}"
-    for path_entry in "''${path_entries[@]}"; do
-      [[ -n "$path_entry" ]] || path_entry=.
-      candidate="$path_entry/codex"
-      if [[ -x "$candidate" ]] && ! [[ "$candidate" -ef "$wrapper_path" ]]; then
-        codex_path="$candidate"
-        break
-      fi
-    done
-
-    if [[ -z "$codex_path" ]]; then
-      echo "codex: could not find the real executable in PATH" >&2
-      exit 127
-    fi
-
-    exec "$codex_path" --yolo "$@"
-  '';
 in {
+  imports = [./coding-agents.nix];
+
   options.i4.dev.enable = lib.mkEnableOption "development tools";
 
   config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
+    i4.coding-agents.enable = lib.mkDefault true;
+
     # Home Assistant MCP, scoped to ~/.config/ha-mcp / the ha-pi command. See home/ha-mcp.nix.
     i4.ha-mcp.enable = lib.mkDefault true;
 
@@ -82,19 +60,13 @@ in {
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
       i4UpdateHost
-      (lib.mkIf pkgs.stdenv.isDarwin codexWrapper)
-      (lib.mkIf pkgs.stdenv.isDarwin (pkgs.writeShellScriptBin "claude" ''
-        set -euo pipefail
-        exec /opt/homebrew/bin/claude --dangerously-skip-permissions "$@"
-      ''))
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
     ];
 
     home.shellAliases = lib.mkIf pkgs.stdenv.isDarwin {
-      # Delegate to the PATH-searching wrapper above.
-      codex = "${codexWrapper}/bin/codex";
-      claude = "/opt/homebrew/bin/claude --dangerously-skip-permissions";
+      codex = "$HOME/.local/bin/codex --yolo";
+      claude = "$HOME/.local/bin/claude --dangerously-skip-permissions";
     };
 
     programs.zsh.shellAliases = {
