@@ -17,6 +17,7 @@ in {
     ../../modules/home-manager.nix
     ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
+    ./clean-toolbox-download-cache.nix
     ./backup.nix
     ./mlx.nix
     #./llama.nix
