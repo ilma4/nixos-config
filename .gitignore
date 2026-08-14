@@ -10,6 +10,7 @@ tmp/
 
 __pycache__/
 *.py[cod]
+node_modules/
 
 # Failed utils/deploy-all.sh output
 /*-update.log

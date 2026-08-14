@@ -68,9 +68,13 @@
     map translateRepo allRepos
   ));
 
-  backupScript = pkgs.writers.writeHaskellBin "i4-backup" {
-    libraries = with pkgs.haskellPackages; [aeson bytestring containers process time_1_15];
-  } (builtins.readFile ./backup.hs);
+  backupSource = pkgs.writeText "i4-backup.ts" (builtins.readFile ./backup.ts);
+
+  backupScript = pkgs.writeShellScriptBin "i4-backup" ''
+    set -euo pipefail
+
+    exec ${escapeShellArgs [(getExe pkgs.nodejs_24) backupSource]} "$@"
+  '';
 
   mkBackupScript = name: command: configFile:
     pkgs.writeShellScript name ''
