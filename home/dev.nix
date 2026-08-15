@@ -42,9 +42,6 @@ in {
       nodejs
       bun
 
-      ghc
-      stack
-
       uv
       # mcp-nixos # build failure, don't use like this anyway
       pkgs-unstable.ha-mcp
@@ -52,7 +49,6 @@ in {
       android-tools # adb
 
       # tex-fmt # latex formatting
-      haskell-language-server
 
       (pkgs.rust-bin.stable.latest.default.override {
         extensions = ["rust-src"];

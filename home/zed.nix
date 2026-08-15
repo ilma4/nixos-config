@@ -12,7 +12,6 @@
     bash-language-server
     basedpyright
     docker-language-server
-    haskell-language-server
     # kotlin-lsp # TODO uncomment when added to nixpkgs
     # kotlin-language-server # do not add, obsolete
     lemminx
