@@ -230,21 +230,8 @@
       in {
         default = pkgs.mkShell {
           packages = [
-            (pkgs.haskellPackages.ghcWithPackages (p:
-              with p; [
-                aeson
-                yaml
-                bytestring
-                containers
-                process
-                extra
-                filepath
-                http-client
-                http-conduit
-              ]))
-            pkgs.haskellPackages.hie-bios
-            pkgs.haskell-language-server
-
+            pkgs.bun
+            pkgs.typescript-go
             pkgs.mcp-nixos
           ];
 

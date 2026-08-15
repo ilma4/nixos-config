@@ -40,6 +40,7 @@ in {
       sops
       gh
       nodejs
+      bun
 
       ghc
       stack

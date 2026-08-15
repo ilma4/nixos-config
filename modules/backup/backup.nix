@@ -73,7 +73,7 @@
   backupScript = pkgs.writeShellScriptBin "i4-backup" ''
     set -euo pipefail
 
-    exec ${escapeShellArgs [(getExe pkgs.nodejs_24) backupSource]} "$@"
+    exec ${escapeShellArgs [(getExe pkgs.bun) backupSource]} "$@"
   '';
 
   mkBackupScript = name: command: configFile:
