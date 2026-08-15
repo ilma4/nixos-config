@@ -172,7 +172,7 @@ in {
     ];
 
     masApps = {
-      Xcode = 497799835;
+      # Xcode = 497799835;
       Bitwarden = 1352778147;
       WireGuard = 1451685025;
       V2BOX = 6446814690; # VLESS, Trojan, Shadowsocks VPN client
