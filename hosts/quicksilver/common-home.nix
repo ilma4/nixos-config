@@ -19,7 +19,7 @@ in {
     i4.neovim.enable = true;
 
     home.packages = with pkgs; [
-      qemu
+      # qemu
 
       (pkgs.writeShellScriptBin "bazel" ''
         set -euo pipefail
