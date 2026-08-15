@@ -1,10 +1,27 @@
 {
   "languages": {
     "TypeScript": {
-      "language_servers": ["vtsls", "eslint", "!tailwindcss-language-server"]
+      "language_servers": [
+        "typescript-language-server",
+        "eslint",
+        "!vtsls", // enable for TS6 support
+        "!tailwindcss-language-server"
+      ]
     }
   },
   "lsp": {
+    "typescript-language-server": {
+      "binary": {
+        "path": "/usr/bin/env",
+        "arguments": ["tsc", "--lsp", "--stdio"]
+      }
+    },
+    "eslint": {
+      "binary": {
+        "path": "/usr/bin/env",
+        "arguments": ["vscode-eslint-language-server", "--stdio"]
+      }
+    },
     "nixd": {
       "settings": {
         "options": {
