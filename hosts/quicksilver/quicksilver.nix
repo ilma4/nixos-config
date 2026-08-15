@@ -37,6 +37,13 @@ in {
       set -euo pipefail
       echo '${config.system.configurationRevision}'
     '')
+    (pkgs.writeShellScriptBin "nix-collect-all-garbage" ''
+      set -euo pipefail
+
+      sudo nix-collect-garbage -d
+      nix-collect-garbage -d
+      sudo -u malakhov nix-collect-garbage -d
+    '')
   ];
   /*
   environment.etc."hosts".text = ''
