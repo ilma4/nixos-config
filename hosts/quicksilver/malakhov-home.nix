@@ -1,4 +1,43 @@
-{pkgs, ...}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  jetbrainsMaintenance = pkgs.writeShellScriptBin "i4-jetbrains-maintenance" ''
+    set -euo pipefail
+
+    export HOME=${lib.escapeShellArg config.home.homeDirectory}
+    export PATH=${lib.escapeShellArg "${config.home.profileDirectory}/bin:/usr/bin:/bin:/usr/sbin:/sbin"}
+
+    jetbrains_dir="$HOME/JetBrains"
+
+    if [[ ! -d "$jetbrains_dir" ]]; then
+      echo "Skipping JetBrains maintenance: $jetbrains_dir does not exist"
+      exit 0
+    fi
+
+    printf '\n[%s] Deduplicating %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$jetbrains_dir"
+    ${lib.getExe pkgs.jdupes} \
+      --dedupe \
+      --one-file-system \
+      --permissions \
+      --recurse \
+      "$jetbrains_dir"
+
+    git_status_failed=0
+    for directory in "$jetbrains_dir"/*; do
+      [[ -d "$directory" ]] || continue
+
+      printf '\n[%s] git status: %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$directory"
+      if ! ${lib.getExe pkgs.git} -C "$directory" status; then
+        git_status_failed=1
+      fi
+    done
+
+    exit "$git_status_failed"
+  '';
+in {
   imports = [
     ./common-home.nix
     ../../modules/work.nix
@@ -30,6 +69,21 @@
         RunAtLoad = true;
         AbandonProcessGroup = true;
         WorkingDirectory = "/Users/malakhov";
+      };
+    };
+
+    launchd.agents.jetbrains-maintenance = {
+      enable = true;
+      config = {
+        ProgramArguments = [(lib.getExe jetbrainsMaintenance)];
+        StartCalendarInterval = [
+          {
+            Hour = 4;
+            Minute = 0;
+          }
+        ];
+        StandardOutPath = "/tmp/jetbrains-maintenance-malakhov.log";
+        StandardErrorPath = "/tmp/jetbrains-maintenance-malakhov.err.log";
       };
     };
 
