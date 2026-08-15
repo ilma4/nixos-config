@@ -1,4 +1,9 @@
 {
+  "languages": {
+    "TypeScript": {
+      "language_servers": ["vtsls", "eslint", "!tailwindcss-language-server"]
+    }
+  },
   "lsp": {
     "nixd": {
       "settings": {
