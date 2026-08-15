@@ -29,7 +29,15 @@
   # so macOS TCC attributes access to ResticBackup.app.
   backupWrapper =
     pkgs.writers.writeRustBin backupExecutableName {
-      rustcArgs = ["--edition=2021" "-C" "opt-level=2"];
+      rustcArgs = [
+        "--edition=2021"
+        "-C"
+        "opt-level=2"
+        # writeRustBin links through GCC, whose Darwin specs otherwise add
+        # unused GCC library RPATHs that keep the full compiler in the closure.
+        "-C"
+        "link-arg=-nodefaultrpaths"
+      ];
     }
     ''
       use std::env;
