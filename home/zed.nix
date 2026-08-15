@@ -13,7 +13,7 @@
     basedpyright
     docker-language-server
     # kotlin-lsp # TODO uncomment when added to nixpkgs
-    # kotlin-language-server # do not add, obsolete
+    # kotlin-language-server # do not add, obsolete. Use `kotlin-lsp` instead
     lemminx
     markdown-oxide
     nil
