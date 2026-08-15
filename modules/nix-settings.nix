@@ -12,7 +12,7 @@ in {
   nix =
     {
       package = lib.mkDefault pkgs.nix;
-      gc.automatic = lib.mkDefault true;
+      # gc.automatic = lib.mkDefault true;
       settings = {
         # allowed-users = [ "ilma4" ];
         # sandbox = true; # enabled on linux by default. Still broken on nix-darwin 25.11
