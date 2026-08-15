@@ -71,6 +71,8 @@ in {
     displayplacer = macOnlyBrew {}; # cli to configure display resolution
     shottr = macOnlyCask {};
 
+    kde-connect = macOnlyCask {};
+
     "1password-cli" = macOnlyCask {};
     secretive = macOnlyCask {};
     # container = macOnlyBrew {}; # docker alternative from Apple. Runs each container in separate vm
