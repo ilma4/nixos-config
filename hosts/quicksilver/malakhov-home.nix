@@ -101,6 +101,8 @@ in {
       blueutil # bluetooth CLI, used by the mic Raycast scripts
       terminal-notifier # auto-dismissing notifications for the mic Raycast scripts
       switchaudio-osx # SwitchAudioSource, used by the mic Raycast scripts
+
+      jetbrainsMaintenance  # clean caches, dedupe files
     ];
 
     home.file = {
