@@ -8,7 +8,7 @@
       }
     ];
     brews = [
-      "jundot/omlx/omlx"
+      # "jundot/omlx/omlx"
     ];
   };
 }
