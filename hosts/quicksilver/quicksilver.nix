@@ -150,10 +150,6 @@ in {
     # `jundot/omlx` is declared separately in mlx.nix.
     taps = [
       {
-        name = "jetbrains/junie";
-        trusted = true;
-      }
-      {
         name = "jetbrains/utils";
         trusted = true;
       }
