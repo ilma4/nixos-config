@@ -25,7 +25,6 @@
     texlab
     typescript-go
     vscode-langservers-extracted
-    vtsls
     yaml-language-server
   ];
 in {
