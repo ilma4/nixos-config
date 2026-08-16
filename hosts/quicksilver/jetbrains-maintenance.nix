@@ -30,6 +30,8 @@
       --recurse \
       "$jetbrains_dir"
 
+    printf '\n[%s] Done deduplicating %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$jetbrains_dir"
+
     git_status_failed=0
     for directory in "$jetbrains_dir"/*; do
       [[ -d "$directory" ]] || continue
@@ -39,6 +41,8 @@
         git_status_failed=1
       fi
     done
+
+    printf '\n[%s] Git caches warmed %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$jetbrains_dir"
 
     exit "$git_status_failed"
   '';
