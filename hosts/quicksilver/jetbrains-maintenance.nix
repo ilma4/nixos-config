@@ -22,15 +22,6 @@
     printf '\n[%s] Cleaning JetBrains caches\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')"
     "$jetbrains_dir/clean-caches.sh"
 
-    printf '\n[%s] Deduplicating %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$jetbrains_dir"
-    ${lib.getExe pkgs.jdupes} \
-      --dedupe \
-      --one-file-system \
-      --permissions \
-      --recurse \
-      "$jetbrains_dir"
-
-    printf '\n[%s] Done deduplicating %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$jetbrains_dir"
 
     git_status_failed=0
     for directory in "$jetbrains_dir"/*; do
