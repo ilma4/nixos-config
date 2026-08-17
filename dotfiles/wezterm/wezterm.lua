@@ -16,6 +16,7 @@ config.font_size = 13.0
 config.color_scheme = color_scheme_for_appearance(wezterm.gui.get_appearance())
 
 config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE' -- use header, as tabbar
+config.window_close_confirmation = 'NeverPrompt'
 
 if wezterm.target_triple:find('apple%-darwin') then
   config.integrated_title_button_alignment = 'Left'
