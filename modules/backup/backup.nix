@@ -38,7 +38,8 @@
       extraResticArgs = mkOption {
         type = types.listOf types.str;
         default = [];
-        description = "Extra global restic arguments added before the command.";
+        apply = args: ["--compression" "max"] ++ args;
+        description = "Extra global restic arguments added before the command. Compression defaults to `max`; a later `--compression` argument overrides it.";
       };
     };
   };
