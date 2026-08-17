@@ -57,8 +57,11 @@ git spush
 sudo -v
 
 commands=()
-for job in "${jobs[@]}"; do
-    commands+=("utils/deploy-all.sh --run-job $job")
+for index in "${!jobs[@]}"; do
+    job="${jobs[$index]}"
+    # Temporary hack because the SSH agent cannot handle simultaneous requests.
+    delay=$((index * 10))
+    commands+=("sleep $delay && utils/deploy-all.sh --run-job $job")
 done
 
 mprocs \
