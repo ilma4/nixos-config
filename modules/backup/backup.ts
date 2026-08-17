@@ -105,3 +105,5 @@ function main(): void {
     default: throw new Error(`Unknown command: ${command}`);
   }
 }
+
+main();
