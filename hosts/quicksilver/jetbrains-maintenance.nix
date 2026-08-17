@@ -19,8 +19,8 @@
       exit 0
     fi
 
-    printf '\n[%s] Cleaning JetBrains caches\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')"
-    "$jetbrains_dir/clean-caches.sh"
+    # printf '\n[%s] Cleaning JetBrains caches\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')"
+    # "$jetbrains_dir/clean-caches.sh"
 
 
     git_status_failed=0
