@@ -118,17 +118,7 @@ outer.right = 0
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#exec-and-forget
 # You can uncomment the following lines to open up terminal with alt + enter shortcut (like in i3)
-alt-cmd-enter = '''exec-and-forget osascript -e '
-tell application "iTerm"
-  create window with default profile
-end tell'
-'''
-#alt-enter = '''exec-and-forget osascript -e '
-#tell application "iTerm2"
-#    do script
-#    activate
-#end tell'
-#'''
+alt-cmd-enter = 'exec-and-forget open -na WezTerm'
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#layout
 alt-slash = 'layout tiles horizontal vertical'
