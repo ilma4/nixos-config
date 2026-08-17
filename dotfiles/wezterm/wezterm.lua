@@ -4,10 +4,11 @@ local config = wezterm.config_builder()
 
 local function color_scheme_for_appearance(appearance)
   if appearance:find("Dark") then
-    return "Builtin Solarized Dark"
+    return "Vs Code Dark+ (Gogh)"
+    -- return "Builtin Solarized Dark"
   end
 
-  return "Builtin Solarized Light"
+  return "VSCodeLight+ (Gogh)"
 end
 
 config.font = wezterm.font("JetBrains Mono")
