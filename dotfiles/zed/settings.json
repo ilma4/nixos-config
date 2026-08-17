@@ -11,6 +11,7 @@
     "mode": "eager",
   },
   "agent": {
+    "dock": "right",
     "sidebar_side": "right",
     "notify_when_agent_waiting": "all_screens",
     "default_profile": "write",
