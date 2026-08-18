@@ -60,7 +60,7 @@ commands=()
 for index in "${!jobs[@]}"; do
     job="${jobs[$index]}"
     # Temporary hack because the SSH agent cannot handle simultaneous requests.
-    delay=$((index * 10))
+    delay=$((index * 3))
     commands+=("sleep $delay && utils/deploy-all.sh --run-job $job")
 done
 
