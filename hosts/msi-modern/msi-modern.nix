@@ -110,6 +110,7 @@
 
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
+  users.users.ilma4.extraGroups = ["networkmanager"];
 
   # Select internationalisation properties.
   # i18n.defaultLocale = "en_US.UTF-8";
