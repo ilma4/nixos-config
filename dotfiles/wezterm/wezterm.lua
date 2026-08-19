@@ -105,6 +105,10 @@ config.tab_bar_style = {
 
 config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE' -- use header, as tabbar
 config.window_close_confirmation = 'NeverPrompt'
+config.keys = {
+  { key = 'w', mods = 'CMD', action = wezterm.action.CloseCurrentTab({ confirm = false }) },
+  { key = 'w', mods = 'CTRL|SHIFT', action = wezterm.action.CloseCurrentTab({ confirm = false }) },
+}
 config.enable_scroll_bar = true
 
 if wezterm.target_triple:find('apple%-darwin') then
