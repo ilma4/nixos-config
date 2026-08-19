@@ -1,6 +1,7 @@
 local wezterm = require("wezterm")
 
 local config = wezterm.config_builder()
+config.enable_kitty_keyboard = true
 
 local function color_scheme_for_appearance(appearance)
   if appearance:find("Dark") then

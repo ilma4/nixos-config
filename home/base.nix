@@ -713,9 +713,11 @@ in {
         set -g extended-keys on
         set -s extended-keys-format csi-u
 
-        # Force tmux clients to use UTF-8 output (the package wrapper adds -u)
-        # and enable 24-bit/true-color passthrough for capable terminals.
-        set -as terminal-features ",*:RGB"
+        # Force tmux clients to use UTF-8 output (the package wrapper adds -u),
+        # enable 24-bit color, and tell tmux that WezTerm's xterm-compatible
+        # client supports extended keys. Without extkeys, Shift+Enter reaches
+        # tmux as the same carriage return as Enter.
+        set -as terminal-features ",*:RGB,xterm*:extkeys"
       '';
     };
 
