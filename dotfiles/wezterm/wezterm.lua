@@ -104,6 +104,7 @@ config.tab_bar_style = {
 
 config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE' -- use header, as tabbar
 config.window_close_confirmation = 'NeverPrompt'
+config.enable_scroll_bar = true
 
 if wezterm.target_triple:find('apple%-darwin') then
   config.integrated_title_button_alignment = 'Left'
