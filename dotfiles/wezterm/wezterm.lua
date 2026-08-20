@@ -1,6 +1,7 @@
 local wezterm = require("wezterm")
 
 local config = wezterm.config_builder()
+config.enable_csi_u_key_encoding = false
 config.enable_kitty_keyboard = true
 
 local function color_scheme_for_appearance(appearance)
