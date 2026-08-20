@@ -106,6 +106,7 @@ in {
           break-lock = "!${lib.getExe gitBreakLockPackage}";
           fetch-once = "!f() { git fetch origin +refs/heads/$1:refs/remotes/origin/$1; }; f";
           push-force-safe = "push --force-with-lease --force-if-includes";
+          flush-status-cache = "!git -c core.untrackedCache=false status; git status";
           nuke = "!git reset --hard && git clean -fdx"; # clean everything
         };
       };
