@@ -501,16 +501,25 @@ in {
             }
           }
 
-          # Report the current directory's name as the terminal title. A precmd
-          # hook re-emits it before every prompt so it tracks `cd`. The OSC
-          # `\e]0;…\a` escape sets both the icon name and window/tab title, which
-          # terminal emulators show as the session name and tmux uses as the
-          # window name. `print -P` does the prompt expansion: %1~ is the last
-          # path component, keeping ~ / ~user named-directory substitution (so
-          # $HOME shows as `~`). All builtins, so no startup or per-prompt fork.
+          # Report the running command as the terminal title, falling back to
+          # the current directory's name whenever zsh is waiting at a prompt.
+          # preexec's second argument is the alias-expanded command; tokenize it
+          # with zsh's `(z)` flag and show only the executable's basename, which
+          # avoids leaking command arguments into the title. The OSC `\e]0;…\a`
+          # escape sets both the icon name and window/tab title, which terminal
+          # emulators show as the session name and tmux uses as the window name.
+          # `print -P` expands %1~ to the last path component while preserving ~
+          # / ~user named-directory substitution. Everything here is a builtin.
           autoload -Uz add-zsh-hook
           function i4-set-term-title { print -Pn '\e]0;%1~\a' }
+          function i4-set-term-title-command {
+            local -a i4_command_words
+            i4_command_words=("''${(@z)2}")
+            [[ -n ''${i4_command_words[1]-} ]] &&
+              print -rn -- $'\e]0;'"''${i4_command_words[1]:t}"$'\a'
+          }
           add-zsh-hook precmd i4-set-term-title
+          add-zsh-hook preexec i4-set-term-title-command
 
 
           ## Arrow up/down behavior like in oh-my-zsh (search by prefix)
