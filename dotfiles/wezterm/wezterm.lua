@@ -6,11 +6,9 @@ config.enable_kitty_keyboard = true
 
 local function color_scheme_for_appearance(appearance)
   if appearance:find("Dark") then
-    return "Vs Code Dark+ (Gogh)"
-    -- return "Builtin Solarized Dark"
+    return "iTerm2 Smoooooth"
   end
-
-  return "VSCodeLight+ (Gogh)"
+    return "iTerm2 Light Background"
 end
 
 local function header_theme_for_appearance(appearance)
