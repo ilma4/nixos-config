@@ -16,6 +16,7 @@
     ./hardware-configuration.nix
     ./llama.nix
     ./disable-wifi-when-ethernet-connected.nix
+    ./adb.nix
   ];
 
   disko.devices.disk.main = {
