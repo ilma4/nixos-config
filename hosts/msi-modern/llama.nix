@@ -28,6 +28,8 @@ in {
       "--n-gpu-layers"
       "999"
       "--no-ui"
+      "--sleep-idle-seconds"
+      "300"
       "--temp"
       "1.0"
       "--top-p"
