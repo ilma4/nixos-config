@@ -80,7 +80,7 @@ in {
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
     # iterm2 = macOnlyCask {}; # managed by corporate software
-    wezterm = macOnlyCask { macName = "wezterm@nightly";};
+    # wezterm = macOnlyCask { macName = "wezterm@nightly";};
     handy = asLinuxPackage {package = pkgs-unstable.handy;}; # speech-to-text
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software

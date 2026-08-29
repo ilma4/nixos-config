@@ -47,7 +47,7 @@ in {
 
     home.file = {
       ".config/aerospace/aerospace.toml".source = ../../dotfiles/aerospace.toml;
-      ".config/wezterm".source = ../../dotfiles/wezterm;
+      # ".config/wezterm".source = ../../dotfiles/wezterm;
     };
   };
 }
