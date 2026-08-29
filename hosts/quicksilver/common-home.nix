@@ -9,6 +9,7 @@ in {
   imports = [
     ../../home/base.nix
     ./darwin-defaults-home.nix
+    ./iterm2.nix
     ./pi.nix
   ];
 
