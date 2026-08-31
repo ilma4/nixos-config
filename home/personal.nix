@@ -42,6 +42,10 @@ in {
         HostName = "192.168.1.110";
         User = "root";
       };
+      "bazzite" = {
+        HostName = "192.168.1.101";
+        User = "ilma4";
+      };
     };
   };
 }
