@@ -625,7 +625,7 @@ in {
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
         lib.mkIf (stdenv.isLinux && config.configure-ssh) # macOS works fine with ssh agent
-        
+
         ''
           if [ -n "''${SSH_AUTH_SOCK:-}" ] && [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
               mkdir -p ${HOME}/.ssh
@@ -721,6 +721,9 @@ in {
         # Enable extended keys in csi-u format
         set -g extended-keys on
         set -s extended-keys-format csi-u
+
+        set -g mouse on # enable mouse
+        set -g history-limit 100000 # increase history
 
         # Force tmux clients to use UTF-8 output (the package wrapper adds -u),
         # enable 24-bit color, and tell tmux that WezTerm's xterm-compatible
