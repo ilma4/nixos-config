@@ -92,7 +92,7 @@ in {
     marta = macOnlyCask {}; # file manager
     # google-drive = macOnlyCask {};
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
-    vial = macOnlyCask {}; # configure my split keyboard
+    # vial = macOnlyCask {}; # configure my split keyboard
     skim = macOnlyCask {}; # pdf viewer
     eqmac = macOnlyCask {}; # equalizer for macos
     linearmouse = macOnlyCask {};
