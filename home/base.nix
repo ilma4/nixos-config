@@ -585,6 +585,8 @@ in {
           # show an interactive menu that highlights the currently selected item.
           zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
           zstyle ':completion:*' menu select
+          # Shift+Tab sends the terminal's back-tab sequence.
+          bindkey -M viins '^[[Z' reverse-menu-complete
           # Case-insensitive matching: lowercase input matches both cases, so
           # `foo<tab>` completes `Foo`/`FOO` too. Uppercase input stays exact.
           zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
