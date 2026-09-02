@@ -43,6 +43,8 @@ in {
       bun
 
       uv
+      pkgs-unstable.jujutsu
+
       # mcp-nixos # build failure, don't use like this anyway
       # pkgs-unstable.ha-mcp
 
