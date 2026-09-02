@@ -93,6 +93,8 @@ in {
       ".ideavimrc".source = ../dotfiles/ideavimrc;
     };
 
+    xdg.configFile."jj/config.toml".source = ../dotfiles/jj/config.toml;
+
     home.sessionPath =
       ["$HOME/.local/bin"]
       ++ (
