@@ -23,13 +23,16 @@
     name = ${builtins.toJSON jjUserName}
     email = ${builtins.toJSON jjUserEmail}
   '';
+  # Keep the SSH signing block in work profiles as comments until the
+  # work-specific signing key is supplied. Personal profiles keep it active.
+  jjSigningConfigPrefix = lib.optionalString (!config.i4.personal.enable) "# ";
   jjSigningConfig = ''
-    [signing]
-    backend = "ssh"
-    behavior = "drop"
-    key = ${builtins.toJSON jjSigningKey}
-    backends.ssh.program = "${lib.getExe' pkgs.openssh "ssh-keygen"}"
-    backends.ssh.allowed-signers = "${jjAllowedSignersFile}"
+    ${jjSigningConfigPrefix}[signing]
+    ${jjSigningConfigPrefix}backend = "ssh"
+    ${jjSigningConfigPrefix}behavior = "drop"
+    ${jjSigningConfigPrefix}key = ${builtins.toJSON jjSigningKey}
+    ${jjSigningConfigPrefix}backends.ssh.program = "${lib.getExe' pkgs.openssh "ssh-keygen"}"
+    ${jjSigningConfigPrefix}backends.ssh.allowed-signers = "${jjAllowedSignersFile}"
   '';
   i4UpdateHostScript = pkgs.writeShellScriptBin "i4-update-host" (builtins.readFile ../scripts/i4-update-host.sh);
   i4UpdateHostZshCompletion = pkgs.writeTextFile {

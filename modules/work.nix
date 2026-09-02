@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: {
   options = {
@@ -11,6 +12,16 @@
   };
 
   config = lib.mkIf config.i4.work.enable {
+    home.packages = [pkgs.watchman];
+
+    xdg.configFile."jj/conf.d/30-fsmonitor.toml".text = ''
+      [fsmonitor]
+      backend = "watchman"
+
+      [fsmonitor.watchman]
+      register-snapshot-trigger = true
+    '';
+
     # Use the 1Password SSH agent by default on the work account.
     programs.ssh.settings = {
       "*" = {
