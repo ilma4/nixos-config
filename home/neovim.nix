@@ -16,8 +16,8 @@ in {
   config = lib.mkIf (config ? home) {
     programs.neovim = {
       enable = true;
-      withPython3 = true;
-      withRuby = true;
+      withPython3 = false;
+      withRuby = false;
       initLua = baseExtraConfigLua;
       plugins = basePlugins;
     };
