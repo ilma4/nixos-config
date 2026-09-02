@@ -1,10 +1,36 @@
 {
   config,
+  constants,
   lib,
   pkgs,
   pkgs-unstable,
   ...
 }: let
+  gitUser =
+    lib.attrByPath ["programs" "git" "settings" "user"] {
+      name = "Ilia Malakhov";
+      email = "ilya.malakhov4@gmail.com";
+    }
+    config;
+  jjUserName = lib.attrByPath ["name"] "Ilia Malakhov" gitUser;
+  jjUserEmail = lib.attrByPath ["email"] "ilya.malakhov4@gmail.com" gitUser;
+  jjSigningKey = builtins.head constants.github-pub-keys;
+  jjAllowedSignersFile = pkgs.writeText "jj-allowed-signers" (
+    lib.concatMapStrings (key: "${jjUserEmail} ${key}\n") constants.github-pub-keys
+  );
+  jjProfileConfig = ''
+    [user]
+    name = ${builtins.toJSON jjUserName}
+    email = ${builtins.toJSON jjUserEmail}
+  '';
+  jjSigningConfig = ''
+    [signing]
+    backend = "ssh"
+    behavior = "drop"
+    key = ${builtins.toJSON jjSigningKey}
+    backends.ssh.program = "${lib.getExe' pkgs.openssh "ssh-keygen"}"
+    backends.ssh.allowed-signers = "${jjAllowedSignersFile}"
+  '';
   i4UpdateHostScript = pkgs.writeShellScriptBin "i4-update-host" (builtins.readFile ../scripts/i4-update-host.sh);
   i4UpdateHostZshCompletion = pkgs.writeTextFile {
     name = "i4-update-host-zsh-completion";
@@ -94,6 +120,8 @@ in {
     };
 
     xdg.configFile."jj/config.toml".source = ../dotfiles/jj/config.toml;
+    xdg.configFile."jj/conf.d/10-profile.toml".text = jjProfileConfig;
+    xdg.configFile."jj/conf.d/20-signing.toml".text = jjSigningConfig;
 
     home.sessionPath =
       ["$HOME/.local/bin"]
