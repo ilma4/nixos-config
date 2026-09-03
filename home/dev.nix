@@ -115,7 +115,7 @@ in {
     programs.direnv = {
       enable = true;
       enableBashIntegration = true;
-      # zsh hook is precomputed into direnvHookSnippet (home/base.nix) and
+      # zsh hook is precomputed into direnvHookSnippet (home/zsh.nix) and
       # sourced from initContent there, so Home Manager must not also emit its
       # own `eval "$(direnv hook zsh)"` (that forks direnv on every zsh startup).
       # Bash integration is left enabled and untouched.
