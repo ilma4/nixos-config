@@ -53,7 +53,8 @@ if [[ -n "$(git status --porcelain)" ]]; then
     exit 1
 fi
 
-git spush
+jj bookmark move main --to @-
+jj git push
 sudo -v
 
 commands=()
