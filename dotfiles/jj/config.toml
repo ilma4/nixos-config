@@ -13,6 +13,9 @@ sign-on-push = true
 # Match Git's core.autocrlf = input.
 eol-conversion = "input"
 
+[revsets]
+bookmark-advance-to = "@-"
+
 [aliases]
 # Fetch one branch from the default GitHub remote.
 fetch-once = ["git", "fetch", "--remote", "origin", "--branch"]
