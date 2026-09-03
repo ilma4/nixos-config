@@ -10,6 +10,7 @@
   baseExtraConfigLua = ''
     vim.g.suda_smart_edit = 1
     vim.opt.number = true
+    vim.g.clipboard = "osc52"
     vim.opt.clipboard = "unnamedplus"
 
     local function is_suda_buffer(bufnr)

@@ -723,6 +723,10 @@ in {
         # client supports extended keys. Without extkeys, Shift+Enter reaches
         # tmux as the same carriage return as Enter.
         set -as terminal-features ",*:RGB,xterm*:extkeys"
+
+        # Forward OSC 52 clipboard sequences from applications through tmux.
+        set -s set-clipboard on
+        set -as terminal-features ',xterm-256color:clipboard'
       '';
     };
 
