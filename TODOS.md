@@ -68,9 +68,3 @@ Define more constants to simplify secrets/path/locations etc. management
 - comments
 - folding
 
-# Always new versions of apps
-
-- codex (check release versions on github, and use flake from their repo)
-- claude-code
-- junie
-- container (run docker containers on mac from Apple)
