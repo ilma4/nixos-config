@@ -238,6 +238,7 @@ in {
     home.stateVersion = "24.05"; # Please read the comment before changing.
 
     home.packages = with pkgs; [
+      osc
       restic
       rclone
       rsync
@@ -528,10 +529,11 @@ in {
           [[ -n "''${terminfo[kcud1]}" ]] && bindkey -M viins "''${terminfo[kcud1]}" down-line-or-beginning-search
 
 
-          # Integrate vi-mode yank/put with the system clipboard. Pick the
-          # first available clipboard tool; if none exists (e.g. headless
-          # server) the widgets are left unbound and vi falls back to its
-          # internal register.
+          # Integrate vi-mode yank/put with the system clipboard. On Linux, SSH
+          # sessions always use OSC 52 so clipboard traffic reaches the local
+          # terminal; local sessions prefer a desktop clipboard tool and fall
+          # back to OSC 52 for headless environments. macOS always uses its
+          # native pbcopy/pbpaste tools.
           ${
             if isDarwin
             then ''
@@ -543,12 +545,18 @@ in {
               function _clip_paste { pbpaste }
             ''
             else ''
-              if (( $+commands[wl-copy] )); then
+              if [[ -n $SSH_CONNECTION || -n $SSH_CLIENT || -n $SSH_TTY ]]; then
+                function _clip_copy { osc copy }
+                function _clip_paste { osc paste }
+              elif (( $+commands[wl-copy] )); then
                 function _clip_copy { wl-copy }
                 function _clip_paste { wl-paste --no-newline }
               elif (( $+commands[xsel] )); then
                 function _clip_copy { xsel --clipboard --input }
                 function _clip_paste { xsel --clipboard --output }
+              elif (( $+commands[osc] )); then
+                function _clip_copy { osc copy }
+                function _clip_paste { osc paste }
               fi
             ''
           }
@@ -726,6 +734,7 @@ in {
 
         # Forward OSC 52 clipboard sequences from applications through tmux.
         set -s set-clipboard on
+        set -s allow-passthrough on
         set -as terminal-features ',xterm-256color:clipboard'
       '';
     };
