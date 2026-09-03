@@ -143,9 +143,6 @@ in {
   homebrew = {
     enable = true;
     onActivation = {
-      extraFlags = [
-        "--force-cleanup" # TODO: remove when https://github.com/nix-darwin/nix-darwin/issues/1787 is resolved
-      ];
       autoUpdate = false;
       upgrade = false;
       cleanup = "zap";
