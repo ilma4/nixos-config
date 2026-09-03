@@ -24,3 +24,6 @@ fetch-once = ["git", "fetch", "--remote", "origin", "--branch"]
 # Plain aliases can't default a positional argument, so this inlines a small
 # script via `jj util exec`; the trailing "" becomes `$0` in bash.
 ll = ["util", "exec", "--", "sh", "-c", '''exec jj log -r "::${1:-@}"''', ""]
+
+# Show the changes introduced by a revision, defaulting to the parent of @-.
+changes = ["util", "exec", "--", "sh", "-c", '''revision="${1:-@-}"; exec jj diff --from "${revision}-" --to "$revision"''', ""]
