@@ -6,7 +6,7 @@
 [git]
 # Keep JJ colocated with the Git repository and use Git for remote operations.
 colocate = true
-# Match the existing git-spush workflow: sign mutable commits when pushing.
+# Sign mutable commits when pushing.
 sign-on-push = true
 
 [working-copy]
