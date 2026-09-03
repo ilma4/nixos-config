@@ -47,6 +47,16 @@
   gitBreakLockPackage = pkgs.writeShellScriptBin "git-break-lock" (
     builtins.replaceStrings ["@lsof@"] ["${lib.getExe pkgs.lsof}"] (builtins.readFile ../scripts/git-break-lock.sh)
   );
+  # Keep autoenv's varstash helper next to the copied source: autoenv loads it
+  # relative to its own source path. The adjacent .zwc is picked up by zsh when
+  # this file is sourced.
+  zshAutoenvInitSnippet = pkgs.runCommandLocal "i4-zsh-autoenv-init" {} ''
+    set -euo pipefail
+    mkdir -p "$out/lib"
+    cp ${pkgs.zsh-autoenv}/share/zsh-autoenv/autoenv.zsh "$out/autoenv.zsh"
+    cp ${pkgs.zsh-autoenv}/share/zsh-autoenv/lib/varstash "$out/lib/varstash"
+    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/autoenv.zsh.zwc' '$out/autoenv.zsh'"
+  '';
 in {
   imports = [./coding-agents.nix];
 
@@ -112,6 +122,10 @@ in {
       enableZshIntegration = false;
       nix-direnv.enable = true;
     };
+
+    programs.zsh.initContent = lib.mkOrder 600 ''
+      source ${zshAutoenvInitSnippet}/autoenv.zsh
+    '';
 
     programs.bash.enable = true;
 
