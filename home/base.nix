@@ -531,9 +531,8 @@ in {
 
           # Integrate vi-mode yank/put with the system clipboard. On Linux, SSH
           # sessions always use OSC 52 so clipboard traffic reaches the local
-          # terminal; local sessions prefer a desktop clipboard tool and fall
-          # back to OSC 52 for headless environments. macOS always uses its
-          # native pbcopy/pbpaste tools.
+          # terminal; non-SSH sessions use the Wayland clipboard. macOS always
+          # uses its native pbcopy/pbpaste tools.
           ${
             if isDarwin
             then ''
@@ -548,15 +547,9 @@ in {
               if [[ -n $SSH_CONNECTION || -n $SSH_CLIENT || -n $SSH_TTY ]]; then
                 function _clip_copy { osc copy }
                 function _clip_paste { osc paste }
-              elif (( $+commands[wl-copy] )); then
+              else
                 function _clip_copy { wl-copy }
                 function _clip_paste { wl-paste --no-newline }
-              elif (( $+commands[xsel] )); then
-                function _clip_copy { xsel --clipboard --input }
-                function _clip_paste { xsel --clipboard --output }
-              elif (( $+commands[osc] )); then
-                function _clip_copy { osc copy }
-                function _clip_paste { osc paste }
               fi
             ''
           }
