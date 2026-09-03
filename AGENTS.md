@@ -70,6 +70,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - When working with secrets, check that they exists
   - If it is not exists, write a script `create-secrets.sh` which adds it. Use `./scripts/sops/i4-sops-sudo set ...`
   - If you remove secrets use `./scripts/sops/i4-sops-sudo unset ...`
+- use `jj` jujutsu instead of git when working in this repo
 
 ## Environment Setup
 
