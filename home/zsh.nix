@@ -8,6 +8,11 @@
   HOME = config.home.homeDirectory;
   inherit (pkgs) stdenv;
   isDarwin = stdenv.isDarwin;
+  isGenericLinux = stdenv.isLinux && config.targets.genericLinux.enable;
+  nixGenerationLink =
+    if isGenericLinux
+    then "${config.xdg.stateHome}/nix/profiles/home-manager"
+    else "/run/current-system";
   homebrewPrefix =
     if osConfig != null && osConfig ? homebrew
     then osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix)
@@ -203,6 +208,28 @@ in {
             typeset -gix P9K_SSH=0
           fi
           typeset -gx _P9K_SSH_TTY=$TTY
+
+          # Record the generation this shell was initialized against. NixOS and
+          # nix-darwin expose it through /run/current-system, while standalone
+          # Home Manager uses its per-user home-manager profile.
+          # zstat is a zsh builtin, so checking it does not fork readlink.
+          zmodload -F zsh/stat b:zstat
+          typeset -g NIX_SHELL_GENERATION=
+          if [[ -L ${lib.escapeShellArg nixGenerationLink} ]] &&
+            zstat -A _nix_gen +link ${lib.escapeShellArg nixGenerationLink}
+          then
+            typeset -g NIX_SHELL_GENERATION=$_nix_gen[1]
+          fi
+          unset _nix_gen
+
+          # Return success when the current generation differs from the
+          # generation captured at shell startup.
+          function nix-shell-stale {
+            local -a gen
+            [[ -n $NIX_SHELL_GENERATION && -L ${lib.escapeShellArg nixGenerationLink} ]] &&
+              zstat -A gen +link ${lib.escapeShellArg nixGenerationLink} &&
+              [[ $NIX_SHELL_GENERATION != $gen[1] ]]
+          }
 
           # Pre-seed atuin's session id so Home Manager's later
           # `eval "$(atuin init zsh)"` skips its `export ATUIN_SESSION=$(atuin
@@ -466,7 +493,7 @@ in {
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
         lib.mkIf (stdenv.isLinux && config.configure-ssh) # macOS works fine with ssh agent
-        
+
         ''
           if [ -n "''${SSH_AUTH_SOCK:-}" ] && [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
               mkdir -p ${HOME}/.ssh
@@ -493,5 +520,6 @@ in {
         $DRY_RUN_CMD install $VERBOSE_ARG -m644 ${zcompdumpFingerprint} "$HOME/.zcompdump.fingerprint"
       fi
     '';
+
   };
 }

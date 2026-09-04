@@ -52,6 +52,7 @@
     background_jobs         # presence of background jobs
     direnv                  # direnv status
     nix_shell               # nix shell / dev shell indicator
+    nix_shell_stale          # warning when the shell uses an old Nix generation
   )
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
@@ -1585,6 +1586,12 @@
   typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION=
   # Custom prefix.
   # typeset -g POWERLEVEL9K_TIME_PREFIX='%fat '
+
+  # --- Nix generation freshness segment ---
+  function prompt_nix_shell_stale() {
+    nix-shell-stale || return 0
+    p10k segment -f 196 -i '⚠' -t 'old Nix generation'
+  }
 
   # --- Branch-only git segment (no gitstatusd, no git command) ---
   # Render the branch in the terminal's default foreground color instead of
