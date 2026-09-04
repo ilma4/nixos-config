@@ -1,3 +1,7 @@
+# Persistent SSH tmux sessions
+
+SSH-scoped tmux servers can disappear after a NixOS switch, causing the auto-attach fallback to create a new server. Run tmux as a persistent systemd user service with user lingering and use `tmux new-session -A -s default`.
+
 # Setup ntfy server to send notification
 
 # Can I bike to the office without rain?
