@@ -45,6 +45,8 @@
     ${npm} --prefix ${lib.escapeShellArg "${npmPrefix}/lib"} audit fix apply
   '';
 in {
+  imports = [./pi.nix];
+
   options.i4.coding-agents.enable = lib.mkEnableOption "coding agents";
 
   config = lib.mkIf cfg.enable {
