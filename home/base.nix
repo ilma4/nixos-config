@@ -51,6 +51,7 @@
   '';
 in {
   imports = [
+    ./codex.nix
     ./dev.nix
     ./fonts.nix
     ./ha-mcp.nix
