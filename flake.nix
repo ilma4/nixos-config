@@ -17,6 +17,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixos-lima = {
+      url = "github:nixos-lima/nixos-lima";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    apple-silicon = {
+      url = "github:nix-community/nixos-apple-silicon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     disko = {
       url = "github:nix-community/disko/latest";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -257,6 +267,20 @@
       msi-modern = mkNixosSystem {
         system = systems.x86-linux;
         module = ./hosts/msi-modern/msi-modern.nix;
+      };
+
+      android-vm = nixpkgs.lib.nixosSystem {
+        system = systems.arm64-linux;
+        modules = [
+          inputs.nixos-lima.nixosModules.lima
+          ./hosts/android-vm/android-vm.nix
+
+          {
+            nixpkgs.overlays = [
+              inputs.apple-silicon.overlays.default
+            ];
+          }
+        ];
       };
     };
 

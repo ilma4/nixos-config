@@ -42,6 +42,8 @@ in {
     home.packages = with pkgs; [
       pkgs-unstable.llama-cpp
 
+      lima
+
       sops # for managing secrets
       age # for age key management
 
