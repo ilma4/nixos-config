@@ -271,6 +271,11 @@
 
       android-vm = nixpkgs.lib.nixosSystem {
         system = systems.arm64-linux;
+        specialArgs = {
+          inherit inputs;
+          pkgs-unstable = (pkgsSets systems.arm64-linux).unstable;
+          constants = import ./constants.nix;
+        };
         modules = [
           inputs.nixos-lima.nixosModules.lima
           ./hosts/android-vm/android-vm.nix

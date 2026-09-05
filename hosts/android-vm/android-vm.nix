@@ -1,13 +1,53 @@
 {
   config,
+  constants,
+  inputs,
   lib,
   modulesPath,
   pkgs,
+  pkgs-unstable,
   ...
 }: {
   imports = [
+    inputs.home-manager.nixosModules.home-manager
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
+
+  nixpkgs.config.allowUnfree = true;
+
+  home-manager.useGlobalPkgs = true;
+  home-manager.extraSpecialArgs = {
+    inherit inputs;
+    inherit pkgs-unstable;
+    inherit constants;
+  };
+
+  users.users.ilma4 = {
+    uid = 501;
+    home = "/home/ilma4.guest";
+    group = "users";
+    shell = pkgs.zsh;
+    extraGroups = ["wheel"];
+  };
+
+  programs.zsh.enable = true;
+
+  home-manager.users.ilma4 = {
+    imports = [../../home/base.nix];
+
+    home.homeDirectory = lib.mkForce "/home/ilma4.guest";
+    rebuild-script = "sudo nixos-rebuild switch --flake /etc/nixos#android-vm";
+
+    i4.dev = {
+      enable = true;
+      podman = false;
+      nix = false;
+      rust = false;
+      zshAutoenv = false;
+    };
+
+    programs.direnv.enable = false;
+  };
 
   networking.hostName = "android-vm";
 

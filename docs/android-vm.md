@@ -2,6 +2,9 @@
 
 The `android-vm` NixOS configuration runs as an ARM64 Lima guest. Lima is
 installed on the macOS host through Home Manager (`hosts/quicksilver/ilma4-home.nix`).
+The guest also uses Home Manager for the `ilma4` user and enables the shared
+development environment from `home/dev.nix`; container, Nix, Rust, zsh
+autoenv, and direnv extras are disabled.
 
 ## Host setup
 
@@ -30,10 +33,10 @@ Enter it and install the configuration:
 ```bash
 limactl shell android
 sudo git clone <your-config-repo> /etc/nixos
-sudo nixos-rebuild boot --flake /etc/nixos#android-vm
+sudo nixos-rebuild switch --flake /etc/nixos#android-vm
 ```
 
-Restart the guest after the first boot build:
+Restart the guest after the initial switch:
 
 ```bash
 exit
