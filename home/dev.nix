@@ -60,7 +60,33 @@
 in {
   imports = [./coding-agents.nix];
 
-  options.i4.dev.enable = lib.mkEnableOption "development tools";
+  options.i4.dev = {
+    enable = lib.mkEnableOption "development tools";
+
+    podman = lib.mkOption {
+      type = lib.types.bool;
+      default = config.i4.dev.enable;
+      description = "Install container development tools";
+    };
+
+    nix = lib.mkOption {
+      type = lib.types.bool;
+      default = config.i4.dev.enable;
+      description = "Install Nix development tools";
+    };
+
+    rust = lib.mkOption {
+      type = lib.types.bool;
+      default = config.i4.dev.enable;
+      description = "Install Rust development tools";
+    };
+
+    zshAutoenv = lib.mkOption {
+      type = lib.types.bool;
+      default = config.i4.dev.enable;
+      description = "Enable zsh autoenv";
+    };
+  };
 
   config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
     i4.coding-agents.enable = lib.mkDefault true;
@@ -68,39 +94,41 @@ in {
     # Home Assistant MCP, scoped to ~/.config/ha-mcp / the ha-pi command. See home/ha-mcp.nix.
     i4.ha-mcp.enable = lib.mkDefault false;
 
-    home.packages = with pkgs; [
-      docker # docker cli
-      podman # podman cli
-      podman-compose # podman-compose is not bundled with podman
+    home.packages =
+      with pkgs;
+        [
+          pkgs-unstable.jujutsu
 
-      nixd
-      nil
-      alejandra
-      sops
-      gh
-      nodejs
-      bun
-      i4UpdateHost
-      uv
+          # mcp-nixos # build failure, don't use like this anyway
+          # pkgs-unstable.ha-mcp
 
-      pkgs-unstable.jujutsu
+          android-tools # adb
 
-      # mcp-nixos # build failure, don't use like this anyway
-      # pkgs-unstable.ha-mcp
-
-      android-tools # adb
-
-      # tex-fmt # latex formatting
-
-      (pkgs.rust-bin.stable.latest.default.override {
-        extensions = ["rust-src"];
-      })
-
-      (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
-
+          # tex-fmt # latex formatting
+        ]
+        ++ lib.optionals config.i4.dev.podman [
+          docker # docker cli
+          podman # podman cli
+          podman-compose # podman-compose is not bundled with podman
+        ]
+        ++ lib.optionals config.i4.dev.nix [
+          nixd
+          nil
+          alejandra
+          sops
+          gh
+          nodejs
+          bun
+          i4UpdateHost
+          uv
+        ]
+        ++ lib.optional config.i4.dev.rust (pkgs.rust-bin.stable.latest.default.override {
+          extensions = ["rust-src"];
+        })
+        ++ lib.optional pkgs.stdenv.isDarwin pkgs.darwin.libiconv # TODO: this is a workaround I don't remember for which
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
-    ];
+      ;
 
     home.shellAliases = lib.mkIf pkgs.stdenv.isDarwin {
       codex = "$HOME/.local/bin/codex --yolo";
@@ -123,9 +151,9 @@ in {
       nix-direnv.enable = true;
     };
 
-    programs.zsh.initContent = lib.mkOrder 600 ''
+    programs.zsh.initContent = lib.mkIf config.i4.dev.zshAutoenv (lib.mkOrder 600 ''
       source ${zshAutoenvInitSnippet}/autoenv.zsh
-    '';
+    '');
 
     programs.bash.enable = true;
 
