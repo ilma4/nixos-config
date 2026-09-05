@@ -57,6 +57,7 @@ in {
     ./neovim.nix
     ./neovim-ide.nix
     ./personal.nix
+    ./pi.nix
     ./raycast.nix
     ./zed.nix
     ./zsh.nix
