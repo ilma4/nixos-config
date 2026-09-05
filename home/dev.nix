@@ -140,7 +140,7 @@ in {
       gw = "./gradlew";
     };
 
-    programs.direnv = {
+    programs.direnv = lib.mkDefault {
       enable = true;
       enableBashIntegration = true;
       # zsh hook is precomputed into direnvHookSnippet (home/zsh.nix) and
