@@ -80,8 +80,9 @@ in {
       gh
       nodejs
       bun
-
+      i4UpdateHost
       uv
+
       pkgs-unstable.jujutsu
 
       # mcp-nixos # build failure, don't use like this anyway
@@ -97,7 +98,6 @@ in {
 
       (lib.mkIf pkgs.stdenv.isDarwin pkgs.darwin.libiconv) # TODO: this is a workaround I don't remember for which
 
-      i4UpdateHost
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
     ];
