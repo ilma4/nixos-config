@@ -12,17 +12,19 @@
   networking.hostName = "android-vm";
 
   services.lima.enable = true;
+  services.openssh.enable = true;
+
+  users.mutableUsers = true;
+  security.sudo.wheelNeedsPassword = false;
 
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
 
-  boot.loader.grub = {
-    device = "nodev";
-    efiSupport = true;
-    efiInstallAsRemovable = true;
-  };
+  boot.loader.grub.enable = false;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 1;
 
   fileSystems."/boot" = {
     device = lib.mkForce "/dev/vda1";
