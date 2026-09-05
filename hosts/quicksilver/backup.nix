@@ -43,6 +43,8 @@
     "/Users/ilma4/Library/Application Support/Slack"
     "/Users/ilma4/Library/Application Support/Zed"
 
+    "/Users/ilma4/.lima" # lima vms
+
     # Electron caches(?)
     "/Users/ilma4/Library/Application Support/*/Cache"
     "/Users/ilma4/Library/Application Support/*/Code Cache"
