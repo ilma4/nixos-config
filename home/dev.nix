@@ -90,7 +90,6 @@ in {
 
   config = lib.mkIf (config.i4.dev.enable && (config ? home)) {
     i4.coding-agents.enable = lib.mkDefault true;
-    i4.codex.enable = lib.mkDefault true;
     i4.pi.enable = lib.mkDefault true;
 
     # Home Assistant MCP, scoped to ~/.config/ha-mcp / the ha-pi command. See home/ha-mcp.nix.
