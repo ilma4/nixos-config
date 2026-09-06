@@ -1,43 +1,27 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import {
-	adapterForProvider,
-	queryProviderUsage,
-	resolveUsageAuth,
-} from "../npm/node_modules/@narumitw/pi-usage/dist/index.ts";
+import { spawn } from "node:child_process";
+import { createInterface } from "node:readline";
 
 const CODEX_PROVIDER = "openai-codex";
 const LIMIT_MESSAGE = "Error: Codex error: The usage limit has been reached";
 const STATUS_KEY = "codex-limit-autocontinue";
 const FIVE_HOUR_MINUTES = 300;
-const USAGE_QUERY_TIMEOUT_MS = 15_000;
+const APP_SERVER_TIMEOUT_MS = 15_000;
 const POLL_INTERVAL_MS = 60_000;
 const RESUME_RETRY_INTERVAL_MS = 10_000;
 const RESET_GRACE_MS = 10_000;
 const MAX_TIMER_DELAY_MS = 2_147_000_000;
 
-type UsageBucket = {
-	id: string;
-	unit: string;
-	used?: number;
-	remaining?: number;
-	windowMinutes?: number;
+type RateLimitWindow = {
+	usedPercent?: number;
+	windowDurationMins?: number;
 	resetsAt?: number;
 };
 
-type UsageReport = { buckets: UsageBucket[] };
-type UsageAdapter = { id: string };
-
-const getUsageAdapter = adapterForProvider as unknown as (providerId: string) => UsageAdapter | undefined;
-const getUsageAuth = resolveUsageAuth as unknown as (
-	ctx: ExtensionContext,
-	adapter: UsageAdapter,
-) => Promise<unknown | undefined>;
-const getUsageReport = queryProviderUsage as unknown as (
-	adapter: UsageAdapter,
-	auth: unknown,
-	signal: AbortSignal,
-	timeoutMs: number,
-) => Promise<UsageReport>;
+type RateLimits = {
+	primary?: RateLimitWindow;
+	secondary?: RateLimitWindow;
+};
 
 type LimitError = {
 	id: string;
@@ -61,6 +45,40 @@ type State = {
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
 	return value !== null && typeof value === "object" ? (value as Record<string, unknown>) : undefined;
+}
+
+function asFiniteNumber(value: unknown): number | undefined {
+	return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function parseRateLimitWindow(value: unknown): RateLimitWindow | undefined {
+	const record = asRecord(value);
+	if (!record) return undefined;
+
+	const window: RateLimitWindow = {};
+	const usedPercent = asFiniteNumber(record.usedPercent);
+	const windowDurationMins = asFiniteNumber(record.windowDurationMins);
+	const resetsAt = asFiniteNumber(record.resetsAt);
+	if (usedPercent !== undefined) window.usedPercent = usedPercent;
+	if (windowDurationMins !== undefined) window.windowDurationMins = windowDurationMins;
+	if (resetsAt !== undefined) window.resetsAt = resetsAt;
+	return window;
+}
+
+function parseRateLimits(value: unknown): RateLimits {
+	const record = asRecord(value);
+	if (!record) throw new Error("Codex app-server returned no rate limits");
+
+	return {
+		primary: parseRateLimitWindow(record.primary),
+		secondary: parseRateLimitWindow(record.secondary),
+	};
+}
+
+function describeAppServerError(value: unknown): string {
+	const record = asRecord(value);
+	if (typeof record?.message === "string") return record.message;
+	return JSON.stringify(value) ?? String(value);
 }
 
 function textContent(value: unknown): string {
@@ -137,29 +155,20 @@ function formatDelay(delayMs: number): string {
 	return `${minutes}m`;
 }
 
-function fiveHourBucket(report: UsageReport): UsageBucket | undefined {
-	const fiveHour = report.buckets.find(
-		(bucket) =>
-			bucket.unit === "percent" &&
-			bucket.windowMinutes !== undefined &&
-			Math.abs(bucket.windowMinutes - FIVE_HOUR_MINUTES) <= 10,
-	);
-	if (fiveHour) return fiveHour;
-
-	return report.buckets.find(
-		(bucket) => bucket.unit === "percent" && bucket.id === "codex:primary",
+function fiveHourBucket(rateLimits: RateLimits): RateLimitWindow | undefined {
+	// The five-hour window may be primary or secondary; do not assume either slot.
+	return [rateLimits.primary, rateLimits.secondary].find(
+		(window) => window?.windowDurationMins === FIVE_HOUR_MINUTES,
 	);
 }
 
-function bucketIsExhausted(bucket: UsageBucket): boolean {
-	if (bucket.remaining === undefined && bucket.used === undefined) return true;
-	if (bucket.remaining !== undefined) return bucket.remaining <= 0;
-	return bucket.used !== undefined && bucket.used >= 100;
+function bucketIsExhausted(window: RateLimitWindow): boolean {
+	return window.usedPercent === undefined || window.usedPercent >= 100;
 }
 
-function resetDelay(bucket: UsageBucket): number {
-	if (bucket.resetsAt !== undefined && Number.isFinite(bucket.resetsAt)) {
-		const untilReset = bucket.resetsAt * 1_000 - Date.now();
+function resetDelay(window: RateLimitWindow): number {
+	if (window.resetsAt !== undefined) {
+		const untilReset = window.resetsAt * 1_000 - Date.now();
 		return untilReset > 0 ? untilReset + RESET_GRACE_MS : POLL_INTERVAL_MS;
 	}
 	return POLL_INTERVAL_MS;
@@ -187,25 +196,85 @@ function schedule(pending: PendingResume, delayMs: number, check: (pending: Pend
 	}, delay);
 }
 
-async function queryCodexUsage(ctx: ExtensionContext): Promise<UsageReport> {
-	const adapter = getUsageAdapter(CODEX_PROVIDER);
-	if (!adapter) throw new Error("The Codex usage adapter is unavailable");
+async function queryCodexRateLimits(): Promise<RateLimits> {
+	const child = spawn("codex", ["app-server", "--stdio"], {
+		stdio: ["pipe", "pipe", "ignore"],
+	});
+	const stdin = child.stdin;
+	const stdout = child.stdout;
+	if (!stdin || !stdout) {
+		child.kill();
+		throw new Error("Codex app-server did not expose stdio");
+	}
 
-	const auth = await getUsageAuth(ctx, adapter);
-	if (!auth) throw new Error("OpenAI Codex credentials are unavailable");
+	const lines = createInterface({ input: stdout });
+	const send = (message: Record<string, unknown>): void => {
+		if (stdin.destroyed) throw new Error("Codex app-server stdin is closed");
+		stdin.write(`${JSON.stringify(message)}\n`);
+	};
 
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), USAGE_QUERY_TIMEOUT_MS);
+	const responses = (async (): Promise<RateLimits> => {
+		for await (const line of lines) {
+			if (!line.trim()) continue;
+
+			const message = asRecord(JSON.parse(line));
+			if (!message) continue;
+
+			if (message.id === 1) {
+				if (message.error !== undefined && message.error !== null) {
+					throw new Error(`Codex app-server initialization failed: ${describeAppServerError(message.error)}`);
+				}
+				send({ method: "initialized" });
+				send({ method: "account/rateLimits/read", id: 2 });
+				continue;
+			}
+
+			if (message.id !== 2) continue;
+			if (message.error !== undefined && message.error !== null) {
+				throw new Error(`Codex app-server request failed: ${describeAppServerError(message.error)}`);
+			}
+
+			const result = asRecord(message.result);
+			return parseRateLimits(result?.rateLimits);
+		}
+
+		throw new Error("Codex app-server closed before returning rate limits");
+	})();
+
+	let timeout: ReturnType<typeof setTimeout> | undefined;
+	const processError = new Promise<never>((_resolve, reject) => {
+		child.once("error", (error) => reject(error instanceof Error ? error : new Error(String(error))));
+	});
+	const appServerTimeout = new Promise<never>((_resolve, reject) => {
+		timeout = setTimeout(() => {
+			child.kill();
+			reject(new Error("Timed out while reading Codex rate limits"));
+		}, APP_SERVER_TIMEOUT_MS);
+	});
+
 	try {
-		return await getUsageReport(adapter, auth, controller.signal, USAGE_QUERY_TIMEOUT_MS);
+		send({
+			method: "initialize",
+			id: 1,
+			params: {
+				clientInfo: {
+					name: "pi-codex-limit-autocontinue",
+					title: "Pi Codex limit autocontinue",
+					version: "1.0",
+				},
+			},
+		});
+		return await Promise.race([responses, processError, appServerTimeout]);
 	} finally {
-		clearTimeout(timeout);
+		if (timeout !== undefined) clearTimeout(timeout);
+		lines.close();
+		if (!child.killed) child.kill();
 	}
 }
 
-function waitingStatus(bucket: UsageBucket | undefined): string {
-	if (!bucket) return "Codex 5h limit active · checking again soon";
-	const delay = resetDelay(bucket);
+function waitingStatus(window: RateLimitWindow | undefined): string {
+	if (!window) return "Codex 5h limit active · checking again soon";
+	const delay = resetDelay(window);
 	return `Codex 5h limit active · checking again in ${formatDelay(delay)}`;
 }
 
@@ -283,9 +352,9 @@ async function checkPending(pending: PendingResume, state: State, pi: ExtensionA
 			return;
 		}
 
-		let report: UsageReport;
+		let rateLimits: RateLimits;
 		try {
-			report = await queryCodexUsage(ctx);
+			rateLimits = await queryCodexRateLimits();
 		} catch (error) {
 			if (state.pending !== pending) return;
 			if (isStaleContextError(error)) {
@@ -296,25 +365,25 @@ async function checkPending(pending: PendingResume, state: State, pi: ExtensionA
 				pending.queryWarningShown = true;
 				notify(
 					ctx,
-					`Unable to read Codex usage; will keep checking: ${error instanceof Error ? error.message : String(error)}`,
+					`Unable to read Codex rate limits; will keep checking: ${error instanceof Error ? error.message : String(error)}`,
 					"warning",
 				);
 			}
-			setStatus(ctx, "Codex 5h limit active · usage check unavailable");
+			setStatus(ctx, "Codex 5h limit active · rate-limit check unavailable");
 			schedule(pending, POLL_INTERVAL_MS, (next) => void checkPending(next, state, pi));
 			return;
 		}
 		if (state.pending !== pending) return;
 
-		const bucket = fiveHourBucket(report);
-		if (!bucket) {
+		const window = fiveHourBucket(rateLimits);
+		if (!window) {
 			setStatus(ctx, "Codex 5h limit active · 5h usage unavailable");
 			schedule(pending, POLL_INTERVAL_MS, (next) => void checkPending(next, state, pi));
 			return;
 		}
-		if (bucketIsExhausted(bucket)) {
-			setStatus(ctx, waitingStatus(bucket));
-			schedule(pending, resetDelay(bucket), (next) => void checkPending(next, state, pi));
+		if (bucketIsExhausted(window)) {
+			setStatus(ctx, waitingStatus(window));
+			schedule(pending, resetDelay(window), (next) => void checkPending(next, state, pi));
 			return;
 		}
 
