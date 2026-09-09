@@ -11,7 +11,13 @@
   imports = [
     inputs.home-manager.nixosModules.home-manager
     (modulesPath + "/profiles/qemu-guest.nix")
+    (modulesPath + "/virtualisation/rosetta.nix")
   ];
+
+  virtualisation.rosetta = {
+    enable = true;
+    mountTag = "vz-rosetta";
+  };
 
   nixpkgs.config.allowUnfree = true;
 
