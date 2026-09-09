@@ -92,7 +92,8 @@
     options = ["noatime"];
   };
 
-  boot.kernelPackages = pkgs.linux-asahi;
+  # asahi-kernel uses 16-KiB page size. x86-64 binaries expect 4-KiB, thus its impossible to use rosetta translator
+  # boot.kernelPackages = pkgs.linux-asahi;
 
   environment.systemPackages = with pkgs; [
     git
