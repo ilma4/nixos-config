@@ -39,6 +39,7 @@ in {
 
     home.packages = [
       nodejs
+      bun
       updateScript
     ];
 
