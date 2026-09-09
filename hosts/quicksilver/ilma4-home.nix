@@ -43,6 +43,7 @@ in {
       pkgs-unstable.llama-cpp
 
       lima
+      (pkgs.writeShellScriptBin "limactl-android" (builtins.readFile ../../scripts/limactl-android))
 
       sops # for managing secrets
       age # for age key management

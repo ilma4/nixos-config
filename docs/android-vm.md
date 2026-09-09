@@ -8,6 +8,21 @@ autoenv, and direnv extras are disabled.
 
 ## Host setup
 
+Use `limactl-android` for the commands below. It wraps `limactl` and sets
+`LIMA_HOME` to the external Android volume.
+
+To move an existing VM from Lima's default location, stop it and move the
+entire Lima home so that its shared SSH configuration is moved as well:
+
+```bash
+if [[ "$(LIMA_HOME="$HOME/.lima" limactl list --format '{{.Status}}' android)" == "Running" ]]; then
+  LIMA_HOME="$HOME/.lima" limactl stop android
+fi
+mkdir -p /Volumes/Android/android-lima
+rsync -aHAX --sparse "$HOME/.lima/" /Volumes/Android/android-lima/
+rm -rf "$HOME/.lima"
+```
+
 On Apple Silicon, install Rosetta once if it is not already available:
 
 ```bash
@@ -17,7 +32,7 @@ softwareupdate --install-rosetta
 Create the initial VM:
 
 ```bash
-limactl start \
+limactl-android start \
   --name=android \
   --vm-type=vz \
   --rosetta \
@@ -31,7 +46,7 @@ limactl start \
 Enter it and install the configuration:
 
 ```bash
-limactl shell android
+limactl-android shell android
 sudo git clone <your-config-repo> /etc/nixos
 sudo nixos-rebuild switch --flake /etc/nixos#android-vm
 ```
@@ -40,10 +55,11 @@ Restart the guest after the initial switch:
 
 ```bash
 exit
-limactl restart android
+limactl-android restart android
 ```
 
-The VM is stored under `~/.lima/android/`.
+The Lima home is `/Volumes/Android/android-lima/`; the VM itself is stored
+under `/Volumes/Android/android-lima/android/`.
 
 ## Verify Rosetta support
 
