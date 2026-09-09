@@ -38,8 +38,8 @@ limactl-android start \
   --rosetta \
   --mount-none \
   --cpus=12 \
-  --memory=48 \
-  --disk=100 \
+  --memory=42 \
+  --disk=850 \
   github:nixos-lima
 ```
 
