@@ -47,6 +47,13 @@
     };
 
     programs.direnv.enable = false;
+
+    # Initialize tmux sessions on SSH connections, including `limactl shell`.
+    programs.zsh.initContent = ''
+      if [[ -z "''${TMUX:-}" ]] && [[ -n "''${SSH_CONNECTION:-}" || -n "''${SSH_CLIENT:-}" || -n "''${SSH_TTY:-}" ]]; then
+        tmux attach-session -t default || tmux new-session -s default
+      fi
+    '';
   };
 
   networking.hostName = "android-vm";

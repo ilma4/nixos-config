@@ -51,6 +51,9 @@ sudo git clone <your-config-repo> /etc/nixos
 sudo nixos-rebuild switch --flake /etc/nixos#android-vm
 ```
 
+The SSH-backed shell automatically attaches to the `default` tmux session.
+Detach with `Ctrl-b d` to leave the VM running.
+
 Restart the guest after the initial switch:
 
 ```bash
