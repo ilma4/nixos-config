@@ -31,6 +31,7 @@
   };
 
   programs.zsh.enable = true;
+  programs.nix-ld.enable = true;
 
   home-manager.users.ilma4 = {
     imports = [../../home/base.nix];
