@@ -104,6 +104,7 @@ in {
       networking.hostName = containerName;
 
       systemd.package = hostPkgs.systemd;
+      services.logrotate.enable = false; # use logrotate from host
 
       users.users.ilma4 = {
         # Keep the UID used by the VM checkout so the bind mount remains
