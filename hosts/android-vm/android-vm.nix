@@ -24,12 +24,11 @@
     text = ''
       set -euo pipefail
 
-      # Hand the terminal over to the container without nesting tmux.  -E
-      # runs the command from the detached client, so it remains connected to
-      # the original terminal after the host tmux client exits.
-      if [[ -n "''${TMUX:-}" ]]; then
-        reexec_command="$(printf '%q ' "$0" "$@")"
-        exec tmux detach-client -E "unset TMUX; exec ''${reexec_command}"
+      # Keep the persistent multiplexer native to the ARM64 VM.  The shell
+      # below becomes a pane in this host tmux; never start the x86-64
+      # container's tmux under Rosetta.
+      if [[ -z "''${TMUX:-}" ]]; then
+        exec tmux new-session -A -s android-dev "$0" "$@"
       fi
 
       if ! systemctl is-active --quiet container@${containerName}.service; then
@@ -55,7 +54,7 @@
       # container's x86-64 PAM modules under Rosetta.
       exec sudo nsenter --all -t "$containerLeader" -- \
         /run/current-system/sw/bin/su - ilma4 -c \
-        'cd /android && unset TMUX && exec tmux new-session -A -s default'
+        'cd /android && export ANDROID_DEV_NO_TMUX=1 && exec zsh -l'
     '';
   };
 in {
@@ -149,11 +148,9 @@ in {
 
         programs.direnv.enable = false;
 
-        # Keep the host's SSH/tmux shell behavior when entering via Lima.
+        # The native ARM64 VM tmux owns persistent sessions. Do not start an
+        # x86-64 tmux server inside the Rosetta-translated container.
         programs.zsh.initContent = ''
-          if [[ -z "''${TMUX:-}" ]] && [[ -n "''${SSH_CONNECTION:-}" || -n "''${SSH_CLIENT:-}" || -n "''${SSH_TTY:-}" ]]; then
-            tmux attach-session -t default || tmux new-session -s default
-          fi
         '';
       };
 
