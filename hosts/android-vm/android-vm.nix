@@ -115,6 +115,9 @@ in {
         home = "/home/ilma4";
         createHome = true;
         shell = pkgs.zsh;
+        # pi is installed by a Home Manager systemd.user timer. Keep the
+        # user manager alive even though the container is entered via su.
+        linger = true;
       };
 
       programs.zsh.enable = true;
@@ -140,6 +143,9 @@ in {
           rust = false;
           zshAutoenv = false;
         };
+        # Be explicit here: the npm-installed Pi agent is part of this
+        # container's development environment, not just the ARM64 host's.
+        i4.pi.enable = true;
 
         programs.direnv.enable = false;
 

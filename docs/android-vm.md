@@ -85,7 +85,11 @@ translated systemd PID 1 cannot initialize reliably under Rosetta; the shell,
 toolchain, and Android prebuilts remain x86-64.
 The container imports the host's Home Manager base configuration, so
 `enter-android-devenv` opens the same configured zsh shell with an x86-64
-package set.
+package set. Pi is explicitly enabled for the container. The `pi` executable
+is installed from npm into `/home/ilma4/.local/bin` by Home Manager's
+`i4-update-pi` user timer; it is not a Nix package in the system closure. The
+container user therefore has lingering enabled so that timer runs even though
+the container is entered through `su` rather than a normal login session.
 
 After switching the VM configuration, enter it with:
 
