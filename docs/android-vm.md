@@ -91,11 +91,18 @@ After switching the VM configuration, enter it with:
 
 ```bash
 enter-android-devenv
+# attaches to the existing `default` session in the container,
+# or creates it when it does not exist
 uname -m
 # x86_64
 file -L /run/current-system/sw/bin/zsh
 # ELF 64-bit ... x86-64
 ```
+
+`enter-android-devenv` also handles the tmux handoff: when started from a
+host tmux session, it leaves that client first so the container's `default`
+session is attached directly instead of nesting tmux. Detach with `Ctrl-b d`
+to leave the container and keep the VM running.
 
 The Android build can then be started without changing the LineageOS sources:
 

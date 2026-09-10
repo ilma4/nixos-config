@@ -17,11 +17,20 @@
     runtimeInputs = [
       pkgs.nixos-container
       pkgs.systemd
+      pkgs.tmux
       pkgs.util-linux
     ];
 
     text = ''
       set -euo pipefail
+
+      # Hand the terminal over to the container without nesting tmux.  -E
+      # runs the command from the detached client, so it remains connected to
+      # the original terminal after the host tmux client exits.
+      if [[ -n "''${TMUX:-}" ]]; then
+        reexec_command="$(printf '%q ' "$0" "$@")"
+        exec tmux detach-client -E "unset TMUX; exec ''${reexec_command}"
+      fi
 
       if ! systemctl is-active --quiet container@${containerName}.service; then
         sudo nixos-container start ${containerName}
@@ -45,7 +54,8 @@
       # nixos-container run uses the host ARM64 su, which cannot load the
       # container's x86-64 PAM modules under Rosetta.
       exec sudo nsenter --all -t "$containerLeader" -- \
-        /run/current-system/sw/bin/su - ilma4 -c 'cd /android && exec zsh -l'
+        /run/current-system/sw/bin/su - ilma4 -c \
+        'cd /android && unset TMUX && exec tmux new-session -A -s default'
     '';
   };
 in {
