@@ -74,3 +74,32 @@ zgrep -E 'ARM64_(MEMORY_MODEL_CONTROL|ACTLR_STATE)' /proc/config.gz
 ```
 
 The expected architecture is `aarch64`, with both kernel options enabled.
+
+## Android x86-64 container
+
+The VM declares an `android-dev` NixOS container. It uses the existing
+`/home/ilma4.guest/android` checkout as `/android`, and its x86-64 userspace
+is executed through the VM's Rosetta binfmt registration.
+The container keeps its systemd supervisor native to the ARM64 VM because a
+translated systemd PID 1 cannot initialize reliably under Rosetta; the shell,
+toolchain, and Android prebuilts remain x86-64.
+The container imports the host's Home Manager base configuration, so
+`enter-android-devenv` opens the same configured zsh shell with an x86-64
+package set.
+
+After switching the VM configuration, enter it with:
+
+```bash
+enter-android-devenv
+uname -m
+# x86_64
+file -L /run/current-system/sw/bin/zsh
+# ELF 64-bit ... x86-64
+```
+
+The Android build can then be started without changing the LineageOS sources:
+
+```bash
+cd /android
+./build-uke.sh
+```
