@@ -94,7 +94,7 @@ in {
 
     config = {lib, hostPkgs, pkgs, ...}: {
       imports = [
-        inputs.home-manager.nixosModules.home-manager
+        inputs.home-manager-unstable.nixosModules.home-manager
       ];
 
       # nixos-containers otherwise injects the ARM64 host platform here.
