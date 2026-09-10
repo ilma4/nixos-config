@@ -71,7 +71,7 @@ in {
   };
 
   containers.${containerName} = {
-    autoStart = false;
+    autoStart = true;
     privateNetwork = false;
     nixpkgs = inputs.nixpkgs-unstable;
 
