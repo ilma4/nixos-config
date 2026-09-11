@@ -38,7 +38,6 @@ in {
     vscode = {macName = "visual-studio-code";};
 
     # coding agents
-    # codex = asLinuxPackage {};
     antigravity-cli = asLinuxPackage {};
 
     # comfyui = macOnlyCask {}; # tool for generating images/videos
@@ -46,7 +45,6 @@ in {
 
     firefox = {};
     vivaldi = asLinuxPackage {};
-    # browsers = asLinuxPackage {macName = "browsers-software/tap/browsers";}; # select browser when open link
 
     krita = asLinuxPackage {}; # image editor
     anki = asLinuxPackage {}; # learn word app
@@ -74,13 +72,10 @@ in {
 
     "1password-cli" = macOnlyCask {};
     secretive = macOnlyCask {};
-    # container = macOnlyBrew {}; # docker alternative from Apple. Runs each container in separate vm
-    # activitywatch = macOnlyCask {};
     cloudflare-warp = macOnlyCask {}; # corporate JetBrains VPN
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
     # iterm2 = macOnlyCask {}; # managed by corporate software
-    # wezterm = macOnlyCask { macName = "wezterm@nightly";};
     handy = asLinuxPackage {package = pkgs-unstable.handy;}; # speech-to-text
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software
@@ -89,9 +84,7 @@ in {
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
     marta = macOnlyCask {}; # file manager
-    # google-drive = macOnlyCask {};
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
-    # vial = macOnlyCask {}; # configure my split keyboard
     skim = macOnlyCask {}; # pdf viewer
     eqmac = macOnlyCask {}; # equalizer for macos
     linearmouse = macOnlyCask {};
