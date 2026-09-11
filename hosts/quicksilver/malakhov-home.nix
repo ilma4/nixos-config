@@ -47,7 +47,6 @@
     ];
 
     home.file = {
-      ".config/karabiner".source = ../../dotfiles/karabiner;
       ".config/linearmouse/linearmouse.json".source = ../../dotfiles/linearmouse/linearmouse.json;
       ".config/zed".source = ../../dotfiles/zed;
 

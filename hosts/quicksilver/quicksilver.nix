@@ -106,16 +106,6 @@ in {
 
   environment.shells = [pkgs.zsh];
 
-  /*
-  remmapings are done in Karabiner-Elements
-    system.keyboard = {
-      enableKeyMapping = true;
-      remapCapsLockToEscape = true;
-      # nonUS.remapTilde = true;
-      #swapLeftCtrlAndFn = true;
-    };
-  */
-
   security.pam.services.sudo_local.touchIdAuth = true;
 
   # Let the work user (malakhov) stop the eqMac app that runs in ilma4's login

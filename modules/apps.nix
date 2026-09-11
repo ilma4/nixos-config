@@ -84,7 +84,6 @@ in {
     handy = asLinuxPackage {package = pkgs-unstable.handy;}; # speech-to-text
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software
-    # karabiner-elements = macOnlyCask {}; # keyboard remapping
     raycast = macOnlyCask {}; # cmd+space : search apps and commands
     caffeine = macOnlyCask {};
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
