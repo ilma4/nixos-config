@@ -42,7 +42,7 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     home-manager-unstable = {
-      url = "github:nix-community/home-manager/release-26.05";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
