@@ -20,6 +20,9 @@ bookmark-advance-to = "@-"
 # Fetch one branch from the default GitHub remote.
 fetch-once = ["git", "fetch", "--remote", "origin", "--branch"]
 
+# Move the changes in the working-copy commit into its parent.
+append = ["squash", "--from", "@", "--into", "@-"]
+
 # Log the ancestors of a revision, defaulting to `@` (e.g. `jj ll main`).
 # Plain aliases can't default a positional argument, so this inlines a small
 # script via `jj util exec`; the trailing "" becomes `$0` in bash.
