@@ -11,6 +11,13 @@
   containerName = "android-dev";
   androidCheckout = "/home/ilma4.guest/android";
   androidCache = "/home/ilma4.guest/.cache";
+  linux-asahi-4k = pkgs.linux-asahi.kernel.override {
+    structuredExtraConfig = with lib.kernel; {
+      ARM64_4K_PAGES = lib.mkForce yes;
+      ARM64_16K_PAGES = lib.mkForce no;
+      ARM64_64K_PAGES = lib.mkForce no;
+    };
+  };
 
   enterAndroidDevenv = pkgs.writeShellApplication {
     name = "enter-android-devenv";
@@ -355,8 +362,7 @@ in {
     options = ["noatime"];
   };
 
-  # asahi-kernel uses 16-KiB page size. x86-64 binaries expect 4-KiB, thus its impossible to use rosetta translator
-  # boot.kernelPackages = pkgs.linux-asahi;
+  boot.kernelPackages = pkgs.linuxPackagesFor linux-asahi-4k;
 
   environment.systemPackages = with pkgs; [
     git
