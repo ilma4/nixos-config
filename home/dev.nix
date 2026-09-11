@@ -99,6 +99,7 @@ in {
       with pkgs;
         [
           pkgs-unstable.jujutsu
+          pkgs-unstable.jjui
 
           # mcp-nixos # build failure, don't use like this anyway
           # pkgs-unstable.ha-mcp
