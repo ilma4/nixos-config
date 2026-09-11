@@ -77,7 +77,7 @@
   };
 in {
   imports = [
-    inputs.home-manager.nixosModules.home-manager
+    inputs.home-manager-unstable.nixosModules.home-manager
     (modulesPath + "/profiles/qemu-guest.nix")
     (modulesPath + "/virtualisation/rosetta.nix")
   ];

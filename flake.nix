@@ -273,7 +273,7 @@
         module = ./hosts/msi-modern/msi-modern.nix;
       };
 
-      android-vm = nixpkgs.lib.nixosSystem {
+      android-vm = nixpkgs-unstable.lib.nixosSystem {
         system = systems.arm64-linux;
         specialArgs = {
           inherit inputs;
