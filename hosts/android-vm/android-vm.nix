@@ -279,6 +279,29 @@ in {
         "L+ /bin/pwd - - - - /run/current-system/sw/bin/pwd"
       ];
 
+      # systemd-nspawn still overmounts these two procfs paths even when its
+      # API-VFS read-only masking is disabled. Linux rejects a nested procfs
+      # mount when any filesystem is mounted below the parent procfs, which
+      # prevents NsJail from starting. Remove the remaining overlays before
+      # the container reaches the multi-user target.
+      systemd.services.android-build-nsjail-proc = {
+        description = "Prepare procfs for the Android build sandbox";
+        wantedBy = ["multi-user.target"];
+        before = ["multi-user.target"];
+        after = ["systemd-remount-fs.service"];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          for path in /proc/kmsg /proc/sys/kernel/random/boot_id; do
+            if ${pkgs.util-linux}/bin/mountpoint --quiet "$path"; then
+              ${pkgs.util-linux}/bin/umount --lazy "$path"
+            fi
+          done
+        '';
+      };
+
       system.stateVersion = "26.05";
     };
   };
@@ -288,7 +311,13 @@ in {
   # The container remains supervised by nspawn; mark the host unit active as
   # soon as nspawn has been spawned instead.
   systemd.services."container@${containerName}" = {
+    # NsJail runs inside this systemd-nspawn container and must mount its own
+    # /proc. nspawn's default procfs masking adds filesystem mounts below
+    # /proc, causing that nested mount to fail with EPERM and making Soong
+    # disable build sandboxing. This intentionally weakens nspawn's kernel
+    # interface restrictions for this trusted Android build container.
     serviceConfig.Type = lib.mkForce "simple";
+    environment.SYSTEMD_NSPAWN_API_VFS_WRITABLE = "1";
   };
 
   nixpkgs.config.allowUnfree = true;
