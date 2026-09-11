@@ -11,12 +11,23 @@
   containerName = "android-dev";
   androidCheckout = "/home/ilma4.guest/android";
   androidCache = "/home/ilma4.guest/.cache";
-  linux-asahi-4k = pkgs.linux-asahi.kernel.override {
-    structuredExtraConfig = with lib.kernel; {
-      ARM64_4K_PAGES = lib.mkForce yes;
-      ARM64_16K_PAGES = lib.mkForce no;
-      ARM64_64K_PAGES = lib.mkForce no;
-    };
+  # Rosetta can only translate x86-64 programs on an AArch64 kernel using
+  # 4-KiB pages.  linux-asahi's default config enables 16-KiB pages for the
+  # GPU, so append a forced config patch to override that setting.  Overriding
+  # linux-asahi.kernel's structuredExtraConfig is too early: the Asahi config
+  # is itself a later kernel patch and would win again.
+  linux-asahi-4k = pkgs.linux-asahi.override {
+    _kernelPatches = [
+      {
+        name = "rosetta-4k-pages";
+        patch = null;
+        structuredExtraConfig = with lib.kernel; {
+          ARM64_4K_PAGES = lib.mkForce yes;
+          ARM64_16K_PAGES = lib.mkForce no;
+          ARM64_64K_PAGES = lib.mkForce no;
+        };
+      }
+    ];
   };
 
   enterAndroidDevenv = pkgs.writeShellApplication {
@@ -272,21 +283,12 @@ in {
     };
   };
 
-  # NsJail runs inside this systemd-nspawn container and must mount its own
-  # /proc. nspawn's default procfs masking adds filesystem mounts below
-  # /proc, causing that nested mount to fail with EPERM and making Soong
-  # disable build sandboxing. This intentionally weakens nspawn's kernel
-  # interface restrictions for this trusted Android build container.
+  # systemd-nspawn waits for a READY notification from the translated inner
+  # systemd, which is not delivered reliably when PID 1 is native ARM64.
+  # The container remains supervised by nspawn; mark the host unit active as
+  # soon as nspawn has been spawned instead.
   systemd.services."container@${containerName}" = {
-    # systemd-nspawn waits for a READY notification from the translated inner
-    # systemd, which is not delivered reliably when PID 1 is native ARM64.
-    # The container remains supervised by nspawn; mark the host unit active as
-    # soon as nspawn has been spawned instead.
     serviceConfig.Type = lib.mkForce "simple";
-
-    # This intentionally weakens nspawn's kernel interface restrictions for
-    # this trusted Android build container.
-    environment.SYSTEMD_NSPAWN_API_VFS_WRITABLE = "1";
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -362,7 +364,10 @@ in {
     options = ["noatime"];
   };
 
-  boot.kernelPackages = pkgs.linuxPackagesFor linux-asahi-4k;
+  # linux-asahi-4k is already a complete kernel package set.  Do not wrap it
+  # in linuxPackagesFor again: that would treat the package set as a kernel
+  # derivation and fail while applying kernel-package overrides.
+  boot.kernelPackages = linux-asahi-4k;
 
   environment.systemPackages = with pkgs; [
     git
