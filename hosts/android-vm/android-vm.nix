@@ -173,21 +173,24 @@ in {
         '';
       };
 
-      # The LineageOS/AOSP prebuilts are ordinary dynamically linked x86-64
-      # binaries rather than Nix-built executables.
+      # Provide the FHS environment's runtime linker system-wide inside the
+      # container. These are the same multi-architecture libraries used by
+      # the former buildFHSEnv, while Android's bundled libraries (including
+      # libxml2 and libc++) remain first-class dependencies of the prebuilts.
+      # mkForce is intentional: the nix-ld module otherwise appends its
+      # default set, including Nix's libxml2, which is ABI-incompatible with
+      # the Android xmllint binary.
       programs.nix-ld = {
         enable = true;
-        libraries = with pkgs; [
-          stdenv.cc.cc
+        libraries = lib.mkForce (with pkgs; [
           glibc
           zlib
           ncurses5
-          openssl
           fontconfig
           libglvnd
           # The old xorg.libX11 spelling is now deprecated.
           libx11
-        ];
+        ]);
       };
 
       nix.settings.experimental-features = [
