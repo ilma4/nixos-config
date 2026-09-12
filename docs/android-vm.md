@@ -8,20 +8,91 @@ autoenv, and direnv extras are disabled.
 
 ## Host setup
 
-Use `limactl-android` for the commands below. It wraps `limactl` and sets
-`LIMA_HOME` to the external Android volume.
+The Android VM uses a separate Lima home on the external volume. Mount the
+volume at `/Volumes/Android` before running any Lima command, and use
+`limactl-android` for every command below. It sets `LIMA_HOME` to
+`/Volumes/Android/android-lima`; mixing it with plain `limactl` makes the VM
+appear to be missing because Lima will look in `~/.lima` instead.
 
-To move an existing VM from Lima's default location, stop it and move the
-entire Lima home so that its shared SSH configuration is moved as well:
+`limactl-android` is installed by the quicksilver Home Manager configuration.
+While bootstrapping that configuration, replace it with
+`LIMA_HOME=/Volumes/Android/android-lima limactl`.
+
+### Recover an unavailable VM
+
+Check the instance and confirm that the external volume is mounted:
 
 ```bash
-if [[ "$(LIMA_HOME="$HOME/.lima" limactl list --format '{{.Status}}' android)" == "Running" ]]; then
-  LIMA_HOME="$HOME/.lima" limactl stop android
-fi
-mkdir -p /Volumes/Android/android-lima
-rsync -aHAX --sparse "$HOME/.lima/" /Volumes/Android/android-lima/
-rm -rf "$HOME/.lima"
+test -d /Volumes/Android/android-lima
+limactl-android list
 ```
+
+If the instance is stopped, start the existing instance rather than creating a
+new one:
+
+```bash
+limactl-android start android
+```
+
+Lima can show the instance as `Running` while the guest network or SSH server
+is no longer reachable. If `shell` reports `Connection reset by peer`, `no
+route to host`, or hangs, restart the instance and request a fresh SSH
+connection:
+
+```bash
+limactl-android restart android
+limactl-android shell --reconnect android
+```
+
+If restart does not recover it, do a full stop/start without deleting the
+instance or its disk:
+
+```bash
+limactl-android stop android
+limactl-android start android
+```
+
+### Move an existing VM to the external volume
+
+Run this only when the VM still lives under Lima's default `~/.lima` home. The
+backup is kept until the external copy has been started successfully.
+
+```bash
+set -euo pipefail
+
+default_lima_home="$HOME/.lima"
+android_lima_home="/Volumes/Android/android-lima"
+
+if [[ ! -d "$default_lima_home/android" ]]; then
+  echo "No android VM found under $default_lima_home" >&2
+  exit 1
+fi
+
+if [[ "$(LIMA_HOME="$default_lima_home" limactl list --format '{{.Status}}' android 2>/dev/null)" == "Running" ]]; then
+  LIMA_HOME="$default_lima_home" limactl stop android
+fi
+
+mkdir -p "$android_lima_home"
+rsync -aH --sparse "$default_lima_home/" "$android_lima_home/"
+test -f "$android_lima_home/android/lima.yaml"
+
+if [[ -e "${default_lima_home}.before-android-volume" ]]; then
+  echo "Backup already exists: ${default_lima_home}.before-android-volume" >&2
+  exit 1
+fi
+mv "$default_lima_home" "${default_lima_home}.before-android-volume"
+```
+
+Verify that the wrapper sees the copied instance before removing the backup:
+
+```bash
+limactl-android list
+limactl-android start android
+limactl-android shell --reconnect android
+```
+
+The Lima home is `/Volumes/Android/android-lima/`; the VM itself is stored
+under `/Volumes/Android/android-lima/android/`.
 
 On Apple Silicon, install Rosetta once if it is not already available:
 
@@ -29,11 +100,13 @@ On Apple Silicon, install Rosetta once if it is not already available:
 softwareupdate --install-rosetta
 ```
 
-Create the initial VM:
+Create the initial VM only when `limactl-android list` does not show an
+`android` instance:
 
 ```bash
 limactl-android start \
   --name=android \
+  --arch=aarch64 \
   --vm-type=vz \
   --rosetta \
   --mount-none \
@@ -43,26 +116,43 @@ limactl-android start \
   github:nixos-lima
 ```
 
-Enter it and install the configuration:
+## Deploy the NixOS configuration
+
+The VM configuration binds the Android source tree and build cache from the
+guest filesystem. Create or restore both paths before switching the VM:
 
 ```bash
 limactl-android shell android
-sudo git clone <your-config-repo> /etc/nixos
-sudo nixos-rebuild switch --flake /etc/nixos#android-vm
+mkdir -p /home/ilma4.guest/.cache
+git clone <your-android-repo> /home/ilma4.guest/android
+exit
+```
+
+Skip the `git clone` when `/home/ilma4.guest/android` already contains the
+LineageOS checkout. The directory must be on the VM disk, not a macOS Lima
+mount; `/android` in the container is a bind mount of this path.
+
+From the repository root on macOS, synchronize and switch the guest with the
+repository-provided deployment helper:
+
+```bash
+./utils/deploy-android-vm.sh
+```
+
+The helper copies the current flake to `/etc/nixos` and runs
+`nixos-rebuild switch --flake /etc/nixos#android-vm` in the VM. If the
+repository is elsewhere, set `FLAKE_LOCATION` to its path.
+
+Restart the guest after the initial switch so the configured kernel and
+Rosetta support are active:
+
+```bash
+limactl-android restart android
+limactl-android shell --reconnect android
 ```
 
 The SSH-backed shell automatically attaches to the `default` tmux session.
 Detach with `Ctrl-b d` to leave the VM running.
-
-Restart the guest after the initial switch:
-
-```bash
-exit
-limactl-android restart android
-```
-
-The Lima home is `/Volumes/Android/android-lima/`; the VM itself is stored
-under `/Volumes/Android/android-lima/android/`.
 
 ## Verify Rosetta support
 
@@ -91,7 +181,9 @@ is installed from npm into `/home/ilma4/.local/bin` by Home Manager's
 container user therefore has lingering enabled so that timer runs even though
 the container is entered through `su` rather than a normal login session.
 
-After switching the VM configuration, enter it with:
+After switching the VM configuration, enter the VM with
+`limactl-android shell --reconnect android`, then run the following inside the
+VM (not on macOS):
 
 ```bash
 enter-android-devenv
@@ -100,6 +192,15 @@ uname -m
 # x86_64
 file -L /run/current-system/sw/bin/zsh
 # ELF 64-bit ... x86-64
+```
+
+If the container does not start, check the bind-mount paths and service log
+inside the VM:
+
+```bash
+ls -ld /home/ilma4.guest/android /home/ilma4.guest/.cache
+sudo systemctl status --no-pager container@android-dev.service
+sudo journalctl -b -u container@android-dev.service --no-pager
 ```
 
 `enter-android-devenv` keeps the multiplexer on the VM's native ARM64 side.
