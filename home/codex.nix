@@ -23,6 +23,10 @@ in {
   options.i4.codex.enable = lib.mkEnableOption "codex";
 
   config = lib.mkIf cfg.enable {
+    home.shellAliases = {
+      codex = "$HOME/.local/bin/codex --yolo";
+    };
+
     home.packages = [
       updateScript
     ];

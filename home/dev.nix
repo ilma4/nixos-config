@@ -133,7 +133,6 @@ in {
       ;
 
     home.shellAliases = lib.mkIf pkgs.stdenv.isDarwin {
-      codex = "$HOME/.local/bin/codex --yolo";
       claude = "$HOME/.local/bin/claude --dangerously-skip-permissions";
     };
 
