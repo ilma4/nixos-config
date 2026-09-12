@@ -1,4 +1,4 @@
-{pkgs, ...}: let
+{pkgs, pkgs-unstable, ...}: let
   configureZigbeeSockets = pkgs.writeShellApplication {
     name = "i4-configure-zigbee-sockets";
     runtimeInputs = with pkgs; [
@@ -24,6 +24,7 @@ in {
 
   services.zigbee2mqtt = {
     enable = true;
+    package = pkgs-unstable.zigbee2mqtt;
     settings = {
       homeassistant.enabled = true;
       permit_join = false;
