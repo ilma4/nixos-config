@@ -7,303 +7,11 @@
   pkgs,
   pkgs-unstable,
   ...
-}: let
-  containerName = "android-dev";
-  androidCheckout = "/home/ilma4.guest/android";
-  androidCache = "/home/ilma4.guest/.cache";
-
-  enterAndroidDevenv = pkgs.writeShellApplication {
-    name = "enter-android-devenv";
-    runtimeInputs = [
-      pkgs.nixos-container
-      pkgs.systemd
-      pkgs.tmux
-      pkgs.util-linux
-    ];
-
-    text = ''
-      set -euo pipefail
-
-      # Keep the persistent multiplexer native to the ARM64 VM.  The shell
-      # below becomes a pane in this host tmux; never start the x86-64
-      # container's tmux under Rosetta.
-      if [[ -z "''${TMUX:-}" ]]; then
-        exec tmux new-session -A -s android-dev "$0" "$@"
-      fi
-
-      if ! systemctl is-active --quiet container@${containerName}.service; then
-        sudo nixos-container start ${containerName}
-      fi
-
-      containerLeader=""
-      for _ in {1..30}; do
-        containerLeader="$(sudo machinectl show ${containerName} -p Leader --value 2>/dev/null || true)"
-        if [[ -n "$containerLeader" && "$containerLeader" != "0" ]]; then
-          break
-        fi
-        sleep 1
-      done
-
-      if [[ -z "$containerLeader" || "$containerLeader" == "0" ]]; then
-        echo "Unable to find the ${containerName} container leader" >&2
-        exit 1
-      fi
-
-      # Use the container's x86-64 su after entering its mount namespace.
-      # nixos-container run uses the host ARM64 su, which cannot load the
-      # container's x86-64 PAM modules under Rosetta.
-      exec sudo nsenter --all -t "$containerLeader" -- \
-        /run/current-system/sw/bin/su - ilma4 -c \
-        'cd /android && export ANDROID_DEV_NO_TMUX=1 && exec zsh -l'
-    '';
-  };
-in {
+}: {
   imports = [
     inputs.home-manager-unstable.nixosModules.home-manager
     (modulesPath + "/profiles/qemu-guest.nix")
-    (modulesPath + "/virtualisation/rosetta.nix")
   ];
-
-  virtualisation.rosetta = {
-    enable = true;
-    mountTag = "vz-rosetta";
-  };
-
-  containers.${containerName} = {
-    autoStart = true;
-    privateNetwork = false;
-    nixpkgs = inputs.nixpkgs-unstable;
-
-    # Keep the existing checkout and its build output on the VM filesystem.
-    bindMounts."/android" = {
-      hostPath = androidCheckout;
-      isReadOnly = false;
-    };
-
-    bindMounts."/home/ilma4/.cache" = {
-      hostPath = androidCache;
-      isReadOnly = false;
-    };
-
-    # Keep the container supervisor native to the ARM64 VM. The x86-64
-    # systemd PID 1 cannot initialize its manager under Rosetta, while the
-    # Android userspace and build tools below still use the x86-64 platform.
-    specialArgs = {
-      hostPkgs = pkgs-unstable;
-    };
-
-    config = {lib, hostPkgs, pkgs, ...}: {
-      imports = [
-        inputs.home-manager-unstable.nixosModules.home-manager
-      ];
-
-      # nixos-containers otherwise injects the ARM64 host platform here.
-      nixpkgs.hostPlatform = lib.mkForce "x86_64-linux";
-      nixpkgs.config.allowUnfree = true;
-
-      networking.hostName = containerName;
-
-      systemd.package = hostPkgs.systemd;
-      services.logrotate.enable = false; # use logrotate from host
-
-      users.users.ilma4 = {
-        # Keep the UID used by the VM checkout so the bind mount remains
-        # writable without changing the LineageOS tree's ownership.
-        isSystemUser = true;
-        uid = 501;
-        group = "users";
-        home = "/home/ilma4";
-        createHome = true;
-        shell = pkgs.zsh;
-        # pi is installed by a Home Manager systemd.user timer. Keep the
-        # user manager alive even though the container is entered via su.
-        linger = true;
-      };
-
-      programs.zsh.enable = true;
-
-      # Use the same Home Manager zsh configuration as the VM host, evaluated
-      # with the container's x86-64 package set.
-      home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
-      home-manager.extraSpecialArgs = {
-        inherit inputs constants;
-        pkgs-unstable = pkgs;
-      };
-
-      home-manager.users.ilma4 = {
-        imports = [../../home/base.nix];
-
-        home.homeDirectory = lib.mkForce "/home/ilma4";
-
-        i4.dev = {
-          enable = true;
-          podman = false;
-          nix = false;
-          rust = false;
-          zshAutoenv = false;
-        };
-        # Be explicit here: the npm-installed Pi agent is part of this
-        # container's development environment, not just the ARM64 host's.
-        i4.pi.enable = true;
-
-        programs.direnv.enable = false;
-
-        # The native ARM64 VM tmux owns persistent sessions. Do not start an
-        # x86-64 tmux server inside the Rosetta-translated container.
-        programs.zsh.initContent = ''
-        '';
-      };
-
-      # Provide the FHS environment's runtime linker system-wide inside the
-      # container. These are the same multi-architecture libraries used by
-      # the former buildFHSEnv, while Android's bundled libraries (including
-      # libxml2 and libc++) remain first-class dependencies of the prebuilts.
-      # mkForce is intentional: the nix-ld module otherwise appends its
-      # default set, including Nix's libxml2, which is ABI-incompatible with
-      # the Android xmllint binary.
-      programs.nix-ld = {
-        enable = true;
-        libraries = lib.mkForce (with pkgs; [
-          glibc
-          zlib
-          ncurses5
-          fontconfig
-          libglvnd
-          # The old xorg.libX11 spelling is now deprecated.
-          libx11
-        ]);
-      };
-
-      nix.settings.experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-
-      environment.systemPackages = with pkgs; [
-        # Basic shell utilities
-        bashInteractive
-        coreutils
-        findutils
-        gnugrep
-        gnused
-        gawk
-        which
-        file
-
-        ccache
-
-        # Source management
-        git
-        gitRepo
-        git-lfs
-        gnupg
-        curl
-        wget
-
-        # Scripts
-        python3
-        perl
-
-        # Build tools
-        gcc
-        binutils
-        gnumake
-        flex
-        bison
-        jdk17_headless
-
-        # Archives / compression
-        zip
-        unzip
-        bzip2
-        gzip
-        xz
-        zstd
-        lz4
-        lzop
-        cpio
-        p7zip
-
-        # Common Android build dependencies
-        bc
-        rsync
-        openssl
-        libxml2
-        libxslt
-        fontconfig
-        protobuf
-
-        # Image / filesystem tools useful for device bring-up
-        e2fsprogs
-        erofs-utils
-        squashfsTools
-        dtc
-
-        # Miscellaneous and Android platform tools
-        jq
-        util-linux
-        android-tools
-        nix
-        zsh
-      ];
-
-      environment.variables = {
-        LANG = lib.mkForce "C.UTF-8";
-        LC_ALL = "C.UTF-8";
-        USE_CCACHE = "1";
-        CCACHE_EXEC = "${pkgs.ccache}/bin/ccache";
-        CCACHE_DIR = "/home/ilma4/.cache/lineage-ccache";
-      };
-
-      # AOSP's envsetup uses this FHS path literally. NixOS intentionally
-      # keeps most commands under /run/current-system/sw, so provide the
-      # one compatibility link needed by the unmodified build sources.
-      systemd.tmpfiles.rules = [
-        "L+ /bin/bash - - - - /run/current-system/sw/bin/bash"
-        "L+ /bin/pwd - - - - /run/current-system/sw/bin/pwd"
-      ];
-
-      # systemd-nspawn still overmounts these two procfs paths even when its
-      # API-VFS read-only masking is disabled. Linux rejects a nested procfs
-      # mount when any filesystem is mounted below the parent procfs, which
-      # prevents NsJail from starting. Remove the remaining overlays before
-      # the container reaches the multi-user target.
-      systemd.services.android-build-nsjail-proc = {
-        description = "Prepare procfs for the Android build sandbox";
-        wantedBy = ["multi-user.target"];
-        before = ["multi-user.target"];
-        after = ["systemd-remount-fs.service"];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-        script = ''
-          for path in /proc/kmsg /proc/sys/kernel/random/boot_id; do
-            if ${pkgs.util-linux}/bin/mountpoint --quiet "$path"; then
-              ${pkgs.util-linux}/bin/umount --lazy "$path"
-            fi
-          done
-        '';
-      };
-
-      system.stateVersion = "26.05";
-    };
-  };
-
-  # systemd-nspawn waits for a READY notification from the translated inner
-  # systemd, which is not delivered reliably when PID 1 is native ARM64.
-  # The container remains supervised by nspawn; mark the host unit active as
-  # soon as nspawn has been spawned instead.
-  systemd.services."container@${containerName}" = {
-    # NsJail runs inside this systemd-nspawn container and must mount its own
-    # /proc. nspawn's default procfs masking adds filesystem mounts below
-    # /proc, causing that nested mount to fail with EPERM and making Soong
-    # disable build sandboxing. This intentionally weakens nspawn's kernel
-    # interface restrictions for this trusted Android build container.
-    serviceConfig.Type = lib.mkForce "simple";
-    environment.SYSTEMD_NSPAWN_API_VFS_WRITABLE = "1";
-  };
 
   nixpkgs.config.allowUnfree = true;
 
@@ -323,7 +31,17 @@ in {
   };
 
   programs.zsh.enable = true;
-  programs.nix-ld.enable = true;
+  programs.nix-ld = {
+    enable = true;
+    libraries = lib.mkForce (with pkgs; [
+      glibc
+      zlib
+      ncurses5
+      fontconfig
+      libglvnd
+      libx11
+    ]);
+  };
 
   home-manager.users.ilma4 = {
     imports = [../../home/base.nix];
@@ -341,7 +59,7 @@ in {
 
     programs.direnv.enable = false;
 
-    # Initialize tmux sessions on SSH connections, including `limactl shell`.
+    # Initialize tmux sessions on SSH connections, including limactl shell.
     programs.zsh.initContent = ''
       if [[ -z "''${TMUX:-}" ]] && [[ -n "''${SSH_CONNECTION:-}" || -n "''${SSH_CLIENT:-}" || -n "''${SSH_TTY:-}" ]]; then
         tmux attach-session -t default || tmux new-session -s default
@@ -353,6 +71,24 @@ in {
 
   services.lima.enable = true;
   services.openssh.enable = true;
+
+  # Soong/Ninja opens a very large number of files during graph generation.
+  # Apply the limit to login sessions and to the native VM build processes.
+  security.pam.loginLimits = [
+    {
+      domain = "ilma4";
+      type = "soft";
+      item = "nofile";
+      value = 4194304;
+    }
+    {
+      domain = "ilma4";
+      type = "hard";
+      item = "nofile";
+      value = 4194304;
+    }
+  ];
+  systemd.services.sshd.serviceConfig.LimitNOFILE = 4194304;
 
   users.mutableUsers = true;
   security.sudo.wheelNeedsPassword = false;
@@ -383,11 +119,82 @@ in {
     gitRepo
     ccache
     python3
+    bashInteractive
+    coreutils
+    findutils
+    gnugrep
+    gnused
+    gawk
+    which
+    file
+    ripgrep
     rsync
     unzip
     zip
     curl
-    enterAndroidDevenv
+    wget
+    gnupg
+    git-lfs
+    perl
+    gcc
+    binutils
+    gnumake
+    flex
+    bison
+    bazel
+    ninja
+    cmake
+    jdk17_headless
+    jdk21_headless
+    jdk8_headless
+    lz4
+    lzop
+    bzip2
+    gzip
+    xz
+    zstd
+    cpio
+    p7zip
+    bc
+    openssl
+    kmod
+    pkgsStatic.openssl.dev
+    pkgsStatic.openssl.out
+    zlib.dev
+    elfutils
+    elfutils.dev
+    libxml2
+    libxslt
+    fontconfig
+    protobuf
+    e2fsprogs
+    erofs-utils
+    squashfsTools
+    dtc
+    pahole
+    imagemagick
+    jq
+    util-linux
+    android-tools
+    nix
+    zsh
+  ];
+
+  # The Android build invokes a few tools through conventional FHS paths.
+  # Keep those paths native to this VM; no x86 compatibility runtime is
+  # involved.
+  systemd.tmpfiles.rules = [
+    "L+ /bin/bash - - - - /run/current-system/sw/bin/bash"
+    "L+ /bin/pwd - - - - /run/current-system/sw/bin/pwd"
+    "L+ /usr/bin/lz4 - - - - ${pkgs.lz4.out}/bin/lz4"
+    "L+ /usr/bin/pahole - - - - ${pkgs.pahole}/bin/pahole"
+    "L+ /usr/bin/mogrify - - - - ${pkgs.imagemagick}/bin/mogrify"
+    "L+ /usr/bin/dtc - - - - ${pkgs.dtc}/bin/dtc"
+    # Android's PATH interposer expects the native Bazel executable to have a
+    # stable basename. The Nix `bazel` command is a workspace wrapper that
+    # delegates to a versioned basename, so point this FHS path at the raw
+    # ARM64 ELF instead.
+    "L+ /usr/bin/bazel - - - - ${pkgs.bazel}/bin/.bazel-7.6.0-linux-aarch64-wrapped"
   ];
 
   system.stateVersion = "26.05";
