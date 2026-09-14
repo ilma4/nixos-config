@@ -86,7 +86,6 @@ in {
     marta = macOnlyCask {}; # file manager
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
     skim = macOnlyCask {}; # pdf viewer
-    eqmac = macOnlyCask {}; # equalizer for macos
     linearmouse = macOnlyCask {};
     deskpad = macOnlyCask {};
     easydict = macOnlyCask {};

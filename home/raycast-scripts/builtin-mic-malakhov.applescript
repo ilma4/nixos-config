@@ -8,12 +8,11 @@
 # Optional parameters:
 # @raycast.icon 💻
 # @raycast.packageName Audio
-# @raycast.description Connect WH-1000XM5, stop the ilma4 eqMac, switch input to the built-in microphone
+# @raycast.description Connect WH-1000XM5, switch input to the built-in microphone
 
 property blueutil : "/Users/malakhov/.nix-profile/bin/blueutil"
 property switchAudio : "/Users/malakhov/.nix-profile/bin/SwitchAudioSource"
 property notifier : "/Users/malakhov/.nix-profile/bin/terminal-notifier"
-property killEqmac : "/Users/malakhov/Scripts/kill-eqmac.applescript"
 property deviceAddress : "AC:80:0A:93:B1:08"
 property outputDevice : "WH-1000XM5"
 # Built-in mic device name as reported by macOS on this MacBook Pro.
@@ -60,21 +59,12 @@ on error errorMessage
 end try
 
 if headphonesReady then
-	# eqMac left running by the ilma4 session hijacks the headphone audio, so stop it.
-	# The kill script reports "killed" only when an instance was actually running.
-	set eqmacKilled to false
-	try
-		if (do shell script "osascript " & quoted form of killEqmac) is "killed" then
-			set eqmacKilled to true
-		end if
-	end try
-	# With eqMac gone, take the input first (this breaks macOS's HFP headset grab),
-	# then route output to the real headphones at full quality.
+	# Take the input first (this breaks macOS's HFP headset grab), then route output
+	# to the real headphones at full quality.
 	try
 		assertInput(inputDevice)
 		do shell script quoted form of switchAudio & " -t output -s " & quoted form of outputDevice
 		set statusMessage to outputDevice & " out · " & inputDevice & " in"
-		if eqmacKilled then set statusMessage to statusMessage & " · eqMac stopped"
 		showNotification("WH-1000XM5 ready", statusMessage)
 	on error errorMessage
 		showNotification("Audio switch failed", errorMessage)

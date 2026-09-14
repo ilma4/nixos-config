@@ -108,14 +108,6 @@ in {
 
   security.pam.services.sudo_local.touchIdAuth = true;
 
-  # Let the work user (malakhov) stop the eqMac app that runs in ilma4's login
-  # session; killing another user's process needs root. ilma4 owns the app and
-  # stops it without sudo. Scoped to exactly this command. Used by
-  # ~/Scripts/kill-eqmac.applescript.
-  security.sudo.extraConfig = ''
-    malakhov ALL=(ALL) NOPASSWD: /usr/bin/pkill -x eqMac
-  '';
-
   system.primaryUser = "ilma4";
 
   # Enable certificate management
