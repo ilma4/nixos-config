@@ -144,6 +144,7 @@ in {
       ncdu
       btop
       mprocs # parallel process TUI used by utils/deploy-all.sh
+      witr
 
       (pkgs.writeShellScriptBin "nix-rebuild" ''
         set -euo pipefail
