@@ -18,6 +18,7 @@ in {
     ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
     ./clean-toolbox-download-cache.nix
+    ./mac-eq.nix
     ./jetbrains-maintenance.nix
     ./backup.nix
     ./mlx.nix
