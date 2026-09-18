@@ -131,8 +131,7 @@ in {
       cleanup = "zap";
     };
 
-    # TODO: enable with 25.11 release
-    # greedyCasks = true; # always upgrade casks
+    greedyCasks = true; # always upgrade casks
 
     # Preserve the tap trust previously configured through nix-homebrew.
     # `jundot/omlx` is declared separately in mlx.nix.
