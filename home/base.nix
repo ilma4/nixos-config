@@ -254,7 +254,7 @@ in {
 
         # Forward OSC 52 clipboard sequences from applications through tmux.
         set -s set-clipboard on
-        set -s allow-passthrough on
+        set -g allow-passthrough on
         set -as terminal-features ',xterm-256color:clipboard'
       '';
     };
