@@ -10,6 +10,13 @@
   npmPrefix = "${config.home.homeDirectory}/.local";
   piPackage = "@earendil-works/pi-coding-agent";
   piPackageSpec = "${piPackage}@latest";
+  piExtensions = [
+    "npm:pi-mcp-adapter"
+    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-web-tools"
+    "git:github.com/alexei-ciobanu/pi-compaction-autocontinue"
+    "npm:@howaboua/pi-codex-conversion"
+  ];
 
   updateScript = pkgs.writeShellScriptBin "i4-update-pi" ''
     set -euo pipefail
@@ -18,6 +25,7 @@
     export PATH="${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
 
     ${npm} install --global --prefix ${lib.escapeShellArg npmPrefix} --no-audit --no-fund ${piPackageSpec}
+    ${lib.concatMapStringsSep "\n" (extension: "    pi install ${lib.escapeShellArg extension}") piExtensions}
     pi update --all
 
     # Global installs have no lock file, so create one over the same
