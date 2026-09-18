@@ -38,46 +38,43 @@ as command-line arguments.
 Everything is wired in a single self-contained module,
 `darwin-modules/keyboard-watcher.nix`, which:
 
-- builds the Rust program at nix-darwin build time via
-  `pkgs.makeRustPlatform` + `buildRustPackage` (same pattern as
-  `overlays/monitor-input-overlay.nix`), and
+- builds the Swift program at nix-darwin build time with the Swift compiler and
+  the system `IOKit` and `CoreFoundation` frameworks, and
 - defines the `keyboard-watcher` launchd agent, passing it the vendor id, product
   id, and the `keyMappings` pairs as arguments.
 
-The Rust crate lives next to the module:
+The Swift source lives next to the module:
 
 ```
 darwin-modules/
   keyboard-watcher.nix          # module: package build + launchd agent
   keyboard-watcher/
-    Cargo.toml                  # edition 2024; deps: objc2-io-kit, objc2-core-foundation
-    Cargo.lock                  # committed; buildRustPackage vendors deps offline by checksum
-    src/main.rs                 # IORegistry watcher + in-process remap
+    src/main.swift              # IORegistry watcher + in-process remap
 ```
 
-Dependencies are `objc2-io-kit` (`libc` for the IOKitLib registry-matching
-notifications, `hidsystem` for `IOHIDEventSystemClient`/`IOHIDServiceClient`) and
-`objc2-core-foundation` (`CFArray`/`CFDictionary`/`CFNumber`/`CFRunLoop`/`CFString`/
-`std`), which link IOKit and CoreFoundation directly. The `libc` feature pulls in
-the `libc` crate (vendored from `Cargo.lock`); no extra `buildInputs` are needed
-under the modern Apple SDK in nixpkgs (the default `apple-sdk` provides the
-frameworks).
+The program has no third-party dependencies. Swift imports the Apple SDK's
+`IOKit`, `IOKit.hidsystem`, `CoreFoundation`, `Dispatch`, and `Foundation`
+modules directly. The Nix build links `IOKit` and `CoreFoundation`; the default
+Apple SDK in nixpkgs provides both frameworks.
 
-### Release profile (small binary / low RAM)
+The source passes Swift 6's complete concurrency checks. The Nix build uses
+Swift 6 language mode when the selected compiler supports it, and falls back to
+Swift 5 language mode for nixpkgs revisions that still package Swift 5.10.
 
-`Cargo.toml` sets a size-oriented `[profile.release]` because the watcher spends
-nearly all its time blocked in `CFRunLoop`:
+### Release build (small binary / low RAM)
 
-- `opt-level = "z"`, `lto = "fat"`, `codegen-units = 1` — smallest code,
-- `panic = "abort"` — drops unwinding tables; a panic aborts and launchd's
-  `KeepAlive` relaunches the agent,
-- `strip = true` — strip symbols.
+The Nix build uses whole-module optimization because the watcher spends nearly
+all its time blocked in `CFRunLoop`:
 
-This keeps the binary small (~375K stripped).
+- `-O` — optimized code,
+- `-whole-module-optimization` — enables cross-file optimization,
+- `KeepAlive` — launchd relaunches the agent if it exits.
+
+The binary is stripped by the Nix build where supported.
 
 ## The program
 
-`src/main.rs` takes a vendor id, a product id, and one or more `<src>:<dst>`
+`src/main.swift` takes a vendor id, a product id, and one or more `<src>:<dst>`
 remappings — e.g. `keyboard-watcher 0x46d 0xb369 0x700000064:0x700000035 …` (all
 values in decimal or `0x` hex) — and:
 
@@ -142,7 +139,7 @@ IDs with `hidutil list`.
 # Evaluate all configs (catches module wiring errors)
 ./utils/flake-check.sh
 
-# Build the full darwin system (catches Rust + link errors)
+# Build the full darwin system (catches Swift + link errors)
 nix build .#darwinConfigurations.quicksilver.system
 
 # Switch (only when you actually want it live)
