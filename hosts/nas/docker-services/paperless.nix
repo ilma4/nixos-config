@@ -1,15 +1,15 @@
 {...}: let
-  redis-version = "8.6.2-alpine3.23";
-  paperless-version = "2.20.14";
-  tika-version = "3.3.0.0-full";
-  gotenberg-version = "8.27";
+  valkey-version = "9-alpine";
+  paperless-version = "v3.2.0";
+  tika-version = "3.3.1.0";
+  gotenberg-version = "8.37";
 in {
   # Containers
   dockerCompose.paperless.composeText = ''
     name: paperless-ngx
     services:
       broker:
-        image: docker.io/library/redis:${redis-version}
+        image: docker.io/valkey/valkey:${valkey-version}
         restart: unless-stopped
         volumes:
           - redisdata:/data
