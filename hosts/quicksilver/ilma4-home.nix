@@ -29,6 +29,7 @@ in {
 
     ./common-home.nix
     ../../modules/sops.nix
+    ./llama.nix
   ];
 
   config = {
