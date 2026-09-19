@@ -33,7 +33,7 @@ in {
     # ./agent-dev-box.nix # issues with nixpkgs not having overlays in container unlike on host
 
     "${modules}/server.nix"
-    ./docker-services/qbittorrent.nix
+    ./qbittorrent-amneziavpn.nix
 
     ./docker-services/home-assistant.nix
     ./mqtt.nix
