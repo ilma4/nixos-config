@@ -107,6 +107,11 @@ in {
     home.file = let
       symlink = x: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/nixos-config/dotfiles/${x}";
     in {
+      ".local/bin/run-llama-server.sh" = {
+        source = ../../scripts/run-llama-server.sh;
+        executable = true;
+      };
+      ".pi/agent/extensions/launch-llama.ts".source = ../../dotfiles/pi/extensions/launch-llama.ts;
       ".config/linearmouse/linearmouse.json".source = symlink "linearmouse/linearmouse.json";
       ".config/rclone".source = symlink "rclone";
       ".config/zed".source = symlink "zed";
