@@ -15,24 +15,31 @@ export async function latestTag(repository: string): Promise<string> {
 }
 
 export async function latestTagWhere(repository: string, keepTag: TagPredicate): Promise<string> {
-  const tags = tagsOf(await stableReleasesWhere(repository, keepTag));
+  const tags = tagsOf(stableReleasesWhere(await allReleases(repository), keepTag));
   return tags.length ? highestVersion(tags) : fail(`Error: no stable GitHub release for ${repository} matched the requested version`);
 }
 
 export async function latestTagAfterWhere(repository: string, currentTag: string, keepTag: TagPredicate): Promise<string> {
-  const tags = tagsOf((await releasesAfter(repository, currentTag)).filter((release): boolean => {
-    const tag = tagOf(release);
-    return stable(release) && tag !== undefined && keepTag(tag) && compareVersions(tag, currentTag) > 0;
-  }));
+  const tags = tagsOf(stableReleasesWhere(await allReleases(repository, currentTag),
+    (tag) => keepTag(tag) && compareVersions(tag, currentTag) > 0));
   return tags.length ? highestVersion(tags) : currentTag;
 }
 
 export async function changelog(repository: string, fromTag: string, toTag: string): Promise<string> {
-  return changelogWhere(repository, fromTag, toTag, (_tag: string): boolean => true);
+  return changelogWhere(repository, fromTag, toTag, () => true);
 }
 
 export async function changelogWhere(repository: string, fromTag: string, toTag: string, keepTag: TagPredicate): Promise<string> {
-  return renderChangelog(repository, fromTag, toTag, await changelogReleasesWhere(repository, fromTag, toTag, keepTag));
+  if (fromTag === toTag) return renderChangelog(repository, fromTag, toTag, []);
+  if (compareVersions(toTag, fromTag) <= 0)
+    fail(`Error: target release ${JSON.stringify(toTag)} is not newer than current release ${JSON.stringify(fromTag)} for ${repository}`);
+
+  const releases = await allReleases(repository, fromTag);
+  if (!releases.some((release) => tagOf(release) === toTag))
+    fail(`Error: Release tag ${JSON.stringify(toTag)} was not found after ${JSON.stringify(fromTag)} in GitHub releases for ${repository}`);
+
+  return renderChangelog(repository, fromTag, toTag, stableReleasesWhere(releases,
+    (tag) => keepTag(tag) && compareVersions(tag, fromTag) > 0 && compareVersions(tag, toTag) <= 0));
 }
 
 export async function downloadText(url: string): Promise<string> { return (await request(url)).text(); }
@@ -46,48 +53,29 @@ export async function downloadFirstText(downloads: readonly Download[]): Promise
   return fail(["Error: all GitHub downloads failed:", ...failures].join("\n"));
 }
 
-async function changelogReleasesWhere(repository: string, fromTag: string, toTag: string, keepTag: TagPredicate): Promise<Release[]> {
-  if (fromTag === toTag) return [];
-  if (compareVersions(toTag, fromTag) <= 0)
-    fail(`Error: target release ${JSON.stringify(toTag)} is not newer than current release ${JSON.stringify(fromTag)} for ${repository}`);
-
-  const releases = await releasesAfter(repository, fromTag);
-  if (!releases.some((release): boolean => tagOf(release) === toTag))
-    fail(`Error: Release tag ${JSON.stringify(toTag)} was not found after ${JSON.stringify(fromTag)} in GitHub releases for ${repository}`);
-
-  return releases.filter((release): boolean => {
-    const tag = tagOf(release);
-    return stable(release) && tag !== undefined && keepTag(tag)
-      && compareVersions(tag, fromTag) > 0 && compareVersions(tag, toTag) <= 0;
-  });
-}
-
-async function releasesAfter(repository: string, currentTag: string): Promise<Release[]> {
-  const newerReleases: Release[] = [];
+// When stopTag is supplied, collect only releases preceding it in API order.
+async function allReleases(repository: string, stopTag?: string): Promise<Release[]> {
+  const all: Release[] = [];
   for (let page = 1; ; page++) {
     const releases = await fetchJson<Release[]>(githubApiUrl(repository, `/releases?per_page=100&page=${page}`));
-    if (!releases.length)
-      fail(`Error: Release tag ${JSON.stringify(currentTag)} was not found in GitHub releases for ${repository}`);
+    if (!releases.length) {
+      if (stopTag !== undefined)
+        fail(`Error: Release tag ${JSON.stringify(stopTag)} was not found in GitHub releases for ${repository}`);
+      return all;
+    }
     for (const release of releases) {
-      if (tagOf(release) === currentTag) return newerReleases;
-      newerReleases.push(release);
+      if (stopTag !== undefined && tagOf(release) === stopTag) return all;
+      all.push(release);
     }
   }
 }
 
-async function allReleases(repository: string): Promise<Release[]> {
-  const all: Release[] = [];
-  for (let page = 1; ; page++) {
-    const releases = await fetchJson<Release[]>(githubApiUrl(repository, `/releases?per_page=100&page=${page}`));
-    if (!releases.length) return all;
-    all.push(...releases);
-  }
-}
-
-async function stableReleasesWhere(repository: string, keepTag: TagPredicate): Promise<Release[]> {
-  return (await allReleases(repository)).filter((release): boolean => {
+function stableReleasesWhere(releases: readonly Release[], keepTag: TagPredicate): Release[] {
+  return releases.filter((release) => {
     const tag = tagOf(release);
-    return stable(release) && tag !== undefined && keepTag(tag);
+    return !release.draft && !release.prerelease
+      && [release.tag_name, release.name].every((label) => label == null || !unstable(label))
+      && tag !== undefined && keepTag(tag);
   });
 }
 
@@ -98,7 +86,7 @@ async function fetchJson<Value>(url: string): Promise<Value> {
 }
 
 async function request(url: string): Promise<Response> {
-  const token = [process.env.GITHUB_TOKEN, process.env.GH_TOKEN].find((value): boolean => Boolean(value?.trim()));
+  const token = [process.env.GITHUB_TOKEN, process.env.GH_TOKEN].find((value) => value?.trim());
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json", "User-Agent": "nixos-config-update-tools", "X-GitHub-Api-Version": "2022-11-28",
   };
@@ -113,18 +101,13 @@ async function request(url: string): Promise<Response> {
 function githubApiUrl(repository: string, path: string): string { return `https://api.github.com/repos/${repository}${path}`; }
 
 function tagsOf(releases: readonly Release[]): string[] {
-  const tags: string[] = [];
-  for (const release of releases) {
-    const tag = tagOf(release);
-    if (tag !== undefined) tags.push(tag);
-  }
-  return tags;
+  return releases.map(tagOf).filter((tag): tag is string => tag !== undefined);
 }
 
 function tagOf(release: Release): string | undefined { return nonEmpty(release.tag_name); }
 
 function highestVersion(tags: readonly string[]): string {
-  return tags.reduce((highest, tag): string => compareVersions(tag, highest) >= 0 ? tag : highest);
+  return tags.reduce((highest, tag) => compareVersions(tag, highest) >= 0 ? tag : highest);
 }
 
 function compareVersions(leftTag: string, rightTag: string): number {
@@ -136,21 +119,16 @@ function compareVersions(leftTag: string, rightTag: string): number {
   return left.length - right.length;
 }
 
-function versionKey(tag: string): number[] { return [...tag.matchAll(/\d+/g)].map((match): number => Number(match[0])); }
-
-function stable(release: Release): boolean {
-  return !release.draft && !release.prerelease
-    && [release.tag_name, release.name].every((label): boolean => label == null || !unstable(label));
-}
+function versionKey(tag: string): number[] { return (tag.match(/\d+/g) ?? []).map(Number); }
 
 function unstable(label: string): boolean {
   const lower = label.toLowerCase();
   return lower.includes("pre-release") || lower.includes("pre release")
-    || lower.split(/[^a-z0-9]+/).some((token): boolean => unstableLabels.has(token));
+    || lower.split(/[^a-z0-9]+/).some((token) => unstableLabels.has(token));
 }
 
 function renderChangelog(repository: string, fromTag: string, toTag: string, releases: readonly Release[]): string {
-  const sorted = [...releases].sort((left, right): number => compareText(releaseDate(left) ?? "", releaseDate(right) ?? ""));
+  const sorted = [...releases].sort((left, right) => compareText(releaseDate(left) ?? "", releaseDate(right) ?? ""));
   const lines = [
     `# Releases for \`${repository}\` since \`${fromTag}\` through \`${toTag}\``, "",
     `Found ${sorted.length} stable release(s) newer than \`${fromTag}\` through \`${toTag}\`.`, "",
