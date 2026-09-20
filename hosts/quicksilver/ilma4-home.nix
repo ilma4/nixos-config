@@ -8,21 +8,6 @@
 }: let
   # Secretive SSH agent socket (replaces the Bitwarden agent)
   secretiveSocket = "${config.home.homeDirectory}/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh";
-  limactlAndroidScript = pkgs.writeShellScriptBin "limactl-android" (builtins.readFile ../../scripts/limactl-android);
-  limactlAndroidZshCompletion = pkgs.writeTextFile {
-    name = "limactl-android-zsh-completion";
-    destination = "/share/zsh/site-functions/_limactl-android";
-    text = ''
-      #compdef limactl-android
-
-      source ${pkgs.lima}/share/zsh/site-functions/_limactl
-      _limactl "$@"
-    '';
-  };
-  limactlAndroid = pkgs.symlinkJoin {
-    name = "limactl-android";
-    paths = [limactlAndroidScript limactlAndroidZshCompletion];
-  };
 in {
   imports = [
     inputs.sops-nix-darwin.homeManagerModules.sops
@@ -59,7 +44,6 @@ in {
       pkgs-unstable.llama-cpp
 
       lima
-      limactlAndroid
 
       sops # for managing secrets
       age # for age key management
@@ -99,6 +83,7 @@ in {
     };
 
     home.sessionVariables = {
+      LIMA_HOME = "/Volumes/Android/android-lima";
       SSH_AUTH_SOCK = secretiveSocket;
       # JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };

@@ -9,13 +9,14 @@ direnv extras are disabled. Android builds run directly in the guest.
 ## Host setup
 
 The Android VM uses a separate Lima home on the external volume. Mount the
-volume at `/Volumes/Android` before running any Lima command, and use
-`limactl-android` for every command below. It sets `LIMA_HOME` to
-`/Volumes/Android/android-lima`; mixing it with plain `limactl` makes the VM
-appear to be missing because Lima will look in `~/.lima` instead.
+volume at `/Volumes/Android` before running any Lima command. The quicksilver
+Home Manager configuration sets `LIMA_HOME` to `/Volumes/Android/android-lima`
+for the `ilma4` user, so use `limactl` for every command below. Mixing it with
+the default Lima home makes the VM appear to be missing because Lima will look
+in `~/.lima` instead.
 
-`limactl-android` is installed by the quicksilver Home Manager configuration.
-While bootstrapping that configuration, replace it with
+`limactl` is installed by the quicksilver Home Manager configuration. While
+bootstrapping that configuration, use
 `LIMA_HOME=/Volumes/Android/android-lima limactl`.
 
 ### Recover an unavailable VM
@@ -24,14 +25,14 @@ Check the instance and confirm that the external volume is mounted:
 
 ```bash
 test -d /Volumes/Android/android-lima
-limactl-android list
+limactl list
 ```
 
 If the instance is stopped, start the existing instance rather than creating a
 new one:
 
 ```bash
-limactl-android start android
+limactl start android
 ```
 
 Lima can show the instance as `Running` while the guest network or SSH server
@@ -40,16 +41,16 @@ route to host`, or hangs, restart the instance and request a fresh SSH
 connection:
 
 ```bash
-limactl-android restart android
-limactl-android shell --reconnect android
+limactl restart android
+limactl shell --reconnect android
 ```
 
 If restart does not recover it, do a full stop/start without deleting the
 instance or its disk:
 
 ```bash
-limactl-android stop android
-limactl-android start android
+limactl stop android
+limactl start android
 ```
 
 ### Move an existing VM to the external volume
@@ -83,22 +84,22 @@ fi
 mv "$default_lima_home" "${default_lima_home}.before-android-volume"
 ```
 
-Verify that the wrapper sees the copied instance before removing the backup:
+Verify that Lima sees the copied instance before removing the backup:
 
 ```bash
-limactl-android list
-limactl-android start android
-limactl-android shell --reconnect android
+limactl list
+limactl start android
+limactl shell --reconnect android
 ```
 
 The Lima home is `/Volumes/Android/android-lima/`; the VM itself is stored
 under `/Volumes/Android/android-lima/android/`.
 
-Create the initial VM only when `limactl-android list` does not show an
+Create the initial VM only when `limactl list` does not show an
 `android` instance:
 
 ```bash
-limactl-android start \
+limactl start \
   --name=android \
   --arch=aarch64 \
   --vm-type=vz \
@@ -115,7 +116,7 @@ The VM configuration binds the Android source tree and build cache from the
 guest filesystem. Create or restore both paths before switching the VM:
 
 ```bash
-limactl-android shell android
+limactl shell android
 mkdir -p /home/ilma4.guest/.cache
 git clone <your-android-repo> /home/ilma4.guest/android
 exit
@@ -139,8 +140,8 @@ repository is elsewhere, set `FLAKE_LOCATION` to its path.
 Restart the guest after the initial switch so the configured kernel is active:
 
 ```bash
-limactl-android restart android
-limactl-android shell --reconnect android
+limactl restart android
+limactl shell --reconnect android
 ```
 
 The SSH-backed shell automatically attaches to the `default` tmux session.

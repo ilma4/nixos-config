@@ -15,8 +15,8 @@ if [[ $# -ne 0 ]]; then
     exit 2
 fi
 
-if ! command -v limactl-android >/dev/null 2>&1; then
-    echo "Error: limactl-android is required." >&2
+if ! command -v limactl >/dev/null 2>&1; then
+    echo "Error: limactl is required." >&2
     exit 1
 fi
 
@@ -38,11 +38,11 @@ fi
 
 cleanup() {
     if [[ -n "${remote_tmp}" ]]; then
-        limactl-android shell -y "${instance}" -- rm -rf -- "${remote_tmp}" >/dev/null 2>&1 || true
+        limactl shell -y "${instance}" -- rm -rf -- "${remote_tmp}" >/dev/null 2>&1 || true
     fi
 }
 
-remote_tmp_candidate="$(limactl-android shell -y "${instance}" -- mktemp -d /tmp/nixos-config.XXXXXX)"
+remote_tmp_candidate="$(limactl shell -y "${instance}" -- mktemp -d /tmp/nixos-config.XXXXXX)"
 if [[ "${remote_tmp_candidate}" != /tmp/nixos-config.* ]]; then
     echo "Error: guest returned an unexpected temporary directory: ${remote_tmp_candidate}" >&2
     exit 1
@@ -51,15 +51,15 @@ remote_tmp="${remote_tmp_candidate}"
 trap cleanup EXIT
 
 echo "Syncing ${flake_location} to ${instance}:${remote_config_dir}"
-limactl-android copy \
+limactl copy \
     --backend=rsync \
     --recursive \
     "${flake_location}" \
     "${instance}:${remote_tmp}"
 
-limactl-android shell -y "${instance}" -- \
+limactl shell -y "${instance}" -- \
     sudo rsync --archive --delete "${remote_tmp}/" "${remote_config_dir}/"
 
 echo "Switching ${instance} to ${configuration}"
-limactl-android shell -y "${instance}" -- \
+limactl shell -y "${instance}" -- \
     sudo nixos-rebuild switch --flake "${remote_config_dir}#${configuration}"
