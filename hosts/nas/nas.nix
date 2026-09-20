@@ -96,6 +96,9 @@ in {
 
   networking.hostName = "nas"; # Define your hostname.
 
+  # Do not let dhcpcd manage short-lived Podman/Incus virtual interfaces.
+  networking.dhcpcd.allowInterfaces = ["enp2s0"];
+
   networking.nameservers = ["192.168.1.200" "1.1.1.1" "8.8.8.8"];
 
   sops.secrets."restic/server" = {
