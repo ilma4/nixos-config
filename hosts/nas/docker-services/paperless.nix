@@ -1,18 +1,20 @@
-{...}: let
+{config, ...}: let
+  paperlessSecretKey = "paperless/secret_key";
   valkey-version = "9-alpine";
-  paperless-version = "v3.2.0";
+  paperless-version = "3.2.0";
   tika-version = "3.3.1.0";
   gotenberg-version = "8.37";
 in {
   # Containers
-  dockerCompose.paperless.composeText = ''
+  dockerCompose.paperless = {
+    composeText = ''
     name: paperless-ngx
     services:
       broker:
         image: docker.io/valkey/valkey:${valkey-version}
         restart: unless-stopped
         volumes:
-          - redisdata:/data
+          - valkeydata:/data
       webserver:
         image: ghcr.io/paperless-ngx/paperless-ngx:${paperless-version}
         restart: unless-stopped
@@ -39,7 +41,8 @@ in {
           - /srv/paperless-ngx/media:/usr/src/paperless/media
           - /srv/paperless-ngx/export:/usr/src/paperless/export
           - /srv/paperless-ngx/consume:/usr/src/paperless/consume
-        # env_file: docker-compose.env # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.env
+        env_file:
+          - ${config.sops.templates."paperless.env".path}
         environment:
           PAPERLESS_OCR_LANGUAGES: "eng deu rus"
 
@@ -68,13 +71,26 @@ in {
     volumes:
       data:
       media:
-      redisdata:
+      valkeydata:
 
     networks:
       default:
       reverse_proxy:
         external: true
-  '';
+    '';
+  };
+
+  sops.secrets.${paperlessSecretKey} = {};
+
+  sops.templates."paperless.env" = {
+    content = ''
+      PAPERLESS_SECRET_KEY=${config.sops.placeholder.${paperlessSecretKey}}
+    '';
+    mode = "0400";
+    owner = "root";
+    group = "root";
+    restartUnits = ["paperless.service"];
+  };
 
   networking.firewall.allowedTCPPorts = [8000];
 
