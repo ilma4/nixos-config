@@ -8,6 +8,8 @@
         "workgroup" = "WORKGROUP";
         "server string" = "My NixOS Server";
         "netbios name" = "NIXOS-SERVER"; # Optional: customize your server's name
+        "interfaces" = "enp2s0";
+        "bind interfaces only" = "yes";
         "security" = "user";
         "guest account" = "nobody";
         "map to guest" = "bad user"; # Allows guest access on failed login
