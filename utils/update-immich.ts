@@ -76,6 +76,26 @@ async function main(): Promise<void> {
     if (envChanged) await Bun.write(files.env, updatedEnv);
   }
   await writeAssignment(apply, files.nix, nixText, versionAssignment, latestVersion);
+
+  if (apply && (currentVersion !== latestVersion || changes.length > 0 || envChanged)) {
+    await commitUpdate("immich", currentVersion, latestVersion, [
+      relative(root, files.nix), relative(root, files.compose), relative(root, files.env),
+    ]);
+  }
+}
+
+async function commitUpdate(
+  service: string, from: string, to: string, paths: readonly string[],
+): Promise<void> {
+  const message = `update ${service} from ${from} to ${to}`;
+  console.log(`Committing: ${message}`);
+  const child = Bun.spawn(["jj", "commit", "-m", message, ...paths], {
+    cwd: root,
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const exitCode = await child.exited;
+  if (exitCode !== 0) throw new Error(`Error: jj commit failed with exit code ${exitCode}`);
 }
 
 function parseArguments(args: readonly string[]) {

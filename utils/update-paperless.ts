@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { YAML } from "bun";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { downloadText, latestTag } from "./GitHub.ts";
 import { assignments, selectAssignment } from "./NixValue.ts";
 
@@ -18,10 +18,12 @@ async function main(): Promise<void> {
   const compose = YAML.parse(await downloadText(
     `https://raw.githubusercontent.com/${repository}/${encodeURIComponent(githubTag)}/docker/compose/docker-compose.sqlite-tika.yml`,
   )) as { services: Record<string, { image: string }> };
-  const path = join(import.meta.dir, "../hosts/nas/docker-services/paperless.nix");
+  const root = join(import.meta.dir, "..");
+  const path = join(root, "hosts/nas/docker-services/paperless.nix");
   const original = await Bun.file(path).text();
   const lines = original.split("\n");
   const all = assignments(original);
+  const currentVersion = selectAssignment("paperless-version", all).value;
 
   for (const [service, variable, image] of [
     ["broker", "valkey-version", "docker.io/valkey/valkey"],
@@ -41,8 +43,25 @@ async function main(): Promise<void> {
 
   const updated = lines.join("\n");
   if (updated === original) return console.log("Already up to date.");
-  if (apply) await Bun.write(path, updated);
+  if (apply) {
+    await Bun.write(path, updated);
+    await commitUpdate(root, "paperless", currentVersion, paperlessVersion, [relative(root, path)]);
+  }
   console.log(`${apply ? "Updated" : "Would update"} ${path}`);
+}
+
+async function commitUpdate(
+  root: string, service: string, from: string, to: string, paths: readonly string[],
+): Promise<void> {
+  const message = `update ${service} from ${from} to ${to}`;
+  console.log(`Committing: ${message}`);
+  const child = Bun.spawn(["jj", "commit", "-m", message, ...paths], {
+    cwd: root,
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const exitCode = await child.exited;
+  if (exitCode !== 0) throw new Error(`Error: jj commit failed with exit code ${exitCode}`);
 }
 
 main().catch((error: unknown) => {
