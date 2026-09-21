@@ -7,59 +7,59 @@ services:
   database:
     container_name: immich_postgres
     env_file:
-    - ${IMMICH_SECRET_ENV_FILE}
+      - "${IMMICH_SECRET_ENV_FILE}"
     environment:
-      POSTGRES_DB: ${DB_DATABASE_NAME}
-      POSTGRES_INITDB_ARGS: --data-checksums
-      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: "${DB_DATABASE_NAME}"
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+      POSTGRES_USER: "${DB_USERNAME}"
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     restart: always
     shm_size: 128mb
     volumes:
-    - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+      - "${DB_DATA_LOCATION}:/var/lib/postgresql/data"
   immich-machine-learning:
     container_name: immich_machine_learning
     env_file:
-    - ${IMMICH_ENV_FILE}
-    - ${IMMICH_SECRET_ENV_FILE}
+      - "${IMMICH_ENV_FILE}"
+      - "${IMMICH_SECRET_ENV_FILE}"
     healthcheck:
       disable: false
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    image: "ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}"
     restart: always
     volumes:
-    - model-cache:/cache
+      - model-cache:/cache
   immich-server:
     container_name: immich
     depends_on:
-    - redis
-    - database
+      - redis
+      - database
     env_file:
-    - ${IMMICH_ENV_FILE}
-    - ${IMMICH_SECRET_ENV_FILE}
+      - "${IMMICH_ENV_FILE}"
+      - "${IMMICH_SECRET_ENV_FILE}"
     expose:
-    - '2283'
+      - "2283"
     healthcheck:
       disable: false
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    image: "ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}"
     labels:
-    - traefik.enable=true
-    - traefik.http.routers.immich.rule=Host(`immich.ilma4.home.arpa`)
-    - traefik.http.routers.immich.entrypoints=websecure
-    - traefik.http.routers.immich.tls=true
-    - traefik.docker.network=reverse_proxy
-    - traefik.http.services.immich.loadbalancer.server.port=2283
+      - traefik.enable=true
+      - "traefik.http.routers.immich.rule=Host(`immich.ilma4.home.arpa`)"
+      - traefik.http.routers.immich.entrypoints=websecure
+      - traefik.http.routers.immich.tls=true
+      - traefik.docker.network=reverse_proxy
+      - traefik.http.services.immich.loadbalancer.server.port=2283
     networks:
       default: null
       reverse_proxy: null
     restart: always
     volumes:
-    - ${UPLOAD_LOCATION}:/data
-    - /etc/localtime:/etc/localtime:ro
+      - "${UPLOAD_LOCATION}:/data"
+      - /etc/localtime:/etc/localtime:ro
   redis:
     container_name: immich_redis
     healthcheck:
       test: redis-cli ping || exit 1
-    image: docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
+    image: docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf
     restart: always
 volumes:
   model-cache: null
