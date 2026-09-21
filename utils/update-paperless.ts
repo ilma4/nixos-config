@@ -13,9 +13,10 @@ async function main(): Promise<void> {
       (args.includes("--dry-run") && args.includes("--apply"))) throw new Error(usage);
   const apply = !args.includes("--dry-run");
   const repository = "paperless-ngx/paperless-ngx";
-  const tag = await latestTag(repository);
+  const githubTag = await latestTag(repository);
+  const paperlessVersion = githubTag.replace(/^v/, "");
   const compose = YAML.parse(await downloadText(
-    `https://raw.githubusercontent.com/${repository}/${encodeURIComponent(tag)}/docker/compose/docker-compose.sqlite-tika.yml`,
+    `https://raw.githubusercontent.com/${repository}/${encodeURIComponent(githubTag)}/docker/compose/docker-compose.sqlite-tika.yml`,
   )) as { services: Record<string, { image: string }> };
   const path = join(import.meta.dir, "../hosts/nas/docker-services/paperless.nix");
   const original = await Bun.file(path).text();
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
     const upstream = compose.services?.[service]?.image;
     if (typeof upstream !== "string" || !upstream.startsWith(`${image}:`))
       throw new Error(`Unexpected upstream image for ${service}: ${upstream}`);
-    const version = service === "webserver" ? tag : upstream.slice(image.length + 1);
+    const version = service === "webserver" ? paperlessVersion : upstream.slice(image.length + 1);
     if (!/^[\w][\w.-]{0,127}$/.test(version)) throw new Error(`Invalid image tag: ${version}`);
     const assignment = selectAssignment(variable, all);
     lines[assignment.lineNumber] = `${assignment.indent}${variable} = "${version}";${assignment.trailing}`;
