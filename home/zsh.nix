@@ -478,7 +478,25 @@ in {
           # false for all three, so these static sources replace HM's own
           # per-startup `direnv hook` / `fzf --zsh` / `atuin init zsh` forks. Runs
           # after compinit (HM emits that earlier).
-          ${lib.optionalString config.programs.direnv.enable "source ${direnvHookSnippet}"}
+          ${lib.optionalString config.programs.direnv.enable ''
+            source ${direnvHookSnippet}
+
+            # The early block already ran `direnv export zsh` for this directory.
+            # Skip the duplicate export at the first prompt, then use the normal
+            # precmd hook so .envrc edits are still picked up without a cd.
+            # Leave direnv's chpwd hook unchanged for directory transitions.
+            typeset -gi _i4_direnv_skip_first_precmd=1
+            function _i4_direnv_precmd {
+              if (( _i4_direnv_skip_first_precmd )); then
+                _i4_direnv_skip_first_precmd=0
+              else
+                _direnv_hook
+              fi
+            }
+            if (( ''${precmd_functions[(I)_direnv_hook]} )); then
+              precmd_functions[''${precmd_functions[(I)_direnv_hook]}]=_i4_direnv_precmd
+            fi
+          ''}
 
           # fzf defines ZLE widgets, so guard on the line editor being active
           # (mirrors HM's `$options[zle]` guard).
@@ -504,7 +522,7 @@ in {
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
         lib.mkIf (stdenv.isLinux && config.configure-ssh) # macOS works fine with ssh agent
-
+        
         ''
           if [ -n "''${SSH_AUTH_SOCK:-}" ] && [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
               mkdir -p ${HOME}/.ssh
@@ -531,6 +549,5 @@ in {
         $DRY_RUN_CMD install $VERBOSE_ARG -m644 ${zcompdumpFingerprint} "$HOME/.zcompdump.fingerprint"
       fi
     '';
-
   };
 }
