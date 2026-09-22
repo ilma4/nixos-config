@@ -191,6 +191,17 @@ in {
 
       initContent = let
         early = lib.mkOrder 500 ''
+          # Load the directory environment before instant prompt captures console
+          # output. The precomputed direnv hook below keeps it updated afterward.
+          ${lib.optionalString config.programs.direnv.enable ''
+            emulate zsh -c "$(${lib.getExe' config.programs.direnv.package "direnv"} export zsh)"
+          ''}
+
+          # Enable Powerlevel10k instant prompt before the rest of shell setup.
+          if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+            source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+          fi
+
           fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
           ${lib.optionalString isDarwin "fpath+=(${homebrewPrefix}/share/zsh/site-functions)"}
 
