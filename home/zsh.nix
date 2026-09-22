@@ -191,10 +191,26 @@ in {
 
       initContent = let
         early = lib.mkOrder 500 ''
-          # Load the directory environment before instant prompt captures console
-          # output. The precomputed direnv hook below keeps it updated afterward.
+          # Load an active directory environment before instant prompt captures
+          # console output. Outside an .envrc tree, avoid starting direnv just
+          # to learn that it has nothing to do. An inherited direnv environment
+          # still needs an export so it can be removed after leaving its tree.
+          # The precomputed hook below keeps the environment updated afterward.
           ${lib.optionalString config.programs.direnv.enable ''
-            emulate zsh -c "$(${lib.getExe' config.programs.direnv.package "direnv"} export zsh)"
+            function _i4_direnv_has_context {
+              [[ -n ''${DIRENV_DIFF-} || -n ''${DIRENV_DIR-} || -n ''${DIRENV_FILE-} ]] && return 0
+              local dir=$PWD
+              while true; do
+                [[ -e $dir/.envrc ]] && return 0
+                [[ $dir == / ]] && return 1
+                dir=''${dir:h}
+              done
+            }
+            typeset -gi _i4_direnv_exported_at_start=0
+            if _i4_direnv_has_context; then
+              emulate zsh -c "$(${lib.getExe' config.programs.direnv.package "direnv"} export zsh)"
+              _i4_direnv_exported_at_start=1
+            fi
           ''}
 
           # Enable Powerlevel10k instant prompt before the rest of shell setup.
@@ -481,14 +497,17 @@ in {
           ${lib.optionalString config.programs.direnv.enable ''
             source ${direnvHookSnippet}
 
-            # The early block already ran `direnv export zsh` for this directory.
-            # Skip the duplicate export at the first prompt, then use the normal
-            # precmd hook so .envrc edits are still picked up without a cd.
-            # Leave direnv's chpwd hook unchanged for directory transitions.
+            # Skip a duplicate export at the first prompt. If the early block
+            # found no .envrc, check again in case startup created one. Later
+            # prompts still pick up .envrc edits without a cd. Leave direnv's
+            # chpwd hook unchanged for directory transitions.
             typeset -gi _i4_direnv_skip_first_precmd=1
             function _i4_direnv_precmd {
               if (( _i4_direnv_skip_first_precmd )); then
                 _i4_direnv_skip_first_precmd=0
+                if (( ! _i4_direnv_exported_at_start )) && _i4_direnv_has_context; then
+                  _direnv_hook
+                fi
               else
                 _direnv_hook
               fi
