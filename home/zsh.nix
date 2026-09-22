@@ -124,8 +124,16 @@
   p10kCompiledConfig = pkgs.runCommandLocal "i4-p10k-config-compiled" {} ''
     set -euo pipefail
     mkdir -p "$out"
-    cp ${../dotfiles/p10k.zsh} "$out/p10k.zsh"
-    chmod u+w "$out/p10k.zsh"
+
+    # Keep disabled segment settings in the editable config as comments, but
+    # leave comments out of the script zsh parses on every startup.
+    stripCommentedLines() {
+      local line=""
+      while IFS= read -r line || [[ -n "$line" ]]; do
+        [[ "$line" =~ ^[[:space:]]*# ]] || printf '%s\n' "$line"
+      done < "$1" > "$2"
+    }
+    stripCommentedLines ${../dotfiles/p10k.zsh} "$out/p10k.zsh"
     ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/p10k.zsh.zwc' '$out/p10k.zsh'"
   '';
 
