@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   constants,
   ...
 }: let
@@ -13,7 +14,7 @@
 
     export PATH="${lib.makeBinPath [
       pkgs.coreutils
-      pkgs.git
+      pkgs-unstable.git
       pkgs.openssh
       pkgs.nixos-rebuild-ng
       config.nix.package
