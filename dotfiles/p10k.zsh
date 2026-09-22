@@ -35,7 +35,7 @@
     os_icon                 # os identifier
     context                 # user@hostname
     dir                     # current directory
-    git_branch_only         # git branch (fast, no gitstatusd)
+    vcs                     # git status
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
@@ -1593,60 +1593,6 @@
     p10k segment -f 196 -i '⚠' -t 'old Nix generation'
   }
 
-  # --- Branch-only git segment (no gitstatusd, no git command) ---
-  # Render the branch in the terminal's default foreground color instead of
-  # p10k's fallback (color 0 / black), which is invisible on dark themes. An
-  # empty FOREGROUND makes p10k emit `%f`, so the color follows whatever the
-  # current terminal theme uses for default text and stays readable on both
-  # light and dark backgrounds.
-  typeset -g POWERLEVEL9K_GIT_BRANCH_ONLY_FOREGROUND=
-  prompt_git_branch_only() {
-    local dir=$PWD git_file git_dir head_file head branch
-
-    # Walk up from $PWD looking for a Git checkout. In a linked worktree,
-    # .git is a file whose `gitdir:` entry points to the directory containing
-    # HEAD; in a regular checkout, .git is that directory itself.
-    while true; do
-      git_file=$dir/.git
-      head_file=
-
-      if [[ -d $git_file ]]; then
-        head_file=$git_file/HEAD
-      elif [[ -f $git_file && -r $git_file ]]; then
-        git_dir=$(<"$git_file") || return
-        git_dir=${git_dir%%$'\n'*}
-        git_dir=${git_dir%$'\r'}
-        if [[ $git_dir == gitdir:\ * ]]; then
-          git_dir=${git_dir#gitdir: }
-          [[ $git_dir == /* ]] || git_dir=$dir/$git_dir
-          head_file=$git_dir/HEAD
-        fi
-      fi
-
-      [[ -n $head_file && -r $head_file ]] && break
-      [[ $dir == / ]] && return
-      dir=${dir:h}
-    done
-
-    head=$(<"$head_file") || return
-    head=${head//$'\n'/}
-
-    if [[ $head == ref:\ refs/heads/* ]]; then
-      branch=${head#ref: refs/heads/}
-    elif [[ $head == ref:\ * ]]; then
-      branch=${head#ref: }
-    else
-      # Detached HEAD: show short SHA.
-      branch=${head[1,8]}
-    fi
-
-    [[ -n $branch ]] || return
-    # Icon is optional; remove -i '' if you don't want it.
-    p10k segment -i '' -t "$branch"
-  }
-
-  # --- end of branch only ---
-
   # Example of a user-defined prompt segment. Function prompt_example will be called on every
   # prompt if `example` prompt segment is added to POWERLEVEL9K_LEFT_PROMPT_ELEMENTS or
   # POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS. It displays an icon and orange text greeting the user.
@@ -1764,7 +1710,6 @@
     'POWERLEVEL9K_TIME_*' \
     'POWERLEVEL9K_TODO*' \
     'POWERLEVEL9K_TOOLBOX*' \
-    'POWERLEVEL9K_VCS*' \
     'POWERLEVEL9K_VIM_SHELL*' \
     'POWERLEVEL9K_VIRTUALENV*' \
     'POWERLEVEL9K_VPN_IP*' \
