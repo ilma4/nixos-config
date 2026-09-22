@@ -203,3 +203,8 @@ enter_accept = true
 # This ensures that sync v2 is enabled for new installs only
 # In a later release it will become the default across the board
 records = true
+
+[daemon]
+# Let Atuin start the daemon on first use and restart it when needed.
+enabled = true
+autostart = true
