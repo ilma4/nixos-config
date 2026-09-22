@@ -18,7 +18,7 @@
 in {
   services.llama-cpp = {
     enable = true;
-    package = pkgs-unstable.llama-cpp.override {vulkanSupport = true;};
+    package = pkgs-unstable.llama-cpp-vulkan;
     host = "127.0.0.1";
     inherit port model;
     openFirewall = false;
