@@ -505,20 +505,21 @@ in {
           ${lib.optionalString config.programs.direnv.enable ''
             source ${direnvHookSnippet}
 
-            # Skip a duplicate export at the first prompt. If the early block
-            # found no .envrc, check again in case startup created one. Later
-            # prompts still pick up .envrc edits without a cd. Leave direnv's
-            # chpwd hook unchanged for directory transitions.
+            # Skip a duplicate export at the first prompt. Check for an active
+            # direnv environment or an .envrc before every later prompt too:
+            # outside those trees, spawning direnv on every command adds prompt
+            # latency without changing the environment. The context check still
+            # notices newly created .envrc files and inherited environments
+            # that need to be unloaded. Leave the chpwd hook unchanged.
             typeset -gi _i4_direnv_skip_first_precmd=1
             function _i4_direnv_precmd {
               if (( _i4_direnv_skip_first_precmd )); then
                 _i4_direnv_skip_first_precmd=0
-                if (( ! _i4_direnv_exported_at_start )) && _i4_direnv_has_context; then
-                  _direnv_hook
+                if (( _i4_direnv_exported_at_start )); then
+                  return
                 fi
-              else
-                _direnv_hook
               fi
+              _i4_direnv_has_context && _direnv_hook
             }
             if (( ''${precmd_functions[(I)_direnv_hook]} )); then
               precmd_functions[''${precmd_functions[(I)_direnv_hook]}]=_i4_direnv_precmd
