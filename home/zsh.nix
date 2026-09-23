@@ -92,6 +92,8 @@
       ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/atuin-init.zsh.zwc' '$out/atuin-init.zsh'"
     '';
 
+  reftableGitstatus = import ./gitstatus-reftable.nix {inherit pkgs;};
+
   # Powerlevel10k ships source files and tries to zcompile them at runtime only
   # when its install directory is writable. The Nix store is intentionally not
   # writable, so copy the theme tree into a small derivation and precompile the
@@ -134,6 +136,8 @@
       done < "$1" > "$2"
     }
     stripCommentedLines ${../dotfiles/p10k.zsh} "$out/p10k.zsh"
+    substituteInPlace "$out/p10k.zsh" \
+      --replace-fail 'GITSTATUS_DAEMON=gitstatusd' 'GITSTATUS_DAEMON=${lib.getExe reftableGitstatus}'
     ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/p10k.zsh.zwc' '$out/p10k.zsh'"
   '';
 
