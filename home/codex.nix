@@ -18,6 +18,18 @@
     else
       codex update
     fi
+
+    releases_dir=$(cd -P "$HOME/.codex/packages/standalone/releases" && pwd -P)
+    current_release=$(cd -P "$HOME/.codex/packages/standalone/current" && pwd -P)
+    if [[ "$(dirname "$current_release")" != "$releases_dir" ]]; then
+      echo "Codex current release is outside $releases_dir" >&2
+      exit 1
+    fi
+
+    for release in "$releases_dir"/*; do
+      [[ -d "$release" && ! -L "$release" ]] || continue
+      [[ "$release" == "$current_release" ]] || rm -rf -- "$release"
+    done
   '';
 in {
   options.i4.codex.enable = lib.mkEnableOption "codex";
