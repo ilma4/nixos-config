@@ -18,7 +18,8 @@ class GitStatusDaemonTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.repo = Path(self.tmp.name)
+        self.repo = Path(self.tmp.name) / "repo"
+        self.repo.mkdir()
         self.git("init", "-q", "-b", "main")
         self.git("config", "user.name", "Prompt Test")
         self.git("config", "user.email", "prompt@example.invalid")
@@ -35,8 +36,17 @@ class GitStatusDaemonTest(unittest.TestCase):
             text=True,
         )
 
-    def status(self):
-        request = (f"1\0{self.repo}\0{os.environ['PATH']}\0" + "0\0").encode()
+    def status(self, git_env=None):
+        git_env = git_env or {}
+        values = ["1", str(self.repo), os.environ["PATH"], str(len(git_env))]
+        for name, value in git_env.items():
+            values.extend([name, value])
+        request = subprocess.run(
+            ["zsh", "-fc", 'for value in "$@"; do print -r -- "${(q)value}"; done',
+             "zsh", *values],
+            check=True,
+            capture_output=True,
+        ).stdout
         result = subprocess.run(
             ["zsh", "-f", str(DAEMON)],
             input=request,
@@ -45,7 +55,7 @@ class GitStatusDaemonTest(unittest.TestCase):
         )
         self.assertEqual(result.stderr, b"")
         self.assertTrue(result.stdout.startswith(b"1:"))
-        self.assertTrue(result.stdout.endswith(b"\0"))
+        self.assertTrue(result.stdout.endswith(b"\n"))
         fields = result.stdout[2:-1].decode().split("\x1f")
         self.assertEqual(len(fields), len(FIELDS))
         return dict(zip(FIELDS, fields))
@@ -90,6 +100,17 @@ class GitStatusDaemonTest(unittest.TestCase):
         branch = "feature%" + "long" * 8
         self.git("checkout", "-qb", branch)
         self.assertEqual(self.status()["branch"], branch)
+
+    def test_quoted_newlines_in_path_and_git_environment(self):
+        renamed = self.repo.with_name("repo\nwith\\slashes")
+        self.repo.rename(renamed)
+        self.repo = renamed
+        status = self.status({
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "user.name",
+            "GIT_CONFIG_VALUE_0": "line one\nline two\\name",
+        })
+        self.assertEqual(status["branch"], "main")
 
     def test_tag(self):
         (self.repo / "staged").write_text("changed\n")

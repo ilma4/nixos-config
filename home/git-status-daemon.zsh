@@ -1,5 +1,5 @@
-# Run as a long-lived coprocess. The interactive shell sends NUL-delimited
-# requests; only this process launches Git.
+# Run as a long-lived coprocess. The interactive shell sends quoted lines;
+# only this process launches Git.
 emulate -R zsh -o no_aliases
 
 function _i4_format_git_status() {
@@ -59,18 +59,24 @@ function _i4_format_git_status() {
 zmodload zsh/parameter
 typeset -a previous_git_names=(${(k)parameters[(I)GIT_*]})
 typeset id= dir= request_path= count= name= value= porcelain=
-while IFS= read -r -d '' id; do
-  IFS= read -r -d '' dir || break
-  IFS= read -r -d '' request_path || break
-  IFS= read -r -d '' count || break
+while IFS= read -r id; do
+  id=${(Q)id}
+  IFS= read -r dir || break
+  dir=${(Q)dir}
+  IFS= read -r request_path || break
+  request_path=${(Q)request_path}
+  IFS= read -r count || break
+  count=${(Q)count}
 
   for name in "${previous_git_names[@]}"; do
     unset "$name"
   done
   previous_git_names=()
   for (( i = 0; i < count; ++i )); do
-    IFS= read -r -d '' name || exit 0
-    IFS= read -r -d '' value || exit 0
+    IFS= read -r name || exit 0
+    name=${(Q)name}
+    IFS= read -r value || exit 0
+    value=${(Q)value}
     [[ $name == GIT_* ]] || exit 1
     export "$name=$value"
     previous_git_names+=("$name")
@@ -82,5 +88,5 @@ while IFS= read -r -d '' id; do
   else
     REPLY=
   fi
-  print -rn -- "$id:$REPLY"$'\0'
+  print -r -- "$id:$REPLY"
 done

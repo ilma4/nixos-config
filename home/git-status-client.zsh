@@ -1,11 +1,33 @@
 # Source from the interactive shell with the zsh executable and worker path.
 # A single coprocess handles every prompt request in this shell.
+if (( ${_I4_GIT_STATUS_STARTED:-0} )); then
+  print -ru2 -- 'git status daemon already launched in this shell; refusing a second launch'
+  return 1
+fi
 zmodload zsh/parameter
 autoload -Uz add-zsh-hook
 
 typeset -gi _I4_GIT_STATUS_SEQ=0 _I4_GIT_STATUS_INFLIGHT=0
-typeset -gi _I4_GIT_STATUS_READY=0
+typeset -gi _I4_GIT_STATUS_READY=0 _I4_GIT_STATUS_FAILED=0 _I4_GIT_STATUS_STARTED=0
 typeset -g _I4_GIT_STATUS_OUTPUT=
+typeset -g _I4_GIT_STATUS_ZSH=$1 _I4_GIT_STATUS_DAEMON=$2
+
+function _i4_git_status_start() {
+  if (( _I4_GIT_STATUS_STARTED )); then
+    print -ru2 -- 'git status daemon already launched in this shell; refusing a second launch'
+    return 1
+  fi
+  _I4_GIT_STATUS_STARTED=1
+  () {
+    setopt local_options no_monitor
+    coproc "$_I4_GIT_STATUS_ZSH" -f "$_I4_GIT_STATUS_DAEMON"
+  }
+  typeset -gi _I4_GIT_STATUS_PID=$!
+  disown
+  exec {_I4_GIT_STATUS_REQUEST_FD}>&p
+  exec {_I4_GIT_STATUS_RESPONSE_FD}<&p
+  zle -F $_I4_GIT_STATUS_RESPONSE_FD _i4_git_status_response
+}
 
 function _i4_git_status_redraw() {
   if (( $+functions[_p9k_set_prompt] )); then
@@ -26,18 +48,17 @@ function _i4_git_status_send() {
     [[ ${parameters[$name]} == *export* ]] && git_names+=("$name")
   done
 
-  payload="$_I4_GIT_STATUS_SEQ"$'\0'"$PWD"$'\0'"$PATH"$'\0'"${#git_names}"$'\0'
+  # Quote each field so paths and exported Git variables may contain newlines.
+  # Line reads do not make Zsh change the daemon's inherited terminal settings.
+  payload="${(q)_I4_GIT_STATUS_SEQ}"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"${(q)${#git_names}}"$'\n'
   for name in "${git_names[@]}"; do
-    payload+="$name"$'\0'"${(P)name}"$'\0'
+    payload+="${(q)name}"$'\n'"${(q)${(P)name}}"$'\n'
   done
 
   if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- "$payload" 2>/dev/null; then
     _I4_GIT_STATUS_INFLIGHT=1
   else
-    _I4_GIT_STATUS_INFLIGHT=0
-    _I4_GIT_STATUS_READY=0
-    _I4_GIT_STATUS_OUTPUT=
-    add-zsh-hook -d precmd _i4_git_status_precmd
+    _i4_git_status_fail 'request pipe closed'
   fi
 }
 
@@ -53,12 +74,8 @@ function _i4_git_status_precmd() {
 
 function _i4_git_status_response() {
   local fd=$1 response git_result
-  if [[ -n $2 ]] || ! IFS= read -r -d '' -u $fd response; then
-    zle -F $fd
-    add-zsh-hook -d precmd _i4_git_status_precmd
-    _I4_GIT_STATUS_INFLIGHT=0
-    _I4_GIT_STATUS_READY=0
-    _I4_GIT_STATUS_OUTPUT=
+  if [[ -n $2 ]] || ! IFS= read -r -u $fd response; then
+    _i4_git_status_fail 'response pipe closed'
     _i4_git_status_redraw
     return
   fi
@@ -66,6 +83,7 @@ function _i4_git_status_response() {
   _I4_GIT_STATUS_INFLIGHT=0
   if [[ ${response%%:*} != $_I4_GIT_STATUS_SEQ ]]; then
     _i4_git_status_send
+    (( _I4_GIT_STATUS_FAILED )) && _i4_git_status_redraw
     return
   fi
   git_result=${response#*:}
@@ -102,21 +120,32 @@ function _i4_git_status_response() {
   fi
 }
 
+function _i4_git_status_fail() {
+  (( _I4_GIT_STATUS_FAILED )) && return
+  _I4_GIT_STATUS_FAILED=1
+  _I4_GIT_STATUS_INFLIGHT=0
+  _I4_GIT_STATUS_READY=0
+  _I4_GIT_STATUS_OUTPUT=
+  local pid=$_I4_GIT_STATUS_PID
+  _i4_git_status_stop
+  add-zsh-hook -d precmd _i4_git_status_precmd
+  print -ru2 -- "git status daemon (PID $pid) failed: $1; Git prompt disabled for this shell"
+}
+
 function _i4_git_status_stop() {
+  (( _I4_GIT_STATUS_PID > 0 )) || return
+  local pid=$_I4_GIT_STATUS_PID
+  _I4_GIT_STATUS_PID=0
   zle -F $_I4_GIT_STATUS_RESPONSE_FD 2>/dev/null
   exec {_I4_GIT_STATUS_REQUEST_FD}>&-
   exec {_I4_GIT_STATUS_RESPONSE_FD}<&-
+  kill -TERM $pid 2>/dev/null
+  # A stopped process cannot handle TERM until continued during cleanup.
+  kill -CONT $pid 2>/dev/null
 }
 
 if (( $+commands[git] )); then
-  () {
-    setopt local_options no_monitor
-    coproc "$1" -f "$2"
-  } "$1" "$2"
-  disown
-  exec {_I4_GIT_STATUS_REQUEST_FD}>&p
-  exec {_I4_GIT_STATUS_RESPONSE_FD}<&p
-  zle -F $_I4_GIT_STATUS_RESPONSE_FD _i4_git_status_response
+  _i4_git_status_start
   add-zsh-hook precmd _i4_git_status_precmd
   add-zsh-hook zshexit _i4_git_status_stop
 fi
