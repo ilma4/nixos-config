@@ -37,7 +37,7 @@
     os_icon                 # os identifier
     context                 # user@hostname
     dir                     # current directory
-    git_prompt              # asynchronous Git status from git-prompt.zsh
+    git_status              # asynchronous Git status from a persistent worker
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
@@ -287,11 +287,9 @@
   # Custom prefix.
   # typeset -g POWERLEVEL9K_DIR_PREFIX='%fin '
 
-  # git-prompt.zsh owns asynchronous Git status. Its callback updates the
-  # prompt after the background Git command finishes; this segment renders
-  # the latest result without starting gitstatusd.
-  function prompt_git_prompt() {
-    p10k segment -f 76 -e -t '${_ZSH_GIT_PROMPT_STATUS_OUTPUT}'
+  # The persistent worker runs git status and redraws this segment when ready.
+  function prompt_git_status() {
+    p10k segment -f 76 -e -t '${_I4_GIT_STATUS_OUTPUT}'
   }
 
   # Previous Powerlevel10k vcs/gitstatusd settings remain here for reference.

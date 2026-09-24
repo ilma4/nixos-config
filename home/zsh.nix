@@ -92,17 +92,12 @@
       ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/atuin-init.zsh.zwc' '$out/atuin-init.zsh'"
     '';
 
-  gitPromptSource = pkgs.fetchFromGitHub {
-    owner = "woefe";
-    repo = "git-prompt.zsh";
-    rev = "c7f1d4dee4920cca4559c416a2b4c8a064dc9f45";
-    hash = "sha256-dSy7uDOKPfDWi6RyQqWjjWUMjY/6OqF4usEm+ipGS6o=";
-  };
-  gitPromptCompiled = pkgs.runCommandLocal "i4-git-prompt-compiled" {} ''
+  gitStatusScripts = pkgs.runCommandLocal "i4-git-status-daemon" {} ''
     set -euo pipefail
     mkdir -p "$out"
-    cp ${gitPromptSource}/git-prompt.zsh "$out/git-prompt.zsh"
-    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/git-prompt.zsh.zwc' '$out/git-prompt.zsh'"
+    cp ${./git-status-client.zsh} "$out/git-status-client.zsh"
+    cp ${./git-status-daemon.zsh} "$out/git-status-daemon.zsh"
+    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/git-status-client.zsh.zwc' '$out/git-status-client.zsh'"
   '';
 
   # Powerlevel10k ships source files and tries to zcompile them at runtime only
@@ -193,7 +188,7 @@ in {
       # `bindkey -v` in initContent below replaces it.
       oh-my-zsh.enable = false;
 
-      # Keep Powerlevel10k's layout and render Git status with git-prompt.zsh.
+      # Keep Powerlevel10k's layout and render Git status from a persistent worker.
       shellAliases = {
         ls = lib.mkIf isDarwin "${pkgs.coreutils}/bin/ls --color=auto"; # use GNU ls on macOS, it has better colors
         # dirsize = "${pkgs.ncdu}/bin/ncdu";
@@ -297,26 +292,7 @@ in {
             export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
           fi
 
-          # git-prompt.zsh normally installs its own prompt when neither PROMPT
-          # nor RPROMPT mentions gitprompt. Give it a temporary RPROMPT so it
-          # only installs its async status hook; Powerlevel10k owns the layout.
-          RPROMPT='$(gitprompt)'
-          ZSH_THEME_GIT_PROMPT_PREFIX=""
-          ZSH_THEME_GIT_PROMPT_SUFFIX=""
-          ZSH_THEME_GIT_PROMPT_SEPARATOR=""
-          ZSH_THEME_GIT_PROMPT_BRANCH=""
-          ZSH_THEME_GIT_PROMPT_DETACHED=':'
-          ZSH_THEME_GIT_PROMPT_BEHIND=' ⇣'
-          ZSH_THEME_GIT_PROMPT_AHEAD=' ⇡'
-          ZSH_THEME_GIT_PROMPT_UNMERGED=' ~'
-          ZSH_THEME_GIT_PROMPT_STAGED=' +'
-          ZSH_THEME_GIT_PROMPT_UNSTAGED=' !'
-          ZSH_THEME_GIT_PROMPT_UNTRACKED=' ?'
-          ZSH_THEME_GIT_PROMPT_STASHED=' *'
-          ZSH_THEME_GIT_PROMPT_CLEAN=""
-          ZSH_GIT_PROMPT_SHOW_STASH=1
-          source ${gitPromptCompiled}/git-prompt.zsh
-          unset RPROMPT
+          source ${gitStatusScripts}/git-status-client.zsh ${lib.getExe pkgs.zsh} ${gitStatusScripts}/git-status-daemon.zsh
 
           # Powerlevel10k theme (precompiled with zcompile in the let-block).
           source ${p10kCompiledTheme}/powerlevel10k.zsh-theme
