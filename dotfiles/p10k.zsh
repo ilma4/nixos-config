@@ -287,9 +287,20 @@
   # Custom prefix.
   # typeset -g POWERLEVEL9K_DIR_PREFIX='%fin '
 
-  # The persistent worker runs git status and redraws this segment when ready.
+  # Reuse Powerlevel10k's former vcs renderer with status from our worker.
+  # These are the active settings from the gitstatusd-based prompt.
+  typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_ICON='?'
+  typeset -g POWERLEVEL9K_VCS_DISABLED_WORKDIR_PATTERN='~'
+  typeset -g POWERLEVEL9K_VCS_DISABLE_GITSTATUS_FORMATTING=false
+  typeset -g POWERLEVEL9K_VCS_{STAGED,UNSTAGED,UNTRACKED,CONFLICTED,COMMITS_AHEAD,COMMITS_BEHIND}_MAX_NUM=-1
+  typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_EXPANSION=
+  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=76
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=76
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=178
+
   function prompt_git_status() {
-    p10k segment -f 76 -e -t '${_I4_GIT_STATUS_OUTPUT}'
+    (( _I4_GIT_STATUS_READY )) && [[ $PWD != $~POWERLEVEL9K_VCS_DISABLED_WORKDIR_PATTERN ]] && _p9k_vcs_render
   }
 
   # Previous Powerlevel10k vcs/gitstatusd settings remain here for reference.
