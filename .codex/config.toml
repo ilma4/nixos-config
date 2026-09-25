@@ -1,5 +1,4 @@
 [mcp_servers.mcp-nixos]
-type = "stdio"
 command = "mcp-nixos"
 startup_timeout_sec = 60
 
