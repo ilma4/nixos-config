@@ -43,6 +43,10 @@
     "calt": false,
   },
   "buffer_font_size": 13,
+  "terminal": {
+    "font_family": "JetBrains Mono",
+    "font_fallbacks": ["MesloLGS NF"],
+  },
   "context_servers": {
     "mcp-nixos": {
       "command": "nix",
