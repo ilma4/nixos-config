@@ -9,22 +9,22 @@ direnv extras are disabled. Android builds run directly in the guest.
 ## Host setup
 
 The Android VM uses a separate Lima home on the external volume. Mount the
-volume at `/Volumes/Android` before running any Lima command. The quicksilver
-Home Manager configuration sets `LIMA_HOME` to `/Volumes/Android/android-lima`
+volume at `/Volumes/Extra` before running any Lima command. The quicksilver
+Home Manager configuration sets `LIMA_HOME` to `/Volumes/Extra/android-lima`
 for the `ilma4` user, so use `limactl` for every command below. Mixing it with
 the default Lima home makes the VM appear to be missing because Lima will look
 in `~/.lima` instead.
 
 `limactl` is installed by the quicksilver Home Manager configuration. While
 bootstrapping that configuration, use
-`LIMA_HOME=/Volumes/Android/android-lima limactl`.
+`LIMA_HOME=/Volumes/Extra/android-lima limactl`.
 
 ### Recover an unavailable VM
 
 Check the instance and confirm that the external volume is mounted:
 
 ```bash
-test -d /Volumes/Android/android-lima
+test -d /Volumes/Extra/android-lima
 limactl list
 ```
 
@@ -62,7 +62,7 @@ backup is kept until the external copy has been started successfully.
 set -euo pipefail
 
 default_lima_home="$HOME/.lima"
-android_lima_home="/Volumes/Android/android-lima"
+android_lima_home="/Volumes/Extra/android-lima"
 
 if [[ ! -d "$default_lima_home/android" ]]; then
   echo "No android VM found under $default_lima_home" >&2
@@ -92,8 +92,8 @@ limactl start android
 limactl shell --reconnect android
 ```
 
-The Lima home is `/Volumes/Android/android-lima/`; the VM itself is stored
-under `/Volumes/Android/android-lima/android/`.
+The Lima home is `/Volumes/Extra/android-lima/`; the VM itself is stored
+under `/Volumes/Extra/android-lima/android/`.
 
 Create the initial VM only when `limactl list` does not show an
 `android` instance:

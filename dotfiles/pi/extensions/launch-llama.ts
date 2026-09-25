@@ -7,8 +7,8 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
-const ANDROID_VOLUME = "/Volumes/Android";
-const MODELS_DIR = join(ANDROID_VOLUME, "llama-cpp");
+const EXTRA_VOLUME = "/Volumes/Extra";
+const MODELS_DIR = join(EXTRA_VOLUME, "llama-cpp");
 const SERVER_URL = "http://127.0.0.1:7777";
 const INFERENCE_URL = `${SERVER_URL}/v1`;
 const SERVER_SCRIPT = process.env.PI_LLAMA_SERVER_SCRIPT?.trim() || join(homedir(), ".local/bin/run-llama-server.sh");
@@ -187,7 +187,7 @@ export default function launchLlamaExtension(pi: ExtensionAPI): void {
 		description: `Start llama.cpp and select ${MODEL_ID}`,
 		handler: async (_args, ctx) => {
 			try {
-				if (!existsSync(ANDROID_VOLUME)) throw new Error(`${ANDROID_VOLUME} does not exist`);
+				if (!existsSync(EXTRA_VOLUME)) throw new Error(`${EXTRA_VOLUME} does not exist`);
 				if (!existsSync(MODELS_DIR)) throw new Error(`llama.cpp models directory not found: ${MODELS_DIR}`);
 
 				ctx.ui.notify("Starting llama.cpp server…", "info");

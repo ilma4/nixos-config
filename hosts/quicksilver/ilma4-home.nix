@@ -83,7 +83,7 @@ in {
     };
 
     home.sessionVariables = {
-      LIMA_HOME = "/Volumes/Android/android-lima";
+      LIMA_HOME = "/Volumes/Extra/android-lima";
       SSH_AUTH_SOCK = secretiveSocket;
       # JAVA_HOME = "/Users/ilma4/Library/Java/JavaVirtualMachines/corretto-21.0.6/Contents/Home";
     };
