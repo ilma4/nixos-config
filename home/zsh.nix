@@ -494,6 +494,10 @@ in {
           # show an interactive menu that highlights the currently selected item.
           zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
           zstyle ':completion:*' menu select
+          # Give bare Esc a binding in the menu's own keymap so it leaves
+          # completion with the selected match and enters vi normal mode.
+          zmodload zsh/complist
+          bindkey -M menuselect '^[' vi-cmd-mode
           # Shift+Tab sends the terminal's back-tab sequence.
           bindkey -M viins '^[[Z' reverse-menu-complete
           # Case-insensitive matching: lowercase input matches both cases, so
