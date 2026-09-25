@@ -55,6 +55,7 @@
     direnv                  # direnv status
     nix_shell               # nix shell / dev shell indicator
     nix_shell_stale          # warning when the shell uses an old Nix generation
+    root_disk_usage         # warning below 20 GB available on /
   )
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
@@ -746,6 +747,45 @@
   # typeset -g POWERLEVEL9K_CHEZMOI_SHELL_VISUAL_IDENTIFIER_EXPANSION='⭐'
 
   ##################################[ disk_usage: disk usage ]##################################
+  # The built-in segment measures percent used on $PWD's filesystem. Use P10k's
+  # async worker for an absolute root-filesystem limit instead, so df never
+  # blocks the interactive shell. GB here means 1,000,000,000 bytes.
+  typeset -g POWERLEVEL9K_ROOT_DISK_USAGE_FOREGROUND=220
+
+  function prompt_root_disk_usage() {
+    p10k segment -i '⚠' -c '$_i4_root_disk_warning' -e -t '$_i4_root_disk_warning'
+  }
+
+  function _p9k_prompt_root_disk_usage_init() {
+    typeset -g _i4_root_disk_warning=
+    _p9k__async_segments_compute+='_p9k_worker_invoke root_disk_usage _i4_root_disk_compute'
+  }
+
+  function _i4_root_disk_compute() {
+    (( $+commands[df] )) || return
+    _p9k_worker_async _i4_root_disk_async _i4_root_disk_sync
+  }
+
+  function _i4_root_disk_async() {
+    # POSIX output and explicit KiB units work with both BSD and GNU df.
+    local output=$(LC_ALL=C df -Pk / 2>/dev/null)
+    local available=${${=${(f)output}[2]}[4]} warning=
+    if [[ $available == <-> ]] && (( available * 1024 < 20000000000 )); then
+      local free_gb
+      printf -v free_gb '%.1f' $(( available * 1024.0 / 1000000000 ))
+      warning="/ ${free_gb} GB free"
+    fi
+    [[ $warning != $_i4_root_disk_warning ]] || return
+    _i4_root_disk_warning=$warning
+    _p9k_print_params _i4_root_disk_warning
+    print -r -- 'reset=1'
+  }
+
+  function _i4_root_disk_sync() {
+    eval "$REPLY"
+    _p9k_worker_reply "$REPLY"
+  }
+
   # Colors for different levels of disk usage.
 #  typeset -g POWERLEVEL9K_DISK_USAGE_NORMAL_FOREGROUND=35
 #  typeset -g POWERLEVEL9K_DISK_USAGE_WARNING_FOREGROUND=220
