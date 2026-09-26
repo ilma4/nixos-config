@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  pkgs-unstable,
   inputs,
   ...
 }: let
@@ -41,8 +40,6 @@ in {
     };
 
     home.packages = with pkgs; [
-      pkgs-unstable.llama-cpp
-
       lima
 
       sops # for managing secrets
