@@ -20,22 +20,21 @@ in {
     enable = true;
     package = pkgs-unstable.llama-cpp-vulkan;
     host = "127.0.0.1";
-    inherit port model;
+    inherit port;
+    # Start the router without loading a model; load Gemma on the first request.
+    modelsPreset.${modelName} = {
+      model = "${model}";
+      mmproj = "${mmproj}";
+      load-on-startup = false;
+      n-gpu-layers = 999;
+      sleep-idle-seconds = 300;
+      temp = 1.0;
+      top-p = 0.95;
+      top-k = 64;
+    };
     openFirewall = false;
     extraFlags = [
-      "--mmproj"
-      "${mmproj}"
-      "--n-gpu-layers"
-      "999"
       "--no-ui"
-      "--sleep-idle-seconds"
-      "300"
-      "--temp"
-      "1.0"
-      "--top-p"
-      "0.95"
-      "--top-k"
-      "64"
     ];
   };
 
