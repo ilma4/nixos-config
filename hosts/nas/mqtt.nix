@@ -34,6 +34,11 @@ in {
         port = "/dev/serial/by-id/usb-SONOFF_SONOFF_Dongle_Plus_MG24_002c26fceef8ef11ac7f62135c2a50c9-if00-port0";
         rtscts = false;
       };
+
+      frontend = {
+        enabled = true;
+        port = 8383;
+      };
     };
   };
 
