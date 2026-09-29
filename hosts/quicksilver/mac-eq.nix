@@ -3,10 +3,10 @@
   pkgs,
   ...
 }: let
-  macEqNetworkWatcher = pkgs.swiftPackages.stdenv.mkDerivation {
+  macEqSessionWatcher = pkgs.swiftPackages.stdenv.mkDerivation {
     pname = "mac-eq-network-watcher";
     version = "0.1.0";
-    src = ./mac-eq-network-watcher;
+    src = ./mac-eq-session-watcher;
 
     nativeBuildInputs = [pkgs.swift];
     dontConfigure = true;
@@ -15,7 +15,7 @@
       runHook preBuild
       swiftc -swift-version 5 -parse-as-library -O \
         -framework AppKit \
-        -framework Network \
+        -framework CoreGraphics \
         -o mac-eq-network-watcher \
         main.swift
       runHook postBuild
@@ -28,7 +28,7 @@
     '';
 
     meta = {
-      description = "Start MacEQ when Wi-Fi or Ethernet becomes connected";
+      description = "Run MacEQ while the user session is active";
       mainProgram = "mac-eq-network-watcher";
       platforms = lib.platforms.darwin;
     };
@@ -36,7 +36,7 @@
 in {
   launchd.user.agents.mac-eq-auto-start = {
     serviceConfig = {
-      ProgramArguments = [(lib.getExe macEqNetworkWatcher)];
+      ProgramArguments = [(lib.getExe macEqSessionWatcher)];
       RunAtLoad = true;
       KeepAlive = true;
       StandardOutPath = "/tmp/mac-eq-auto-start.log";
