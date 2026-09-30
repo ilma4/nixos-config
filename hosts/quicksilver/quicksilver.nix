@@ -68,7 +68,7 @@ in {
   i4.sops.enable = true;
   i4.apps.enable = true;
 
-  # HA long-lived token for the ha-mcp server (home/ha-mcp.nix), readable by the agent user.
+  # HA long-lived token, readable by the agent user.
   sops.secrets."homeassistant/token" = {
     owner = "ilma4";
     mode = "0400";

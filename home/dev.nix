@@ -92,9 +92,6 @@ in {
     i4.coding-agents.enable = lib.mkDefault true;
     i4.pi.enable = lib.mkDefault true;
 
-    # Home Assistant MCP, scoped to ~/.config/ha-mcp / the ha-pi command. See home/ha-mcp.nix.
-    i4.ha-mcp.enable = lib.mkDefault false;
-
     home.packages =
       with pkgs;
         [
@@ -102,7 +99,6 @@ in {
           pkgs-unstable.jjui
 
           # mcp-nixos # build failure, don't use like this anyway
-          # pkgs-unstable.ha-mcp
 
           android-tools # adb
 

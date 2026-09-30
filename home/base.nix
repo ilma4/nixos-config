@@ -54,7 +54,6 @@ in {
     ./codex.nix
     ./dev.nix
     ./fonts.nix
-    ./ha-mcp.nix
     ./neovim.nix
     ./neovim-ide.nix
     ./personal.nix
