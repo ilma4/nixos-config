@@ -12,10 +12,10 @@ import tempfile
 import time
 import unittest
 
+from git_status_support import daemon
 
 ROOT = Path(__file__).resolve().parents[1]
-CLIENT = ROOT / "home/git-status-client.zsh"
-DAEMON = ROOT / "home/git-status-daemon.zsh"
+CLIENT = Path(os.environ.get("GIT_STATUS_CLIENT", ROOT / "home/git-status-client.zsh"))
 
 
 class GitStatusClientTest(unittest.TestCase):
@@ -44,7 +44,7 @@ class GitStatusClientTest(unittest.TestCase):
                 "setopt local_options no_monitor", "setopt local_options monitor"
             ))
         zdot.joinpath(".zshrc").write_text(
-            f"source {shlex.quote(str(client))} zsh {shlex.quote(str(DAEMON))}\n"
+            f"source {shlex.quote(str(client))} {shlex.quote(str(daemon()))}\n"
             "setopt prompt_subst\n"
             "PROMPT='I4_STATUS:${PWD:t}:${_I4_GIT_STATUS_READY}:"
             "${_I4_GIT_STATUS_FAILED}:${VCS_STATUS_LOCAL_BRANCH}> '\n"

@@ -92,13 +92,19 @@
       ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/atuin-init.zsh.zwc' '$out/atuin-init.zsh'"
     '';
 
-  gitStatusScripts = pkgs.runCommandLocal "i4-git-status-daemon" {} ''
-    set -euo pipefail
-    mkdir -p "$out"
-    cp ${./git-status-client.zsh} "$out/git-status-client.zsh"
-    cp ${./git-status-daemon.zsh} "$out/git-status-daemon.zsh"
-    ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/git-status-client.zsh.zwc' '$out/git-status-client.zsh'"
-  '';
+  gitStatusScripts =
+    pkgs.runCommandCC "i4-git-status-daemon" {
+      nativeBuildInputs = [pkgs.rustc];
+      preferLocalBuild = true;
+      allowSubstitutes = false;
+    } ''
+      set -euo pipefail
+      mkdir -p "$out"
+      cp ${./git-status-client.zsh} "$out/git-status-client.zsh"
+      rustc --edition=2021 -C opt-level=3 -C strip=symbols \
+        ${./git-status-daemon.rs} -o "$out/git-status-daemon"
+      ${lib.getExe pkgs.zsh} -fc "zcompile -R -- '$out/git-status-client.zsh.zwc' '$out/git-status-client.zsh'"
+    '';
 
   # Powerlevel10k ships source files and tries to zcompile them at runtime only
   # when its install directory is writable. The Nix store is intentionally not
@@ -292,7 +298,7 @@ in {
             export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
           fi
 
-          source ${gitStatusScripts}/git-status-client.zsh ${lib.getExe pkgs.zsh} ${gitStatusScripts}/git-status-daemon.zsh
+          source ${gitStatusScripts}/git-status-client.zsh ${gitStatusScripts}/git-status-daemon
 
           # Powerlevel10k theme (precompiled with zcompile in the let-block).
           source ${p10kCompiledTheme}/powerlevel10k.zsh-theme

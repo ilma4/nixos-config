@@ -1,4 +1,4 @@
-# Source from the interactive shell with the zsh executable and worker path.
+# Source from the interactive shell with the native worker path.
 # A single coprocess handles every prompt request in this shell.
 if (( ${_I4_GIT_STATUS_STARTED:-0} )); then
   print -ru2 -- 'git status daemon already launched in this shell; refusing a second launch'
@@ -10,7 +10,7 @@ autoload -Uz add-zsh-hook
 typeset -gi _I4_GIT_STATUS_SEQ=0 _I4_GIT_STATUS_INFLIGHT=0
 typeset -gi _I4_GIT_STATUS_READY=0 _I4_GIT_STATUS_FAILED=0 _I4_GIT_STATUS_STARTED=0
 typeset -g _I4_GIT_STATUS_OUTPUT=
-typeset -g _I4_GIT_STATUS_ZSH=$1 _I4_GIT_STATUS_DAEMON=$2
+typeset -g _I4_GIT_STATUS_DAEMON=$1
 
 function _i4_git_status_start() {
   if (( _I4_GIT_STATUS_STARTED )); then
@@ -20,7 +20,7 @@ function _i4_git_status_start() {
   _I4_GIT_STATUS_STARTED=1
   () {
     setopt local_options no_monitor
-    coproc "$_I4_GIT_STATUS_ZSH" -f "$_I4_GIT_STATUS_DAEMON"
+    coproc "$_I4_GIT_STATUS_DAEMON"
   }
   typeset -gi _I4_GIT_STATUS_PID=$!
   disown

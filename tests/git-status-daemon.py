@@ -1,13 +1,15 @@
 """Check the Git fields sent to Powerlevel10k's VCS renderer."""
 
 import os
+import json
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 
+from git_status_support import daemon, request
 
-DAEMON = Path(__file__).resolve().parents[1] / "home/git-status-daemon.zsh"
 FIELDS = (
     "branch", "remote_branch", "action", "staged", "unstaged", "untracked",
     "conflicted", "ahead", "behind", "stashes", "tag", "oid",
@@ -37,22 +39,18 @@ class GitStatusDaemonTest(unittest.TestCase):
         )
 
     def status(self, git_env=None):
-        git_env = git_env or {}
-        values = ["1", str(self.repo), os.environ["PATH"], str(len(git_env))]
-        for name, value in git_env.items():
-            values.extend([name, value])
-        request = subprocess.run(
-            ["zsh", "-fc", 'for value in "$@"; do print -r -- "${(q)value}"; done',
-             "zsh", *values],
-            check=True,
-            capture_output=True,
-        ).stdout
+        payload = request(self.repo, git_env)
         result = subprocess.run(
-            ["zsh", "-f", str(DAEMON)],
-            input=request,
+            [str(daemon())],
+            input=payload,
             check=True,
             capture_output=True,
         )
+        if reference := os.environ.get("GIT_STATUS_REFERENCE"):
+            old = subprocess.run(["zsh", "-f", reference], input=payload,
+                                 check=True, capture_output=True)
+            self.assertEqual(result.stdout, old.stdout)
+            self.assertEqual(result.stderr, old.stderr)
         self.assertEqual(result.stderr, b"")
         self.assertTrue(result.stdout.startswith(b"1:"))
         self.assertTrue(result.stdout.endswith(b"\n"))
@@ -119,6 +117,143 @@ class GitStatusDaemonTest(unittest.TestCase):
         self.assertEqual(self.status()["tag"], "v1")
         self.git("checkout", "-q", "--detach")
         self.assertEqual(self.status()["tag"], "v1")
+
+    def test_multiple_tags_use_last_sorted_name(self):
+        self.git("tag", "alpha")
+        self.git("tag", "zeta")
+        self.assertEqual(self.status()["tag"], "zeta")
+
+    def test_unborn_branch(self):
+        empty = self.repo / "empty"
+        empty.mkdir()
+        self.repo = empty
+        self.git("init", "-q", "-b", "unborn")
+        status = self.status()
+        self.assertEqual((status["branch"], status["oid"]), ("unborn", "(initial)"))
+
+    def test_reftable(self):
+        self.git("refs", "migrate", "--ref-format=reftable")
+        self.assertEqual(self.status()["branch"], "main")
+
+    def test_actions_and_precedence_in_worktree(self):
+        worktree = self.repo / "worktree"
+        self.git("worktree", "add", "-qb", "worktree", str(worktree))
+        self.repo = worktree
+        git_dir = Path(self.git("rev-parse", "--absolute-git-dir").stdout.strip())
+        for marker, action in (("BISECT_LOG", "bisect"), ("REVERT_HEAD", "revert"),
+                               ("CHERRY_PICK_HEAD", "cherry-pick"), ("MERGE_HEAD", "merge"),
+                               ("rebase-apply", "rebase"), ("rebase-merge", "rebase")):
+            if marker.startswith("rebase-"):
+                (git_dir / marker).mkdir()
+            else:
+                (git_dir / marker).write_text(self.git("rev-parse", "HEAD").stdout)
+            self.assertEqual(self.status()["action"], action)
+
+    def test_remote_name_with_slash_is_removed(self):
+        self.git("remote", "add", "team/origin", str(self.repo))
+        self.git("update-ref", "refs/remotes/team/origin/main", "HEAD")
+        self.git("branch", "--set-upstream-to=team/origin/main")
+        self.assertEqual(self.status()["remote_branch"], "main")
+
+    def test_rename(self):
+        self.git("mv", "staged", "renamed")
+        self.assertEqual(self.status()["staged"], "1")
+
+    def test_control_bytes_in_quoted_path_and_environment(self):
+        # APFS requires UTF-8 paths; environment values can still contain any byte.
+        name = bytes(i for i in range(1, 128) if i != ord("/"))
+        renamed = self.repo.with_name(os.fsdecode(name))
+        self.repo.rename(renamed)
+        self.repo = renamed
+        self.assertEqual(self.status({
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "user.name",
+            "GIT_CONFIG_VALUE_0": os.fsdecode(bytes(range(1, 256))),
+        })["branch"], "main")
+
+    def test_environment_path_and_non_repo_across_requests(self):
+        payload = (
+            request(self.repo, {"GIT_DIR": str(self.repo / "absent")}, seq="1")
+            + request(self.repo, seq="2")
+            + request(self.repo, seq="3", path="/nonexistent")
+            + request(self.repo.parent, seq="4")
+            + request(self.repo, seq="5")
+        )
+        env = {**os.environ, "GIT_DIR": "/inherited/invalid"}
+        result = subprocess.run([str(daemon())], input=payload, env=env,
+                                check=True, capture_output=True)
+        if reference := os.environ.get("GIT_STATUS_REFERENCE"):
+            old = subprocess.run(["zsh", "-f", reference], input=payload, env=env,
+                                 check=True, capture_output=True)
+            self.assertEqual(result.stdout, old.stdout)
+        lines = result.stdout.splitlines()
+        self.assertEqual(lines[0], b"1:")
+        self.assertTrue(lines[1].startswith(b"2:main\x1f"))
+        self.assertEqual(lines[2:4], [b"3:", b"4:"])
+        self.assertTrue(lines[4].startswith(b"5:main\x1f"))
+        self.assertEqual(result.stderr, b"")
+
+    def test_truncated_requests_and_invalid_environment(self):
+        for payload in (b"1\n", b"1\n/tmp\n/bin\n1\nGIT_DIR\n", b"1"):
+            result = subprocess.run([str(daemon())], input=payload,
+                                    check=True, capture_output=True)
+            self.assertEqual(result.stdout, b"")
+        result = subprocess.run([str(daemon())], input=request(self.repo, {"OTHER": "value"}),
+                                capture_output=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, b"")
+
+    def test_git_commands_and_exact_environment(self):
+        fake_bin = self.repo.parent / "bin"
+        fake_bin.mkdir()
+        log = self.repo.parent / "commands.jsonl"
+        fake_git = fake_bin / "git"
+        fake_git.write_text(
+            f"#!{sys.executable}\n"
+            "import json, os, sys\n"
+            "with open(os.environ['TEST_GIT_LOG'], 'a') as log:\n"
+            "    log.write(json.dumps({'args': sys.argv[1:], 'path': os.environ['PATH'],\n"
+            "        'git_env': {k: v for k, v in os.environ.items() if k.startswith('GIT_')}}) + '\\n')\n"
+            "command = sys.argv[3]\n"
+            "if command == 'status':\n"
+            "    print('# branch.oid abc\\n# branch.head main\\n# branch.upstream origin/main')\n"
+            "elif command == 'config':\n"
+            "    print('origin')\n"
+            "elif command == 'tag':\n"
+            "    print('alpha\\nzeta')\n"
+            "elif command == 'rev-parse':\n"
+            "    print(sys.argv[2] + '/.git')\n"
+        )
+        fake_git.chmod(0o755)
+        forwarded = {"GIT_OPTIONAL_LOCKS": "1",
+                     "GIT_TEST_VALUE": os.fsdecode(bytes(range(1, 256))) + "é😀"}
+        env = {**os.environ, "TEST_GIT_LOG": str(log), "GIT_DIR": "/bad/inherited"}
+        commands = [[str(daemon())]]
+        if reference := os.environ.get("GIT_STATUS_REFERENCE"):
+            commands.append(["zsh", "-f", reference])
+        for locale in ("C", "en_US.UTF-8" if sys.platform == "darwin" else "C.UTF-8"):
+            payload = request(self.repo, forwarded, path=str(fake_bin),
+                              quote_env={**os.environ, "LC_ALL": locale})
+            replies = []
+            for command in commands:
+                log.unlink(missing_ok=True)
+                result = subprocess.run(command, input=payload, env=env,
+                                        check=True, capture_output=True)
+                self.assertEqual(result.stderr, b"")
+                replies.append(result.stdout)
+                calls = [json.loads(line) for line in log.read_text().splitlines()]
+                self.assertEqual([call["args"] for call in calls], [
+                    ["-C", str(self.repo), "status", "--porcelain=v2", "--branch", "--show-stash"],
+                    ["-C", str(self.repo), "config", "--get", "branch.main.remote"],
+                    ["-C", str(self.repo), "tag", "--points-at", "HEAD", "--sort=refname"],
+                    ["-C", str(self.repo), "rev-parse", "--absolute-git-dir"],
+                ])
+                for i, call in enumerate(calls):
+                    self.assertEqual(call["path"], str(fake_bin))
+                    self.assertEqual(call["git_env"], {
+                        **forwarded, "GIT_OPTIONAL_LOCKS": "0" if i == 0 else "1",
+                    })
+            self.assertTrue(all(reply == replies[0] for reply in replies))
 
     def test_ahead_behind_and_upstream(self):
         self.git("branch", "upstream")
