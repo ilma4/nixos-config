@@ -11,7 +11,6 @@
   piPackage = "@earendil-works/pi-coding-agent";
   piPackageSpec = "${piPackage}@latest";
   piExtensions = [
-    "npm:pi-mcp-adapter"
     "npm:@juicesharp/rpiv-ask-user-question"
     "npm:@juicesharp/rpiv-web-tools"
     "git:github.com/alexei-ciobanu/pi-compaction-autocontinue"
@@ -25,6 +24,8 @@
     export PATH="${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
 
     ${npm} install --global --prefix ${lib.escapeShellArg npmPrefix} --no-audit --no-fund ${piPackageSpec}
+    # Native MCP replaces the adapter; also migrate existing installations.
+    pi remove npm:pi-mcp-adapter
     ${lib.concatMapStringsSep "\n" (extension: "    pi install ${lib.escapeShellArg extension}") piExtensions}
     pi update --all
 
