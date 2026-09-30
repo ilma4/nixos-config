@@ -10,11 +10,11 @@ use std::process::{Command, Stdio};
 
 // Decode the backslash quoting and embedded $'...' emitted by Zsh's (q).
 // Work on bytes so non-UTF-8 Unix paths and environment values survive too.
-fn unquote(input: Vec<u8>) -> Vec<u8> {
+fn unquote(mut input: Vec<u8>) -> Vec<u8> {
     if !input.iter().any(|&c| c == b'\\' || c == b'\'') {
         return input;
     }
-    let mut out = Vec::with_capacity(input.len());
+    let mut written = 0;
     let mut i = 0;
     let mut ansi = false;
     while i < input.len() {
@@ -30,39 +30,37 @@ fn unquote(input: Vec<u8>) -> Vec<u8> {
             i += 1;
             let c = input[i];
             i += 1;
-            if ansi {
-                match c {
-                    b'a' => out.push(7),
-                    b'b' => out.push(8),
-                    b'e' | b'E' => out.push(27),
-                    b'f' => out.push(12),
-                    b'n' => out.push(b'\n'),
-                    b'r' => out.push(b'\r'),
-                    b't' => out.push(b'\t'),
-                    b'v' => out.push(11),
-                    b'0'..=b'7' => {
-                        let mut value = (c - b'0') as u16;
-                        for _ in 0..2 {
-                            if i < input.len() && (b'0'..=b'7').contains(&input[i]) {
-                                value = value * 8 + (input[i] - b'0') as u16;
-                                i += 1;
-                            } else {
-                                break;
-                            }
+            input[written] = match (ansi, c) {
+                (true, b'0'..=b'7') => {
+                    let mut value = (c - b'0') as u16;
+                    for _ in 0..2 {
+                        if i == input.len() || !(b'0'..=b'7').contains(&input[i]) {
+                            break;
                         }
-                        out.push(value as u8);
+                        value = value * 8 + (input[i] - b'0') as u16;
+                        i += 1;
                     }
-                    _ => out.push(c),
+                    value as u8
                 }
-            } else {
-                out.push(c);
-            }
+                (true, b'a') => 7,
+                (true, b'b') => 8,
+                (true, b'e' | b'E') => 27,
+                (true, b'f') => 12,
+                (true, b'n') => b'\n',
+                (true, b'r') => b'\r',
+                (true, b't') => b'\t',
+                (true, b'v') => 11,
+                _ => c,
+            };
+            written += 1;
         } else {
-            out.push(input[i]);
+            input[written] = input[i];
+            written += 1;
             i += 1;
         }
     }
-    out
+    input.truncate(written);
+    input
 }
 
 fn read_fields<const N: usize>(input: &mut impl BufRead) -> io::Result<Option<[Vec<u8>; N]>> {
@@ -84,12 +82,7 @@ struct Request {
 }
 
 impl Request {
-    fn git<S: AsRef<OsStr>>(
-        &self,
-        inherited_git_names: &[OsString],
-        args: &[S],
-        optional_locks: bool,
-    ) -> Option<Vec<u8>> {
+    fn command<S: AsRef<OsStr>>(&self, git_names: &[OsString], args: &[S]) -> Command {
         let mut command = Command::new("git");
         command
             .arg("-C")
@@ -101,109 +94,103 @@ impl Request {
         if let Some(path) = &self.path {
             command.env("PATH", path);
         }
-        for name in inherited_git_names {
+        for name in git_names {
             command.env_remove(name);
         }
         for (name, value) in &self.git_env {
             command.env(name, value);
         }
         command.args(args);
-        if optional_locks {
-            command.env("GIT_OPTIONAL_LOCKS", "0");
-        }
-        let output = command.output().ok()?;
-        // Only the status command's exit code gates a response. The original
-        // formatter still uses stdout from auxiliary commands that fail.
-        if optional_locks && !output.status.success() {
-            return None;
-        }
-        let mut bytes = output.stdout;
+        command
+    }
+
+    fn git<S: AsRef<OsStr>>(&self, names: &[OsString], args: &[S]) -> Vec<u8> {
+        let mut bytes = self
+            .command(names, args)
+            .output()
+            .map(|o| o.stdout)
+            .unwrap_or_default();
         // Match Zsh command substitution, which strips all trailing newlines.
         while bytes.last() == Some(&b'\n') {
             bytes.pop();
         }
-        Some(bytes)
+        bytes
     }
 
-    fn status(&self, inherited_git_names: &[OsString]) -> Option<Vec<u8>> {
-        let porcelain = self.git(
-            inherited_git_names,
-            &["status", "--porcelain=v2", "--branch", "--show-stash"],
-            true,
-        )?;
-        // Borrow status fields instead of copying them into separate buffers.
-        let mut fields: [&[u8]; 12] = [b""; 12];
+    fn status(&self, git_names: &[OsString]) -> Option<Vec<u8>> {
+        let mut child = self
+            .command(
+                git_names,
+                &["status", "--porcelain=v2", "--branch", "--show-stash"],
+            )
+            .env("GIT_OPTIONAL_LOCKS", "0")
+            .stdout(Stdio::piped())
+            .spawn()
+            .ok()?;
+        let mut porcelain = io::BufReader::new(child.stdout.take()?);
+        // Stream status through one reusable line instead of retaining every path.
+        let (mut branch, mut upstream, mut oid) = (Vec::new(), Vec::new(), Vec::new());
         let mut counts = [0u64; 7]; // staged, unstaged, untracked, conflicted, ahead, behind, stashes
-        for line in porcelain.split(|&c| c == b'\n') {
-            if let Some(value) = line.strip_prefix(b"# branch.oid ") {
-                fields[11] = value;
-            } else if let Some(value) = line.strip_prefix(b"# branch.head ") {
-                if value != b"(detached)" {
-                    fields[0] = value;
-                }
-            } else if let Some(value) = line.strip_prefix(b"# branch.upstream ") {
-                fields[1] = value;
-            } else if let Some(value) = line.strip_prefix(b"# branch.ab ") {
-                let mut parts = value.split(|&c| c == b' ');
-                for (count, sign) in counts[4..6].iter_mut().zip([b"+", b"-"]) {
-                    *count = number(
-                        parts
-                            .next()
-                            .and_then(|part| part.strip_prefix(sign))
-                            .unwrap_or_default(),
-                    );
-                }
-            } else if let Some(value) = line.strip_prefix(b"# stash ") {
-                counts[6] = number(value);
-            } else if (line.starts_with(b"1 ") || line.starts_with(b"2 ")) && line.len() >= 4 {
-                counts[0] += u64::from(line[2] != b'.');
-                counts[1] += u64::from(line[3] != b'.');
-            } else if line.starts_with(b"u ") {
-                counts[3] += 1;
-            } else if line.starts_with(b"? ") {
-                counts[2] += 1;
+        let mut line = Vec::new();
+        while porcelain.read_until(b'\n', &mut line).ok()? != 0 {
+            if line.last() == Some(&b'\n') {
+                line.pop();
             }
+            let mut parts = line.splitn(3, |&c| c == b' ');
+            match (parts.next(), parts.next(), parts.next()) {
+                (Some(b"#"), Some(b"branch.oid"), Some(value)) => oid = value.to_vec(),
+                (Some(b"#"), Some(b"branch.head"), Some(value)) if value != b"(detached)" => {
+                    branch = value.to_vec();
+                }
+                (Some(b"#"), Some(b"branch.upstream"), Some(value)) => upstream = value.to_vec(),
+                (Some(b"#"), Some(b"branch.ab"), Some(value)) => {
+                    let mut parts = value.split(|&c| c == b' ');
+                    for (count, sign) in counts[4..6].iter_mut().zip([b"+", b"-"]) {
+                        let part = parts.next().unwrap_or_default();
+                        *count = number(part.strip_prefix(sign).unwrap_or_default());
+                    }
+                }
+                (Some(b"#"), Some(b"stash"), Some(value)) => counts[6] = number(value),
+                (Some(b"1" | b"2"), _, _) if line.len() >= 4 => {
+                    counts[0] += u64::from(line[2] != b'.');
+                    counts[1] += u64::from(line[3] != b'.');
+                }
+                (Some(b"u"), Some(_), _) => counts[3] += 1,
+                (Some(b"?"), Some(_), _) => counts[2] += 1,
+                _ => {}
+            }
+            line.clear();
         }
-        if !fields[1].is_empty() {
+        if !child.wait().ok()?.success() {
+            return None;
+        }
+        if !upstream.is_empty() {
             let mut key = b"branch.".to_vec();
-            key.extend_from_slice(fields[0]);
+            key.extend_from_slice(&branch);
             key.extend_from_slice(b".remote");
             // Git ref names are byte strings; don't require Unicode here.
-            if let Some(mut remote) = self.git(
-                inherited_git_names,
+            let mut remote = self.git(
+                git_names,
                 &[
                     OsStr::new("config"),
                     OsStr::new("--get"),
                     OsStr::from_bytes(&key),
                 ],
-                false,
-            ) {
-                if !remote.is_empty() && remote != b"." {
-                    remote.push(b'/');
-                    if let Some(branch) = fields[1].strip_prefix(remote.as_slice()) {
-                        fields[1] = branch;
-                    }
+            );
+            if !remote.is_empty() && remote != b"." {
+                remote.push(b'/');
+                if upstream.starts_with(&remote) {
+                    upstream.drain(..remote.len());
                 }
             }
         }
-        let tags = self
-            .git(
-                inherited_git_names,
-                &["tag", "--points-at", "HEAD", "--sort=refname"],
-                false,
-            )
-            .unwrap_or_default();
-        fields[10] = tags.rsplit(|&c| c == b'\n').next().unwrap_or_default();
-        if let Some(dir) = self
-            .git(
-                inherited_git_names,
-                &["rev-parse", "--absolute-git-dir"],
-                false,
-            )
-            .filter(|dir| !dir.is_empty())
-        {
+        let tags = self.git(git_names, &["tag", "--points-at", "HEAD", "--sort=refname"]);
+        let tag = tags.rsplit(|&c| c == b'\n').next().unwrap_or_default();
+        let mut action: &[u8] = b"";
+        let dir = self.git(git_names, &["rev-parse", "--absolute-git-dir"]);
+        if !dir.is_empty() {
             let dir = PathBuf::from(OsString::from_vec(dir));
-            fields[2] = if dir.join("rebase-merge").is_dir() || dir.join("rebase-apply").is_dir() {
+            action = if dir.join("rebase-merge").is_dir() || dir.join("rebase-apply").is_dir() {
                 b"rebase"
             } else {
                 [
@@ -218,19 +205,18 @@ impl Request {
                 .unwrap_or_default()
             };
         }
-        // Write counts directly into the response, avoiding seven allocations.
         let mut result =
-            Vec::with_capacity(fields.iter().map(|field| field.len()).sum::<usize>() + 32);
-        for (index, field) in fields.iter().enumerate() {
-            if index > 0 {
-                result.push(0x1f);
-            }
-            if (3..10).contains(&index) {
-                write!(result, "{}", counts[index - 3]).ok()?;
-            } else {
-                result.extend_from_slice(field);
-            }
+            Vec::with_capacity(branch.len() + upstream.len() + tag.len() + oid.len() + 48);
+        for field in [branch.as_slice(), upstream.as_slice(), action] {
+            result.extend_from_slice(field);
+            result.push(0x1f);
         }
+        for count in counts {
+            write!(result, "{count}\x1f").ok()?;
+        }
+        result.extend_from_slice(tag);
+        result.push(0x1f);
+        result.extend_from_slice(&oid);
         Some(result)
     }
 }
@@ -243,7 +229,7 @@ fn number(bytes: &[u8]) -> u64 {
 }
 
 fn run() -> io::Result<()> {
-    let inherited_git_names: Vec<_> = env::vars_os()
+    let git_names: Vec<_> = env::vars_os()
         .map(|(name, _)| name)
         .filter(|name| name.as_bytes().starts_with(b"GIT_"))
         .collect();
@@ -268,7 +254,7 @@ fn run() -> io::Result<()> {
                 .git_env
                 .push((OsString::from_vec(name), OsString::from_vec(value)));
         }
-        let result = request.status(&inherited_git_names).unwrap_or_default();
+        let result = request.status(&git_names).unwrap_or_default();
         output.write_all(&id)?;
         output.write_all(b":")?;
         output.write_all(&result)?;
