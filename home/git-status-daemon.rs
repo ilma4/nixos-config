@@ -2,7 +2,7 @@
 //! Requests are Zsh ${(q)value} fields, one per line; responses are
 //! id:branch<US>upstream<US>...<US>oid followed by a newline.
 use std::env;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::io::{self, BufRead, Write};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::PathBuf;
@@ -10,7 +10,10 @@ use std::process::{Command, Stdio};
 
 // Decode the backslash quoting and embedded $'...' emitted by Zsh's (q).
 // Work on bytes so non-UTF-8 Unix paths and environment values survive too.
-fn unquote(input: &[u8]) -> Vec<u8> {
+fn unquote(input: Vec<u8>) -> Vec<u8> {
+    if !input.iter().any(|&c| c == b'\\' || c == b'\'') {
+        return input;
+    }
     let mut out = Vec::with_capacity(input.len());
     let mut i = 0;
     let mut ansi = false;
@@ -62,29 +65,48 @@ fn unquote(input: &[u8]) -> Vec<u8> {
     out
 }
 
-fn read_field(input: &mut impl BufRead) -> io::Result<Option<Vec<u8>>> {
-    let mut line = Vec::new();
-    if input.read_until(b'\n', &mut line)? == 0 || line.last() != Some(&b'\n') {
-        return Ok(None);
+fn read_fields<const N: usize>(input: &mut impl BufRead) -> io::Result<Option<[Vec<u8>; N]>> {
+    let mut fields = std::array::from_fn(|_| Vec::new());
+    for field in &mut fields {
+        if input.read_until(b'\n', field)? == 0 || field.last() != Some(&b'\n') {
+            return Ok(None);
+        }
+        field.pop();
+        *field = unquote(std::mem::take(field));
     }
-    line.pop();
-    Ok(Some(unquote(&line)))
+    Ok(Some(fields))
 }
 
 struct Request {
     dir: OsString,
-    path: OsString,
+    path: Option<OsString>, // None when the request matches the inherited PATH.
     git_env: Vec<(OsString, OsString)>,
 }
 
 impl Request {
-    fn git(
+    fn git<S: AsRef<OsStr>>(
         &self,
         inherited_git_names: &[OsString],
-        args: &[&str],
+        args: &[S],
         optional_locks: bool,
     ) -> Option<Vec<u8>> {
-        let mut command = self.command(inherited_git_names);
+        let mut command = Command::new("git");
+        command
+            .arg("-C")
+            .arg(&self.dir)
+            .stdin(Stdio::null())
+            .stderr(Stdio::null());
+        // Leaving an unchanged PATH inherited avoids rebuilding the entire
+        // environment for auxiliary commands with no Git overrides.
+        if let Some(path) = &self.path {
+            command.env("PATH", path);
+        }
+        for name in inherited_git_names {
+            command.env_remove(name);
+        }
+        for (name, value) in &self.git_env {
+            command.env(name, value);
+        }
         command.args(args);
         if optional_locks {
             command.env("GIT_OPTIONAL_LOCKS", "0");
@@ -109,33 +131,28 @@ impl Request {
             &["status", "--porcelain=v2", "--branch", "--show-stash"],
             true,
         )?;
-        let mut fields: [Vec<u8>; 12] = Default::default();
+        // Borrow status fields instead of copying them into separate buffers.
+        let mut fields: [&[u8]; 12] = [b""; 12];
         let mut counts = [0u64; 7]; // staged, unstaged, untracked, conflicted, ahead, behind, stashes
         for line in porcelain.split(|&c| c == b'\n') {
             if let Some(value) = line.strip_prefix(b"# branch.oid ") {
-                fields[11] = value.to_vec();
+                fields[11] = value;
             } else if let Some(value) = line.strip_prefix(b"# branch.head ") {
                 if value != b"(detached)" {
-                    fields[0] = value.to_vec();
+                    fields[0] = value;
                 }
             } else if let Some(value) = line.strip_prefix(b"# branch.upstream ") {
-                fields[1] = value.to_vec();
+                fields[1] = value;
             } else if let Some(value) = line.strip_prefix(b"# branch.ab ") {
                 let mut parts = value.split(|&c| c == b' ');
-                counts[4] = number(
-                    parts
-                        .next()
-                        .unwrap_or_default()
-                        .strip_prefix(b"+")
-                        .unwrap_or_default(),
-                );
-                counts[5] = number(
-                    parts
-                        .next()
-                        .unwrap_or_default()
-                        .strip_prefix(b"-")
-                        .unwrap_or_default(),
-                );
+                for (count, sign) in counts[4..6].iter_mut().zip([b"+", b"-"]) {
+                    *count = number(
+                        parts
+                            .next()
+                            .and_then(|part| part.strip_prefix(sign))
+                            .unwrap_or_default(),
+                    );
+                }
             } else if let Some(value) = line.strip_prefix(b"# stash ") {
                 counts[6] = number(value);
             } else if (line.starts_with(b"1 ") || line.starts_with(b"2 ")) && line.len() >= 4 {
@@ -149,83 +166,72 @@ impl Request {
         }
         if !fields[1].is_empty() {
             let mut key = b"branch.".to_vec();
-            key.extend_from_slice(&fields[0]);
+            key.extend_from_slice(fields[0]);
             key.extend_from_slice(b".remote");
             // Git ref names are byte strings; don't require Unicode here.
-            let mut command = self.command(inherited_git_names);
-            command
-                .args(["config", "--get"])
-                .arg(OsString::from_vec(key));
-            if let Ok(output) = command.output() {
-                let mut remote = output.stdout.as_slice();
-                while let Some(trimmed) = remote.strip_suffix(b"\n") {
-                    remote = trimmed;
-                }
+            if let Some(mut remote) = self.git(
+                inherited_git_names,
+                &[
+                    OsStr::new("config"),
+                    OsStr::new("--get"),
+                    OsStr::from_bytes(&key),
+                ],
+                false,
+            ) {
                 if !remote.is_empty() && remote != b"." {
-                    let mut prefix = remote.to_vec();
-                    prefix.push(b'/');
-                    if fields[1].starts_with(&prefix) {
-                        fields[1].drain(..prefix.len());
+                    remote.push(b'/');
+                    if let Some(branch) = fields[1].strip_prefix(remote.as_slice()) {
+                        fields[1] = branch;
                     }
                 }
             }
         }
-        if let Some(tags) = self.git(
-            inherited_git_names,
-            &["tag", "--points-at", "HEAD", "--sort=refname"],
-            false,
-        ) {
-            fields[10] = tags
-                .rsplit(|&c| c == b'\n')
-                .next()
+        let tags = self
+            .git(
+                inherited_git_names,
+                &["tag", "--points-at", "HEAD", "--sort=refname"],
+                false,
+            )
+            .unwrap_or_default();
+        fields[10] = tags.rsplit(|&c| c == b'\n').next().unwrap_or_default();
+        if let Some(dir) = self
+            .git(
+                inherited_git_names,
+                &["rev-parse", "--absolute-git-dir"],
+                false,
+            )
+            .filter(|dir| !dir.is_empty())
+        {
+            let dir = PathBuf::from(OsString::from_vec(dir));
+            fields[2] = if dir.join("rebase-merge").is_dir() || dir.join("rebase-apply").is_dir() {
+                b"rebase"
+            } else {
+                [
+                    ("MERGE_HEAD", "merge"),
+                    ("CHERRY_PICK_HEAD", "cherry-pick"),
+                    ("REVERT_HEAD", "revert"),
+                    ("BISECT_LOG", "bisect"),
+                ]
+                .into_iter()
+                .find(|(file, _)| dir.join(file).exists())
+                .map(|(_, action)| action.as_bytes())
                 .unwrap_or_default()
-                .to_vec();
+            };
         }
-        if let Some(dir) = self.git(
-            inherited_git_names,
-            &["rev-parse", "--absolute-git-dir"],
-            false,
-        ) {
-            if !dir.is_empty() {
-                let dir = PathBuf::from(OsString::from_vec(dir));
-                fields[2] =
-                    if dir.join("rebase-merge").is_dir() || dir.join("rebase-apply").is_dir() {
-                        b"rebase".to_vec()
-                    } else {
-                        [
-                            ("MERGE_HEAD", "merge"),
-                            ("CHERRY_PICK_HEAD", "cherry-pick"),
-                            ("REVERT_HEAD", "revert"),
-                            ("BISECT_LOG", "bisect"),
-                        ]
-                        .into_iter()
-                        .find(|(file, _)| dir.join(file).exists())
-                        .map(|(_, action)| action.as_bytes().to_vec())
-                        .unwrap_or_default()
-                    };
+        // Write counts directly into the response, avoiding seven allocations.
+        let mut result =
+            Vec::with_capacity(fields.iter().map(|field| field.len()).sum::<usize>() + 32);
+        for (index, field) in fields.iter().enumerate() {
+            if index > 0 {
+                result.push(0x1f);
+            }
+            if (3..10).contains(&index) {
+                write!(result, "{}", counts[index - 3]).ok()?;
+            } else {
+                result.extend_from_slice(field);
             }
         }
-        for (field, count) in fields[3..10].iter_mut().zip(counts) {
-            *field = count.to_string().into_bytes();
-        }
-        Some(fields.join(&0x1f))
-    }
-
-    fn command(&self, inherited_git_names: &[OsString]) -> Command {
-        let mut command = Command::new("git");
-        command
-            .arg("-C")
-            .arg(&self.dir)
-            .env("PATH", &self.path)
-            .stdin(Stdio::null())
-            .stderr(Stdio::null());
-        for name in inherited_git_names {
-            command.env_remove(name);
-        }
-        for (name, value) in &self.git_env {
-            command.env(name, value);
-        }
-        command
+        Some(result)
     }
 }
 
@@ -241,28 +247,18 @@ fn run() -> io::Result<()> {
         .map(|(name, _)| name)
         .filter(|name| name.as_bytes().starts_with(b"GIT_"))
         .collect();
+    let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
     let mut output = io::BufWriter::new(io::stdout().lock());
-    while let Some(id) = read_field(&mut input)? {
-        let Some(dir) = read_field(&mut input)? else {
-            break;
-        };
-        let Some(path) = read_field(&mut input)? else {
-            break;
-        };
-        let Some(count) = read_field(&mut input)? else {
-            break;
-        };
+    while let Some([id, dir, path, count]) = read_fields(&mut input)? {
+        let path = OsString::from_vec(path);
         let mut request = Request {
             dir: OsString::from_vec(dir),
-            path: OsString::from_vec(path),
+            path: (inherited_path.as_ref() != Some(&path)).then_some(path),
             git_env: Vec::new(),
         };
         for _ in 0..number(&count) {
-            let Some(name) = read_field(&mut input)? else {
-                return Ok(());
-            };
-            let Some(value) = read_field(&mut input)? else {
+            let Some([name, value]) = read_fields(&mut input)? else {
                 return Ok(());
             };
             if !name.starts_with(b"GIT_") {

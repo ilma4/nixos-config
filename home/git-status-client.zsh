@@ -42,19 +42,17 @@ function _i4_git_status_redraw() {
 }
 
 function _i4_git_status_send() {
-  local name payload
-  local -a git_names
-  for name in ${(k)parameters[(I)GIT_*]}; do
-    [[ ${parameters[$name]} == *export* ]] && git_names+=("$name")
-  done
-
+  local name payload git_env
+  local -i count=0
   # Quote each field so paths and exported Git variables may contain newlines.
   # Line reads do not make Zsh change the daemon's inherited terminal settings.
-  payload="${(q)_I4_GIT_STATUS_SEQ}"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"${(q)${#git_names}}"$'\n'
-  for name in "${git_names[@]}"; do
-    payload+="${(q)name}"$'\n'"${(q)${(P)name}}"$'\n'
+  for name in ${(k)parameters[(I)GIT_*]}; do
+    if [[ ${parameters[$name]} == *export* ]]; then
+      git_env+="${(q)name}"$'\n'"${(q)${(P)name}}"$'\n'
+      (( ++count ))
+    fi
   done
-
+  payload="${(q)_I4_GIT_STATUS_SEQ}"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"${(q)count}"$'\n'"$git_env"
   if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- "$payload" 2>/dev/null; then
     _I4_GIT_STATUS_INFLIGHT=1
   else
@@ -93,21 +91,13 @@ function _i4_git_status_response() {
     if [[ -n $git_result ]]; then
       local -a fields=("${(@ps:\x1f:)git_result}")
       if (( $#fields == 12 )); then
-        typeset -g VCS_STATUS_RESULT=ok-async
-        typeset -g VCS_STATUS_WORKDIR=$PWD
-        typeset -g VCS_STATUS_REMOTE_URL=
-        typeset -g VCS_STATUS_LOCAL_BRANCH=$fields[1]
-        typeset -g VCS_STATUS_REMOTE_BRANCH=$fields[2]
-        typeset -g VCS_STATUS_ACTION=$fields[3]
-        typeset -gi VCS_STATUS_NUM_STAGED=$fields[4]
-        typeset -gi VCS_STATUS_NUM_UNSTAGED=$fields[5]
-        typeset -gi VCS_STATUS_NUM_UNTRACKED=$fields[6]
-        typeset -gi VCS_STATUS_NUM_CONFLICTED=$fields[7]
-        typeset -gi VCS_STATUS_COMMITS_AHEAD=$fields[8]
-        typeset -gi VCS_STATUS_COMMITS_BEHIND=$fields[9]
+        typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL=
+        typeset -g VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2]
+        typeset -g VCS_STATUS_ACTION=$fields[3] VCS_STATUS_TAG=$fields[11] VCS_STATUS_COMMIT=$fields[12]
+        typeset -gi VCS_STATUS_NUM_STAGED=$fields[4] VCS_STATUS_NUM_UNSTAGED=$fields[5]
+        typeset -gi VCS_STATUS_NUM_UNTRACKED=$fields[6] VCS_STATUS_NUM_CONFLICTED=$fields[7]
+        typeset -gi VCS_STATUS_COMMITS_AHEAD=$fields[8] VCS_STATUS_COMMITS_BEHIND=$fields[9]
         typeset -gi VCS_STATUS_STASHES=$fields[10]
-        typeset -g VCS_STATUS_TAG=$fields[11]
-        typeset -g VCS_STATUS_COMMIT=$fields[12]
         typeset -gi VCS_STATUS_HAS_STAGED='VCS_STATUS_NUM_STAGED > 0'
         typeset -gi VCS_STATUS_HAS_UNSTAGED='VCS_STATUS_NUM_UNSTAGED > 0'
         typeset -gi VCS_STATUS_HAS_UNTRACKED='VCS_STATUS_NUM_UNTRACKED > 0'
