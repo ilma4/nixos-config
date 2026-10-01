@@ -48,12 +48,12 @@ function _i4_git_status_send() {
   # Line reads do not make Zsh change the daemon's inherited terminal settings.
   for name in ${(k)parameters[(I)GIT_*]}; do
     if [[ ${parameters[$name]} == *export* ]]; then
-      git_env+="${(q)name}"$'\n'"${(q)${(P)name}}"$'\n'
+      git_env+="${(q)name}"$'\n'"${(qP)name}"$'\n'
       (( ++count ))
     fi
   done
   if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- \
-      "${(q)_I4_GIT_STATUS_SEQ}"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"${(q)count}"$'\n'"$git_env" 2>/dev/null; then
+      "$_I4_GIT_STATUS_SEQ"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"$count"$'\n'"$git_env" 2>/dev/null; then
     _I4_GIT_STATUS_INFLIGHT=1
   else
     _i4_git_status_fail 'request pipe closed'
@@ -108,9 +108,7 @@ function _i4_git_status_response() {
 
 function _i4_git_status_fail() {
   (( _I4_GIT_STATUS_FAILED )) && return
-  _I4_GIT_STATUS_FAILED=1
-  _I4_GIT_STATUS_INFLIGHT=0
-  _I4_GIT_STATUS_READY=0
+  (( _I4_GIT_STATUS_INFLIGHT=_I4_GIT_STATUS_READY=0, _I4_GIT_STATUS_FAILED=1 ))
   _I4_GIT_STATUS_OUTPUT=
   local pid=$_I4_GIT_STATUS_PID
   _i4_git_status_stop

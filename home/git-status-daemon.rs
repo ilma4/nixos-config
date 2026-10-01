@@ -11,11 +11,11 @@ use std::process::{Command, Stdio};
 // Decode the backslash quoting and embedded $'...' emitted by Zsh's (q).
 // Work on bytes so non-UTF-8 Unix paths and environment values survive too.
 fn unquote(mut input: Vec<u8>) -> Vec<u8> {
-    if !input.iter().any(|&c| c == b'\\' || c == b'\'') {
-        return input;
-    }
-    let mut written = 0;
-    let mut i = 0;
+    let mut i = input
+        .iter()
+        .position(|&c| c == b'\\' || c == b'\'' || c == b'$')
+        .unwrap_or(input.len());
+    let mut written = i;
     let mut ansi = false;
     while i < input.len() {
         if !ansi && input[i..].starts_with(b"$'") {
@@ -97,9 +97,7 @@ impl Request {
         for name in git_names {
             command.env_remove(name);
         }
-        for (name, value) in &self.git_env {
-            command.env(name, value);
-        }
+        command.envs(self.git_env.iter().map(|(name, value)| (name, value)));
         command.args(args);
         command
     }
@@ -165,9 +163,7 @@ impl Request {
             return None;
         }
         if !upstream.is_empty() {
-            let mut key = b"branch.".to_vec();
-            key.extend_from_slice(&branch);
-            key.extend_from_slice(b".remote");
+            let key = [b"branch.".as_slice(), &branch, b".remote"].concat();
             // Git ref names are byte strings; don't require Unicode here.
             let mut remote = self.git(
                 git_names,
@@ -235,7 +231,7 @@ fn run() -> io::Result<()> {
         .collect();
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
-    let mut output = io::BufWriter::new(io::stdout().lock());
+    let mut output = io::BufWriter::with_capacity(4096, io::stdout().lock());
     while let Some([id, dir, path, count]) = read_fields(&mut input)? {
         let path = OsString::from_vec(path);
         let mut request = Request {
