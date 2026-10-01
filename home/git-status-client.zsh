@@ -23,8 +23,7 @@ function _i4_git_status_start() {
   }
   typeset -gi _I4_GIT_STATUS_PID=$!
   disown
-  exec {_I4_GIT_STATUS_REQUEST_FD}>&p
-  exec {_I4_GIT_STATUS_RESPONSE_FD}<&p
+  exec {_I4_GIT_STATUS_REQUEST_FD}>&p {_I4_GIT_STATUS_RESPONSE_FD}<&p
   zle -F $_I4_GIT_STATUS_RESPONSE_FD _i4_git_status_response
 }
 
@@ -45,7 +44,7 @@ function _i4_git_status_send() {
   local name value= git_env count=0
   # Prefix raw fields with byte lengths, including empty or NUL-containing values.
   for name in ${(k)parameters[(I)GIT_*]}; do
-    [[ ${parameters[$name]} == *export* ]] || continue
+    [[ ${(tP)name} == *export* ]] || continue
     value=${(P)name}
     git_env+="${#name}"$'\n'"$name${#value}"$'\n'"$value"
     (( ++count ))
@@ -68,8 +67,8 @@ function _i4_git_status_precmd() {
 }
 
 function _i4_git_status_response() {
-  local fd=$1 response
-  if [[ -n $2 ]] || ! IFS= read -r -u $fd response; then
+  local response
+  if [[ -n $2 ]] || ! IFS= read -r -u $1 response; then
     _i4_git_status_fail 'response pipe closed'
     _i4_git_status_redraw
     return
@@ -118,8 +117,7 @@ function _i4_git_status_stop() {
   local pid=$_I4_GIT_STATUS_PID
   _I4_GIT_STATUS_PID=0
   zle -F $_I4_GIT_STATUS_RESPONSE_FD 2>/dev/null
-  exec {_I4_GIT_STATUS_REQUEST_FD}>&-
-  exec {_I4_GIT_STATUS_RESPONSE_FD}<&-
+  exec {_I4_GIT_STATUS_REQUEST_FD}>&- {_I4_GIT_STATUS_RESPONSE_FD}<&-
   kill -TERM $pid 2>/dev/null
   # A stopped process cannot handle TERM until continued during cleanup.
   kill -CONT $pid 2>/dev/null

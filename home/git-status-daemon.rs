@@ -8,49 +8,44 @@ use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-fn read_fields<const N: usize>(
-    input: &mut impl BufRead,
-    length: &mut Vec<u8>,
-) -> io::Result<Option<[Vec<u8>; N]>> {
-    let mut fields = std::array::from_fn(|_| Vec::new());
-    for field in &mut fields {
-        length.clear();
-        if input.read_until(b'\n', length)? == 0 || length.last() != Some(&b'\n') {
-            return Ok(None);
+fn read_fields(input: &mut impl BufRead, fields: &mut [Vec<u8>]) -> io::Result<bool> {
+    for field in fields {
+        field.clear();
+        if input.read_until(b'\n', field)? == 0 || field.last() != Some(&b'\n') {
+            return Ok(false);
         }
-        field.resize(number(&length[..length.len() - 1]) as usize, 0);
-        if let Err(error) = input.read_exact(field) {
-            return if error.kind() == io::ErrorKind::UnexpectedEof {
-                Ok(None)
-            } else {
-                Err(error)
-            };
+        field.resize(number(&field[..field.len() - 1]) as usize, 0);
+        match input.read_exact(field) {
+            Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => return Ok(false),
+            result => result?,
         }
     }
-    Ok(Some(fields))
+    Ok(true)
 }
 
-struct Request {
-    dir: OsString,
-    path: Option<OsString>, // None when the request matches the inherited PATH.
-    git_env: Vec<(OsString, OsString)>,
+struct Request<'a> {
+    dir: &'a OsStr,
+    path: Option<&'a OsStr>, // None when the request matches the inherited PATH.
+    git_env: &'a [[Vec<u8>; 2]], // Name/value pairs from reusable request buffers.
 }
 
-impl Request {
+impl Request<'_> {
     fn command<S: AsRef<OsStr>>(&self, args: &[S]) -> Command {
         let mut command = Command::new("git");
         command
             .arg("-C")
-            .arg(&self.dir)
+            .arg(self.dir)
             .stdin(Stdio::null())
-            .stderr(Stdio::null());
+            .stderr(Stdio::null())
+            .args(args);
         // Leaving an unchanged PATH inherited avoids rebuilding the entire
         // environment for auxiliary commands with no Git overrides.
         if let Some(path) = &self.path {
             command.env("PATH", path);
         }
-        command.envs(self.git_env.iter().map(|(name, value)| (name, value)));
-        command.args(args);
+        for [name, value] in self.git_env {
+            command.env(OsStr::from_bytes(name), OsStr::from_bytes(value));
+        }
         command
     }
 
@@ -74,7 +69,7 @@ impl Request {
             .stdout(Stdio::piped())
             .spawn()
             .ok()?;
-        let mut porcelain = io::BufReader::new(child.stdout.take()?);
+        let mut porcelain = io::BufReader::with_capacity(4096, child.stdout.take()?);
         // Stream status through one reusable line instead of retaining every path.
         let (mut branch, mut upstream, mut oid) = (Vec::new(), Vec::new(), Vec::new());
         let mut counts = [0u64; 7]; // staged, unstaged, untracked, conflicted, ahead, behind, stashes
@@ -114,11 +109,8 @@ impl Request {
         if !upstream.is_empty() {
             let key = [b"branch.".as_slice(), &branch, b".remote"].concat();
             // Git ref names are byte strings; don't require Unicode here.
-            let mut remote = self.git(&[
-                OsStr::new("config"),
-                OsStr::new("--get"),
-                OsStr::from_bytes(&key),
-            ]);
+            let mut remote =
+                self.git(&[b"config".as_slice(), b"--get", &key].map(OsStr::from_bytes));
             if !remote.is_empty() && remote != b"." {
                 remote.push(b'/');
                 if upstream.starts_with(&remote) {
@@ -180,28 +172,34 @@ fn run() -> io::Result<()> {
     }
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
-    let mut output = io::BufWriter::with_capacity(4096, io::stdout().lock());
-    let mut length = Vec::new();
-    while let Some([id, dir, path, count]) = read_fields(&mut input, &mut length)? {
-        let path = OsString::from_vec(path);
-        let mut request = Request {
-            dir: OsString::from_vec(dir),
-            path: (inherited_path.as_ref() != Some(&path)).then_some(path),
-            git_env: Vec::new(),
-        };
-        for _ in 0..number(&count) {
-            let Some([name, value]) = read_fields(&mut input, &mut length)? else {
+    let mut output = io::BufWriter::with_capacity(256, io::stdout().lock());
+    // Reuse raw field buffers across requests; Git commands borrow their bytes.
+    let mut fields = std::array::from_fn(|_| Vec::new());
+    let mut git_env = Vec::new();
+    while read_fields(&mut input, &mut fields)? {
+        let [id, dir, path, count] = &fields;
+        let count = number(count);
+        for index in 0..count {
+            if index == git_env.len() as u64 {
+                git_env.push([Vec::new(), Vec::new()]);
+            }
+            let pair = &mut git_env[index as usize];
+            if !read_fields(&mut input, pair)? {
                 return Ok(());
-            };
-            if !name.starts_with(b"GIT_") {
+            }
+            if !pair[0].starts_with(b"GIT_") {
                 std::process::exit(1);
             }
-            request
-                .git_env
-                .push((OsString::from_vec(name), OsString::from_vec(value)));
         }
+        git_env.truncate(count as usize);
+        let path = OsStr::from_bytes(path);
+        let request = Request {
+            dir: OsStr::from_bytes(dir),
+            path: (inherited_path.as_deref() != Some(path)).then_some(path),
+            git_env: &git_env,
+        };
         let result = request.status().unwrap_or_default();
-        output.write_all(&id)?;
+        output.write_all(id)?;
         output.write_all(b":")?;
         output.write_all(&result)?;
         output.write_all(b"\n")?;
