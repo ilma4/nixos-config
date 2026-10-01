@@ -165,6 +165,29 @@ class GitStatusClientTest(unittest.TestCase):
             })
         self.assertEqual(stream.read(), b"")
 
+    def test_large_request_is_written_completely(self):
+        result = subprocess.run([
+            "zsh", "-fc", r'''
+                PATH=
+                source "$1" /unused
+                export GIT_TEST_LARGE=${(l:300000::x:)empty}
+                exec {_I4_GIT_STATUS_REQUEST_FD}>&1
+                _i4_git_status_send
+            ''', "zsh", str(CLIENT),
+        ], check=True, capture_output=True,
+            env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")})
+        self.assertEqual(result.stderr, b"")
+        stream = io.BytesIO(result.stdout)
+
+        def field():
+            return stream.read(int(stream.readline()))
+
+        for _ in range(3):
+            field()  # sequence, directory, PATH
+        self.assertEqual(field(), b"1")
+        self.assertEqual((field(), field()), (b"GIT_TEST_LARGE", b"x" * 300000))
+        self.assertEqual(stream.read(), b"")
+
 
 if __name__ == "__main__":
     unittest.main()

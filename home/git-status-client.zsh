@@ -4,7 +4,7 @@ if (( ${_I4_GIT_STATUS_STARTED:-0} )); then
   print -ru2 -- 'git status daemon already launched in this shell; refusing a second launch'
   return 1
 fi
-zmodload zsh/parameter
+zmodload zsh/parameter zsh/system
 autoload -Uz add-zsh-hook
 
 typeset -gi _I4_GIT_STATUS_SEQ=0 _I4_GIT_STATUS_INFLIGHT=0
@@ -17,10 +17,8 @@ function _i4_git_status_start() {
     return 1
   fi
   _I4_GIT_STATUS_STARTED=1
-  () {
-    setopt local_options no_monitor
-    coproc "$_I4_GIT_STATUS_DAEMON"
-  }
+  setopt local_options no_monitor
+  coproc "$_I4_GIT_STATUS_DAEMON"
   typeset -gi _I4_GIT_STATUS_PID=$!
   disown
   exec {_I4_GIT_STATUS_REQUEST_FD}>&p {_I4_GIT_STATUS_RESPONSE_FD}<&p
@@ -48,12 +46,9 @@ function _i4_git_status_send() {
     git_env+="${#name}"$'\n'"$name${#${(P)name}}"$'\n'"${(P)name}"
     (( ++count ))
   done
-  if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- \
-      "${#_I4_GIT_STATUS_SEQ}"$'\n'"$_I4_GIT_STATUS_SEQ${#PWD}"$'\n'"$PWD${#PATH}"$'\n'"$PATH${#count}"$'\n'"$count$git_env" 2>/dev/null; then
-    _I4_GIT_STATUS_INFLIGHT=1
-  else
-    _i4_git_status_fail 'request pipe closed'
-  fi
+  syswrite -o $_I4_GIT_STATUS_REQUEST_FD \
+      "${#_I4_GIT_STATUS_SEQ}"$'\n'"$_I4_GIT_STATUS_SEQ${#PWD}"$'\n'"$PWD${#PATH}"$'\n'"$PATH${#count}"$'\n'"$count$git_env" 2>/dev/null &&
+    _I4_GIT_STATUS_INFLIGHT=1 || _i4_git_status_fail 'request pipe closed'
 }
 
 function _i4_git_status_precmd() {

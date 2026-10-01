@@ -33,8 +33,7 @@ impl Request<'_> {
     fn command<S: AsRef<OsStr>>(&self, args: &[S]) -> Command {
         let mut command = Command::new("git");
         command
-            .arg("-C")
-            .arg(self.dir)
+            .args([OsStr::new("-C"), self.dir])
             .stdin(Stdio::null())
             .stderr(Stdio::null())
             .args(args);
@@ -57,7 +56,8 @@ impl Request<'_> {
         bytes
     }
 
-    fn status(&self, result: &mut Vec<u8>) -> Option<()> {
+    fn status(&self, result: &mut Vec<u8>, buffer: &mut Vec<u8>) -> Option<()> {
+        buffer.clear();
         let mut child = self
             .command(&["status", "--porcelain=v2", "--branch", "--show-stash"])
             .env("GIT_OPTIONAL_LOCKS", "0")
@@ -68,9 +68,8 @@ impl Request<'_> {
         // Stream status through one reusable line instead of retaining every path.
         let (mut branch, mut upstream, mut oid) = (Vec::new(), Vec::new(), Vec::new());
         let mut counts = [0u64; 7]; // staged, unstaged, untracked, conflicted, ahead, behind, stashes
-        let mut buffer = Vec::new();
-        while porcelain.read_until(b'\n', &mut buffer).ok()? != 0 {
-            let line = buffer.strip_suffix(b"\n").unwrap_or(&buffer);
+        while porcelain.read_until(b'\n', buffer).ok()? != 0 {
+            let line = buffer.strip_suffix(b"\n").unwrap_or(buffer);
             let mut parts = line.splitn(3, |&c| c == b' ');
             match (parts.next(), parts.next(), parts.next()) {
                 (Some(b"#"), Some(b"branch.oid"), Some(value)) => oid = value.to_vec(),
@@ -168,12 +167,12 @@ fn run() -> io::Result<()> {
     let mut input = io::stdin().lock();
     let mut output = io::stdout().lock();
     let mut result = Vec::with_capacity(256);
-    // Reuse raw field buffers across requests; Git commands borrow their bytes.
+    // Reuse raw fields; the consumed count buffer doubles as the status line.
     let mut fields = std::array::from_fn(|_| Vec::new());
     let mut git_env = Vec::new();
     while read_fields(&mut input, &mut fields)? {
-        let [id, dir, path, count] = &fields;
-        let count = number(count);
+        let [id, dir, path, buffer] = &mut fields;
+        let count = number(buffer);
         for index in 0..count {
             if index == git_env.len() as u64 {
                 git_env.push([Vec::new(), Vec::new()]);
@@ -196,7 +195,7 @@ fn run() -> io::Result<()> {
         result.clear();
         result.extend_from_slice(id);
         result.push(b':');
-        let _ = request.status(&mut result);
+        let _ = request.status(&mut result, buffer);
         result.push(b'\n');
         output.write_all(&result)?;
         output.flush()?;
