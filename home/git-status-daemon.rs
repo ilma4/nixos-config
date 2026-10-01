@@ -62,7 +62,7 @@ impl Request<'_> {
         bytes
     }
 
-    fn status(&self) -> Option<Vec<u8>> {
+    fn status(&self, result: &mut Vec<u8>) -> Option<()> {
         let mut child = self
             .command(&["status", "--porcelain=v2", "--branch", "--show-stash"])
             .env("GIT_OPTIONAL_LOCKS", "0")
@@ -134,13 +134,10 @@ impl Request<'_> {
                     ("BISECT_LOG", "bisect"),
                 ]
                 .into_iter()
-                .find(|(file, _)| dir.join(file).exists())
-                .map(|(_, action)| action.as_bytes())
+                .find_map(|(file, action)| dir.join(file).exists().then_some(action.as_bytes()))
                 .unwrap_or_default()
             };
         }
-        let mut result =
-            Vec::with_capacity(branch.len() + upstream.len() + tag.len() + oid.len() + 48);
         for field in [branch.as_slice(), upstream.as_slice(), action] {
             result.extend_from_slice(field);
             result.push(0x1f);
@@ -151,7 +148,7 @@ impl Request<'_> {
         result.extend_from_slice(tag);
         result.push(0x1f);
         result.extend_from_slice(&oid);
-        Some(result)
+        Some(())
     }
 }
 
@@ -172,7 +169,8 @@ fn run() -> io::Result<()> {
     }
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
-    let mut output = io::BufWriter::with_capacity(256, io::stdout().lock());
+    let mut output = io::stdout().lock();
+    let mut result = Vec::with_capacity(256);
     // Reuse raw field buffers across requests; Git commands borrow their bytes.
     let mut fields = std::array::from_fn(|_| Vec::new());
     let mut git_env = Vec::new();
@@ -198,11 +196,12 @@ fn run() -> io::Result<()> {
             path: (inherited_path.as_deref() != Some(path)).then_some(path),
             git_env: &git_env,
         };
-        let result = request.status().unwrap_or_default();
-        output.write_all(id)?;
-        output.write_all(b":")?;
+        result.clear();
+        result.extend_from_slice(id);
+        result.push(b':');
+        let _ = request.status(&mut result);
+        result.push(b'\n');
         output.write_all(&result)?;
-        output.write_all(b"\n")?;
         output.flush()?;
     }
     Ok(())

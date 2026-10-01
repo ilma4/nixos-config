@@ -1,76 +1,79 @@
 # Git status client and daemon optimization
 
-Measured on 2026-10-01 on Apple M3 Max, macOS 26.7.1, Git 2.55.0, Zsh 5.9.1. Both Rust binaries used rustc 1.98.1, edition 2021, optimization level 3 and stripped symbols. Baseline: `1d51774468733f901791e7f0214fe9357d0abe96`.
+Measured on 2026-10-01 on Apple M3 Max, macOS 26.7.1, Git 2.55.0, Zsh 5.9.1 and rustc 1.98.1. Baseline: `48eebf379c2a4dabb48b9c6d903f96456e721bab`. Both worker binaries use edition 2021, optimization level 3 and stripped symbols.
 
-The client now sends raw fields with a decimal byte length and newline before each field. The worker reads exactly that many bytes. This removes Zsh quoting and the Rust unquoting decoder. Byte lengths are calculated with `no_multibyte` scoped to the send function, and the previous option state is restored. Empty values, newlines, arbitrary non-UTF-8 bytes and embedded NUL remain framed correctly. Git still rejects NUL-containing arguments or environment entries; the following request remains usable.
+The client groups VCS string and integer assignments into two `typeset` calls. Readiness is updated after those assignments. The worker builds complete responses in one reusable byte buffer and writes each response to locked stdout. Action lookup uses `find_map` to combine lookup and conversion.
 
-The client and worker ship together in the same Nix derivation. The internal request format changes; both files must be updated together. Git commands, their order and environment, response fields, prompt rendering and lifecycle handling remain unchanged.
+The request format, Git commands and their environment, response fields, prompt rendering and daemon lifecycle are preserved. This pass changes no Nix options or packages.
 
 | Source | Before | After |
 | --- | ---: | ---: |
-| Client | 134 lines | 132 lines |
-| Worker | 263 lines | 220 lines |
-| Total | 397 lines | 352 lines (-11.3%) |
+| Client | 130 lines | 128 lines |
+| Worker | 218 lines | 217 lines |
+| Total | 348 lines | 345 lines (-0.9%) |
 
-## Client CPU and memory
+## Client CPU and resident memory
 
-Nine paired trials in randomized order, using compiled client files in fresh `zsh -f` processes. Each trial runs 10,000 sends or responses, or 3,000 sends with extra variables. CPU is user plus system time from `wait4`, divided by the call count; startup is amortized across the loop. Send workloads export two Git variables, including quotes/newlines; the larger workload adds 100 more. Inherited PATH is 4,025 bytes. Response handling uses identical response fields.
+Nine paired trials in randomized order, using compiled client files in fresh noninteractive Zsh processes. Each trial runs 10,000 sends or responses, or 3,000 sends with 100 extra exported Git variables. Sends write to `/dev/null`; responses read a prepared file and use a stub redraw function. CPU is user plus system time from `wait4`, divided by call count; shell startup is amortized across the loop. Peak shell RSS is also measured with `wait4`.
 
-| Workload | Before CPU (µs/call) | After CPU (µs/call) | Reduction | Before/after peak shell RSS (KiB) |
+| Workload | Before CPU (µs/call) | After CPU (µs/call) | Change | Before/after peak RSS (KiB) |
 | --- | ---: | ---: | ---: | ---: |
-| send | 169.45 | 125.41 | 26.0% | 3584 / 3536 |
-| send-many | 541.42 | 503.50 | 7.0% | 3888 / 3824 |
-| response | 78.23 | 77.71 | 0.7% | 3584 / 3536 |
+| send | 75.98 | 77.14 | +1.5% | 3472 / 3456 |
+| send-many | 289.60 | 289.83 | +0.1% | 3760 / 3744 |
+| response | 50.68 | 44.91 | -11.4% | 3440 / 3408 |
 
-Request serialization improves; response processing and shell peak RSS are effectively unchanged.
+Response handling uses 11.4% less CPU. Request serialization is unchanged; the measured send differences are small compared with trial variation. Shell peak RSS shows no meaningful improvement.
 
-## Git request latency and resident worker memory
+## Git request latency and worker RSS
 
-Two persistent workers, ten warmups, then 100 paired requests per case in randomized order. Every response is checked for byte equality. Ten RSS samples per worker are taken after responses with `ps`; Git subprocess memory is excluded. These timings include pipe IPC and Git subprocesses, with prebuilt requests. Ten fresh processes per worker and case also measured startup; their raw samples are retained.
+Two persistent workers, ten warmups, then 100 paired requests per repository in randomized order. Every response is checked for byte equality. Ten RSS samples per worker are taken after responses with `ps`; Git subprocess memory is excluded. Latency includes pipes and Git subprocesses, using prepared request bytes. Ten fresh processes per worker and case also measure startup; raw startup samples are retained in `daemon.json`.
 
 | Repository | Before median/p95 (ms) | After median/p95 (ms) | Before/after worker RSS (KiB) |
 | --- | ---: | ---: | ---: |
-| non_repo | 18.41 / 40.33 | 18.63 / 40.40 | 2704 / 2472 |
-| small_clean_10_files | 80.21 / 143.56 | 86.59 / 133.24 | 2336 / 2320 |
-| checkout | 77.97 / 93.06 | 78.08 / 98.93 | 2752 / 2592 |
-| large_clean_5000_files | 124.85 / 201.00 | 125.92 / 232.29 | 2632 / 2448 |
-| large_dirty_5000_modified_200_untracked | 442.74 / 518.91 | 441.40 / 504.09 | 2760 / 2728 |
+| non_repo | 11.65 / 13.84 | 11.47 / 14.77 | 2640 / 2640 |
+| small_clean_10_files | 44.34 / 49.44 | 43.92 / 49.08 | 2608 / 2672 |
+| checkout | 50.75 / 56.01 | 50.51 / 56.62 | 2624 / 2632 |
+| large_clean_5000_files | 52.46 / 57.21 | 52.19 / 58.36 | 2624 / 2640 |
+| large_dirty_5000_modified_200_untracked | 309.86 / 340.63 | 310.99 / 342.47 | 2656 / 2640 |
 
-Git request latency shows no clear overall improvement. The 10-file case is 8.0% slower by median in this run, while the dirty case is 0.3% faster; tail latency varies considerably. The checkout changes from 77.97 to 78.08 ms (+0.14%). Resident memory readings are slightly lower, but a single worker pair per workload cannot establish a reliable RSS reduction.
+No clear overall Git latency or worker RSS improvement was measured. Checkout latency changes by -0.5%; the dirty repository changes by +0.4%. RSS varies in both directions. These measurements do not establish an end-to-end prompt speedup.
 
 ## Rust allocation measurements
 
-Instrumented builds count parent Rust allocator traffic over 100 checkout requests, including startup and shutdown. These runs are separate from latency measurements. Peak live heap counts requested Rust allocation sizes, excluding allocator metadata, stacks, code pages and Git subprocesses. It is distinct from RSS.
+Separate instrumented builds count parent Rust allocator traffic over 100 checkout requests, including startup and shutdown. The instrumented allocator delegates allocation, reallocation and deallocation to `System`. Peak live heap counts requested Rust allocation sizes, excluding allocator metadata, stacks, code pages and Git subprocesses. It is distinct from RSS.
 
 | Environment | Before/after allocations per request | Before/after allocated KiB per request | Before/after peak live heap (KiB) |
 | --- | ---: | ---: | ---: |
-| checkout | 520.41 / 519.93 | 117.25 / 116.36 | 74.31 / 74.32 |
-| 100_git_variables | 3234.07 / 3232.93 | 433.68 / 431.05 | 117.74 / 116.54 |
-| changed_path | 1446.40 / 1445.93 | 343.84 / 343.43 | 90.49 / 90.49 |
+| checkout | 514.98 / 513.98 | 108.11 / 108.02 | 74.49 / 74.49 |
+| 100_git_variables | 3026.04 / 3025.04 | 406.59 / 406.50 | 113.06 / 113.06 |
+| changed_path | 1440.98 / 1439.98 | 335.16 / 335.08 | 82.60 / 82.60 |
 
-Allocation traffic falls by less than 1%. Normal peak heap is unchanged (76,094 → 76,101 bytes); with 100 extra Git variables it falls 1.0% (120,567 → 119,333 bytes). The meaningful measured gain is client CPU, with a smaller worker implementation.
+For these repository responses the worker saves one allocation and 88 allocated bytes per request. Normal allocation traffic falls by only 0.08%. Peak live heap is unchanged in all three workloads. The main measured improvement is client response CPU, with a small reduction in worker allocation traffic.
 
 ## Reproduction and artifacts
 
+Saved before/after sources, compiled binaries, allocator instrumentation, benchmark harnesses and raw samples are in:
+
+`/var/folders/vk/46_34c_j3jldrt2kczqj3vfw0000gn/T/i4-git-status-final.puzltlgj`
+
+`metadata.json` records source hashes, source line counts and tool versions. `micro.json` contains the final client and heap results; `client-final.json` retains the client trials separately. `daemon.json` contains latency, startup and RSS samples. The saved daemon benchmark accepts raw requests for both workers; the repository benchmark's existing `--baseline` flag expects the older quoted request format.
+
+To repeat the measurements from the artifact directory:
+
 ```bash
 set -euo pipefail
-jj file show -r 1d517744 home/git-status-daemon.rs > /tmp/git-status-before.rs
-rustc --edition=2021 -C opt-level=3 -C strip=symbols /tmp/git-status-before.rs -o /tmp/git-status-before
-python3 tests/benchmark-git-status-daemon.py \
-  --baseline /tmp/git-status-before --samples 100 --startup-samples 10 \
-  > /tmp/git-status-comparison.json
+python3 micro.py
+python3 benchmark-daemon.py --baseline ./before --native ./after \
+  --samples 100 --startup-samples 10 > daemon.json
 ```
-
-Full raw samples, saved before/after sources, binaries, allocation instrumentation, client benchmark harness and differential/PTY checks are stored in:
-
-`/var/folders/vk/46_34c_j3jldrt2kczqj3vfw0000gn/T/i4-git-status-next.o30_7mcb`
-
-Run `python3 <artifact-directory>/micro.py` to repeat client CPU/RSS and worker heap measurements using the saved sources. `daemon.json` contains Git latency and worker RSS samples; `micro.json` contains CPU, peak shell RSS and allocator samples; `metadata.json` records tool versions and source hashes.
 
 ## Validation
 
-Baseline: 17 daemon tests and two PTY lifecycle tests passed. Updated worker: 18 daemon tests passed, including the original repository/environment cases compared with the saved Rust baseline and a new NUL/recovery case. Three client tests cover lifecycle plus byte framing and multibyte option restoration. Additional differential checks cover empty/malformed responses, all non-NUL byte values, Unicode, embedded NUL, unexported variables, PATH changes and both C/UTF-8 locales.
+- Baseline: all 18 daemon tests and three client tests passed.
+- Updated worker: 18 daemon tests passed, with repository cases compared against the saved baseline.
+- Additional differential checks compare framing, truncation, invalid environment entries, PATH changes and both C/UTF-8 locales. A stream of 100 varied synthetic responses checks long fields and IDs, embedded control bytes, status failures, action precedence and buffer reuse.
+- Client comparisons cover exported variable types, local shadowing, arbitrary bytes, Unicode, NUL and malformed/empty/long responses. Both versions produce identical request bytes and VCS variable assignments.
+- Paired PTY checks cover asynchronous readiness before delayed Git completion, stale responses, duplicate launches and failure cleanup. Both versions render the branch through actual Powerlevel10k.
+- `zsh -n`, `rustfmt --check`, `./utils/flake-check.sh` and the generated Quicksilver `.zshrc` build pass. The Nix-built worker and compiled client pass all 21 tests and render the branch through the generated Powerlevel10k configuration.
 
-Paired PTY checks confirm an initial prompt before deliberately delayed Git completion, stale-response handling, duplicate-launch rejection and failure cleanup. Both clients render the branch through actual Powerlevel10k. `zsh -n` and `rustfmt --check` pass. `./utils/flake-check.sh` passes for all systems. The Quicksilver worker and generated `.zshrc` build successfully; the packaged arm64 worker and compiled client pass all 21 tests and render the branch through the generated Powerlevel10k configuration. Configuration was not activated.
-
-Validated Nix worker package: `/nix/store/34ib6dxmcl4nvvqw37h0c5sqbbf90is0-i4-git-status-daemon`.
+Validated Nix package: `/nix/store/lh7m1nm7rqg3vfiss8w9n4ky1kk0dqdi-i4-git-status-daemon`.
