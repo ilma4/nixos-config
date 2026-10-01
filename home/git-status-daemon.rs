@@ -10,7 +10,7 @@ use std::process::{Command, Stdio};
 
 // Decode the backslash quoting and embedded $'...' emitted by Zsh's (q).
 // Work on bytes so non-UTF-8 Unix paths and environment values survive too.
-fn unquote(mut input: Vec<u8>) -> Vec<u8> {
+fn unquote(input: &mut Vec<u8>) {
     let mut i = input
         .iter()
         .position(|&c| c == b'\\' || c == b'\'' || c == b'$')
@@ -60,7 +60,6 @@ fn unquote(mut input: Vec<u8>) -> Vec<u8> {
         }
     }
     input.truncate(written);
-    input
 }
 
 fn read_fields<const N: usize>(input: &mut impl BufRead) -> io::Result<Option<[Vec<u8>; N]>> {
@@ -70,7 +69,7 @@ fn read_fields<const N: usize>(input: &mut impl BufRead) -> io::Result<Option<[V
             return Ok(None);
         }
         field.pop();
-        *field = unquote(std::mem::take(field));
+        unquote(field);
     }
     Ok(Some(fields))
 }
@@ -82,7 +81,7 @@ struct Request {
 }
 
 impl Request {
-    fn command<S: AsRef<OsStr>>(&self, git_names: &[OsString], args: &[S]) -> Command {
+    fn command<S: AsRef<OsStr>>(&self, args: &[S]) -> Command {
         let mut command = Command::new("git");
         command
             .arg("-C")
@@ -94,17 +93,14 @@ impl Request {
         if let Some(path) = &self.path {
             command.env("PATH", path);
         }
-        for name in git_names {
-            command.env_remove(name);
-        }
         command.envs(self.git_env.iter().map(|(name, value)| (name, value)));
         command.args(args);
         command
     }
 
-    fn git<S: AsRef<OsStr>>(&self, names: &[OsString], args: &[S]) -> Vec<u8> {
+    fn git<S: AsRef<OsStr>>(&self, args: &[S]) -> Vec<u8> {
         let mut bytes = self
-            .command(names, args)
+            .command(args)
             .output()
             .map(|o| o.stdout)
             .unwrap_or_default();
@@ -115,12 +111,9 @@ impl Request {
         bytes
     }
 
-    fn status(&self, git_names: &[OsString]) -> Option<Vec<u8>> {
+    fn status(&self) -> Option<Vec<u8>> {
         let mut child = self
-            .command(
-                git_names,
-                &["status", "--porcelain=v2", "--branch", "--show-stash"],
-            )
+            .command(&["status", "--porcelain=v2", "--branch", "--show-stash"])
             .env("GIT_OPTIONAL_LOCKS", "0")
             .stdout(Stdio::piped())
             .spawn()
@@ -165,14 +158,11 @@ impl Request {
         if !upstream.is_empty() {
             let key = [b"branch.".as_slice(), &branch, b".remote"].concat();
             // Git ref names are byte strings; don't require Unicode here.
-            let mut remote = self.git(
-                git_names,
-                &[
-                    OsStr::new("config"),
-                    OsStr::new("--get"),
-                    OsStr::from_bytes(&key),
-                ],
-            );
+            let mut remote = self.git(&[
+                OsStr::new("config"),
+                OsStr::new("--get"),
+                OsStr::from_bytes(&key),
+            ]);
             if !remote.is_empty() && remote != b"." {
                 remote.push(b'/');
                 if upstream.starts_with(&remote) {
@@ -180,10 +170,10 @@ impl Request {
                 }
             }
         }
-        let tags = self.git(git_names, &["tag", "--points-at", "HEAD", "--sort=refname"]);
+        let tags = self.git(&["tag", "--points-at", "HEAD", "--sort=refname"]);
         let tag = tags.rsplit(|&c| c == b'\n').next().unwrap_or_default();
         let mut action: &[u8] = b"";
-        let dir = self.git(git_names, &["rev-parse", "--absolute-git-dir"]);
+        let dir = self.git(&["rev-parse", "--absolute-git-dir"]);
         if !dir.is_empty() {
             let dir = PathBuf::from(OsString::from_vec(dir));
             action = if dir.join("rebase-merge").is_dir() || dir.join("rebase-apply").is_dir() {
@@ -225,10 +215,13 @@ fn number(bytes: &[u8]) -> u64 {
 }
 
 fn run() -> io::Result<()> {
-    let git_names: Vec<_> = env::vars_os()
-        .map(|(name, _)| name)
-        .filter(|name| name.as_bytes().starts_with(b"GIT_"))
-        .collect();
+    // This single-threaded worker forwards Git variables only from each request.
+    // Clear inherited overrides once so commands can inherit the rest unchanged.
+    for (name, _) in env::vars_os() {
+        if name.as_bytes().starts_with(b"GIT_") {
+            env::remove_var(name);
+        }
+    }
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
     let mut output = io::BufWriter::with_capacity(4096, io::stdout().lock());
@@ -250,7 +243,7 @@ fn run() -> io::Result<()> {
                 .git_env
                 .push((OsString::from_vec(name), OsString::from_vec(value)));
         }
-        let result = request.status(&git_names).unwrap_or_default();
+        let result = request.status().unwrap_or_default();
         output.write_all(&id)?;
         output.write_all(b":")?;
         output.write_all(&result)?;

@@ -47,10 +47,9 @@ function _i4_git_status_send() {
   # Quote each field so paths and exported Git variables may contain newlines.
   # Line reads do not make Zsh change the daemon's inherited terminal settings.
   for name in ${(k)parameters[(I)GIT_*]}; do
-    if [[ ${parameters[$name]} == *export* ]]; then
-      git_env+="${(q)name}"$'\n'"${(qP)name}"$'\n'
-      (( ++count ))
-    fi
+    [[ ${parameters[$name]} == *export* ]] || continue
+    git_env+="${(q)name}"$'\n'"${(qP)name}"$'\n'
+    (( ++count ))
   done
   if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- \
       "$_I4_GIT_STATUS_SEQ"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"$count"$'\n'"$git_env" 2>/dev/null; then
@@ -71,7 +70,7 @@ function _i4_git_status_precmd() {
 }
 
 function _i4_git_status_response() {
-  local fd=$1 response git_result
+  local fd=$1 response
   if [[ -n $2 ]] || ! IFS= read -r -u $fd response; then
     _i4_git_status_fail 'response pipe closed'
     _i4_git_status_redraw
@@ -84,11 +83,11 @@ function _i4_git_status_response() {
     (( _I4_GIT_STATUS_FAILED )) && _i4_git_status_redraw
     return
   fi
-  git_result=${response#*:}
-  if [[ $git_result != $_I4_GIT_STATUS_OUTPUT ]]; then
-    _I4_GIT_STATUS_OUTPUT=$git_result
+  response=${response#*:}
+  if [[ $response != $_I4_GIT_STATUS_OUTPUT ]]; then
+    _I4_GIT_STATUS_OUTPUT=$response
     _I4_GIT_STATUS_READY=0
-    local -a fields=("${(@ps:\x1f:)git_result}")
+    local -a fields=("${(@ps:\x1f:)response}")
     if (( $#fields == 12 )); then
       typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL=
       typeset -g VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2]
