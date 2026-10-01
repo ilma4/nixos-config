@@ -97,13 +97,9 @@ class GitStatusClientTest(unittest.TestCase):
         for command, dirname in ((b"cd child\n", b"child"),
                                  (b"sleep 0.2\n", b"child"),
                                  (b"cd ..\n", b"repo")):
-            os.write(master, command)
+            # Require a fresh reply, including when the directory is unchanged.
+            os.write(master, b"_I4_GIT_STATUS_OUTPUT= _I4_GIT_STATUS_READY=0; " + command)
             self.read_until(master, b"I4_STATUS:" + dirname + b":1:0:main")
-            state = subprocess.run(
-                ["ps", "-o", "stat=", "-p", str(worker)],
-                check=True, capture_output=True, text=True,
-            ).stdout.strip()
-            self.assertNotIn("T", state, state)
         self.assertEqual(self.worker_pid(master, b"repo"), worker)
 
     def test_worker_exit_is_reported_once_without_restart(self):

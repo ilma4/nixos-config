@@ -30,26 +30,24 @@ struct Request<'a> {
 }
 
 impl Request<'_> {
-    fn command<S: AsRef<OsStr>>(&self, args: &[S]) -> Command {
+    fn command<S: AsRef<OsStr>>(&self, args: &[S], status: bool) -> Command {
         let mut command = Command::new("git");
         command
             .args([OsStr::new("-C"), self.dir])
             .stdin(Stdio::null())
             .stderr(Stdio::null())
-            .args(args);
-        // Leaving an unchanged PATH inherited avoids rebuilding the entire
-        // environment for auxiliary commands with no Git overrides.
-        if let Some(path) = &self.path {
-            command.env("PATH", path);
-        }
+            .args(args)
+            .envs(self.path.map(|path| ("PATH", path)));
         for [name, value] in self.git_env {
-            command.env(OsStr::from_bytes(name), OsStr::from_bytes(value));
+            if !status || name != b"GIT_OPTIONAL_LOCKS" {
+                command.env(OsStr::from_bytes(name), OsStr::from_bytes(value));
+            }
         }
         command
     }
 
     fn git<S: AsRef<OsStr>>(&self, args: &[S]) -> Vec<u8> {
-        let output = self.command(args).output();
+        let output = self.command(args, false).output();
         let mut bytes = output.map(|o| o.stdout).unwrap_or_default();
         // Match Zsh command substitution, which strips all trailing newlines.
         bytes.truncate(bytes.iter().rposition(|&c| c != b'\n').map_or(0, |i| i + 1));
@@ -58,12 +56,13 @@ impl Request<'_> {
 
     fn status(&self, result: &mut Vec<u8>, buffer: &mut Vec<u8>) -> Option<()> {
         buffer.clear();
-        let mut child = self
-            .command(&["status", "--porcelain=v2", "--branch", "--show-stash"])
-            .env("GIT_OPTIONAL_LOCKS", "0")
-            .stdout(Stdio::piped())
-            .spawn()
-            .ok()?;
+        // Temporarily inherit this override to avoid copying the whole environment.
+        // Only this single-threaded worker's status child sees it.
+        env::set_var("GIT_OPTIONAL_LOCKS", "0");
+        let args = ["status", "--porcelain=v2", "--branch", "--show-stash"];
+        let child = self.command(&args, true).stdout(Stdio::piped()).spawn();
+        env::remove_var("GIT_OPTIONAL_LOCKS");
+        let mut child = child.ok()?;
         let mut porcelain = io::BufReader::with_capacity(4096, child.stdout.take()?);
         // Stream status through one reusable line instead of retaining every path.
         let (mut branch, mut upstream, mut oid) = (Vec::new(), Vec::new(), Vec::new());
@@ -98,6 +97,7 @@ impl Request<'_> {
         if !child.wait().ok()?.success() {
             return None;
         }
+        let mut upstream = upstream.as_slice();
         if !upstream.is_empty() {
             let key = [b"branch.".as_slice(), &branch, b".remote"].concat();
             // Git ref names are byte strings; don't require Unicode here.
@@ -105,9 +105,7 @@ impl Request<'_> {
                 self.git(&[b"config".as_slice(), b"--get", &key].map(OsStr::from_bytes));
             if !remote.is_empty() && remote != b"." {
                 remote.push(b'/');
-                if upstream.starts_with(&remote) {
-                    upstream.drain(..remote.len());
-                }
+                upstream = upstream.strip_prefix(remote.as_slice()).unwrap_or(upstream);
             }
         }
         let tags = self.git(&["tag", "--points-at", "HEAD", "--sort=refname"]);
@@ -136,7 +134,7 @@ impl Request<'_> {
             })
             .unwrap_or_default();
         }
-        for field in [branch.as_slice(), upstream.as_slice(), action] {
+        for field in [branch.as_slice(), upstream, action] {
             result.extend_from_slice(field);
             result.push(0x1f);
         }
@@ -156,8 +154,7 @@ fn number(bytes: &[u8]) -> u64 {
 }
 
 fn run() -> io::Result<()> {
-    // This single-threaded worker forwards Git variables only from each request.
-    // Clear inherited overrides once so commands can inherit the rest unchanged.
+    // Drop inherited Git overrides once; each request supplies its own.
     for (name, _) in env::vars_os() {
         if name.as_bytes().starts_with(b"GIT_") {
             env::remove_var(name);
@@ -169,14 +166,12 @@ fn run() -> io::Result<()> {
     let mut result = Vec::with_capacity(256);
     // Reuse raw fields; the consumed count buffer doubles as the status line.
     let mut fields = std::array::from_fn(|_| Vec::new());
-    let mut git_env = Vec::new();
+    let mut git_env: Vec<[Vec<u8>; 2]> = Vec::new();
     while read_fields(&mut input, &mut fields)? {
         let [id, dir, path, buffer] = &mut fields;
         let count = number(buffer);
         for index in 0..count {
-            if index == git_env.len() as u64 {
-                git_env.push([Vec::new(), Vec::new()]);
-            }
+            git_env.resize_with(git_env.len().max(index as usize + 1), Default::default);
             let pair = &mut git_env[index as usize];
             if !read_fields(&mut input, pair)? {
                 return Ok(());
@@ -204,10 +199,10 @@ fn run() -> io::Result<()> {
 }
 
 fn main() {
-    if let Err(error) = run() {
+    run().unwrap_or_else(|error| {
         if error.kind() != io::ErrorKind::BrokenPipe {
             eprintln!("git status daemon: {error}");
             std::process::exit(1);
         }
-    }
+    });
 }

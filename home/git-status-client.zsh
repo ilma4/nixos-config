@@ -74,23 +74,22 @@ function _i4_git_status_response() {
     return
   fi
   response=${response#*:}
-  if [[ $response != $_I4_GIT_STATUS_OUTPUT ]]; then
-    _I4_GIT_STATUS_OUTPUT=$response _I4_GIT_STATUS_READY=0
-    local -a fields=("${(@ps:\x1f:)response}")
-    if (( $#fields == 12 )); then
-      typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL= \
-        VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2] \
-        VCS_STATUS_ACTION=$fields[3] VCS_STATUS_TAG=$fields[11] VCS_STATUS_COMMIT=$fields[12]
-      typeset -gi VCS_STATUS_NUM_STAGED=$fields[4] VCS_STATUS_NUM_UNSTAGED=$fields[5] \
-        VCS_STATUS_NUM_UNTRACKED=$fields[6] VCS_STATUS_NUM_CONFLICTED=$fields[7] \
-        VCS_STATUS_COMMITS_AHEAD=$fields[8] VCS_STATUS_COMMITS_BEHIND=$fields[9] VCS_STATUS_STASHES=$fields[10] \
-        VCS_STATUS_HAS_STAGED='VCS_STATUS_NUM_STAGED > 0' VCS_STATUS_HAS_UNSTAGED='VCS_STATUS_NUM_UNSTAGED > 0' \
-        VCS_STATUS_HAS_UNTRACKED='VCS_STATUS_NUM_UNTRACKED > 0' VCS_STATUS_HAS_CONFLICTED='VCS_STATUS_NUM_CONFLICTED > 0' \
-        VCS_STATUS_NUM_UNSTAGED_DELETED=0
-      _I4_GIT_STATUS_READY=1
-    fi
-    _i4_git_status_redraw
+  [[ $response == $_I4_GIT_STATUS_OUTPUT ]] && return 0
+  _I4_GIT_STATUS_OUTPUT=$response _I4_GIT_STATUS_READY=0
+  local -a fields=("${(@ps:\x1f:)response}")
+  if (( $#fields == 12 )); then
+    typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL= \
+      VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2] \
+      VCS_STATUS_ACTION=$fields[3] VCS_STATUS_TAG=$fields[11] VCS_STATUS_COMMIT=$fields[12]
+    typeset -gi VCS_STATUS_NUM_STAGED=$fields[4] VCS_STATUS_NUM_UNSTAGED=$fields[5] \
+      VCS_STATUS_NUM_UNTRACKED=$fields[6] VCS_STATUS_NUM_CONFLICTED=$fields[7] \
+      VCS_STATUS_COMMITS_AHEAD=$fields[8] VCS_STATUS_COMMITS_BEHIND=$fields[9] VCS_STATUS_STASHES=$fields[10] \
+      VCS_STATUS_HAS_STAGED='VCS_STATUS_NUM_STAGED > 0' VCS_STATUS_HAS_UNSTAGED='VCS_STATUS_NUM_UNSTAGED > 0' \
+      VCS_STATUS_HAS_UNTRACKED='VCS_STATUS_NUM_UNTRACKED > 0' VCS_STATUS_HAS_CONFLICTED='VCS_STATUS_NUM_CONFLICTED > 0' \
+      VCS_STATUS_NUM_UNSTAGED_DELETED=0
+    _I4_GIT_STATUS_READY=1
   fi
+  _i4_git_status_redraw
 }
 
 function _i4_git_status_fail() {

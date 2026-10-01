@@ -214,6 +214,18 @@ class GitStatusDaemonTest(unittest.TestCase):
         self.assertTrue(result.stdout.startswith(b"1:\n2:main\x1f"))
         self.assertEqual(result.stderr, b"")
 
+    def test_optional_locks_nul_value_is_overridden_only_for_status(self):
+        self.git("tag", "v1")
+        payload = (request(self.repo, {"GIT_OPTIONAL_LOCKS": "before\0after"})
+                   + request(self.repo, seq="2"))
+        result = subprocess.run([str(daemon())], input=payload,
+                                check=True, capture_output=True)
+        first, second = result.stdout.splitlines()
+        self.assertTrue(first.startswith(b"1:main\x1f"))
+        self.assertEqual(first.split(b"\x1f")[-2], b"")
+        self.assertEqual(second.split(b"\x1f")[-2], b"v1")
+        self.assertEqual(result.stderr, b"")
+
     def test_git_commands_and_exact_environment(self):
         fake_bin = self.repo.parent / "bin"
         fake_bin.mkdir()
@@ -243,29 +255,31 @@ class GitStatusDaemonTest(unittest.TestCase):
         if reference := os.environ.get("GIT_STATUS_REFERENCE"):
             commands.append(["zsh", "-f", reference])
         for locale in ("C", "en_US.UTF-8" if sys.platform == "darwin" else "C.UTF-8"):
-            replies = []
-            for command in commands:
-                payload = request(self.repo, forwarded, path=str(fake_bin),
-                                  quote_env={**os.environ, "LC_ALL": locale},
-                                  quoted=command[0] == "zsh")
-                log.unlink(missing_ok=True)
-                result = subprocess.run(command, input=payload, env=env,
-                                        check=True, capture_output=True)
-                self.assertEqual(result.stderr, b"")
-                replies.append(result.stdout)
-                calls = [json.loads(line) for line in log.read_text().splitlines()]
-                self.assertEqual([call["args"] for call in calls], [
-                    ["-C", str(self.repo), "status", "--porcelain=v2", "--branch", "--show-stash"],
-                    ["-C", str(self.repo), "config", "--get", "branch.main.remote"],
-                    ["-C", str(self.repo), "tag", "--points-at", "HEAD", "--sort=refname"],
-                    ["-C", str(self.repo), "rev-parse", "--absolute-git-dir"],
-                ])
-                for i, call in enumerate(calls):
-                    self.assertEqual(call["path"], str(fake_bin))
-                    self.assertEqual(call["git_env"], {
-                        **forwarded, "GIT_OPTIONAL_LOCKS": "0" if i == 0 else "1",
-                    })
-            self.assertTrue(all(reply == replies[0] for reply in replies))
+            for overrides in ({}, {"GIT_TEST_VALUE": forwarded["GIT_TEST_VALUE"]}, forwarded):
+                replies = []
+                for command in commands:
+                    payload = request(self.repo, overrides, path=str(fake_bin),
+                                      quote_env={**os.environ, "LC_ALL": locale},
+                                      quoted=command[0] == "zsh")
+                    log.unlink(missing_ok=True)
+                    result = subprocess.run(command, input=payload, env=env,
+                                            check=True, capture_output=True)
+                    self.assertEqual(result.stderr, b"")
+                    replies.append(result.stdout)
+                    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                    self.assertEqual([call["args"] for call in calls], [
+                        ["-C", str(self.repo), "status", "--porcelain=v2", "--branch", "--show-stash"],
+                        ["-C", str(self.repo), "config", "--get", "branch.main.remote"],
+                        ["-C", str(self.repo), "tag", "--points-at", "HEAD", "--sort=refname"],
+                        ["-C", str(self.repo), "rev-parse", "--absolute-git-dir"],
+                    ])
+                    for i, call in enumerate(calls):
+                        self.assertEqual(call["path"], str(fake_bin))
+                        expected = dict(overrides)
+                        if i == 0:
+                            expected["GIT_OPTIONAL_LOCKS"] = "0"
+                        self.assertEqual(call["git_env"], expected)
+                self.assertTrue(all(reply == replies[0] for reply in replies))
 
     def test_ahead_behind_and_upstream(self):
         self.git("branch", "upstream")
