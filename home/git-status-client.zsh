@@ -41,12 +41,11 @@ function _i4_git_status_redraw() {
 
 function _i4_git_status_send() {
   setopt local_options no_multibyte
-  local name value= git_env count=0
+  local name git_env count=0
   # Prefix raw fields with byte lengths, including empty or NUL-containing values.
   for name in ${(k)parameters[(I)GIT_*]}; do
     [[ ${(tP)name} == *export* ]] || continue
-    value=${(P)name}
-    git_env+="${#name}"$'\n'"$name${#value}"$'\n'"$value"
+    git_env+="${#name}"$'\n'"$name${#${(P)name}}"$'\n'"${(P)name}"
     (( ++count ))
   done
   if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- \
@@ -60,8 +59,7 @@ function _i4_git_status_send() {
 function _i4_git_status_precmd() {
   (( ++_I4_GIT_STATUS_SEQ ))
   if [[ $PWD != $_I4_GIT_STATUS_DIR ]]; then
-    _I4_GIT_STATUS_READY=0
-    typeset -g _I4_GIT_STATUS_OUTPUT= _I4_GIT_STATUS_DIR=$PWD
+    typeset -g _I4_GIT_STATUS_READY=0 _I4_GIT_STATUS_OUTPUT= _I4_GIT_STATUS_DIR=$PWD
   fi
   (( _I4_GIT_STATUS_INFLIGHT )) || _i4_git_status_send
 }

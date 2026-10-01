@@ -2,7 +2,8 @@
 
 Usage: python3 tests/benchmark-git-status-daemon.py --legacy /tmp/legacy.zsh
        [--native /nix/store/.../git-status-daemon] [--samples 100]
-       Use --baseline /tmp/before instead of --legacy for a quoted-line Rust baseline.
+       Use --baseline /tmp/before instead of --legacy for a quoted-line Rust baseline;
+       add --baseline-raw for the current byte-length-prefixed request format.
 Reports JSON including raw samples. Git subprocesses are excluded from RSS.
 """
 
@@ -62,8 +63,8 @@ def summarize(samples):
             "min": min(samples), "max": max(samples), "samples": samples}
 
 
-def measure(commands, repo, samples, startup_samples):
-    payloads = {name: request(repo, quoted=name not in ("rust", "after"))
+def measure(commands, repo, samples, startup_samples, baseline_raw=False):
+    payloads = {name: request(repo, quoted=name not in ("rust", "after") and not baseline_raw)
                 for name in commands}
     workers = {name: subprocess.Popen(command, stdin=subprocess.PIPE,
                                      stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
@@ -115,6 +116,8 @@ def main():
     baseline = parser.add_mutually_exclusive_group(required=True)
     baseline.add_argument("--legacy", type=Path, help="Original quoted-line Zsh worker.")
     baseline.add_argument("--baseline", type=Path, help="Previous quoted-line Rust worker.")
+    parser.add_argument("--baseline-raw", action="store_true",
+                        help="The baseline worker uses byte-length-prefixed requests.")
     parser.add_argument("--native", type=Path)
     parser.add_argument("--samples", default=100, type=int)
     parser.add_argument("--startup-samples", default=30, type=int)
@@ -131,6 +134,7 @@ def main():
     report = {"platform": platform.platform(), "machine": platform.machine(),
               "git": subprocess.check_output(["git", "--version"], text=True).strip(),
               "commands": commands, "samples": args.samples,
+              "baseline_raw": args.baseline_raw,
               "startup_samples": args.startup_samples, "warmups": 10,
               "cases": {}}
     with tempfile.TemporaryDirectory(prefix="git-status-benchmark-") as tmp:
@@ -143,7 +147,8 @@ def main():
         for name, repo in cases.items():
             if args.case and name not in args.case:
                 continue
-            report["cases"][name] = measure(commands, repo, args.samples, args.startup_samples)
+            report["cases"][name] = measure(commands, repo, args.samples, args.startup_samples,
+                                           args.baseline_raw)
             print(f"Measured {name}", file=sys.stderr, flush=True)
         dirty_case = "large_dirty_5000_modified_200_untracked"
         if not args.case or dirty_case in args.case:
@@ -152,7 +157,8 @@ def main():
             git(large, "add", *[f"file-{n:05}" for n in range(1000)])
             for n in range(200):
                 (large / f"untracked-{n:05}").write_text("untracked\n")
-            report["cases"][dirty_case] = measure(commands, large, args.samples, args.startup_samples)
+            report["cases"][dirty_case] = measure(commands, large, args.samples, args.startup_samples,
+                                                 args.baseline_raw)
             print(f"Measured {dirty_case}", file=sys.stderr, flush=True)
     print(json.dumps(report, indent=2))
 

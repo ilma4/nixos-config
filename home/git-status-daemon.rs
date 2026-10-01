@@ -50,15 +50,10 @@ impl Request<'_> {
     }
 
     fn git<S: AsRef<OsStr>>(&self, args: &[S]) -> Vec<u8> {
-        let mut bytes = self
-            .command(args)
-            .output()
-            .map(|o| o.stdout)
-            .unwrap_or_default();
+        let output = self.command(args).output();
+        let mut bytes = output.map(|o| o.stdout).unwrap_or_default();
         // Match Zsh command substitution, which strips all trailing newlines.
-        while bytes.last() == Some(&b'\n') {
-            bytes.pop();
-        }
+        bytes.truncate(bytes.iter().rposition(|&c| c != b'\n').map_or(0, |i| i + 1));
         bytes
     }
 
@@ -73,11 +68,9 @@ impl Request<'_> {
         // Stream status through one reusable line instead of retaining every path.
         let (mut branch, mut upstream, mut oid) = (Vec::new(), Vec::new(), Vec::new());
         let mut counts = [0u64; 7]; // staged, unstaged, untracked, conflicted, ahead, behind, stashes
-        let mut line = Vec::new();
-        while porcelain.read_until(b'\n', &mut line).ok()? != 0 {
-            if line.last() == Some(&b'\n') {
-                line.pop();
-            }
+        let mut buffer = Vec::new();
+        while porcelain.read_until(b'\n', &mut buffer).ok()? != 0 {
+            let line = buffer.strip_suffix(b"\n").unwrap_or(&buffer);
             let mut parts = line.splitn(3, |&c| c == b' ');
             match (parts.next(), parts.next(), parts.next()) {
                 (Some(b"#"), Some(b"branch.oid"), Some(value)) => oid = value.to_vec(),
@@ -101,7 +94,7 @@ impl Request<'_> {
                 (Some(b"?"), Some(_), _) => counts[2] += 1,
                 _ => {}
             }
-            line.clear();
+            buffer.clear();
         }
         if !child.wait().ok()?.success() {
             return None;
@@ -123,20 +116,26 @@ impl Request<'_> {
         let mut action: &[u8] = b"";
         let dir = self.git(&["rev-parse", "--absolute-git-dir"]);
         if !dir.is_empty() {
-            let dir = PathBuf::from(OsString::from_vec(dir));
-            action = if dir.join("rebase-merge").is_dir() || dir.join("rebase-apply").is_dir() {
-                b"rebase"
-            } else {
-                [
-                    ("MERGE_HEAD", "merge"),
-                    ("CHERRY_PICK_HEAD", "cherry-pick"),
-                    ("REVERT_HEAD", "revert"),
-                    ("BISECT_LOG", "bisect"),
-                ]
-                .into_iter()
-                .find_map(|(file, action)| dir.join(file).exists().then_some(action.as_bytes()))
-                .unwrap_or_default()
-            };
+            let mut dir = PathBuf::from(OsString::from_vec(dir));
+            action = [
+                ("rebase-merge", "rebase"),
+                ("rebase-apply", "rebase"),
+                ("MERGE_HEAD", "merge"),
+                ("CHERRY_PICK_HEAD", "cherry-pick"),
+                ("REVERT_HEAD", "revert"),
+                ("BISECT_LOG", "bisect"),
+            ]
+            .into_iter()
+            .find_map(|(file, action)| {
+                dir.push(file);
+                let found = match action {
+                    "rebase" => dir.is_dir(),
+                    _ => dir.exists(),
+                };
+                dir.pop();
+                found.then_some(action.as_bytes())
+            })
+            .unwrap_or_default();
         }
         for field in [branch.as_slice(), upstream.as_slice(), action] {
             result.extend_from_slice(field);
@@ -153,10 +152,8 @@ impl Request<'_> {
 }
 
 fn number(bytes: &[u8]) -> u64 {
-    std::str::from_utf8(bytes)
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(0)
+    let text = std::str::from_utf8(bytes).unwrap_or("");
+    text.parse().unwrap_or(0)
 }
 
 fn run() -> io::Result<()> {
