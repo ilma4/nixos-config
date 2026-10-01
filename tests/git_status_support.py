@@ -23,11 +23,14 @@ def daemon():
     return binary
 
 
-def request(directory, git_env=None, seq="1", path=None, quote_env=None):
+def request(directory, git_env=None, seq="1", path=None, quote_env=None, quoted=False):
     git_env = git_env or {}
     values = [seq, str(directory), path or os.environ["PATH"], str(len(git_env))]
     for name, value in git_env.items():
         values.extend([name, value])
+    if not quoted:
+        fields = [os.fsencode(value) for value in values]
+        return b"".join(str(len(field)).encode() + b"\n" + field for field in fields)
     return subprocess.run(
         ["zsh", "-fc", 'for value in "$@"; do print -r -- "${(q)value}"; done',
          "zsh", *values], check=True, capture_output=True, env=quote_env,

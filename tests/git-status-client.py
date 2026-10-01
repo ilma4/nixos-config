@@ -1,5 +1,6 @@
 """Exercise the interactive Git prompt and its single daemon lifecycle."""
 
+import io
 import os
 from pathlib import Path
 import pty
@@ -126,6 +127,43 @@ class GitStatusClientTest(unittest.TestCase):
         os.write(master, b"print -r -- worker:$_I4_GIT_STATUS_PID\n")
         output = self.read_until(master, b"worker:0\r", b"I4_STATUS:child:0:1:main")
         self.assertNotIn(b"git status daemon (PID", output)
+
+    def test_request_preserves_bytes_and_multibyte_option(self):
+        value = bytes(range(1, 256)) + "é😀".encode()
+        result = subprocess.run([
+            "zsh", "-fc", r'''
+                setopt typeset_silent multibyte
+                PATH=
+                source "$1" /unused
+                PWD=$'/a path/é😀/new\nline'
+                export GIT_TEST_BYTES=$2 GIT_TEST_EMPTY= GIT_TEST_NUL=$'before\0after'
+                typeset GIT_TEST_UNEXPORTED=ignored
+                exec {_I4_GIT_STATUS_REQUEST_FD}>&1
+                _I4_GIT_STATUS_SEQ=1234
+                _i4_git_status_send
+                [[ -o multibyte ]] || exit 1
+                unsetopt multibyte
+                _i4_git_status_send
+                [[ ! -o multibyte ]] || exit 2
+            ''', "zsh", str(CLIENT), os.fsdecode(value),
+        ], check=True, capture_output=True,
+            env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")})
+        self.assertEqual(result.stderr, b"")
+        stream = io.BytesIO(result.stdout)
+
+        def field():
+            return stream.read(int(stream.readline()))
+
+        for _ in range(2):
+            self.assertEqual(field(), b"1234")
+            self.assertEqual(field(), "/a path/é😀/new\nline".encode())
+            self.assertEqual(field(), b"")
+            count = int(field())
+            self.assertEqual({field(): field() for _ in range(count)}, {
+                b"GIT_TEST_BYTES": value, b"GIT_TEST_EMPTY": b"",
+                b"GIT_TEST_NUL": b"before\0after",
+            })
+        self.assertEqual(stream.read(), b"")
 
 
 if __name__ == "__main__":

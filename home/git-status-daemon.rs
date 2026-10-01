@@ -1,5 +1,5 @@
 //! Persistent Git CLI worker for git-status-client.zsh (no Git library).
-//! Requests are Zsh ${(q)value} fields, one per line; responses are
+//! Requests are raw fields prefixed by their byte length and a newline; responses are
 //! id:branch<US>upstream<US>...<US>oid followed by a newline.
 use std::env;
 use std::ffi::{OsStr, OsString};
@@ -8,68 +8,24 @@ use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-// Decode the backslash quoting and embedded $'...' emitted by Zsh's (q).
-// Work on bytes so non-UTF-8 Unix paths and environment values survive too.
-fn unquote(input: &mut Vec<u8>) {
-    let mut i = input
-        .iter()
-        .position(|&c| c == b'\\' || c == b'\'' || c == b'$')
-        .unwrap_or(input.len());
-    let mut written = i;
-    let mut ansi = false;
-    while i < input.len() {
-        if !ansi && input[i..].starts_with(b"$'") {
-            ansi = true;
-            i += 2;
-        } else if ansi && input[i] == b'\'' {
-            ansi = false;
-            i += 1;
-        } else if !ansi && input[i..].starts_with(b"''") {
-            i += 2;
-        } else if input[i] == b'\\' && i + 1 < input.len() {
-            i += 1;
-            let c = input[i];
-            i += 1;
-            input[written] = match (ansi, c) {
-                (true, b'0'..=b'7') => {
-                    let mut value = (c - b'0') as u16;
-                    for _ in 0..2 {
-                        if i == input.len() || !(b'0'..=b'7').contains(&input[i]) {
-                            break;
-                        }
-                        value = value * 8 + (input[i] - b'0') as u16;
-                        i += 1;
-                    }
-                    value as u8
-                }
-                (true, b'a') => 7,
-                (true, b'b') => 8,
-                (true, b'e' | b'E') => 27,
-                (true, b'f') => 12,
-                (true, b'n') => b'\n',
-                (true, b'r') => b'\r',
-                (true, b't') => b'\t',
-                (true, b'v') => 11,
-                _ => c,
-            };
-            written += 1;
-        } else {
-            input[written] = input[i];
-            written += 1;
-            i += 1;
-        }
-    }
-    input.truncate(written);
-}
-
-fn read_fields<const N: usize>(input: &mut impl BufRead) -> io::Result<Option<[Vec<u8>; N]>> {
+fn read_fields<const N: usize>(
+    input: &mut impl BufRead,
+    length: &mut Vec<u8>,
+) -> io::Result<Option<[Vec<u8>; N]>> {
     let mut fields = std::array::from_fn(|_| Vec::new());
     for field in &mut fields {
-        if input.read_until(b'\n', field)? == 0 || field.last() != Some(&b'\n') {
+        length.clear();
+        if input.read_until(b'\n', length)? == 0 || length.last() != Some(&b'\n') {
             return Ok(None);
         }
-        field.pop();
-        unquote(field);
+        field.resize(number(&length[..length.len() - 1]) as usize, 0);
+        if let Err(error) = input.read_exact(field) {
+            return if error.kind() == io::ErrorKind::UnexpectedEof {
+                Ok(None)
+            } else {
+                Err(error)
+            };
+        }
     }
     Ok(Some(fields))
 }
@@ -225,7 +181,8 @@ fn run() -> io::Result<()> {
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
     let mut output = io::BufWriter::with_capacity(4096, io::stdout().lock());
-    while let Some([id, dir, path, count]) = read_fields(&mut input)? {
+    let mut length = Vec::new();
+    while let Some([id, dir, path, count]) = read_fields(&mut input, &mut length)? {
         let path = OsString::from_vec(path);
         let mut request = Request {
             dir: OsString::from_vec(dir),
@@ -233,7 +190,7 @@ fn run() -> io::Result<()> {
             git_env: Vec::new(),
         };
         for _ in 0..number(&count) {
-            let Some([name, value]) = read_fields(&mut input)? else {
+            let Some([name, value]) = read_fields(&mut input, &mut length)? else {
                 return Ok(());
             };
             if !name.starts_with(b"GIT_") {

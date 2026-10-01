@@ -1,7 +1,8 @@
-"""Compare persistent worker RSS and request latency against a saved Zsh worker.
+"""Compare worker RSS and request latency against a saved Zsh or Rust worker.
 
 Usage: python3 tests/benchmark-git-status-daemon.py --legacy /tmp/legacy.zsh
        [--native /nix/store/.../git-status-daemon] [--samples 100]
+       Use --baseline /tmp/before instead of --legacy for a quoted-line Rust baseline.
 Reports JSON including raw samples. Git subprocesses are excluded from RSS.
 """
 
@@ -62,7 +63,8 @@ def summarize(samples):
 
 
 def measure(commands, repo, samples, startup_samples):
-    payload = request(repo)
+    payloads = {name: request(repo, quoted=name not in ("rust", "after"))
+                for name in commands}
     workers = {name: subprocess.Popen(command, stdin=subprocess.PIPE,
                                      stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                for name, command in commands.items()}
@@ -71,14 +73,15 @@ def measure(commands, repo, samples, startup_samples):
     rng = random.Random(0)
     try:
         for _ in range(10):
-            replies = [roundtrip(worker, payload)[1] for worker in workers.values()]
+            replies = [roundtrip(worker, payloads[name])[1]
+                       for name, worker in workers.items()]
             assert replies[0] == replies[1], (repo, replies)
         for i in range(samples):
             order = list(workers)
             rng.shuffle(order)
             replies = []
             for name in order:
-                elapsed, reply = roundtrip(workers[name], payload)
+                elapsed, reply = roundtrip(workers[name], payloads[name])
                 timings[name].append(elapsed)
                 replies.append(reply)
             assert replies[0] == replies[1], (repo, replies)
@@ -98,7 +101,7 @@ def measure(commands, repo, samples, startup_samples):
             start = time.perf_counter_ns()
             with subprocess.Popen(commands[name], stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as worker:
-                roundtrip(worker, payload)
+                roundtrip(worker, payloads[name])
                 startup[name].append((time.perf_counter_ns() - start) / 1_000_000)
                 worker.stdin.close()
     return {name: {"roundtrip_ms": summarize(timings[name]),
@@ -109,7 +112,9 @@ def measure(commands, repo, samples, startup_samples):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--legacy", required=True, type=Path)
+    baseline = parser.add_mutually_exclusive_group(required=True)
+    baseline.add_argument("--legacy", type=Path, help="Original quoted-line Zsh worker.")
+    baseline.add_argument("--baseline", type=Path, help="Previous quoted-line Rust worker.")
     parser.add_argument("--native", type=Path)
     parser.add_argument("--samples", default=100, type=int)
     parser.add_argument("--startup-samples", default=30, type=int)
@@ -118,8 +123,10 @@ def main():
         "large_dirty_5000_modified_200_untracked"),
         help="Measure only selected cases (repeat to select several).")
     args = parser.parse_args()
-    commands = {"zsh": ["zsh", "-f", str(args.legacy.resolve())],
-                "rust": [str(args.native.resolve() if args.native else daemon())]}
+    native = str(args.native.resolve() if args.native else daemon())
+    commands = ({"before": [str(args.baseline.resolve())], "after": [native]}
+                if args.baseline else
+                {"zsh": ["zsh", "-f", str(args.legacy.resolve())], "rust": [native]})
     root = Path(__file__).resolve().parents[1]
     report = {"platform": platform.platform(), "machine": platform.machine(),
               "git": subprocess.check_output(["git", "--version"], text=True).strip(),

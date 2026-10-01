@@ -1,5 +1,8 @@
 # Rust Git status worker comparison
 
+This records the initial Rust migration. Later client/worker measurements are
+in [git-status-optimization.md](git-status-optimization.md).
+
 Measured on 2026-09-30, Apple M3 Max, macOS 26.7.1, Git 2.55.0,
 Zsh 5.9.1. The Rust worker was built by the Quicksilver Home Manager
 derivation with the flake's Rust 1.95.0, optimization level 3 and stripped
@@ -62,23 +65,24 @@ lag, or prompt command lag measurements.
 
 ## Reproduce
 
-Save the original worker from Jujutsu and run the comparison. Without
-`--native`, the script compiles the Rust source using the Rust compiler in
-PATH. To measure the Nix package, pass its worker path explicitly as below.
-The script emits JSON with all raw timing and RSS samples. `--case` can be
-repeated to select workloads.
+Save the original worker from Jujutsu and compare it with the current worker.
+Without `--native`, the script compiles the Rust source using the Rust compiler
+in PATH. To measure the Nix package, pass its worker path with `--native`.
+Use a current Nix-built binary: the historical binary below expects the old
+request format. The script emits JSON with all raw timing and RSS samples.
+`--case` can be repeated to select workloads.
 
 ```bash
 set -euo pipefail
 jj file show -r 503c307c home/git-status-daemon.zsh > /tmp/git-status-legacy.zsh
 python3 tests/benchmark-git-status-daemon.py \
   --legacy /tmp/git-status-legacy.zsh \
-  --native /nix/store/vjshakf72pyqlq58k80ycspsj4q4sjm4-i4-git-status-daemon/git-status-daemon \
   > /tmp/git-status-benchmark.json
 ```
 
-The Nix output path changes when its source or inputs change. The path above
-identifies the exact binary measured for this report.
+The Nix output path changes when its source or inputs change.
+`/nix/store/vjshakf72pyqlq58k80ycspsj4q4sjm4-i4-git-status-daemon/git-status-daemon`
+identifies the exact historical binary measured for this report.
 
 ## Validation
 

@@ -9,8 +9,7 @@ autoload -Uz add-zsh-hook
 
 typeset -gi _I4_GIT_STATUS_SEQ=0 _I4_GIT_STATUS_INFLIGHT=0
 typeset -gi _I4_GIT_STATUS_READY=0 _I4_GIT_STATUS_FAILED=0 _I4_GIT_STATUS_STARTED=0
-typeset -g _I4_GIT_STATUS_OUTPUT=
-typeset -g _I4_GIT_STATUS_DAEMON=$1
+typeset -g _I4_GIT_STATUS_OUTPUT= _I4_GIT_STATUS_DAEMON=$1
 
 function _i4_git_status_start() {
   if (( _I4_GIT_STATUS_STARTED )); then
@@ -42,17 +41,17 @@ function _i4_git_status_redraw() {
 }
 
 function _i4_git_status_send() {
-  local name git_env
-  local -i count=0
-  # Quote each field so paths and exported Git variables may contain newlines.
-  # Line reads do not make Zsh change the daemon's inherited terminal settings.
+  setopt local_options no_multibyte
+  local name value= git_env count=0
+  # Prefix raw fields with byte lengths, including empty or NUL-containing values.
   for name in ${(k)parameters[(I)GIT_*]}; do
     [[ ${parameters[$name]} == *export* ]] || continue
-    git_env+="${(q)name}"$'\n'"${(qP)name}"$'\n'
+    value=${(P)name}
+    git_env+="${#name}"$'\n'"$name${#value}"$'\n'"$value"
     (( ++count ))
   done
   if print -rnu $_I4_GIT_STATUS_REQUEST_FD -- \
-      "$_I4_GIT_STATUS_SEQ"$'\n'"${(q)PWD}"$'\n'"${(q)PATH}"$'\n'"$count"$'\n'"$git_env" 2>/dev/null; then
+      "${#_I4_GIT_STATUS_SEQ}"$'\n'"$_I4_GIT_STATUS_SEQ${#PWD}"$'\n'"$PWD${#PATH}"$'\n'"$PATH${#count}"$'\n'"$count$git_env" 2>/dev/null; then
     _I4_GIT_STATUS_INFLIGHT=1
   else
     _i4_git_status_fail 'request pipe closed'
@@ -63,8 +62,7 @@ function _i4_git_status_precmd() {
   (( ++_I4_GIT_STATUS_SEQ ))
   if [[ $PWD != $_I4_GIT_STATUS_DIR ]]; then
     _I4_GIT_STATUS_READY=0
-    _I4_GIT_STATUS_OUTPUT=
-    typeset -g _I4_GIT_STATUS_DIR=$PWD
+    typeset -g _I4_GIT_STATUS_OUTPUT= _I4_GIT_STATUS_DIR=$PWD
   fi
   (( _I4_GIT_STATUS_INFLIGHT )) || _i4_git_status_send
 }

@@ -47,7 +47,8 @@ class GitStatusDaemonTest(unittest.TestCase):
             capture_output=True,
         )
         if reference := os.environ.get("GIT_STATUS_REFERENCE"):
-            old = subprocess.run(["zsh", "-f", reference], input=payload,
+            old = subprocess.run(["zsh", "-f", reference],
+                                 input=request(self.repo, git_env, quoted=True),
                                  check=True, capture_output=True)
             self.assertEqual(result.stdout, old.stdout)
             self.assertEqual(result.stderr, old.stderr)
@@ -172,18 +173,19 @@ class GitStatusDaemonTest(unittest.TestCase):
         })["branch"], "main")
 
     def test_environment_path_and_non_repo_across_requests(self):
-        payload = (
-            request(self.repo, {"GIT_DIR": str(self.repo / "absent")}, seq="1")
-            + request(self.repo, seq="2")
-            + request(self.repo, seq="3", path="/nonexistent")
-            + request(self.repo.parent, seq="4")
-            + request(self.repo, seq="5")
-        )
+        def payload(quoted=False):
+            return (
+                request(self.repo, {"GIT_DIR": str(self.repo / "absent")}, seq="1", quoted=quoted)
+                + request(self.repo, seq="2", quoted=quoted)
+                + request(self.repo, seq="3", path="/nonexistent", quoted=quoted)
+                + request(self.repo.parent, seq="4", quoted=quoted)
+                + request(self.repo, seq="5", quoted=quoted)
+            )
         env = {**os.environ, "GIT_DIR": "/inherited/invalid"}
-        result = subprocess.run([str(daemon())], input=payload, env=env,
+        result = subprocess.run([str(daemon())], input=payload(), env=env,
                                 check=True, capture_output=True)
         if reference := os.environ.get("GIT_STATUS_REFERENCE"):
-            old = subprocess.run(["zsh", "-f", reference], input=payload, env=env,
+            old = subprocess.run(["zsh", "-f", reference], input=payload(True), env=env,
                                  check=True, capture_output=True)
             self.assertEqual(result.stdout, old.stdout)
         lines = result.stdout.splitlines()
@@ -194,14 +196,23 @@ class GitStatusDaemonTest(unittest.TestCase):
         self.assertEqual(result.stderr, b"")
 
     def test_truncated_requests_and_invalid_environment(self):
-        for payload in (b"1\n", b"1\n/tmp\n/bin\n1\nGIT_DIR\n", b"1"):
-            result = subprocess.run([str(daemon())], input=payload,
+        payload = request(self.repo, {"GIT_DIR": "value"})
+        for truncated in (payload[:1], payload[:2], payload[:-1], payload[:-5]):
+            result = subprocess.run([str(daemon())], input=truncated,
                                     check=True, capture_output=True)
             self.assertEqual(result.stdout, b"")
         result = subprocess.run([str(daemon())], input=request(self.repo, {"OTHER": "value"}),
                                 capture_output=True)
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, b"")
+
+    def test_nul_in_environment_does_not_desynchronize_next_request(self):
+        payload = (request(self.repo, {"GIT_TEST_VALUE": "before\0after"})
+                   + request(self.repo, seq="2"))
+        result = subprocess.run([str(daemon())], input=payload,
+                                check=True, capture_output=True)
+        self.assertTrue(result.stdout.startswith(b"1:\n2:main\x1f"))
+        self.assertEqual(result.stderr, b"")
 
     def test_git_commands_and_exact_environment(self):
         fake_bin = self.repo.parent / "bin"
@@ -232,10 +243,11 @@ class GitStatusDaemonTest(unittest.TestCase):
         if reference := os.environ.get("GIT_STATUS_REFERENCE"):
             commands.append(["zsh", "-f", reference])
         for locale in ("C", "en_US.UTF-8" if sys.platform == "darwin" else "C.UTF-8"):
-            payload = request(self.repo, forwarded, path=str(fake_bin),
-                              quote_env={**os.environ, "LC_ALL": locale})
             replies = []
             for command in commands:
+                payload = request(self.repo, forwarded, path=str(fake_bin),
+                                  quote_env={**os.environ, "LC_ALL": locale},
+                                  quoted=command[0] == "zsh")
                 log.unlink(missing_ok=True)
                 result = subprocess.run(command, input=payload, env=env,
                                         check=True, capture_output=True)
