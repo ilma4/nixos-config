@@ -1,6 +1,5 @@
 //! Persistent Git CLI worker for git-status-client.zsh (no Git library).
-//! Requests are raw fields prefixed by their byte length and a newline; responses are
-//! id:branch<US>upstream<US>...<US>oid followed by a newline.
+//! Byte-length-prefixed request fields; replies are id:branch<US>...<US>oid plus a newline.
 use std::ffi::{OsStr, OsString};
 use std::io::{self, BufRead, Write};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
@@ -52,8 +51,9 @@ impl Request<'_> {
         bytes
     }
 
-    fn status(&self, result: &mut Vec<u8>, buffer: &mut Vec<u8>) -> Option<()> {
-        buffer.clear();
+    fn status(&self, result: &mut Vec<u8>, buffers: &mut [Vec<u8>; 4]) -> Option<()> {
+        buffers.iter_mut().for_each(Vec::clear);
+        let [buffer, branch, upstream, oid] = buffers;
         // Temporarily inherit this override to avoid copying the whole environment.
         // Only this single-threaded worker's status child sees it.
         env::set_var("GIT_OPTIONAL_LOCKS", "0");
@@ -63,18 +63,16 @@ impl Request<'_> {
         let mut child = child.ok()?;
         let mut porcelain = io::BufReader::with_capacity(4096, child.stdout.take()?);
         // Stream status through one reusable line instead of retaining every path.
-        let (mut branch, mut upstream, mut oid) = (Vec::new(), Vec::new(), Vec::new());
         let mut counts = [0u64; 7]; // staged, unstaged, untracked, conflicted, ahead, behind, stashes
         while porcelain.read_until(b'\n', buffer).ok()? != 0 {
             let line = buffer.strip_suffix(b"\n").unwrap_or(buffer);
             let mut parts = line.splitn(3, |&c| c == b' ');
             match parts.next() {
                 Some(b"#") => match (parts.next(), parts.next()) {
-                    (Some(b"branch.oid"), Some(value)) => oid = value.to_vec(),
-                    (Some(b"branch.head"), Some(value)) if value != b"(detached)" => {
-                        branch = value.to_vec();
-                    }
-                    (Some(b"branch.upstream"), Some(value)) => upstream = value.to_vec(),
+                    (Some(b"branch.oid"), Some(value)) => value.clone_into(oid),
+                    (Some(b"branch.head"), Some(b"(detached)")) => {}
+                    (Some(b"branch.head"), Some(value)) => value.clone_into(branch),
+                    (Some(b"branch.upstream"), Some(value)) => value.clone_into(upstream),
                     (Some(b"branch.ab"), Some(value)) => {
                         let mut parts = value.split(|&c| c == b' ');
                         for (count, sign) in counts[4..6].iter_mut().zip([b"+", b"-"]) {
@@ -140,7 +138,7 @@ impl Request<'_> {
         }
         result.extend_from_slice(tag);
         result.push(0x1f);
-        result.extend_from_slice(&oid);
+        result.extend_from_slice(oid);
         Some(())
     }
 }
@@ -160,13 +158,14 @@ fn run() -> io::Result<()> {
     let mut input = io::stdin().lock();
     let mut output = io::stdout().lock();
     let mut result = Vec::with_capacity(256);
-    // Reuse raw fields; the consumed count buffer doubles as the status line.
+    // Reuse request fields, the status line and header values across requests.
     let mut fields = std::array::from_fn(|_| Vec::new());
     let mut git_env: Vec<[Vec<u8>; 2]> = Vec::new();
+    let mut buffers = std::array::from_fn(|_| Vec::new());
     loop {
         read_fields(&mut input, &mut fields)?;
-        let [id, dir, path, buffer] = &mut fields;
-        let count = number(buffer);
+        let [id, dir, path, count] = &mut fields;
+        let count = number(count);
         for index in 0..count {
             git_env.resize_with(git_env.len().max(index as usize + 1), Default::default);
             let pair = &mut git_env[index as usize];
@@ -185,7 +184,7 @@ fn run() -> io::Result<()> {
         result.clear();
         result.extend_from_slice(id);
         result.push(b':');
-        let _ = request.status(&mut result, buffer);
+        let _ = request.status(&mut result, &mut buffers);
         result.push(b'\n');
         output.write_all(&result)?;
         output.flush()?;
@@ -194,10 +193,9 @@ fn run() -> io::Result<()> {
 
 fn main() {
     run().unwrap_or_else(|error| {
-        if [io::ErrorKind::BrokenPipe, io::ErrorKind::UnexpectedEof].contains(&error.kind()) {
-            return;
+        if ![io::ErrorKind::BrokenPipe, io::ErrorKind::UnexpectedEof].contains(&error.kind()) {
+            eprintln!("git status daemon: {error}");
+            std::process::exit(1);
         }
-        eprintln!("git status daemon: {error}");
-        std::process::exit(1);
     });
 }

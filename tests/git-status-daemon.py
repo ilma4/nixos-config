@@ -236,6 +236,43 @@ class GitStatusDaemonTest(unittest.TestCase):
         self.assertEqual(fields[11], b"abc")
         self.assertEqual(result.stderr, b"")
 
+    def test_headers_are_replaced_and_cleared_between_requests(self):
+        fake_bin = self.repo.parent / "headers-bin"
+        fake_bin.mkdir()
+        fake_git = fake_bin / "git"
+        fake_git.write_text(
+            f"#!{sys.executable}\nimport os, sys\n"
+            "if sys.argv[3] == 'status':\n"
+            "    sys.stdout.write(os.environ['GIT_TEST_STATUS'])\n"
+            "    sys.exit(int(os.environ.get('GIT_TEST_EXIT', '0')))\n"
+        )
+        fake_git.chmod(0o755)
+        headers = [
+            "# branch.head " + "long" * 1000 + "\n# branch.oid abc\n",
+            "# branch.head old\n# branch.head topic\n# branch.head (detached)\n"
+            "# branch.oid old\n# branch.oid def\n"
+            "# branch.upstream old/main\n# branch.upstream new/topic\n",
+            "# branch.head failed\n# branch.oid failed\n",
+            "# branch.head (detached)\n# branch.oid detached\n",
+            "# branch.head unborn\n# branch.oid (initial)\n",
+        ]
+        payload = b"".join(request(self.repo, {
+            "GIT_TEST_STATUS": status, "GIT_TEST_EXIT": str(int(i == 3)),
+        }, seq=str(i), path=str(fake_bin)) for i, status in enumerate(headers, 1))
+        result = subprocess.run([str(daemon())], input=payload,
+                                check=True, capture_output=True)
+        replies = result.stdout.splitlines()
+        self.assertEqual(len(replies), 5)
+        self.assertTrue(replies[0].startswith(b"1:" + b"long" * 1000 + b"\x1f"))
+        self.assertTrue(replies[1].startswith(b"2:topic\x1fnew/topic\x1f"))
+        self.assertTrue(replies[1].endswith(b"\x1fdef"))
+        self.assertEqual(replies[2], b"3:")
+        self.assertTrue(replies[3].startswith(b"4:\x1f\x1f\x1f"))
+        self.assertTrue(replies[3].endswith(b"\x1fdetached"))
+        self.assertTrue(replies[4].startswith(b"5:unborn\x1f\x1f"))
+        self.assertTrue(replies[4].endswith(b"\x1f(initial)"))
+        self.assertEqual(result.stderr, b"")
+
     def test_optional_locks_nul_value_is_overridden_only_for_status(self):
         self.git("tag", "v1")
         payload = (request(self.repo, {"GIT_OPTIONAL_LOCKS": "before\0after"})

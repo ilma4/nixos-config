@@ -1,5 +1,4 @@
-# Source from the interactive shell with the native worker path.
-# A single coprocess handles every prompt request in this shell.
+# Source once per interactive shell with the native worker path.
 if (( ${_I4_GIT_STATUS_STARTED:-0} )); then
   print -ru2 -- 'git status daemon already launched in this shell; refusing a second launch'
   return 1
@@ -39,8 +38,8 @@ function _i4_git_status_redraw() {
 
 function _i4_git_status_send() {
   setopt local_options no_multibyte
-  local name git_env count=0
-  # Prefix raw fields with byte lengths, including empty or NUL-containing values.
+  local name git_env
+  local -i count=0  # Avoid reparsing the count for each exported variable.
   for name in ${(k)parameters[(I)GIT_*]}; do
     [[ ${(tP)name} == *export* ]] || continue
     git_env+="${#name}"$'\n'"$name${(P)#name}"$'\n'"${(P)name}"
@@ -63,32 +62,30 @@ function _i4_git_status_response() {
   if [[ -n $2 ]] || ! IFS= read -r -u $1 response; then
     _i4_git_status_fail 'response pipe closed'
     _i4_git_status_redraw
-    return
-  fi
-
-  _I4_GIT_STATUS_INFLIGHT=0
-  if [[ ${response%%:*} != $_I4_GIT_STATUS_SEQ ]]; then
+  elif [[ ${response%%:*} != $_I4_GIT_STATUS_SEQ ]]; then
+    _I4_GIT_STATUS_INFLIGHT=0
     _i4_git_status_send
     (( _I4_GIT_STATUS_FAILED )) && _i4_git_status_redraw
-    return
+  else
+    _I4_GIT_STATUS_INFLIGHT=0
+    response=${response#*:}
+    [[ $response == $_I4_GIT_STATUS_OUTPUT ]] && return 0
+    _I4_GIT_STATUS_OUTPUT=$response _I4_GIT_STATUS_READY=0
+    local -a fields=("${(@ps:\x1f:)response}")
+    if (( $#fields == 12 )); then
+      typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL= \
+        VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2] \
+        VCS_STATUS_ACTION=$fields[3] VCS_STATUS_TAG=$fields[11] VCS_STATUS_COMMIT=$fields[12]
+      typeset -gi VCS_STATUS_NUM_STAGED=$fields[4] VCS_STATUS_NUM_UNSTAGED=$fields[5] \
+        VCS_STATUS_NUM_UNTRACKED=$fields[6] VCS_STATUS_NUM_CONFLICTED=$fields[7] \
+        VCS_STATUS_COMMITS_AHEAD=$fields[8] VCS_STATUS_COMMITS_BEHIND=$fields[9] VCS_STATUS_STASHES=$fields[10] \
+        VCS_STATUS_HAS_STAGED='VCS_STATUS_NUM_STAGED > 0' VCS_STATUS_HAS_UNSTAGED='VCS_STATUS_NUM_UNSTAGED > 0' \
+        VCS_STATUS_HAS_UNTRACKED='VCS_STATUS_NUM_UNTRACKED > 0' VCS_STATUS_HAS_CONFLICTED='VCS_STATUS_NUM_CONFLICTED > 0' \
+        VCS_STATUS_NUM_UNSTAGED_DELETED=0
+      _I4_GIT_STATUS_READY=1
+    fi
+    _i4_git_status_redraw
   fi
-  response=${response#*:}
-  [[ $response == $_I4_GIT_STATUS_OUTPUT ]] && return 0
-  _I4_GIT_STATUS_OUTPUT=$response _I4_GIT_STATUS_READY=0
-  local -a fields=("${(@ps:\x1f:)response}")
-  if (( $#fields == 12 )); then
-    typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL= \
-      VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2] \
-      VCS_STATUS_ACTION=$fields[3] VCS_STATUS_TAG=$fields[11] VCS_STATUS_COMMIT=$fields[12]
-    typeset -gi VCS_STATUS_NUM_STAGED=$fields[4] VCS_STATUS_NUM_UNSTAGED=$fields[5] \
-      VCS_STATUS_NUM_UNTRACKED=$fields[6] VCS_STATUS_NUM_CONFLICTED=$fields[7] \
-      VCS_STATUS_COMMITS_AHEAD=$fields[8] VCS_STATUS_COMMITS_BEHIND=$fields[9] VCS_STATUS_STASHES=$fields[10] \
-      VCS_STATUS_HAS_STAGED='VCS_STATUS_NUM_STAGED > 0' VCS_STATUS_HAS_UNSTAGED='VCS_STATUS_NUM_UNSTAGED > 0' \
-      VCS_STATUS_HAS_UNTRACKED='VCS_STATUS_NUM_UNTRACKED > 0' VCS_STATUS_HAS_CONFLICTED='VCS_STATUS_NUM_CONFLICTED > 0' \
-      VCS_STATUS_NUM_UNSTAGED_DELETED=0
-    _I4_GIT_STATUS_READY=1
-  fi
-  _i4_git_status_redraw
 }
 
 function _i4_git_status_fail() {
