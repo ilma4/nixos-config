@@ -273,6 +273,38 @@ class GitStatusDaemonTest(unittest.TestCase):
         self.assertTrue(replies[4].endswith(b"\x1f(initial)"))
         self.assertEqual(result.stderr, b"")
 
+    def test_upstream_lookup_across_changing_raw_byte_headers(self):
+        fake_bin = self.repo.parent / "upstream-bin"
+        fake_bin.mkdir()
+        fake_git = fake_bin / "git"
+        fake_git.write_text(
+            f"#!{sys.executable}\nimport os, sys\n"
+            "branch = os.environ['GIT_TEST_BRANCH']\n"
+            "if sys.argv[3] == 'status':\n"
+            "    sys.stdout.buffer.write(os.fsencode('# branch.head ' + branch + '\\n'\n"
+            "        '# branch.oid abc\\n# branch.upstream team/origin/topic\\n? '\n"
+            "        + 'x' * int(os.environ['GIT_TEST_PATH_LENGTH'])))\n"
+            "elif sys.argv[3] == 'config':\n"
+            "    assert sys.argv[4:] == ['--get', 'branch.' + branch + '.remote']\n"
+            "    print('team/origin')\n"
+        )
+        fake_git.chmod(0o755)
+        branches = ["long" * 2000, "short", os.fsdecode(b"raw-\xff"), ""]
+        payload = b"".join(request(self.repo, {
+            "GIT_TEST_BRANCH": branch, "GIT_TEST_PATH_LENGTH": str(20000 // i),
+        }, seq=str(i), path=str(fake_bin)) for i, branch in enumerate(branches, 1))
+        result = subprocess.run([str(daemon())], input=payload,
+                                check=True, capture_output=True)
+        replies = result.stdout.splitlines()
+        self.assertEqual(len(replies), len(branches))
+        for i, (branch, reply) in enumerate(zip(branches, replies), 1):
+            self.assertTrue(reply.startswith(str(i).encode() + b":"))
+            fields = reply.split(b":", 1)[1].split(b"\x1f")
+            self.assertEqual(len(fields), 12)
+            self.assertEqual(fields[:2], [os.fsencode(branch), b"topic"])
+            self.assertEqual(fields[5], b"1")
+        self.assertEqual(result.stderr, b"")
+
     def test_optional_locks_nul_value_is_overridden_only_for_status(self):
         self.git("tag", "v1")
         payload = (request(self.repo, {"GIT_OPTIONAL_LOCKS": "before\0after"})

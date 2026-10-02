@@ -59,15 +59,14 @@ function _i4_git_status_precmd() {
 
 function _i4_git_status_response() {
   local response
+  _I4_GIT_STATUS_INFLIGHT=0
   if [[ -n $2 ]] || ! IFS= read -r -u $1 response; then
     _i4_git_status_fail 'response pipe closed'
     _i4_git_status_redraw
   elif [[ ${response%%:*} != $_I4_GIT_STATUS_SEQ ]]; then
-    _I4_GIT_STATUS_INFLIGHT=0
     _i4_git_status_send
     (( _I4_GIT_STATUS_FAILED )) && _i4_git_status_redraw
   else
-    _I4_GIT_STATUS_INFLIGHT=0
     response=${response#*:}
     [[ $response == $_I4_GIT_STATUS_OUTPUT ]] && return 0
     _I4_GIT_STATUS_OUTPUT=$response _I4_GIT_STATUS_READY=0

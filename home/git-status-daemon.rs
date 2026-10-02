@@ -96,10 +96,10 @@ impl Request<'_> {
         child.wait().ok().filter(|status| status.success())?;
         let mut upstream = upstream.as_slice();
         if !upstream.is_empty() {
-            let key = [b"branch.".as_slice(), &branch, b".remote"].concat();
-            // Git ref names are byte strings; don't require Unicode here.
-            let mut remote =
-                self.git(&[b"config".as_slice(), b"--get", &key].map(OsStr::from_bytes));
+            buffer.extend(b"branch.".iter().chain(branch.iter()).chain(b".remote"));
+            // Reuse the cleared status line; Git ref names need not be Unicode.
+            let mut remote = self
+                .git(&[b"config".as_slice(), b"--get", buffer.as_slice()].map(OsStr::from_bytes));
             if !remote.is_empty() && remote != b"." {
                 remote.push(b'/');
                 upstream = upstream.strip_prefix(remote.as_slice()).unwrap_or(upstream);
@@ -149,11 +149,9 @@ fn number(bytes: &[u8]) -> u64 {
 
 fn run() -> io::Result<()> {
     // Drop inherited Git overrides once; each request supplies its own.
-    for (name, _) in env::vars_os() {
-        if name.as_bytes().starts_with(b"GIT_") {
-            env::remove_var(name);
-        }
-    }
+    env::vars_os()
+        .filter(|(name, _)| name.as_bytes().starts_with(b"GIT_"))
+        .for_each(|(name, _)| env::remove_var(name));
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
     let mut output = io::stdout().lock();
