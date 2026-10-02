@@ -214,6 +214,28 @@ class GitStatusDaemonTest(unittest.TestCase):
         self.assertTrue(result.stdout.startswith(b"1:\n2:main\x1f"))
         self.assertEqual(result.stderr, b"")
 
+    def test_short_status_records_and_missing_header_values(self):
+        fake_bin = self.repo.parent / "bin"
+        fake_bin.mkdir()
+        fake_git = fake_bin / "git"
+        porcelain = ("# branch.head main\n# branch.oid abc\n# stash 7\n"
+                     "# branch.head (detached)\n# branch.oid\n# stash\n"
+                     "1\n1 \n1 M\n1 MM\n2 MM\nu\nu \n?\n? \n")
+        fake_git.write_text(
+            f"#!{sys.executable}\nimport sys\n"
+            f"if sys.argv[3] == 'status': sys.stdout.write({porcelain!r})\n"
+        )
+        fake_git.chmod(0o755)
+        result = subprocess.run([str(daemon())],
+                                input=request(self.repo, path=str(fake_bin)),
+                                check=True, capture_output=True)
+        fields = result.stdout[2:-1].split(b"\x1f")
+        self.assertEqual(fields[0], b"main")
+        self.assertEqual(fields[3:7], [b"2", b"2", b"1", b"1"])
+        self.assertEqual(fields[9], b"7")
+        self.assertEqual(fields[11], b"abc")
+        self.assertEqual(result.stderr, b"")
+
     def test_optional_locks_nul_value_is_overridden_only_for_status(self):
         self.git("tag", "v1")
         payload = (request(self.repo, {"GIT_OPTIONAL_LOCKS": "before\0after"})

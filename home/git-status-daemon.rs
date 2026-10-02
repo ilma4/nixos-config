@@ -1,12 +1,12 @@
 //! Persistent Git CLI worker for git-status-client.zsh (no Git library).
 //! Requests are raw fields prefixed by their byte length and a newline; responses are
 //! id:branch<US>upstream<US>...<US>oid followed by a newline.
-use std::env;
 use std::ffi::{OsStr, OsString};
 use std::io::{self, BufRead, Write};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+use std::{env, str};
 
 fn read_fields(input: &mut impl BufRead, fields: &mut [Vec<u8>]) -> io::Result<bool> {
     for field in fields {
@@ -70,33 +70,34 @@ impl Request<'_> {
         while porcelain.read_until(b'\n', buffer).ok()? != 0 {
             let line = buffer.strip_suffix(b"\n").unwrap_or(buffer);
             let mut parts = line.splitn(3, |&c| c == b' ');
-            match (parts.next(), parts.next(), parts.next()) {
-                (Some(b"#"), Some(b"branch.oid"), Some(value)) => oid = value.to_vec(),
-                (Some(b"#"), Some(b"branch.head"), Some(value)) if value != b"(detached)" => {
-                    branch = value.to_vec();
-                }
-                (Some(b"#"), Some(b"branch.upstream"), Some(value)) => upstream = value.to_vec(),
-                (Some(b"#"), Some(b"branch.ab"), Some(value)) => {
-                    let mut parts = value.split(|&c| c == b' ');
-                    for (count, sign) in counts[4..6].iter_mut().zip([b"+", b"-"]) {
-                        let part = parts.next().unwrap_or_default();
-                        *count = number(part.strip_prefix(sign).unwrap_or_default());
+            match parts.next() {
+                Some(b"#") => match (parts.next(), parts.next()) {
+                    (Some(b"branch.oid"), Some(value)) => oid = value.to_vec(),
+                    (Some(b"branch.head"), Some(value)) if value != b"(detached)" => {
+                        branch = value.to_vec();
                     }
-                }
-                (Some(b"#"), Some(b"stash"), Some(value)) => counts[6] = number(value),
-                (Some(b"1" | b"2"), _, _) if line.len() >= 4 => {
+                    (Some(b"branch.upstream"), Some(value)) => upstream = value.to_vec(),
+                    (Some(b"branch.ab"), Some(value)) => {
+                        let mut parts = value.split(|&c| c == b' ');
+                        for (count, sign) in counts[4..6].iter_mut().zip([b"+", b"-"]) {
+                            let part = parts.next().unwrap_or_default();
+                            *count = number(part.strip_prefix(sign).unwrap_or_default());
+                        }
+                    }
+                    (Some(b"stash"), Some(value)) => counts[6] = number(value),
+                    _ => {}
+                },
+                Some(b"1" | b"2") if line.len() >= 4 => {
                     counts[0] += u64::from(line[2] != b'.');
                     counts[1] += u64::from(line[3] != b'.');
                 }
-                (Some(b"u"), Some(_), _) => counts[3] += 1,
-                (Some(b"?"), Some(_), _) => counts[2] += 1,
+                Some(b"u") if line.len() > 1 => counts[3] += 1,
+                Some(b"?") if line.len() > 1 => counts[2] += 1,
                 _ => {}
             }
             buffer.clear();
         }
-        if !child.wait().ok()?.success() {
-            return None;
-        }
+        child.wait().ok().filter(|status| status.success())?;
         let mut upstream = upstream.as_slice();
         if !upstream.is_empty() {
             let key = [b"branch.".as_slice(), &branch, b".remote"].concat();
@@ -125,12 +126,10 @@ impl Request<'_> {
             .into_iter()
             .find_map(|(file, action)| {
                 dir.push(file);
-                let found = match action {
-                    "rebase" => dir.is_dir(),
-                    _ => dir.exists(),
-                };
+                let metadata = dir.metadata();
                 dir.pop();
-                found.then_some(action.as_bytes())
+                let metadata = metadata.ok()?;
+                (action != "rebase" || metadata.is_dir()).then_some(action.as_bytes())
             })
             .unwrap_or_default();
         }
@@ -149,8 +148,7 @@ impl Request<'_> {
 }
 
 fn number(bytes: &[u8]) -> u64 {
-    let text = std::str::from_utf8(bytes).unwrap_or("");
-    text.parse().unwrap_or(0)
+    str::from_utf8(bytes).unwrap_or("").parse().unwrap_or(0)
 }
 
 fn run() -> io::Result<()> {

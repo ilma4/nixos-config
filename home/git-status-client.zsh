@@ -53,9 +53,8 @@ function _i4_git_status_send() {
 
 function _i4_git_status_precmd() {
   (( ++_I4_GIT_STATUS_SEQ ))
-  if [[ $PWD != $_I4_GIT_STATUS_DIR ]]; then
+  [[ $PWD == $_I4_GIT_STATUS_DIR ]] ||
     typeset -g _I4_GIT_STATUS_READY=0 _I4_GIT_STATUS_OUTPUT= _I4_GIT_STATUS_DIR=$PWD
-  fi
   (( _I4_GIT_STATUS_INFLIGHT )) || _i4_git_status_send
 }
 
