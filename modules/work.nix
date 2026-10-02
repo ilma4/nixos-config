@@ -14,7 +14,6 @@
   config = lib.mkIf config.i4.work.enable {
     # home.packages = [pkgs.watchman];
 
-    home.file.".pi/agent/extensions/ij-proxy-mcp-fix.ts".source = ../dotfiles/pi/extensions/ijproxy-mcp-agents-md-fix.ts;
 
     /*
     xdg.configFile."jj/conf.d/30-fsmonitor.toml".text = ''
