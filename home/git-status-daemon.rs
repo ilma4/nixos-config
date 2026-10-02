@@ -8,19 +8,17 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::{env, str};
 
-fn read_fields(input: &mut impl BufRead, fields: &mut [Vec<u8>]) -> io::Result<bool> {
+fn read_fields(input: &mut impl BufRead, fields: &mut [Vec<u8>]) -> io::Result<()> {
     for field in fields {
         field.clear();
-        if input.read_until(b'\n', field)? == 0 || field.last() != Some(&b'\n') {
-            return Ok(false);
+        input.read_until(b'\n', field)?;
+        if field.pop() != Some(b'\n') {
+            return Err(io::ErrorKind::UnexpectedEof.into());
         }
-        field.resize(number(&field[..field.len() - 1]) as usize, 0);
-        match input.read_exact(field) {
-            Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => return Ok(false),
-            result => result?,
-        }
+        field.resize(number(field) as usize, 0);
+        input.read_exact(field)?;
     }
-    Ok(true)
+    Ok(())
 }
 
 struct Request<'a> {
@@ -165,15 +163,14 @@ fn run() -> io::Result<()> {
     // Reuse raw fields; the consumed count buffer doubles as the status line.
     let mut fields = std::array::from_fn(|_| Vec::new());
     let mut git_env: Vec<[Vec<u8>; 2]> = Vec::new();
-    while read_fields(&mut input, &mut fields)? {
+    loop {
+        read_fields(&mut input, &mut fields)?;
         let [id, dir, path, buffer] = &mut fields;
         let count = number(buffer);
         for index in 0..count {
             git_env.resize_with(git_env.len().max(index as usize + 1), Default::default);
             let pair = &mut git_env[index as usize];
-            if !read_fields(&mut input, pair)? {
-                return Ok(());
-            }
+            read_fields(&mut input, pair)?;
             if !pair[0].starts_with(b"GIT_") {
                 std::process::exit(1);
             }
@@ -193,14 +190,14 @@ fn run() -> io::Result<()> {
         output.write_all(&result)?;
         output.flush()?;
     }
-    Ok(())
 }
 
 fn main() {
     run().unwrap_or_else(|error| {
-        if error.kind() != io::ErrorKind::BrokenPipe {
-            eprintln!("git status daemon: {error}");
-            std::process::exit(1);
+        if [io::ErrorKind::BrokenPipe, io::ErrorKind::UnexpectedEof].contains(&error.kind()) {
+            return;
         }
+        eprintln!("git status daemon: {error}");
+        std::process::exit(1);
     });
 }

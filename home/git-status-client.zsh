@@ -43,7 +43,7 @@ function _i4_git_status_send() {
   # Prefix raw fields with byte lengths, including empty or NUL-containing values.
   for name in ${(k)parameters[(I)GIT_*]}; do
     [[ ${(tP)name} == *export* ]] || continue
-    git_env+="${#name}"$'\n'"$name${#${(P)name}}"$'\n'"${(P)name}"
+    git_env+="${#name}"$'\n'"$name${(P)#name}"$'\n'"${(P)name}"
     (( ++count ))
   done
   syswrite -o $_I4_GIT_STATUS_REQUEST_FD \
