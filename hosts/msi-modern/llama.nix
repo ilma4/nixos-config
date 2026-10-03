@@ -19,7 +19,7 @@ in {
   services.llama-cpp = {
     enable = true;
     package = pkgs-unstable.llama-cpp-vulkan;
-    host = "127.0.0.1";
+    host = "0.0.0.0";
     inherit port;
     # Start the router without loading a model; load Gemma on the first request.
     modelsPreset.${modelName} = {

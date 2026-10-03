@@ -1,9 +1,10 @@
-{config, ...}: let
+{config, pkgs, ...}: let
   paperlessSecretKey = "paperless/secret_key";
   valkey-version = "9-alpine";
   paperless-version = "3.2.1";
   tika-version = "3.3.1.0";
   gotenberg-version = "8.37";
+  llamaProxyPort = 18080;
 in {
   # Containers
   dockerCompose.paperless = {
@@ -56,6 +57,20 @@ in {
           PAPERLESS_USE_X_FORWARD_HOST: "true"
           PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
           PAPERLESS_OCR_ROTATE_PAGES: "true"
+
+          PAPERLESS_AI_ENABLED: "true"
+          PAPERLESS_AI_LLM_BACKEND: "openai-like"
+          PAPERLESS_AI_LLM_ENDPOINT: "http://host.containers.internal:${toString llamaProxyPort}/v1"
+          PAPERLESS_AI_LLM_MODEL: "gemma-4-12B-it-qat-UD-Q4_K_XL"
+          # The OpenAI client requires a key; this private llama.cpp server has no auth.
+          PAPERLESS_AI_LLM_API_KEY: "unused"
+          # Allow time for on-demand model loading and CPU/GPU inference.
+          PAPERLESS_AI_LLM_REQUEST_TIMEOUT: "600"
+          # Keep embeddings on the NAS; Gemma is a generation model.
+          PAPERLESS_AI_LLM_EMBEDDING_BACKEND: "huggingface"
+          PAPERLESS_AI_LLM_EMBEDDING_MODEL: "intfloat/multilingual-e5-small"
+          # Stay below the embedding model's 512-token input limit.
+          PAPERLESS_AI_LLM_EMBEDDING_CHUNK_SIZE: "384"
       gotenberg:
         image: docker.io/gotenberg/gotenberg:${gotenberg-version}
         restart: unless-stopped
@@ -80,6 +95,23 @@ in {
     '';
   };
 
+  # Resolve msi-modern.local through the host's mDNS resolver on each connection.
+  systemd.sockets.paperless-llama = {
+    wantedBy = ["sockets.target"];
+    listenStreams = ["10.20.0.1:${toString llamaProxyPort}"];
+    # The reverse_proxy bridge is created after sockets.target.
+    socketConfig.FreeBind = true;
+  };
+  systemd.services.paperless-llama = {
+    requires = ["paperless-llama.socket"];
+    after = ["avahi-daemon.service"];
+    wants = ["avahi-daemon.service"];
+    serviceConfig = {
+      ExecStart = "${pkgs.systemd}/lib/systemd/systemd-socket-proxyd msi-modern.local:8080";
+      DynamicUser = true;
+    };
+  };
+
   sops.secrets.${paperlessSecretKey} = {};
 
   sops.templates."paperless.env" = {
@@ -93,6 +125,9 @@ in {
   };
 
   networking.firewall.allowedTCPPorts = [8000];
+  networking.firewall.extraInputRules = ''
+    ip saddr 10.20.0.0/24 ip daddr 10.20.0.1 tcp dport ${toString llamaProxyPort} accept
+  '';
 
   systemd.tmpfiles.rules = [
     "d /srv/paperless-ngx 750 ilma4 1000 -"
