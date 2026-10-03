@@ -5,6 +5,7 @@
   tika-version = "3.3.1.0";
   gotenberg-version = "8.37";
   llamaProxyPort = 18080;
+  llamaProxyPython = pkgs.python3.withPackages (ps: [ps.zeroconf]);
 in {
   # Containers
   dockerCompose.paperless = {
@@ -60,13 +61,13 @@ in {
 
           PAPERLESS_AI_ENABLED: "true"
           PAPERLESS_AI_LLM_BACKEND: "openai-like"
-          PAPERLESS_AI_LLM_ENDPOINT: "http://host.containers.internal:${toString llamaProxyPort}/v1"
-          PAPERLESS_AI_LLM_MODEL: "gemma-4-12B-it-qat-UD-Q4_K_XL"
+          PAPERLESS_AI_LLM_ENDPOINT: "http://10.20.0.1:${toString llamaProxyPort}/v1"
+          PAPERLESS_AI_LLM_MODEL: "paperless-ngx"
           # The OpenAI client requires a key; this private llama.cpp server has no auth.
           PAPERLESS_AI_LLM_API_KEY: "unused"
           # Allow time for on-demand model loading and CPU/GPU inference.
           PAPERLESS_AI_LLM_REQUEST_TIMEOUT: "600"
-          # Keep embeddings on the NAS; Gemma is a generation model.
+          # Keep embeddings on the NAS.
           PAPERLESS_AI_LLM_EMBEDDING_BACKEND: "huggingface"
           PAPERLESS_AI_LLM_EMBEDDING_MODEL: "intfloat/multilingual-e5-small"
           # Stay below the embedding model's 512-token input limit.
@@ -95,19 +96,24 @@ in {
     '';
   };
 
-  # Resolve msi-modern.local through the host's mDNS resolver on each connection.
+  # Discover all Quicksilver mDNS addresses and try each reachable interface.
   systemd.sockets.paperless-llama = {
     wantedBy = ["sockets.target"];
     listenStreams = ["10.20.0.1:${toString llamaProxyPort}"];
     # The reverse_proxy bridge is created after sockets.target.
-    socketConfig.FreeBind = true;
+    socketConfig = {
+      FreeBind = true;
+      Accept = true;
+    };
   };
-  systemd.services.paperless-llama = {
-    requires = ["paperless-llama.socket"];
+  systemd.services."paperless-llama@" = {
     after = ["avahi-daemon.service"];
     wants = ["avahi-daemon.service"];
     serviceConfig = {
-      ExecStart = "${pkgs.systemd}/lib/systemd/systemd-socket-proxyd msi-modern.local:8080";
+      ExecStart = "${llamaProxyPython}/bin/python3 ${./paperless-llama-proxy.py} DE-UNIT-1832.local 8080";
+      StandardInput = "socket";
+      StandardOutput = "inherit";
+      StandardError = "journal";
       DynamicUser = true;
     };
   };
