@@ -1,7 +1,7 @@
 {config, ...}: let
   paperlessSecretKey = "paperless/secret_key";
   valkey-version = "9-alpine";
-  paperless-version = "3.2.0";
+  paperless-version = "3.2.1";
   tika-version = "3.3.1.0";
   gotenberg-version = "8.37";
 in {
