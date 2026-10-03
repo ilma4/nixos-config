@@ -7,13 +7,6 @@
   home.username = "ilma4";
   i4.personal.enable = true;
 
-  # Initialize tmux session on SSH connection
-  programs.zsh.initContent = ''
-    if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
-      tmux attach-session -t default || tmux new-session -s default
-    fi
-  '';
-
   programs.bash.initExtra = ''
     if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
       tmux attach-session -t default || tmux new-session -s default

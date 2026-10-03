@@ -210,6 +210,13 @@ in {
       };
 
       initContent = let
+        sshTmux = lib.mkOrder 400 ''
+          # Initialize tmux before instant prompt redirects terminal input/output.
+          if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
+            tmux attach-session -t default || tmux new-session -s default
+          fi
+        '';
+
         early = lib.mkOrder 500 ''
           # Load an active directory environment before instant prompt captures
           # console output. Outside an .envrc tree, avoid starting direnv just
@@ -563,7 +570,7 @@ in {
           ''}
         '';
       in
-        lib.mkMerge [early normal beforeCompinit];
+        lib.mkMerge [sshTmux early normal beforeCompinit];
 
       # Fix ssh agent forwarding when reattaching to screen from new ssh connection
       profileExtra =
