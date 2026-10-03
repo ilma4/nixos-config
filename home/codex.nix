@@ -7,6 +7,23 @@
   cfg = config.i4.codex;
   npmPrefix = "${config.home.homeDirectory}/.local";
 
+  loopScript = pkgs.writeShellScriptBin "codex-loop" ''
+    set -euo pipefail
+
+    if [[ $# -ne 2 || ! $1 =~ ^[1-9][0-9]*$ ]]; then
+      printf 'Usage: %s ITERATIONS "PROMPT"\nITERATIONS must be a positive integer.\n' "$0" >&2
+      exit 2
+    fi
+
+    iterations="$1"
+    prompt="$2"
+
+    for ((iteration = 1; iteration <= iterations; iteration++)); do
+      printf '\nCodex session %s/%s\n' "$iteration" "$iterations" >&2
+      printf '%s' "$prompt" | codex exec --yolo -
+    done
+  '';
+
   updateScript = pkgs.writeShellScriptBin "i4-update-codex" ''
     set -euo pipefail
 
@@ -41,6 +58,7 @@ in {
 
     home.packages = [
       updateScript
+      loopScript
     ];
 
     systemd.user.services.codex-update.Service = {
