@@ -15,8 +15,8 @@
   i4.personal.enable = true;
   i4.dev.enable = true;
 
-  # Initialize tmux session on SSH connection
-  programs.zsh.initContent = ''
+  # Initialize tmux before instant prompt redirects terminal input/output.
+  programs.zsh.initContent = lib.mkOrder 400 ''
     if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
       tmux attach-session -t default || tmux new-session -s default
     fi
