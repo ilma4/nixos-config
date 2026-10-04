@@ -1,15 +1,24 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
 }: let
   cfg = config.i4.pi;
   nodejs = pkgs.nodejs_24;
-  npm = lib.getExe' nodejs "npm";
-  npmPrefix = "${config.home.homeDirectory}/.local";
-  piPackage = "@earendil-works/pi-coding-agent";
-  piPackageSpec = "${piPackage}@latest";
+  nixpkgs =
+    if pkgs.stdenv.hostPlatform.isDarwin
+    then inputs.nixpkgs-darwin
+    else inputs.nixpkgs;
+  # Nix skips profile upgrades when Pi's revision is unchanged, even if an
+  # input override changed. A new nixpkgs revision needs a fresh profile.
+  piProfile = "${config.home.homeDirectory}/.local/state/nix/profiles/pi-${nixpkgs.rev}";
+  # Pi uses a separate nixpkgs input on Intel Darwin.
+  nixpkgsInput =
+    if pkgs.stdenv.hostPlatform.system == "x86_64-darwin"
+    then "nixpkgs-darwin-x64"
+    else "nixpkgs";
   piExtensions = [
     "npm:@juicesharp/rpiv-ask-user-question"
     "npm:@juicesharp/rpiv-web-tools"
@@ -21,19 +30,20 @@
     set -euo pipefail
 
     export HOME=${lib.escapeShellArg config.home.homeDirectory}
-    export PATH="${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
+    export PATH="${piProfile}/bin:$HOME/.local/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
 
-    ${npm} install --global --prefix ${lib.escapeShellArg npmPrefix} --no-audit --no-fund ${piPackageSpec}
+    mkdir -p ${lib.escapeShellArg (builtins.dirOf piProfile)}
+    if [[ -e ${lib.escapeShellArg "${piProfile}/manifest.json"} ]]; then
+      ${lib.getExe pkgs.nix} profile upgrade --profile ${lib.escapeShellArg piProfile} --all --refresh \
+        --override-input ${nixpkgsInput} path:${nixpkgs.outPath}
+    else
+      ${lib.getExe pkgs.nix} profile add --profile ${lib.escapeShellArg piProfile} github:earendil-works/pi/stable \
+        --override-input ${nixpkgsInput} path:${nixpkgs.outPath}
+    fi
     # Native MCP replaces the adapter; also migrate existing installations.
     pi remove npm:pi-mcp-adapter
     ${lib.concatMapStringsSep "\n" (extension: "    pi install ${lib.escapeShellArg extension}") piExtensions}
     pi update --all
-
-    # Global installs have no lock file, so create one over the same
-    # node_modules directory before running the requested audit fix.
-    rm -f ${lib.escapeShellArg "${npmPrefix}/lib/package.json"} ${lib.escapeShellArg "${npmPrefix}/lib/package-lock.json"}
-    ${npm} install --prefix ${lib.escapeShellArg "${npmPrefix}/lib"} --package-lock-only --ignore-scripts --no-audit --no-fund ${piPackageSpec}
-    ${npm} --prefix ${lib.escapeShellArg "${npmPrefix}/lib"} audit fix apply
   '';
 in {
   options.i4.pi.enable = lib.mkEnableOption "pi";
@@ -51,6 +61,7 @@ in {
       pkgs.bun
       updateScript
     ];
+    home.sessionPath = lib.mkBefore ["${piProfile}/bin"];
 
     systemd.user.services.pi-update.Service = {
       Type = "oneshot";
