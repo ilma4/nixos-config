@@ -201,6 +201,9 @@ in {
 
   # Prometheus node exporter: monitoring
   services.prometheus.exporters.node.enable = true;
+  # Execute the exporter directly instead of keeping its Bash wrapper running.
+  launchd.daemons.prometheus-node-exporter.command =
+    lib.mkForce config.launchd.daemons.prometheus-node-exporter.script;
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
   # VPN to access homelab
