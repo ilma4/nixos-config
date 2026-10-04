@@ -40,8 +40,6 @@
       ${lib.getExe pkgs.nix} profile add --profile ${lib.escapeShellArg piProfile} github:earendil-works/pi/stable \
         --override-input ${nixpkgsInput} path:${nixpkgs.outPath}
     fi
-    # Native MCP replaces the adapter; also migrate existing installations.
-    pi remove npm:pi-mcp-adapter
     ${lib.concatMapStringsSep "\n" (extension: "    pi install ${lib.escapeShellArg extension}") piExtensions}
     pi update --all
   '';
