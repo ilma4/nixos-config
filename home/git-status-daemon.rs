@@ -27,7 +27,7 @@ struct Request<'a> {
 }
 
 impl Request<'_> {
-    fn command<S: AsRef<OsStr>>(&self, args: &[S], status: bool) -> Command {
+    fn command(&self, args: &[impl AsRef<OsStr>], status: bool) -> Command {
         let mut command = Command::new("git");
         command
             .args([OsStr::new("-C"), self.dir])
@@ -35,15 +35,14 @@ impl Request<'_> {
             .stderr(Stdio::null())
             .args(args)
             .envs(self.path.map(|path| ("PATH", path)));
-        for [name, value] in self.git_env {
-            if !status || name != b"GIT_OPTIONAL_LOCKS" {
-                command.env(OsStr::from_bytes(name), OsStr::from_bytes(value));
-            }
-        }
+        command.envs(self.git_env.iter().filter_map(|[name, value]| {
+            (!status || name != b"GIT_OPTIONAL_LOCKS")
+                .then(|| (OsStr::from_bytes(name), OsStr::from_bytes(value)))
+        }));
         command
     }
 
-    fn git<S: AsRef<OsStr>>(&self, args: &[S]) -> Vec<u8> {
+    fn git(&self, args: &[impl AsRef<OsStr>]) -> Vec<u8> {
         let output = self.command(args, false).output();
         let mut bytes = output.map(|o| o.stdout).unwrap_or_default();
         // Match Zsh command substitution, which strips all trailing newlines.
@@ -106,7 +105,6 @@ impl Request<'_> {
             }
         }
         let tags = self.git(&["tag", "--points-at", "HEAD", "--sort=refname"]);
-        let tag = tags.rsplit(|&c| c == b'\n').next().unwrap_or_default();
         let mut action: &[u8] = b"";
         let dir = self.git(&["rev-parse", "--absolute-git-dir"]);
         if !dir.is_empty() {
@@ -120,12 +118,11 @@ impl Request<'_> {
                 ("BISECT_LOG", "bisect"),
             ]
             .into_iter()
-            .find_map(|(file, action)| {
+            .find_map(|(file, kind)| {
                 dir.push(file);
-                let metadata = dir.metadata();
+                let found = dir.metadata().is_ok_and(|m| kind != "rebase" || m.is_dir());
                 dir.pop();
-                let metadata = metadata.ok()?;
-                (action != "rebase" || metadata.is_dir()).then_some(action.as_bytes())
+                found.then_some(kind.as_bytes())
             })
             .unwrap_or_default();
         }
@@ -136,7 +133,7 @@ impl Request<'_> {
         for count in counts {
             write!(result, "{count}\x1f").ok()?;
         }
-        result.extend_from_slice(tag);
+        result.extend_from_slice(tags.rsplit(|&c| c == b'\n').next().unwrap_or_default());
         result.push(0x1f);
         result.extend_from_slice(oid);
         Some(())
@@ -157,30 +154,26 @@ fn run() -> io::Result<()> {
     let mut output = io::stdout().lock();
     let mut result = Vec::with_capacity(256);
     // Reuse request fields, the status line and header values across requests.
-    let mut fields = std::array::from_fn(|_| Vec::new());
+    let mut fields: [_; 4] = Default::default();
     let mut git_env: Vec<[Vec<u8>; 2]> = Vec::new();
-    let mut buffers = std::array::from_fn(|_| Vec::new());
+    let mut buffers = Default::default();
     loop {
         read_fields(&mut input, &mut fields)?;
-        let [id, dir, path, count] = &mut fields;
-        let count = number(count);
-        for index in 0..count {
-            git_env.resize_with(git_env.len().max(index as usize + 1), Default::default);
-            let pair = &mut git_env[index as usize];
+        let [id, dir, path, count] = &fields;
+        git_env.resize_with(number(count) as usize, Default::default);
+        for pair in &mut git_env {
             read_fields(&mut input, pair)?;
             if !pair[0].starts_with(b"GIT_") {
                 std::process::exit(1);
             }
         }
-        git_env.truncate(count as usize);
         let path = OsStr::from_bytes(path);
         let request = Request {
             dir: OsStr::from_bytes(dir),
             path: (inherited_path.as_deref() != Some(path)).then_some(path),
             git_env: &git_env,
         };
-        result.clear();
-        result.extend_from_slice(id);
+        result.clone_from(id);
         result.push(b':');
         let _ = request.status(&mut result, &mut buffers);
         result.push(b'\n');
@@ -190,10 +183,10 @@ fn run() -> io::Result<()> {
 }
 
 fn main() {
-    run().unwrap_or_else(|error| {
+    if let Err(error) = run() {
         if ![io::ErrorKind::BrokenPipe, io::ErrorKind::UnexpectedEof].contains(&error.kind()) {
             eprintln!("git status daemon: {error}");
             std::process::exit(1);
         }
-    });
+    }
 }
