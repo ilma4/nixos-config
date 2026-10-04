@@ -5,6 +5,23 @@
   ...
 }: let
   modelsDirectory = "/Volumes/Extra/llama-cpp";
+  volumeWatcher = pkgs.swiftPackages.stdenv.mkDerivation {
+    pname = "llama-volume-watch";
+    version = "0.1.0";
+    dontUnpack = true;
+    dontConfigure = true;
+    nativeBuildInputs = [pkgs.swift];
+    buildPhase = ''
+      runHook preBuild
+      swiftc -swift-version 5 -O -o llama-volume-watch ${./llama-volume-watch.swift}
+      runHook postBuild
+    '';
+    installPhase = ''
+      runHook preInstall
+      install -Dm755 llama-volume-watch "$out/bin/llama-volume-watch"
+      runHook postInstall
+    '';
+  };
 in {
   home.packages = [pkgs-unstable.llama-cpp];
 
@@ -16,8 +33,7 @@ in {
       # Keep unrelated models in the user's default cache out of this router.
       EnvironmentVariables.LLAMA_CACHE = "${modelsDirectory}/.cache/llama.cpp";
       ProgramArguments = [
-        "${pkgs.python3}/bin/python3"
-        "${./llama-volume-watch.py}"
+        "${volumeWatcher}/bin/llama-volume-watch"
         "/Volumes/Extra"
         modelsDirectory
         "${pkgs-unstable.llama-cpp}/bin/llama-server"
