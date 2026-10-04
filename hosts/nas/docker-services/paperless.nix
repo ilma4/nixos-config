@@ -1,7 +1,9 @@
 {config, pkgs, ...}: let
   paperlessSecretKey = "paperless/secret_key";
+  paperlessApiToken = "paperless/api_token";
   valkey-version = "9-alpine";
   paperless-version = "3.2.1";
+  paperless-gpt-version = "v0.28.0";
   tika-version = "3.3.1.0";
   gotenberg-version = "8.37";
   llamaProxyPort = 18080;
@@ -47,6 +49,7 @@ in {
           - ${config.sops.templates."paperless.env".path}
         environment:
           PAPERLESS_OCR_LANGUAGES: "eng deu rus"
+          PAPERLESS_THREADS_PER_WORKER: "2"
 
           PAPERLESS_REDIS: redis://broker:6379
           PAPERLESS_TIKA_ENABLED: 1
@@ -72,6 +75,42 @@ in {
           PAPERLESS_AI_LLM_EMBEDDING_MODEL: "intfloat/multilingual-e5-small"
           # Stay below the embedding model's 512-token input limit.
           PAPERLESS_AI_LLM_EMBEDDING_CHUNK_SIZE: "384"
+      paperless-gpt:
+        image: docker.io/icereed/paperless-gpt:${paperless-gpt-version}
+        restart: unless-stopped
+        depends_on:
+          - webserver
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.paperless-gpt.rule=Host(`paperless-gpt.ilma4.home.arpa`)"
+          - "traefik.http.routers.paperless-gpt.entrypoints=websecure"
+          - "traefik.http.routers.paperless-gpt.tls=true"
+          - "traefik.docker.network=reverse_proxy"
+          - "traefik.http.services.paperless-gpt.loadbalancer.server.port=8080"
+        expose:
+          - "8080"
+        networks:
+          default:
+          reverse_proxy:
+        volumes:
+          - /srv/paperless-gpt/prompts:/app/prompts
+          - /srv/paperless-gpt/config:/app/config
+          - /srv/paperless-gpt/db:/app/db
+        env_file:
+          - ${config.sops.templates."paperless-gpt.env".path}
+        environment:
+          PAPERLESS_BASE_URL: "http://webserver:8000"
+          PAPERLESS_PUBLIC_URL: "https://paperless.ilma4.home.arpa"
+          LLM_PROVIDER: "openai"
+          LLM_MODEL: "paperless-ngx"
+          OPENAI_BASE_URL: "http://10.20.0.1:${toString llamaProxyPort}/v1"
+          OPENAI_API_KEY: "unused"
+          OCR_PROVIDER: "llm"
+          VISION_LLM_PROVIDER: "openai"
+          VISION_LLM_MODEL: "paperless-ngx"
+          OCR_PROCESS_MODE: "image"
+          PUID: "10001"
+          PGID: "10001"
       gotenberg:
         image: docker.io/gotenberg/gotenberg:${gotenberg-version}
         restart: unless-stopped
@@ -119,6 +158,17 @@ in {
   };
 
   sops.secrets.${paperlessSecretKey} = {};
+  sops.secrets.${paperlessApiToken} = {};
+
+  sops.templates."paperless-gpt.env" = {
+    content = ''
+      PAPERLESS_API_TOKEN=${config.sops.placeholder.${paperlessApiToken}}
+    '';
+    mode = "0400";
+    owner = "root";
+    group = "root";
+    restartUnits = ["paperless.service"];
+  };
 
   sops.templates."paperless.env" = {
     content = ''
@@ -136,6 +186,10 @@ in {
   '';
 
   systemd.tmpfiles.rules = [
+    "d /srv/paperless-gpt 750 10001 10001 -"
+    "d /srv/paperless-gpt/prompts 750 10001 10001 -"
+    "d /srv/paperless-gpt/config 750 10001 10001 -"
+    "d /srv/paperless-gpt/db 750 10001 10001 -"
     "d /srv/paperless-ngx 750 ilma4 1000 -"
     "d /srv/paperless-ngx/export 750 ilma4 1000 -"
     "d /srv/paperless-ngx/consume 750 ilma4 1000 -"
