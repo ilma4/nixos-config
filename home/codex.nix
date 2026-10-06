@@ -1,17 +1,11 @@
 {
   config,
-  inputs,
   lib,
   pkgs,
   ...
 }: let
   cfg = config.i4.codex;
-  nixpkgs =
-    if pkgs.stdenv.hostPlatform.isDarwin
-    then inputs.nixpkgs-darwin
-    else inputs.nixpkgs;
-  # A new nixpkgs revision needs a fresh profile even if Codex is unchanged.
-  codexProfile = "${config.home.homeDirectory}/.local/state/nix/profiles/codex-${nixpkgs.rev}";
+  npmPrefix = "${config.home.homeDirectory}/.local";
 
   loopScript = pkgs.writeShellScriptBin "codex-loop" ''
     set -euo pipefail
@@ -34,18 +28,25 @@
     set -euo pipefail
 
     export HOME=${lib.escapeShellArg config.home.homeDirectory}
-    export PATH="${codexProfile}/bin:$HOME/.local/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
+    export PATH="${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
 
-    mkdir -p ${lib.escapeShellArg (builtins.dirOf codexProfile)} "$HOME/.local/bin"
-    if [[ -e ${lib.escapeShellArg "${codexProfile}/manifest.json"} ]]; then
-      ${lib.getExe pkgs.nix} profile upgrade --profile ${lib.escapeShellArg codexProfile} --all --refresh \
-        --override-input nixpkgs path:${nixpkgs.outPath} --option accept-flake-config false
+    if [[ ! -e "$HOME/.codex/packages/standalone/current" || ! -x ${npmPrefix}/bin/codex ]]; then
+      curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 ${lib.getExe pkgs.bash}
     else
-      ${lib.getExe pkgs.nix} profile add --profile ${lib.escapeShellArg codexProfile} github:sadjow/codex-cli-nix#codex \
-        --override-input nixpkgs path:${nixpkgs.outPath} --option accept-flake-config false
+      codex update
     fi
-    # Upstream's wrapper uses this path for CODEX_EXECUTABLE_PATH.
-    ln -sfn ${lib.escapeShellArg "${codexProfile}/bin/codex"} "$HOME/.local/bin/codex"
+
+    releases_dir=$(cd -P "$HOME/.codex/packages/standalone/releases" && pwd -P)
+    current_release=$(cd -P "$HOME/.codex/packages/standalone/current" && pwd -P)
+    if [[ "$(dirname "$current_release")" != "$releases_dir" ]]; then
+      echo "Codex current release is outside $releases_dir" >&2
+      exit 1
+    fi
+
+    for release in "$releases_dir"/*; do
+      [[ -d "$release" && ! -L "$release" ]] || continue
+      [[ "$release" == "$current_release" ]] || rm -rf -- "$release"
+    done
   '';
 in {
   options.i4.codex.enable = lib.mkEnableOption "codex";
@@ -59,7 +60,6 @@ in {
       updateScript
       loopScript
     ];
-    home.sessionPath = lib.mkBefore ["${codexProfile}/bin"];
 
     systemd.user.services.codex-update.Service = {
       Type = "oneshot";

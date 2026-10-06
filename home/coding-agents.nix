@@ -1,24 +1,17 @@
 {
   config,
-  inputs,
   lib,
   pkgs,
   ...
 }: let
   cfg = config.i4.coding-agents;
   npmPrefix = "${config.home.homeDirectory}/.local";
-  nixpkgs =
-    if pkgs.stdenv.hostPlatform.isDarwin
-    then inputs.nixpkgs-darwin
-    else inputs.nixpkgs;
-  # A new nixpkgs revision needs a fresh profile even if Claude is unchanged.
-  claudeProfile = "${config.home.homeDirectory}/.local/state/nix/profiles/claude-${nixpkgs.rev}";
 
   updateScript = pkgs.writeShellScriptBin "i4-update-coding-agents" ''
     set -euo pipefail
 
     export HOME=${lib.escapeShellArg config.home.homeDirectory}
-    export PATH="${claudeProfile}/bin:${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
+    export PATH="${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
 
     if [[ ! -e "$HOME/.local/share/junie/current" || ! -x ${npmPrefix}/bin/junie ]]; then
       curl -fsSL https://junie.jetbrains.com/install.sh | ${lib.getExe pkgs.bash}
@@ -45,16 +38,28 @@
       [[ "$version" == "$current_junie" ]] || rm -rf -- "$version"
     done
 
-    mkdir -p ${lib.escapeShellArg (builtins.dirOf claudeProfile)} "$HOME/.local/bin"
-    if [[ -e ${lib.escapeShellArg "${claudeProfile}/manifest.json"} ]]; then
-      ${lib.getExe pkgs.nix} profile upgrade --profile ${lib.escapeShellArg claudeProfile} --all --refresh \
-        --override-input nixpkgs path:${nixpkgs.outPath} --option accept-flake-config false
+    if [[ ! -d "$HOME/.local/share/claude/versions" || ! -x ${npmPrefix}/bin/claude ]]; then
+      curl -fsSL https://claude.ai/install.sh | ${lib.getExe pkgs.bash}
     else
-      ${lib.getExe pkgs.nix} profile add --profile ${lib.escapeShellArg claudeProfile} github:ryoppippi/nix-claude-code#stable \
-        --override-input nixpkgs path:${nixpkgs.outPath} --option accept-flake-config false
+      claude update
     fi
-    # Preserve existing aliases and callers of the standalone launcher.
-    ln -sfn ${lib.escapeShellArg "${claudeProfile}/bin/claude"} "$HOME/.local/bin/claude"
+
+    claude_versions=$(cd -P "$HOME/.local/share/claude/versions" && pwd -P)
+    claude_target=$(readlink "${npmPrefix}/bin/claude")
+    if [[ "$claude_target" != /* ]]; then
+      claude_target="${npmPrefix}/bin/$claude_target"
+    fi
+    current_claude_dir=$(cd -P "$(dirname "$claude_target")" && pwd -P)
+    if [[ "$current_claude_dir" != "$claude_versions" || ! -x "$claude_target" || -L "$claude_target" ]]; then
+      echo "Claude launcher does not point to an installed version" >&2
+      exit 1
+    fi
+    current_claude="$claude_versions/$(basename "$claude_target")"
+
+    for version in "$claude_versions"/*; do
+      [[ -f "$version" && ! -L "$version" ]] || continue
+      [[ "$version" == "$current_claude" ]] || rm -f -- "$version"
+    done
   '';
 in {
   options.i4.coding-agents.enable = lib.mkEnableOption "coding agents";
@@ -63,7 +68,6 @@ in {
     home.packages = [
       updateScript
     ];
-    home.sessionPath = lib.mkBefore ["${claudeProfile}/bin"];
 
     systemd.user.services.coding-agents-update.Service = {
       Type = "oneshot";
