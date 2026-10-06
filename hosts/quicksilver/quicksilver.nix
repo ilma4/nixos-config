@@ -19,9 +19,7 @@ in {
     ./homebrew-auto-upgrade.nix
     ./clean-toolbox-download-cache.nix
     ./mac-eq.nix
-    ./jetbrains-maintenance.nix
     ./backup.nix
-    ./mlx.nix
     ./restic-full-disk-access-wrapper.nix
 
     ../../modules/apps.nix
