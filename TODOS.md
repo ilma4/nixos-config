@@ -1,3 +1,8 @@
+# extract.nix
+
+Make configs for programs available without nix (i.e. tmux config and so on).
+Make github runner to "extract" them.
+
 # Persistent SSH tmux sessions
 
 SSH-scoped tmux servers can disappear after a NixOS switch, causing the auto-attach fallback to create a new server. Run tmux as a persistent systemd user service with user lingering and use `tmux new-session -A -s default`.
