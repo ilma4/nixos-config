@@ -26,11 +26,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    apple-silicon = {
-      url = "github:nix-community/nixos-apple-silicon";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     disko = {
       url = "github:nix-community/disko/latest";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -287,12 +282,6 @@
         modules = [
           inputs.nixos-lima.nixosModules.lima
           ./hosts/android-vm/android-vm.nix
-
-          {
-            nixpkgs.overlays = [
-              inputs.apple-silicon.overlays.default
-            ];
-          }
         ];
       };
     };

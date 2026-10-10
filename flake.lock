@@ -41,7 +41,7 @@
         "type": "github"
       }
     },
-    "flake-compat_2": {
+    "flake-compat": {
       "flake": false,
       "locked": {
         "lastModified": 1767039857,
@@ -293,7 +293,7 @@
     },
     "nixos-wsl": {
       "inputs": {
-        "flake-compat": "flake-compat_2",
+        "flake-compat": "flake-compat",
         "nixpkgs": [
           "nixpkgs"
         ]
