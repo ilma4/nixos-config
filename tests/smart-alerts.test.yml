@@ -1,0 +1,219 @@
+rule_files:
+  - ../hosts/nas/prometheus/alerts.yml
+evaluation_interval: 1m
+tests:
+  - name: Historical errors are quiet and independent NVMe errors fire and expire
+    interval: 1m
+    input_series:
+      - series: 'smartctl_device_media_errors{job="smartctl-exporter",instance="msi-modern",host="msi-modern",device="nvme0"}'
+        values: '12+0x4 13+0x70'
+      - series: 'smartctl_device_num_err_log_entries{job="smartctl-exporter",instance="msi-modern",host="msi-modern",device="nvme0"}'
+        values: '50+0x4 51+0x70'
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 4m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: SMARTNewErrors
+        exp_alerts:
+          - exp_labels:
+              job: smartctl-exporter
+              instance: msi-modern
+              host: msi-modern
+              device: nvme0
+              error: media_errors
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: msi-modern / nvme0"
+              description: "media_errors increased within the last hour (current value 13). Inspect the disk with smartctl -x."
+          - exp_labels:
+              job: smartctl-exporter
+              instance: msi-modern
+              host: msi-modern
+              device: nvme0
+              error: num_err_log_entries
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: msi-modern / nvme0"
+              description: "num_err_log_entries increased within the last hour (current value 51). Inspect the disk with smartctl -x."
+      - eval_time: 65m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+
+  - name: ATA logs retain their disk identity and log type
+    interval: 1m
+    input_series:
+      - series: 'smartctl_device_error_log_count{job="smartctl-exporter",instance="nas",host="nas",device="sda",error_log_type="extended"}'
+        values: '7+0x4 8+0x10'
+      - series: 'smartctl_device_error_log_count{job="smartctl-exporter",instance="nas",host="nas",device="sdb",error_log_type="summary"}'
+        values: '0+0x4 1+0x10'
+      # Power cycles must not be mistaken for errors.
+      - series: 'smartctl_device_power_cycle_count{job="smartctl-exporter",instance="nas",host="nas",device="sdc"}'
+        values: '0+1x15'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: SMARTNewErrors
+        exp_alerts:
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: sda
+              error_log_type: extended
+              error: error_log_count
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: nas / sda"
+              description: "error_log_count increased within the last hour (current value 8). Inspect the disk with smartctl -x."
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: sdb
+              error_log_type: summary
+              error: error_log_count
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: nas / sdb"
+              description: "error_log_count increased within the last hour (current value 1). Inspect the disk with smartctl -x."
+
+  - name: Raw sector errors fire while normalized values and noisy attributes are excluded
+    interval: 1m
+    input_series:
+      - series: 'smartctl_device_attribute{job="smartctl-exporter",instance="nas",host="nas",device="sda",attribute_id="197",attribute_name="Current_Pending_Sector",attribute_value_type="raw"}'
+        values: '0+0x4 1+0x10'
+      - series: 'smartctl_device_attribute{job="smartctl-exporter",instance="nas",host="nas",device="sda",attribute_id="5",attribute_name="Reallocated_Sector_Ct",attribute_value_type="raw"}'
+        values: '7+0x15'
+      - series: 'smartctl_device_attribute{job="smartctl-exporter",instance="nas",host="nas",device="sda",attribute_id="197",attribute_name="Current_Pending_Sector",attribute_value_type="value"}'
+        values: '100+1x15'
+      - series: 'smartctl_device_attribute{job="smartctl-exporter",instance="nas",host="nas",device="sda",attribute_id="1",attribute_name="Raw_Read_Error_Rate",attribute_value_type="raw"}'
+        values: '1000+100x15'
+      - series: 'smartctl_device_attribute{job="other-exporter",instance="nas",host="nas",device="sdb",attribute_id="197",attribute_name="Current_Pending_Sector",attribute_value_type="raw"}'
+        values: '0+1x15'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: SMARTNewErrors
+        exp_alerts:
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: sda
+              attribute_id: "197"
+              attribute_name: Current_Pending_Sector
+              attribute_value_type: raw
+              error: Current_Pending_Sector
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: nas / sda"
+              description: "Current_Pending_Sector increased within the last hour (current value 1). Inspect the disk with smartctl -x."
+
+  - name: Decreasing error totals are quiet but a subsequent rise is detected
+    interval: 1m
+    input_series:
+      - series: 'smartctl_device_media_errors{job="smartctl-exporter",instance="nas",host="nas",device="nvme0"}'
+        values: '12+0x4 2+0x4 3+0x5'
+      - series: 'smartctl_device_error_log_count{job="smartctl-exporter",instance="nas",host="nas",device="sda",error_log_type="extended"}'
+        values: '12+0x4 2+0x10'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 9m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: SMARTNewErrors
+        exp_alerts:
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: nvme0
+              error: media_errors
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: nas / nvme0"
+              description: "media_errors increased within the last hour (current value 3). Inspect the disk with smartctl -x."
+
+  - name: Short scrape gaps retain the baseline
+    interval: 1m
+    input_series:
+      - series: 'smartctl_device_media_errors{job="smartctl-exporter",instance="nas",host="nas",device="nvme0"}'
+        values: '4+0x4 stale _ _ _ _ 5+0x5'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: SMARTNewErrors
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: SMARTNewErrors
+        exp_alerts:
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: nvme0
+              error: media_errors
+              severity: warning
+            exp_annotations:
+              summary: "New SMART errors: nas / nvme0"
+              description: "media_errors increased within the last hour (current value 5). Inspect the disk with smartctl -x."
+
+  - name: Failed health and critical warnings fire and recovery clears them
+    interval: 1m
+    input_series:
+      - series: 'smartctl_device_smart_status{job="smartctl-exporter",instance="nas",host="nas",device="sda"}'
+        values: '1 0 0 1'
+      - series: 'smartctl_device_smart_status{job="smartctl-exporter",instance="msi-modern",host="msi-modern",device="nvme0"}'
+        values: '1 0 0 1'
+      - series: 'smartctl_device_critical_warning{job="smartctl-exporter",instance="msi-modern",host="msi-modern",device="nvme0"}'
+        values: '0 1 1 0'
+      # A warning can appear before the overall health changes.
+      - series: 'smartctl_device_critical_warning{job="smartctl-exporter",instance="nas",host="nas",device="nvme1"}'
+        values: '0 2 2 0'
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: SMARTHealthFailed
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SMARTHealthFailed
+        exp_alerts:
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: sda
+              severity: critical
+            exp_annotations:
+              summary: "SMART health failure: nas / sda"
+              description: "The disk reports failed SMART health or an NVMe critical warning. Inspect the disk with smartctl -x."
+          - exp_labels:
+              job: smartctl-exporter
+              instance: msi-modern
+              host: msi-modern
+              device: nvme0
+              severity: critical
+            exp_annotations:
+              summary: "SMART health failure: msi-modern / nvme0"
+              description: "The disk reports failed SMART health or an NVMe critical warning. Inspect the disk with smartctl -x."
+          - exp_labels:
+              job: smartctl-exporter
+              instance: nas
+              host: nas
+              device: nvme1
+              severity: critical
+            exp_annotations:
+              summary: "SMART health failure: nas / nvme1"
+              description: "The disk reports failed SMART health or an NVMe critical warning. Inspect the disk with smartctl -x."
+      - eval_time: 3m
+        alertname: SMARTHealthFailed
+        exp_alerts: []

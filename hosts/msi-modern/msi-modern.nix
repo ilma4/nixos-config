@@ -87,6 +87,12 @@
     firewallFilter = "-i tailscale0 -p tcp -m tcp --dport 9100";
   };
 
+  services.prometheus.exporters.smartctl = {
+    listenAddress = "0.0.0.0";
+    openFirewall = true;
+    firewallFilter = "-i tailscale0 -p tcp -m tcp --dport 9633";
+  };
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

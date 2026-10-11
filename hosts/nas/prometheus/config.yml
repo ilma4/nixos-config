@@ -39,6 +39,13 @@ scrape_configs:
   - job_name: "smartctl-exporter"
     static_configs:
       - targets: ["127.0.0.1:9633"]
+        labels:
+          instance: "nas"
+          host: "nas"
+      - targets: ["msi-modern.tail09544e.ts.net:9633"]
+        labels:
+          instance: "msi-modern"
+          host: "msi-modern"
     scrape_interval: 1m
     scrape_timeout: 10s
 

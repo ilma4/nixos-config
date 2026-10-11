@@ -36,6 +36,7 @@ in {
     ./nix-settings.nix
     ./initrd-ssh.nix
     ./deploy.nix
+    ./smart-monitoring.nix
     ./backup/backup.nix
     ./swap.nix
     ./avahi.nix
