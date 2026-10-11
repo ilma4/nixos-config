@@ -37,7 +37,6 @@ in {
 
     ./docker-services/home-assistant.nix
     ./mqtt.nix
-    ./docker-services/pdf-tools.nix
 
     ./docker-services/actual-budget.nix
     ./docker-services/paperless.nix

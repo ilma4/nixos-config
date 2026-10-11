@@ -86,11 +86,6 @@ services:
         icon: "fas fa-file-alt"
         subtitle: "Document management"
         url: "https://paperless.ilma4.home.arpa"
-      - name: "PDF Tools"
-        icon: "fas fa-file-pdf"
-        subtitle: "Stirling PDF"
-        url: "https://pdf-tools.ilma4.home.arpa"
-
   - name: "Media"
     icon: "fas fa-photo-video"
     items:
