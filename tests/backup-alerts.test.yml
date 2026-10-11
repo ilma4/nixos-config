@@ -1,0 +1,131 @@
+rule_files:
+  - ../hosts/nas/prometheus/alerts.yml
+evaluation_interval: 1m
+tests:
+  - name: Snapshot age crosses 48 hours and a new snapshot clears the alert
+    interval: 1m
+    input_series:
+      - series: 'backup_latest_snapshot_timestamp_seconds{job="i4-backup-monitoring",host="nas",source="quicksilver",repo="nas-ssd"}'
+        values: '3600+0x2960 180000+0x40'
+      - series: 'backup_collection_success{job="i4-backup-monitoring",host="nas",source="quicksilver",repo="nas-ssd"}'
+        values: '1+0x3001'
+      - series: 'backup_collection_last_success_timestamp_seconds{job="i4-backup-monitoring",host="nas",source="quicksilver",repo="nas-ssd"}'
+        values: '0+60x3001'
+    alert_rule_test:
+      - eval_time: 49h
+        alertname: BackupSnapshotsOverdue
+        exp_alerts: []
+      - eval_time: 49h6m
+        alertname: BackupSnapshotsOverdue
+        exp_alerts:
+          - exp_labels:
+              job: i4-backup-monitoring
+              host: nas
+              source: quicksilver
+              repo: nas-ssd
+              severity: critical
+            exp_annotations:
+              summary: "Backup overdue: quicksilver on nas-ssd"
+              description: "The newest observed snapshot is over 48 hours old, or the repository is empty."
+      - eval_time: 50h
+        alertname: BackupSnapshotsOverdue
+        exp_alerts: []
+
+  - name: Suppress differences during relay and clear after synchronization
+    interval: 1m
+    input_series:
+      - series: 'backup_missing_snapshots{job="i4-backup-monitoring",host="nas",source="quicksilver",repo="nas-hdd",destination="hetzner"}'
+        values: '1+0x280 0+0x40'
+      - series: 'backup_comparison_success{job="i4-backup-monitoring",host="nas",source="quicksilver"}'
+        values: '1+0x321'
+      - series: 'backup_comparison_last_success_timestamp_seconds{job="i4-backup-monitoring",host="nas",source="quicksilver"}'
+        values: '0+60x321'
+      - series: 'backup_relay_running{job="i4-backup-monitoring",host="nas",source="quicksilver"}'
+        values: '1+0x240 0+0x80'
+      - series: 'backup_relay_started_timestamp_seconds{job="i4-backup-monitoring",host="nas",source="quicksilver"}'
+        values: '1+0x321'
+      - series: 'backup_relay_state_success{job="i4-backup-monitoring",host="nas",source="quicksilver"}'
+        values: '1+0x321'
+    alert_rule_test:
+      - eval_time: 3h
+        alertname: BackupRepositoriesDesynchronized
+        exp_alerts: []
+      - eval_time: 4h
+        alertname: BackupRepositoriesDesynchronized
+        exp_alerts: []
+      - eval_time: 4h31m
+        alertname: BackupRepositoriesDesynchronized
+        exp_alerts:
+          - exp_labels:
+              job: i4-backup-monitoring
+              host: nas
+              source: quicksilver
+              repo: nas-hdd
+              destination: hetzner
+              severity: critical
+            exp_annotations:
+              summary: "Backup copies differ: nas-hdd → hetzner"
+              description: "1 snapshots on nas-hdd are missing or different on hetzner."
+      - eval_time: 4h45m
+        alertname: BackupRepositoriesDesynchronized
+        exp_alerts: []
+
+  - name: Partial warning fires promptly and clears only when the latch clears
+    interval: 1m
+    input_series:
+      - series: 'backup_partial_unresolved{job="node-exporter",instance="quicksilver",source="quicksilver"}'
+        values: '0 1 1 1 0'
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: ResticBackupPartial
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: ResticBackupPartial
+        exp_alerts:
+          - exp_labels:
+              job: node-exporter
+              instance: quicksilver
+              source: quicksilver
+              severity: warning
+            exp_annotations:
+              summary: "Partial backup: quicksilver"
+              description: "Restic returned exit code 3: some source files could not be read. This warning clears after a backup returns exit code 0. Check the backup log for unreadable paths."
+      - eval_time: 4m
+        alertname: ResticBackupPartial
+        exp_alerts: []
+
+  - name: Repository inspection failure gets its own warning
+    interval: 1m
+    input_series:
+      - series: 'backup_collection_success{job="i4-backup-monitoring",host="nas",source="quicksilver",repo="hetzner"}'
+        values: '1 0+0x40'
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: BackupCollectionFailed
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: BackupCollectionFailed
+        exp_alerts:
+          - exp_labels:
+              job: i4-backup-monitoring
+              host: nas
+              source: quicksilver
+              repo: hetzner
+              severity: warning
+            exp_annotations:
+              summary: "Cannot inspect backup repository hetzner"
+              description: "The latest inspection failed. Snapshot counts retain their last known values; check i4-backup-monitoring.service logs."
+
+  - name: Missing collector metrics cannot silently disable alerts
+    interval: 1m
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: BackupMonitoringStale
+        exp_alerts:
+          - exp_labels:
+              job: i4-backup-monitoring
+              host: nas
+              severity: warning
+            exp_annotations:
+              summary: "Backup monitoring is stale or incomplete"
+              description: "The collector has not published for 30 hours, or expected repository metrics are missing."

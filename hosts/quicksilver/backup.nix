@@ -8,6 +8,8 @@
   backupHome = "/Users/ilma4";
   backupCache = "${backupHome}/Library/Caches/restic";
   backupLocalRepo = "${backupHome}/NoBackup/restic";
+  # The exporter runs as its own user and cannot traverse the private Library.
+  statusMetricsDirectory = "/Users/Shared/i4-backup-metrics";
   backupWakeLeadMinutes = 5;
   backupWakeWeekdays = "MTWRFSU";
   backupTimeTotalMinutes = config.i4.backup.backupHour * 60 + config.i4.backup.backupMinute;
@@ -136,6 +138,10 @@ in {
     backupGroup = "staff";
     backupHour = 4;
     backupMinute = 0;
+    statusMetrics = {
+      file = "${statusMetricsDirectory}/backup.prom";
+      source = "quicksilver";
+    };
     paths = ["/Users/ilma4"];
     excludes = backupExcludePaths;
     keepWithin = "7d";
@@ -163,12 +169,20 @@ in {
     WorkingDirectory = backupHome;
   };
 
+  services.prometheus.exporters.node.extraFlags = [
+    "--collector.textfile.directory=${statusMetricsDirectory}"
+  ];
+
   system.activationScripts.extraActivation.text = lib.mkAfter ''
     set -euo pipefail
 
     mkdir -p ${lib.escapeShellArg backupCache}
     chown ${lib.escapeShellArg "ilma4:staff"} ${lib.escapeShellArg backupCache}
     chmod 0750 ${lib.escapeShellArg backupCache}
+
+    mkdir -p ${lib.escapeShellArg statusMetricsDirectory}
+    chown ilma4:staff ${lib.escapeShellArg statusMetricsDirectory}
+    chmod 0755 ${lib.escapeShellArg statusMetricsDirectory}
 
     # Ensure macOS wakes shortly before launchd starts the backup. pmset has a
     # single global repeating wake/power-on schedule, so this declares

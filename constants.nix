@@ -43,6 +43,7 @@
   };
 
   quicksilver = {
+    hostname = "DE-UNIT-1832";
     # Existing key used to send Quicksilver backups to NAS.
     backup-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMvrzYraYfx9T5iQOrsU19YvfdgUCZlANxdSjJTKaRBR qucksilver-backup-key";
   };

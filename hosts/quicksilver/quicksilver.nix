@@ -74,7 +74,7 @@ in {
 
   nix.gc.automatic = false;
 
-  networking.hostName = "DE-UNIT-1832";
+  networking.hostName = constants.quicksilver.hostname;
 
   users.users = {
     ilma4 = {

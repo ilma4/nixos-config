@@ -12,6 +12,9 @@ in {
   };
 
   config = mkIf cfg.enable {
+    systemd.tmpfiles.rules = [
+      "d /var/lib/i4-backup-metrics 0755 root root -"
+    ];
     # Create user and group for node-exporter
     users.users.node-exporter = {
       isSystemUser = true;
@@ -35,10 +38,12 @@ in {
             volumes:
               - "/:/host:ro,rslave"
               - "/etc/os-release:/host/etc/os-release:ro"
+              - "/var/lib/i4-backup-metrics:/textfile:ro"
             command:
               - "--path.rootfs=/host"
               - "--path.udev.data=/host/run/udev/data"
               - "--web.listen-address=:${toString port}"
+              - "--collector.textfile.directory=/textfile"
             pid: host
             network_mode: host
             read_only: true

@@ -22,6 +22,7 @@ in {
     ./hardware-configuration.nix
     ./hdd.nix
     ./quicksilver-backup.nix
+    ./backup-monitoring.nix
 
     "${modules}/sops.nix"
     "${modules}/notifications.nix"
@@ -107,6 +108,10 @@ in {
 
   i4.backup = {
     enable = true;
+    statusMetrics = {
+      file = "/var/lib/i4-backup-metrics/backup.prom";
+      source = "nas-server";
+    };
     metrics = {
       enable = true;
       pushgatewayBaseUrl = "http://127.0.0.1:9091";

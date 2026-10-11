@@ -59,6 +59,7 @@
     paths = cfg.paths;
     excludes = cfg.excludes;
     keepWithin = cfg.keepWithin;
+    statusMetrics = cfg.statusMetrics;
   });
 
   rotateKeysConfigFile = pkgs.writeText "i4-backup-rotate-keys.json" (builtins.toJSON (
@@ -79,6 +80,8 @@
 
   mkBackupScript = name: command: configFile:
     pkgs.writeShellScript name ''
+      set -euo pipefail
+
       exec ${escapeShellArgs [(getExe backupScript) command configFile]}
     '';
 
@@ -123,6 +126,23 @@ in {
 
   options.i4.backup = {
     enable = mkEnableOption "restic backups or snapshot relays with remote copies";
+
+    statusMetrics = mkOption {
+      default = null;
+      description = "Optional persistent textfile metrics for snapshot creation results, including unresolved partial backups.";
+      type = types.nullOr (types.submodule {
+        options = {
+          file = mkOption {
+            type = types.singleLineStr;
+            description = "Absolute .prom file path in a writable node exporter textfile directory.";
+          };
+          source = mkOption {
+            type = types.singleLineStr;
+            description = "Stable backup source label, independent of the machine hostname.";
+          };
+        };
+      });
+    };
 
     backupUser = mkOption {
       type = types.singleLineStr;

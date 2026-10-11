@@ -1,1 +1,112 @@
-groups: []
+groups:
+  - name: backup
+    rules:
+      - alert: BackupSnapshotsOverdue
+        expr: |
+          (time() - backup_latest_snapshot_timestamp_seconds{job="i4-backup-monitoring",repo=~"nas-ssd|nas-hdd|nas-server"} > 172800)
+          and on(host, source, repo)
+          (backup_collection_success{job="i4-backup-monitoring"} == 1)
+          and on(host, source, repo)
+          (time() - backup_collection_last_success_timestamp_seconds{job="i4-backup-monitoring"} < 108000)
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backup overdue: {{ $labels.source }} on {{ $labels.repo }}"
+          description: "The newest observed snapshot is over 48 hours old, or the repository is empty."
+
+      - alert: BackupRepositoriesDesynchronized
+        expr: |
+          (backup_missing_snapshots{job="i4-backup-monitoring"} > 0)
+          and on(host, source)
+          (backup_comparison_success{job="i4-backup-monitoring"} == 1)
+          and on(host, source)
+          (time() - backup_comparison_last_success_timestamp_seconds{job="i4-backup-monitoring"} < 108000)
+          and on(host, source)
+          (backup_relay_state_success{job="i4-backup-monitoring"} == 1)
+          and on(host, source)
+          (
+            (backup_relay_running{job="i4-backup-monitoring"} == 0)
+            or
+            (time() - backup_relay_started_timestamp_seconds{job="i4-backup-monitoring"} > 14400)
+          )
+        for: 30m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backup copies differ: {{ $labels.repo }} → {{ $labels.destination }}"
+          description: "{{ $value }} snapshots on {{ $labels.repo }} are missing or different on {{ $labels.destination }}."
+
+      - alert: ResticBackupPartial
+        expr: backup_partial_unresolved{job="node-exporter"} == 1
+        labels:
+          severity: warning
+        annotations:
+          summary: "Partial backup: {{ $labels.source }}"
+          description: "Restic returned exit code 3: some source files could not be read. This warning clears after a backup returns exit code 0. Check the backup log for unreadable paths."
+
+      - alert: BackupCollectionFailed
+        expr: backup_collection_success{job="i4-backup-monitoring"} == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cannot inspect backup repository {{ $labels.repo }}"
+          description: "The latest inspection failed. Snapshot counts retain their last known values; check i4-backup-monitoring.service logs."
+
+      - alert: BackupMonitoringStale
+        expr: |
+          time() - backup_monitor_last_run_timestamp_seconds{job="i4-backup-monitoring",host="nas"} > 108000
+          or
+          (count by (host, job) (backup_collection_success{job="i4-backup-monitoring",host="nas"}) != 4)
+          or
+          absent(backup_monitor_last_run_timestamp_seconds{job="i4-backup-monitoring",host="nas"})
+        for: 30m
+        labels:
+          severity: warning
+          host: nas
+        annotations:
+          summary: "Backup monitoring is stale or incomplete"
+          description: "The collector has not published for 30 hours, or expected repository metrics are missing."
+
+      - alert: BackupRelayStateUnavailable
+        expr: backup_relay_state_success{job="i4-backup-monitoring"} == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cannot inspect the Quicksilver relay service"
+          description: "Synchronization alerts cannot safely account for an active relay. Check i4-backup-monitoring.service."
+
+      - alert: BackupRelayStuck
+        expr: |
+          (backup_relay_running{job="i4-backup-monitoring"} == 1)
+          and on(host, source)
+          (time() - backup_relay_started_timestamp_seconds{job="i4-backup-monitoring"} > 14400)
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Quicksilver relay has exceeded its four-hour grace period"
+          description: "Check i4-quicksilver-backup-relay.service; it was still running at the latest collection."
+
+      - alert: BackupStatusUnavailable
+        expr: |
+          absent(backup_last_attempt_timestamp_seconds{job="node-exporter",source="quicksilver"})
+          or
+          absent(backup_last_attempt_timestamp_seconds{job="node-exporter",source="nas-server"})
+        for: 48h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backup execution status unavailable: {{ $labels.source }}"
+          description: "Execution status has been missing for 48 hours; partial-backup detection is unavailable."
+
+      - alert: BackupStatusStale
+        expr: time() - backup_last_attempt_timestamp_seconds{job="node-exporter",source=~"quicksilver|nas-server"} > 172800
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backup execution status is stale: {{ $labels.source }}"
+          description: "No restic backup completion has been recorded for over 48 hours."

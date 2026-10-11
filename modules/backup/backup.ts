@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, renameSync, chmodSync } from "node:fs";
 import assert from "node:assert/strict";
 
 type Repo = {
@@ -16,7 +16,41 @@ type BackupConfig = {
   paths: string[];
   excludes: string[];
   keepWithin: string | null;
+  statusMetrics?: { file: string; source: string } | null;
 };
+
+export function recordBackupStatus(metrics: NonNullable<BackupConfig["statusMetrics"]>, exitCode: number): void {
+  const stateFile = `${metrics.file}.json`;
+  let partial = 0;
+  try {
+    partial = JSON.parse(readFileSync(stateFile, "utf8")).partial;
+    assert(partial === 0 || partial === 1, "Invalid partial backup state");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  if (exitCode === 3) partial = 1;
+  if (exitCode === 0) partial = 0;
+  const labels = `{source=${JSON.stringify(metrics.source)}}`;
+  const now = Math.floor(Date.now() / 1000);
+  const output = [
+    "# HELP backup_partial_unresolved A partial backup has occurred since the last complete backup.",
+    "# TYPE backup_partial_unresolved gauge",
+    `backup_partial_unresolved${labels} ${partial}`,
+    "# HELP backup_last_restic_exit_code Result of the latest restic backup command.",
+    "# TYPE backup_last_restic_exit_code gauge",
+    `backup_last_restic_exit_code${labels} ${exitCode}`,
+    "# HELP backup_last_attempt_timestamp_seconds Completion time of the latest restic backup attempt.",
+    "# TYPE backup_last_attempt_timestamp_seconds gauge",
+    `backup_last_attempt_timestamp_seconds${labels} ${now}`,
+    "",
+  ].join("\n");
+  for (const [file, contents, mode] of [[stateFile, JSON.stringify({ partial }), 0o600], [metrics.file, output, 0o644]] as const) {
+    const temporary = `${file}.${process.pid}.tmp`;
+    writeFileSync(temporary, contents, { mode });
+    chmodSync(temporary, mode);
+    renameSync(temporary, file);
+  }
+}
 
 function logInfo(message: string, condition: boolean = true): void {
   if (!condition) return;
@@ -71,12 +105,22 @@ function rotateKey(repo: Repo): void {
   mustRunRestic(oldRepo, "key", "passwd", "--new-password-file", repo.passwordFile);
 }
 
-function runBackup({ localRepo, remoteRepos, createSnapshots, paths, excludes, keepWithin }: BackupConfig): void {
+function runBackup({ localRepo, remoteRepos, createSnapshots, paths, excludes, keepWithin, statusMetrics }: BackupConfig): void {
   if (createSnapshots) {
     const { status, stderr } = runRestic(localRepo, "backup", ...excludes.flatMap(path => ["--exclude", path]), ...paths);
+    if (statusMetrics) {
+      try {
+        recordBackupStatus(statusMetrics, status ?? -1);
+      } catch (error) {
+        // Monitoring failure must not prevent copying an available snapshot.
+        console.error(`Failed to record backup status: ${error}`);
+      }
+    }
     if (status === 3) logInfo(`backup can't read some paths:\n${stderr}`);
-    else assert(status === 0, `Backup failed: ${stderr}`);
-    logInfo("backup successfully made");
+    else {
+      assert(status === 0, `Backup failed: ${stderr}`);
+      logInfo("backup successfully made");
+    }
   }
 
   const localChunker = readChunker(localRepo);
@@ -106,4 +150,4 @@ function main(): void {
   }
 }
 
-main();
+if (import.meta.main) main();

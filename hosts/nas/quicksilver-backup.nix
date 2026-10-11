@@ -128,6 +128,18 @@
     }
     extraConfig;
 in {
+  i4.backup.monitoring.repositories =
+    builtins.mapAttrs (_: repo: {
+      source = "quicksilver";
+      hostname = constants.quicksilver.hostname;
+      paths = ["/Users/ilma4"];
+      inherit (repo) location passwordFile extraArgs;
+    }) {
+      nas-ssd = ssdRepo;
+      nas-hdd = hddRepo;
+      hetzner = hetzerRepo;
+    };
+
   users.users.${backupUser}.openssh.authorizedKeys.keys = [
     ''command="${ssdAppendOnlyResticCommand}",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty,no-user-rc ${constants.quicksilver.backup-pub-key}''
   ];
