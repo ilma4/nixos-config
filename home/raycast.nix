@@ -111,6 +111,9 @@ in {
           executable = true;
         };
       })
-      (filterAttrs (name: _: elem name cfg.scripts) scriptFiles);
+      (filterAttrs (name: _: elem name cfg.scripts) scriptFiles)
+      // optionalAttrs (elem "vivaldi.applescript" cfg.scripts) {
+        "${cfg.scriptsPath}/icons/vivaldi.png".source = ./raycast-scripts/icons/vivaldi.png;
+      };
   };
 }

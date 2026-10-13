@@ -6,7 +6,7 @@
 # @raycast.mode silent
 
 # Optional parameters:
-# @raycast.icon V
+# @raycast.icon icons/vivaldi.png
 
 property notifier : "/Users/ilma4/.nix-profile/bin/terminal-notifier"
 property notifyGroup : "vivaldi-new-window"
