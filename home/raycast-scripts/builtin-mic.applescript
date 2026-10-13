@@ -10,9 +10,9 @@
 # @raycast.packageName Audio
 # @raycast.description Connect WH-1000XM5, then switch input to the built-in microphone
 
-property connectScript : "/Users/ilma4/Scripts/wh-1000xm5-connect.applescript"
-property switchAudio : "/Users/ilma4/.nix-profile/bin/SwitchAudioSource"
-property notifier : "/Users/ilma4/.nix-profile/bin/terminal-notifier"
+property connectScript : ""
+property switchAudio : ""
+property notifier : ""
 # Built-in mic device name as reported by macOS on this MacBook Pro.
 property inputDevice : "MacBook Pro Microphone"
 property notifyGroup : "mic-switch"
@@ -43,6 +43,10 @@ on assertInput(device)
 end assertInput
 
 # Connect the headphones first; the connect script notifies about its own result.
+set userHome to POSIX path of (path to home folder)
+set connectScript to userHome & "Scripts/wh-1000xm5-connect.applescript"
+set switchAudio to userHome & ".nix-profile/bin/SwitchAudioSource"
+set notifier to userHome & ".nix-profile/bin/terminal-notifier"
 do shell script "osascript " & quoted form of connectScript
 
 # Switch (and hold) the input device regardless of whether the connection succeeded.

@@ -12,6 +12,8 @@
       scripts = [
         "monitor-displayport.applescript"
         "paste-from-markdown.sh"
+        "builtin-mic.applescript"
+        "wh-1000xm5-connect.applescript"
       ];
     };
     programs.zsh.localVariables = {
@@ -49,16 +51,9 @@
       ".config/linearmouse/linearmouse.json".source = ../../dotfiles/linearmouse/linearmouse.json;
       ".config/zed".source = ../../dotfiles/zed;
 
-      # malakhov-only Raycast mic scripts, deployed directly (not via the shared
-      # i4.raycast registry) because they hard-code malakhov's home paths and must
-      # not be installed into the ilma4 account. They connect the WH-1000XM5, then
-      # switch the output/input devices.
+      # This user-specific external mic script also routes headphone output.
       "Scripts/external-mic-malakhov.applescript" = {
         source = ../../home/raycast-scripts/external-mic-malakhov.applescript;
-        executable = true;
-      };
-      "Scripts/builtin-mic-malakhov.applescript" = {
-        source = ../../home/raycast-scripts/builtin-mic-malakhov.applescript;
         executable = true;
       };
     };

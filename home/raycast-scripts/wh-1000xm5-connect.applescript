@@ -10,8 +10,8 @@
 # @raycast.packageName Bluetooth
 # @raycast.description Connect to Sony WH-1000XM5 headphones
 
-property blueutil : "/Users/ilma4/.nix-profile/bin/blueutil"
-property notifier : "/Users/ilma4/.nix-profile/bin/terminal-notifier"
+property blueutil : ""
+property notifier : ""
 property deviceAddress : "AC:80:0A:93:B1:08"
 property notifyGroup : "wh-1000xm5-connect"
 
@@ -25,6 +25,10 @@ on showNotification(theTitle, theMessage)
 	do shell script "nohup sh -c 'sleep 3; " & notifier & ¬
 		" -remove " & notifyGroup & "' >/dev/null 2>&1 &"
 end showNotification
+
+set userHome to POSIX path of (path to home folder)
+set blueutil to userHome & ".nix-profile/bin/blueutil"
+set notifier to userHome & ".nix-profile/bin/terminal-notifier"
 
 try
 	set connectedState to do shell script quoted form of blueutil & " --is-connected " & deviceAddress
