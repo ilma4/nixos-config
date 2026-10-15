@@ -18,7 +18,7 @@
   # but macOS TCC grants may be tied to the cdhash and can be lost when the
   # wrapper is rebuilt.
   codeSigningIdentity = "-";
-  wrapperVersion = "7";
+  wrapperVersion = "8";
   wrapperPath = "${binDir}:${backupHome}/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
   checkFullDiskAccess = "${../../scripts/check-full-disk-access.sh}";
   checkLocalNetworkAccess = "${../../scripts/check-local-network-access.sh}";
@@ -149,6 +149,13 @@
               );
               std::process::exit(64);
           }
+
+          // Hold sleep assertions for this launcher, including initialization and upload.
+          // Watching our PID also releases them when a backup command fails.
+          let _sleep_guard = Command::new("/usr/bin/caffeinate")
+              .args(["-is", "-w", &std::process::id().to_string()])
+              .spawn()
+              .expect("failed to start caffeinate");
 
           let backup_program = args[1].as_os_str();
           for (command, config_file) in [
