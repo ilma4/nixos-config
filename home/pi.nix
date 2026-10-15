@@ -6,10 +6,7 @@
 }: let
   cfg = config.i4.pi;
   nodejs = pkgs.nodejs_24;
-  npm = lib.getExe' nodejs "npm";
-  npmPrefix = "${config.home.homeDirectory}/.local";
-  piPackage = "@earendil-works/pi-coding-agent";
-  piPackageSpec = "${piPackage}@latest";
+  agentDir = "${config.home.homeDirectory}/.pi/agent";
   piExtensions = [
     "npm:@juicesharp/rpiv-ask-user-question"
     "npm:@juicesharp/rpiv-web-tools"
@@ -34,17 +31,21 @@
     set -euo pipefail
 
     export HOME=${lib.escapeShellArg config.home.homeDirectory}
-    export PATH="${npmPrefix}/bin:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
+    export PATH="${agentDir}/bin:${config.home.homeDirectory}/.local/bin:${lib.makeBinPath [nodejs pkgs.curl]}:${config.home.profileDirectory}/bin:''${PATH:-}:/usr/bin:/bin"
 
-    ${npm} install --global --prefix ${lib.escapeShellArg npmPrefix} --no-audit --no-fund ${piPackageSpec}
+    # Bootstrap once. The official installer also migrates the old global npm
+    # installation, removing it only after the managed installation succeeds.
+    if [[ ! -f ${lib.escapeShellArg "${agentDir}/install/managed-install.json"} ]]; then
+      installer=$(mktemp)
+      trap 'rm -f "$installer"' EXIT
+      curl -fsSL https://pi.dev/install.sh -o "$installer"
+      sh "$installer"
+    fi
+
+    # Use the managed launcher explicitly, even if an old pi shadows it.
+    pi() { ${lib.escapeShellArg "${agentDir}/bin/pi"} "$@"; }
     ${lib.concatMapStringsSep "\n" (extension: "    pi install ${lib.escapeShellArg extension}") piExtensions}
     pi update --all
-
-    # Global installs have no lock file, so create one over the same
-    # node_modules directory before running the requested audit fix.
-    rm -f ${lib.escapeShellArg "${npmPrefix}/lib/package.json"} ${lib.escapeShellArg "${npmPrefix}/lib/package-lock.json"}
-    ${npm} install --prefix ${lib.escapeShellArg "${npmPrefix}/lib"} --package-lock-only --ignore-scripts --no-audit --no-fund ${piPackageSpec}
-    ${npm} --prefix ${lib.escapeShellArg "${npmPrefix}/lib"} audit fix apply
   '';
 in {
   options.i4.pi.enable = lib.mkEnableOption "pi";
@@ -63,6 +64,8 @@ in {
       updateScript
       haPiScript
     ];
+
+    home.sessionPath = ["${agentDir}/bin"];
 
     systemd.user.services.pi-update.Service = {
       Type = "oneshot";
