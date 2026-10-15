@@ -17,6 +17,19 @@
     "npm:@howaboua/pi-codex-conversion"
   ];
 
+  haPiScript = pkgs.writeShellScriptBin "ha-pi" (lib.replaceStrings
+    ["@ssh@" "@node@" "@extension@"]
+    [
+      (
+        if pkgs.stdenv.hostPlatform.isDarwin
+        then "/usr/bin/ssh"
+        else lib.getExe pkgs.openssh
+      )
+      (lib.getExe' nodejs "node")
+      (lib.escapeShellArg "${../dotfiles/pi/extensions/ha-mcp.ts}")
+    ]
+    (builtins.readFile ../scripts/ha-pi.sh));
+
   updateScript = pkgs.writeShellScriptBin "i4-update-pi" ''
     set -euo pipefail
 
@@ -48,6 +61,7 @@ in {
       nodejs
       pkgs.bun
       updateScript
+      haPiScript
     ];
 
     systemd.user.services.pi-update.Service = {
