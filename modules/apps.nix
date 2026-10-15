@@ -38,7 +38,7 @@ in {
     vscode = {macName = "visual-studio-code";};
 
     # coding agents
-    antigravity-cli = asLinuxPackage {};
+    # antigravity-cli = asLinuxPackage {};
 
     # comfyui = macOnlyCask {}; # tool for generating images/videos
     # cherry-studio = {}; # tool for LLMs
