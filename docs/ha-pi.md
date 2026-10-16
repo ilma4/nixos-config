@@ -20,6 +20,16 @@ Assistant token is stored on client devices.
 Run `ha-pi`, or pass normal Pi arguments, for example `ha-pi --continue`.
 Use `/mcp` inside Pi to inspect the connection. Pi's `mcp list` CLI does not load
 extensions, so it does not list the server registered by this wrapper.
+The status line shows `HA: connected` once Pi has registered the HA tools. The
+first prompt waits up to ten seconds for them; `ha_get_overview` is directly
+available and the remaining tools are discoverable through codemode. If SSH to
+both NAS names fails, Pi starts with a warning and without HA-MCP. If SSH succeeds
+but MCP tools do not load, Pi also starts with a warning; inspect `/mcp` for the
+connection error.
+
+The tunnel and MCP registration belong to the running `ha-pi` process. To resume
+a Home Assistant conversation with access to its tools, use `ha-pi --continue`
+or `ha-pi --resume`; resuming with plain `pi` does not open a tunnel.
 
 Each invocation starts a separate SSH master forwarding local
 `127.0.0.1:<random-free-port>` to NAS `127.0.0.1:9584`. It tries `nas.local`

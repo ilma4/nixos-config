@@ -46,11 +46,20 @@ open_tunnel() {
   done
   return "$status"
 }
-if ! open_tunnel; then
+connect_nas() {
+  if open_tunnel; then
+    return 0
+  fi
   printf 'Could not open SSH tunnel to nas.local; trying nas.\n' >&2
   tunnel_host=nas
   open_tunnel
+}
+
+unset HA_PI_MCP_URL
+if connect_nas; then
+  export HA_PI_MCP_URL="http://127.0.0.1:$port/mcp"
+else
+  printf 'Warning: SSH to nas.local and nas failed. Starting Pi without Home Assistant MCP.\n' >&2
 fi
 
-export HA_PI_MCP_URL="http://127.0.0.1:$port/mcp"
 pi --extension @extension@ "$@"
