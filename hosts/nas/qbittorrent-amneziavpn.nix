@@ -1,15 +1,39 @@
-{inputs, pkgs, pkgs-unstable, constants, ...}: {
+{
+  inputs,
+  pkgs,
+  pkgs-unstable,
+  constants,
+  ...
+}: {
   imports = [inputs.microvm.nixosModules.host];
 
-  networking.interfaces.qbt-tap.ipv4.addresses = [{
-    address = "10.76.0.1";
-    prefixLength = 30;
-  }];
+  networking.interfaces.qbt-tap.ipv4.addresses = [
+    {
+      address = "10.76.0.1";
+      prefixLength = 30;
+    }
+  ];
   networking.nat = {
     enable = true;
     internalInterfaces = ["qbt-tap"];
   };
   networking.firewall.allowedTCPPorts = [8080];
+  # The TCP relay hides the original peer. Only Traefik may supply forwarded
+  # client addresses; otherwise an external client could forge the LAN bypass.
+  networking.nftables = {
+    enable = true;
+    tables.qbt-webui-proxy-only = {
+      family = "inet";
+      content = ''
+        chain input {
+          type filter hook input priority -10; policy accept;
+          iifname "lo" tcp dport 8080 accept
+          ip saddr ${constants.nas.traefik-ip} tcp dport 8080 accept
+          tcp dport 8080 drop
+        }
+      '';
+    };
+  };
   systemd.sockets.qbt-webui = {
     wantedBy = ["sockets.target"];
     listenStreams = ["8080"];
@@ -28,6 +52,8 @@
   ];
 
   microvm.vms.qbittorrent-amneziavpn = {
+    # wg-quick selects this package internally as well as installing awg/awg-quick.
+    pkgs = pkgs.extend (_: _: {inherit (pkgs-unstable) amneziawg-tools;});
     specialArgs = {inherit pkgs-unstable constants;};
     config = import ./qbittorrent-amneziavpn-guest.nix;
   };

@@ -100,7 +100,7 @@ services:
       - name: "qBittorrent"
         icon: "fas fa-download"
         subtitle: "Torrent client"
-        url: "https://torrent.ilma4.home.arpa"
+        url: "https://qbittorrent.ilma4.home.arpa"
 
   - name: "Monitoring"
     icon: "fas fa-chart-line"

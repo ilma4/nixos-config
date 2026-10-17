@@ -56,6 +56,9 @@
   };
 
   nas = {
+    # Stable source address for the qBittorrent WebUI's trusted proxy path.
+    traefik-ip = "10.20.0.2";
+
     # for personal backups
     restic-ilma4 = rec {
       location = "/mnt/hdd/restic";

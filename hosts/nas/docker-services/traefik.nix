@@ -61,11 +61,21 @@
             - websecure
           service: ntfy
           tls: {}
+        qbittorrent:
+          rule: "Host(`qbittorrent.ilma4.home.arpa`)"
+          entryPoints:
+            - websecure
+          service: qbittorrent
+          tls: {}
       services:
         ntfy:
           loadBalancer:
             servers:
               - url: "http://${reverseProxyGateway}:${toString constants.ntfy.port}"
+        qbittorrent:
+          loadBalancer:
+            servers:
+              - url: "http://${reverseProxyGateway}:8080"
 
     tls:
       certificates:
@@ -95,6 +105,7 @@
           - ${privateDir}:/private:ro
         networks:
           reverse_proxy:
+            ipv4_address: ${constants.nas.traefik-ip}
         ports:
           - "80:80"
           - "443:443"
