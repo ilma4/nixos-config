@@ -184,6 +184,18 @@ in {
     chown ilma4:staff ${lib.escapeShellArg statusMetricsDirectory}
     chmod 0755 ${lib.escapeShellArg statusMetricsDirectory}
 
+    # Telegram can create files with mode 000. Grant the backup's actual user
+    # read access without changing those modes or other users' ACL entries.
+    telegram_directory=${lib.escapeShellArg "${backupHome}/Library/Application Support/Telegram Desktop"}
+    if [ -d "$telegram_directory" ]; then
+      /usr/bin/find -P "$telegram_directory" -type d -exec /bin/chmod +a \
+        'user:ilma4 allow list,search,readattr,readextattr,readsecurity,directory_inherit' {} +
+      /usr/bin/find -P "$telegram_directory" -type d -exec /bin/chmod +a \
+        'user:ilma4 allow read,readattr,readextattr,readsecurity,file_inherit,directory_inherit,only_inherit' {} +
+      /usr/bin/find -P "$telegram_directory" -type f -exec /bin/chmod +a \
+        'user:ilma4 allow read,readattr,readextattr,readsecurity' {} +
+    fi
+
     # Ensure macOS wakes shortly before launchd starts the backup. pmset has a
     # single global repeating wake/power-on schedule, so this declares
     # quicksilver's intended repeating wake event.
