@@ -26,6 +26,7 @@ in {
         type = "tap";
         id = "qbt-tap";
         mac = "02:00:00:76:00:02";
+        tap.vhost = true;
       }
     ];
     volumes = [

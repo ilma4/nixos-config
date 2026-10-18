@@ -7,6 +7,11 @@
 }: {
   imports = [inputs.microvm.nixosModules.host];
 
+  # Prefer lower idle power over the wake-up latency benefit of KVM polling.
+  boot.extraModprobeConfig = ''
+    options kvm halt_poll_ns=0
+  '';
+
   networking.interfaces.qbt-tap.ipv4.addresses = [
     {
       address = "10.76.0.1";
