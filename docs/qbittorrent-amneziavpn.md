@@ -8,8 +8,9 @@ AmneziaWG CLI tools. There is no AmneziaVPN GUI, Sway desktop or VNC server.
 - Two vCPUs, **2049 MiB** RAM: upstream warns that QEMU can hang at exactly
   2048 MiB.
 - Private TAP `qbt-tap`: host `10.76.0.1/30`, guest `10.76.0.2/30` on `eth0`.
-  Host NAT supplies connectivity. The guest uses static addressing, no DHCP,
-  and no IPv6.
+  Host NAT supplies IPv4 connectivity. The guest uses static addressing and no
+  DHCP. IPv6 is enabled for VPN profiles that include `::/0`; the ordinary
+  uplink remains IPv4 only.
 - NAS relays guest TCP 8080 through systemd-socket-proxyd.
   WebUI: `https://qbittorrent.ilma4.home.arpa`, routed by Traefik through the
   host proxy at `10.20.0.1:8080`. Pi-hole's existing wildcard DNS points the
@@ -41,6 +42,7 @@ is loopback traffic, traffic through `awg0`, UDP to the profile's exact VPN
 endpoint, or established SSH/WebUI replies to `10.76.0.1`. Replies must belong to
 connections initiated by the host. There is no general established-connection
 exception, direct DNS exception, DHCP exception or forwarding allowance.
+The same default-drop policy covers IPv4 and IPv6.
 
 `qbittorrent-vpn-endpoint.py` reads only the profile's numeric IPv4 endpoint into
 an nftables set at firewall start/reload. Missing or invalid profiles produce an
@@ -71,9 +73,9 @@ Prepare the profile locally:
 
 - Use exactly one `Endpoint = numeric.IPv4.address:port`. Hostnames require DNS
   before the tunnel exists and are rejected.
-- Set the peer's `AllowedIPs = 0.0.0.0/0` and keep automatic full-tunnel routing
-  (no `Table = off`). Remove IPv6 addresses, IPv6 DNS and `::/0` from the export
-  because the guest has IPv6 disabled.
+- Keep the peer's `AllowedIPs = 0.0.0.0/0, ::/0` and automatic full-tunnel
+  routing (no `Table = off`). Keep any provider-supplied IPv6 address in
+  `Address`; IPv6 Internet access requires the provider to assign one.
 - Keep the exported keys and AmneziaWG obfuscation parameters. Set `DNS` to an
   IPv4 resolver reachable through the tunnel, preferably the provider's resolver.
 
@@ -126,6 +128,7 @@ sudo systemctl status nftables wg-quick-awg0 qbittorrent
 sudo nft list table inet qbt-killswitch
 sudo awg show
 curl -4 --max-time 10 https://api.ipify.org
+curl -6 --max-time 10 https://api6.ipify.org
 ```
 
 Check the WebUI using a fresh browser session or a cookie-free request to
@@ -135,16 +138,20 @@ including requests with a forged `X-Forwarded-For` header. Direct NAS port 8080
 should be inaccessible to those clients; only Traefik and host loopback may
 reach the relay.
 
-Confirm a recent handshake and the VPN public IP. Then stop the tunnel:
+Confirm a recent handshake and the VPN public IP. The IPv6 request requires a
+provider-assigned IPv6 address in the profile; a profile with only an IPv4
+`Address` can install `::/0` but does not provide IPv6 Internet connectivity.
+Then stop the tunnel:
 
 ```sh
 sudo systemctl stop wg-quick-awg0
 curl -4 --max-time 10 https://api.ipify.org
 curl -4 --max-time 10 http://1.1.1.1
 curl -4 --interface eth0 --max-time 10 http://1.1.1.1
+curl -g -6 --max-time 10 'http://[2606:4700:4700::1111]'
 ```
 
-All three requests must fail, including DNS-independent access. SSH and the
+All four requests must fail, including DNS-independent access. SSH and the
 NAS WebUI must remain accessible, and existing torrents must lose connectivity.
 Also reload and stop the firewall while the tunnel is down and confirm that
 external requests remain blocked;

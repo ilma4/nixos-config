@@ -71,7 +71,7 @@ in {
       interface = "eth0";
     };
     nameservers = ["1.1.1.1"];
-    enableIPv6 = false;
+    enableIPv6 = true;
     firewall = {
       enable = true;
       interfaces.eth0.allowedTCPPorts = [22 8080];
