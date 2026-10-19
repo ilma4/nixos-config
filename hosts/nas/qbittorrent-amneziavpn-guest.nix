@@ -53,7 +53,7 @@ in {
       {
         proto = "virtiofs";
         tag = "ssd-downloads";
-        source = "/home/ilma4/torrents";
+        source = "/mnt/ssd/torrent";
         mountPoint = "/ssd-downloads";
       }
     ];
@@ -168,6 +168,8 @@ in {
       set -euo pipefail
       umask 077
       profile=/var/lib/qBittorrent/qBittorrent/config/qBittorrent.conf
+      ${pkgs.crudini}/bin/crudini --set "$profile" BitTorrent 'Session\DefaultSavePath' /ssd-downloads
+      ${pkgs.crudini}/bin/crudini --set "$profile" BitTorrent 'Session\TempPath' /ssd-downloads/temp
       ${pkgs.crudini}/bin/crudini --set "$profile" BitTorrent 'Session\Interface' awg0
       ${pkgs.crudini}/bin/crudini --set "$profile" BitTorrent 'Session\InterfaceName' awg0
       ${pkgs.crudini}/bin/crudini --set "$profile" BitTorrent 'Session\InterfaceAddress' ""

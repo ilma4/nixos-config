@@ -21,6 +21,7 @@ in {
 
     ./hardware-configuration.nix
     ./hdd.nix
+    ./ssd.nix
     ./quicksilver-backup.nix
     ./backup-monitoring.nix
 

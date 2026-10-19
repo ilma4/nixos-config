@@ -53,8 +53,11 @@
   };
   systemd.tmpfiles.rules = [
     "d /mnt/hdd/torrent 0775 1000 1000 -"
-    "d /home/ilma4/torrents 0775 1000 1000 -"
+    "d /mnt/ssd/torrent 0775 1000 1000 -"
   ];
+
+  # Do not start the share on the root disk if the SSD is unavailable.
+  systemd.services."microvm-virtiofsd@qbittorrent-amneziavpn".unitConfig.RequiresMountsFor = ["/mnt/ssd/torrent"];
 
   microvm.vms.qbittorrent-amneziavpn = {
     # wg-quick selects this package internally as well as installing awg/awg-quick.

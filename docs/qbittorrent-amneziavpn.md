@@ -25,7 +25,10 @@ AmneziaWG CLI tools. There is no AmneziaVPN GUI, Sway desktop or VNC server.
   the VM stopped. It is outside the existing `/srv` backup.
 - Read-only host store share; writable download shares:
   `/mnt/hdd/torrent → /downloads`,
-  `/home/ilma4/torrents → /ssd-downloads`.
+  `/mnt/ssd/torrent → /ssd-downloads` (the default download location).
+  The ADATA NVMe is automounted at `/mnt/ssd` with Btrfs `compress=zstd:3`
+  and xxHash checksums. The VirtioFS service requires the SSD mount, preventing
+  downloads from falling back onto the NAS root filesystem if it is unavailable.
   qBittorrent UID/GID 1000 preserves existing download ownership.
 
 ## VPN and permanent firewall
