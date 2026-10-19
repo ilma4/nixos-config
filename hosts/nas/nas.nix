@@ -71,6 +71,11 @@ in {
   i4.initrd-ssh.enable = true;
   i4.deploy.enable = true;
 
+  # TPM2 is enrolled separately with systemd-cryptenroll, bound to PCR 7.
+  # Keep the existing LUKS passphrase slot for console/initrd SSH fallback.
+  boot.initrd.systemd.tpm2.enable = true;
+  boot.initrd.luks.devices.root.crypttabExtraOpts = ["tpm2-device=auto"];
+
   services.ntfy-sh = {
     enable = true;
     settings = {
