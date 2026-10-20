@@ -55,6 +55,9 @@
     },
   },
   "languages": {
+    "Kotlin": {
+      "language_servers": ["kotlin-lsp"],
+    },
     "Nix": {
       "formatter": {
         "external": {
@@ -65,6 +68,12 @@
     },
   },
   "lsp": {
+    "kotlin-lsp": {
+      "binary": {
+        "path": "kotlin-lsp",
+        "arguments": ["--stdio"],
+      },
+    },
     "nil": {
       "settings": {
         "diagnostics": {

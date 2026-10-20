@@ -35,6 +35,7 @@ in {
     todoist-electron = {macName = "todoist-app";};
 
     zed-editor = {macName = "zed";};
+    kotlin-lsp = macOnlyBrew {macName = "jetbrains/utils/kotlin-lsp";};
     vscode = {macName = "visual-studio-code";};
 
     # coding agents
