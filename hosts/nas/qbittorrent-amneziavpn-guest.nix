@@ -21,6 +21,8 @@ in {
     vcpu = 2;
     # microvm.nix warns that QEMU hangs with exactly 2048 MiB.
     mem = 2049;
+    # QEMU's balloon device reports free guest pages for host reclamation.
+    balloon = true;
     interfaces = [
       {
         type = "tap";
