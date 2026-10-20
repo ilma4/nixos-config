@@ -77,10 +77,11 @@ in {
         environment = svc.environment;
 
         serviceConfig = {
-          Type = "simple";
-          ExecStart = "${compose} up --pull ${upArgs}";
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = "${compose} up --detach --pull ${upArgs}";
           ExecStop = "${compose} down";
-          Restart = "always";
+          Restart = "on-failure";
         };
 
         wantedBy = ["docker-compose.target"];
