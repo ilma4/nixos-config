@@ -12,6 +12,7 @@
     bash-language-server
     basedpyright
     docker-language-server
+    jdt-language-server
     # kotlin-lsp # TODO uncomment when added to nixpkgs
     # kotlin-language-server # do not add, obsolete. Use `kotlin-lsp` instead
     markdown-oxide

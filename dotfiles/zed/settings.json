@@ -26,6 +26,7 @@
     "dockerfile": true,
     "html": true,
     "ini": true,
+    "java": true,
     "kotlin": true,
     "latex": true,
     "log": true,
@@ -55,6 +56,9 @@
     },
   },
   "languages": {
+    "Java": {
+      "language_servers": ["jdtls"],
+    },
     "Kotlin": {
       "language_servers": ["kotlin-lsp"],
     },
