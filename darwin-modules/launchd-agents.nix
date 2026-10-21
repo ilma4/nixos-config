@@ -7,6 +7,24 @@
   options.i4.launchd-agents.enable = lib.mkEnableOption "Enable launchd agents";
 
   config = lib.mkIf config.i4.launchd-agents.enable {
+    launchd.user.agents.nixos-config-monthly-update = {
+      path = [pkgs.coreutils pkgs.jujutsu pkgs.bun config.nix.package];
+      script = builtins.readFile ../utils/monthly-update.sh;
+      serviceConfig = {
+        RunAtLoad = true;
+        # Hourly calendar checks also catch up on wake; the script records
+        # successful months and retries failures without waiting a month.
+        StartCalendarInterval = [
+          {
+            Minute = 0;
+          }
+        ];
+        ProcessType = "Background";
+        StandardOutPath = "/tmp/nixos-config-monthly-update.log";
+        StandardErrorPath = "/tmp/nixos-config-monthly-update.log";
+      };
+    };
+
     /*
     launchd.user.agents.podman-machine-autostart = {
       path = [pkgs.podman];
