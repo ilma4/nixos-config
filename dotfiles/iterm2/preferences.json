@@ -20,6 +20,7 @@
   "AppleWindowTabbingMode": "manual",
   "ClosingTmuxTabKillsTmuxWindows": true,
   "CopySelection": false,
+  "NoSyncDoNotWarnBeforeMultilinePaste": true,
   "Custom Color Presets": {
     "AtomOneLight": {
       "Ansi 0 Color": {
