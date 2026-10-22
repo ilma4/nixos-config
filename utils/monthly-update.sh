@@ -38,18 +38,18 @@ mkdir -p "$state_dir"
 
 cd "$HOME/.config/nixos-config"
 
-original_change=$(jj log -r @ --no-graph -T 'change_id')
-original_empty=$(jj log -r @ --no-graph -T 'empty')
+original_commit=$(jj log -r @ --no-graph -T 'commit_id')
+restore_bookmark="monthly-update-restore-$$"
+jj bookmark create "$restore_bookmark" -r "$original_commit"
 
 restore_original() {
   local rc=$?
   trap - EXIT
-  if [[ "$original_empty" != true ]]; then
-    if ! jj edit "$original_change"; then
-      echo "Failed to restore original change $original_change" >&2
-      exit 1
-    fi
+  if ! jj edit "$restore_bookmark"; then
+    echo "Failed to restore original change; bookmark retained: $restore_bookmark" >&2
+    exit 1
   fi
+  jj bookmark delete "$restore_bookmark"
   # Only acknowledge success after every update and workspace restoration.
   # launchd serializes this agent; rename makes the persistent marker atomic.
   if (( rc == 0 )); then
@@ -62,9 +62,8 @@ trap restore_original EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-if [[ "$original_empty" != true ]]; then
-  jj new @-
-fi
+# Keep the bookmarked original intact, including when it is empty or a merge.
+jj new "parents($restore_bookmark)"
 
 nix flake update
 jj commit -m "flake update" flake.lock
