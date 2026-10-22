@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Check the launchd environment before any updater can write files.
+for program in date cat mkdir mv jj nix bun git; do
+  command -v "$program" >/dev/null || {
+    echo "Required program is missing from PATH: $program" >&2
+    exit 1
+  }
+done
+
 # Find the latest last-Sunday-at-05:00 deadline, using GNU date. A missed
 # month is coalesced into the latest due update, not replayed individually.
 now=$(date +%s)
@@ -59,6 +67,6 @@ if [[ "$original_empty" != true ]]; then
 fi
 
 nix flake update
-jj commit -m "flake update"
+jj commit -m "flake update" flake.lock
 bun utils/update-immich.ts
 bun utils/update-paperless.ts

@@ -8,7 +8,7 @@
 
   config = lib.mkIf config.i4.launchd-agents.enable {
     launchd.user.agents.nixos-config-monthly-update = {
-      path = [pkgs.coreutils pkgs.jujutsu pkgs.bun config.nix.package];
+      path = [pkgs.coreutils pkgs.jujutsu pkgs.bun pkgs.git config.nix.package];
       script = builtins.readFile ../utils/monthly-update.sh;
       serviceConfig = {
         RunAtLoad = true;
