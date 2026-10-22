@@ -67,6 +67,15 @@ in let
         restart: unless-stopped
   '';
 in {
+  services.prometheus.exporters.snmp = {
+    enable = true;
+    listenAddress = "127.0.0.1";
+    # Use the default modules and auths shipped with this exporter version.
+    configurationPath = pkgs.runCommand "snmp.yml" {} ''
+      cp ${pkgs.prometheus-snmp-exporter.src}/snmp.yml $out
+    '';
+  };
+
   services.prometheus.pushgateway = {
     enable = true;
     persistMetrics = true;
