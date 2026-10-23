@@ -233,7 +233,12 @@ run = 'layout floating'
 
 [[on-window-detected]]
 if.app-id = 'com.vivaldi.Vivaldi'
-if.window-title-regex-substring = 'Bitwarden - Vivaldi'
+if.window-title-regex-substring = 'Bitwarden'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.brave.Browser'
+if.window-title-regex-substring = 'Bitwarden'
 run = 'layout floating'
 
 # 'service' binding mode declaration.
