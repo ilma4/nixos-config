@@ -435,14 +435,14 @@ def test_legacy_text_measurement_and_rendering():
     assert Image.open(result).size == (512, 384)
 
 
-def test_quote_pixels_match_pillow_9(monkeypatch):
-    # Captured from Pillow 9.2 with the same bundled Aileron font and background.
+def test_quote_pixels_match_nix_renderer(monkeypatch):
+    # Nix Pillow's Aileron font and rendering libraries, pinned by flake.lock.
     font = ImageFont.load_default(size=28)
     font.path.seek(0)
     monkeypatch.setattr(stickers.random, 'randint', lambda low, high: 0)
     result = stickers.quote2sticker('A short quote', 'Author', font_file=font.path)
     assert hashlib.sha256(Image.open(result).tobytes()).hexdigest() == (
-        'fcb1fcef971db24364057d27dcaae1c448022eef1169810241fa2e044b875786')
+        '151f6ba1beb13d7b7b887fbc8c723929f76134ecc911a2cadf20017b3843f89c')
 
 
 @pytest.fixture(scope='module')

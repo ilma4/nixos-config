@@ -12,7 +12,14 @@
   mallardApiKeySecret = constants.telegram.mallard.api-key-secret;
 
   # Forked from ArtemKar123/Mallard-bot at 2562a38f15adabbc2e29387590314c648bd390a1.
-  src = ../../../projects/mallard-bot;
+  mallard = import ../../../projects/mallard-bot {inherit pkgs;};
+  inherit (mallard) src;
+  image = mallard.image;
+
+  loadImageScript = pkgs.writeShellScript "mallard-load-image.sh" ''
+    set -euo pipefail
+    ${pkgs.podman}/bin/podman load --input ${image}
+  '';
 
   prepareVoicesScript = pkgs.writeShellScript "mallard-prepare-voices.sh" ''
     set -euo pipefail
@@ -58,13 +65,14 @@ in {
   };
 
   dockerCompose.mallard = {
+    pullImages = false;
     composeText = ''
       name: mallard
 
       services:
         mallard:
-          build:
-            context: ${src}
+          image: ${image.imageName}:${image.imageTag}
+          pull_policy: never
           container_name: mallard-bot
           env_file:
             - ${config.sops.templates."mallard.env".path}
@@ -73,11 +81,10 @@ in {
             - ${voicesDir}:/app/voices
           restart: unless-stopped
     '';
-    upArgs = ["--build"];
   };
 
   systemd.services.mallard.serviceConfig = {
-    ExecStartPre = [prepareVoicesScript];
+    ExecStartPre = [loadImageScript prepareVoicesScript];
     TimeoutStartSec = "15min";
     TimeoutStopSec = "30s";
   };

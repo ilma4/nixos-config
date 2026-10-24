@@ -23,22 +23,42 @@ Two add sticker to your sticker pack use [stickerpack creation bot](https://t.me
 
 ## Development
 
-The container uses Python 3.14.9, FFmpeg, and the pinned dependencies in
-`requirements.txt`. OpenCV uses its headless build; no desktop libraries are needed.
+Python 3.14, Python libraries, FFmpeg, and ffprobe come from nixpkgs, pinned by
+the root repository's `flake.lock`. The same dependency definition supplies the
+development shell and the Linux container. Pytest is only in the development shell.
 
-From this directory, with Python 3.14 and FFmpeg (including ffprobe) installed:
+From the repository root:
 
 ```bash
 set -euo pipefail
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt pytest==9.1.1
-.venv/bin/python -m pip check
-.venv/bin/python -m pytest tests.py -q
+nix develop .#mallard-bot
+cd projects/mallard-bot
+python -m pytest tests.py -q
+# Set TG_API_KEY and TG_ADMIN_ID before starting the bot.
+python app.py
 ```
 
-The root repository's Mallard bot workflow builds and tests the Linux container.
-The nested `.github/workflows` files are retained from upstream and are not active
-workflows in this repository.
+Build the container on Linux (or with an appropriate remote Nix builder), from
+the repository root:
+
+```bash
+set -euo pipefail
+nix build .#mallard-bot-image
+podman load --input result
+image_name=$(nix eval --raw .#mallard-bot-image.imageName)
+image_tag=$(nix eval --raw .#mallard-bot-image.imageTag)
+podman run --rm --env TG_API_KEY --env TG_ADMIN_ID \
+  --volume "$PWD/projects/mallard-bot/voices:/app/voices" "$image_name:$image_tag"
+```
+
+The image is built with `dockerTools`, without a distribution base image or
+runtime package installation. The root Mallard workflow runs the regression
+suite with Nix dependencies and smoke-tests the production image as UID/GID 805.
+Quote pixel baselines use the rendering libraries from the pinned nixpkgs input.
+
+The NAS loads its Nix-built image before Compose starts. Its generated image tag
+changes with the build inputs; registry pulls and weekly image updates are disabled
+for this service. Updating the flake and deploying the NAS updates the image.
 
 Runtime settings remain `TG_API_KEY` and `TG_ADMIN_ID`, with voice files stored
 in `voices/`. Text quote rendering still expects `fonts/JMH Typewriter-Bold.otf`;

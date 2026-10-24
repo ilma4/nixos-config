@@ -5,10 +5,18 @@ on:
     paths:
       - 'projects/mallard-bot/**'
       - '.github/workflows/mallard-bot.yml'
+      - 'flake.nix'
+      - 'flake.lock'
+      - 'hosts/nas/docker-services/mallard.nix'
+      - 'modules/docker-compose*.nix'
   pull_request:
     paths:
       - 'projects/mallard-bot/**'
       - '.github/workflows/mallard-bot.yml'
+      - 'flake.nix'
+      - 'flake.lock'
+      - 'hosts/nas/docker-services/mallard.nix'
+      - 'modules/docker-compose*.nix'
 
 permissions:
   contents: read
@@ -18,16 +26,30 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Test Nix dependencies
+        run: |
+          set -euo pipefail
+          nix develop .#mallard-bot --command bash -c '
+            set -euo pipefail
+            cd projects/mallard-bot
+            python -m pytest -p no:cacheprovider tests.py -q
+          '
       - name: Build container
         run: |
           set -euo pipefail
-          docker build --platform linux/amd64 --tag mallard-bot:test projects/mallard-bot
+          nix build .#mallard-bot-image
+          docker load --input result
       - name: Test container
         run: |
           set -euo pipefail
-          docker run --rm --entrypoint bash mallard-bot:test -c '
-            set -euo pipefail
-            python -m pip install --no-cache-dir pytest==9.1.1
-            python -m pip check
-            python -m pytest tests.py -q
-          '
+          image_name=$(nix eval --raw .#mallard-bot-image.imageName)
+          image_tag=$(nix eval --raw .#mallard-bot-image.imageTag)
+          voices_dir=$(mktemp -d)
+          trap 'rm -rf "$voices_dir"' EXIT
+          chmod 0777 "$voices_dir"
+          docker run --rm --network none --user 805:805 \
+            --mount "type=bind,src=$PWD/projects/mallard-bot/container-smoke.py,dst=/smoke.py,readonly" \
+            --mount "type=bind,src=$voices_dir,dst=/app/voices" \
+            --entrypoint /bin/python3 "$image_name:$image_tag" /smoke.py

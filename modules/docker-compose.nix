@@ -38,6 +38,11 @@ in {
             type = types.listOf types.str;
             default = [];
           };
+          pullImages = mkOption {
+            type = types.bool;
+            default = true;
+            description = "Pull registry images at startup and during weekly updates. Disable for locally built images.";
+          };
         };
       }));
       default = {};
@@ -79,7 +84,7 @@ in {
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
-          ExecStart = "${compose} up --detach --pull ${upArgs}";
+          ExecStart = "${compose} up --detach${lib.optionalString svc.pullImages " --pull"} ${upArgs}";
           ExecStop = "${compose} down";
           Restart = "on-failure";
         };

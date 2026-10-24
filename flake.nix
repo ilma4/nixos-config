@@ -231,9 +231,13 @@
       name = system;
       value = let
         pkgs = (pkgsSets system).stable;
-      in {
-        inherit (pkgs) monitor-input paperless-mcp restic-exporter;
-      };
+      in
+        {
+          inherit (pkgs) monitor-input paperless-mcp restic-exporter;
+        }
+        // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          mallard-bot-image = (import ./projects/mallard-bot {inherit pkgs;}).image;
+        };
     }) (builtins.attrValues systems));
 
     devShells = builtins.listToAttrs (map (system: {
@@ -241,6 +245,7 @@
       value = let
         pkgs = (pkgsSets system).stable;
       in {
+        mallard-bot = (import ./projects/mallard-bot {inherit pkgs;}).devShell;
         default = pkgs.mkShell {
           packages = [
             pkgs.bun

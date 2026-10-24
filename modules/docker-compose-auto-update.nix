@@ -1,7 +1,7 @@
 /*
-Weekly auto-update for docker-compose services. Pulls the registry images of
-every enabled compose project one by one and restarts a project's systemd unit
-when a pull brought a new image (the unit's `down`/`up --pull` cycle then
+Weekly auto-update for docker-compose services. Pulls registry images for enabled
+projects with pullImages enabled, and restarts a project's systemd unit when a
+pull brought a new image (the unit's `down`/`up --pull` cycle then
 recreates the containers from it). Stops early when a registry rate limit is
 hit, so remaining pulls don't burn through the limit as well.
 */
@@ -12,7 +12,7 @@ hit, so remaining pulls don't burn through the limit as well.
   config,
   ...
 }: let
-  enabledComposeServices = lib.filterAttrs (_: svc: svc.enable) config.dockerCompose;
+  enabledComposeServices = lib.filterAttrs (_: svc: svc.enable && svc.pullImages) config.dockerCompose;
   # Registry image references of one compose project. Images referencing
   # environment variables (e.g. immich's `${IMMICH_VERSION:-release}`) are only
   # resolved from env files at runtime, so they cannot be pulled by name here
