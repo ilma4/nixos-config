@@ -1,6 +1,5 @@
 import enum
 import subprocess
-from telegram.ext import CallbackContext
 import cv2
 import numpy as np
 from io import BytesIO
@@ -42,13 +41,13 @@ class PhotoQuoteArguments:
     is_emoji: bool = None  # j
 
 
-def video2emoji(file_id: str, context: CallbackContext):
+def video2emoji(file_bytes: bytes):
     print('video2emoji')
-    file_bytes = context.bot.getFile(file_id).download_as_bytearray()
     emoji = None
 
     with tempfile.NamedTemporaryFile(suffix='.mp4') as temp:
         temp.write(file_bytes)
+        temp.flush()
 
         cap = cv2.VideoCapture(temp.name)
 
@@ -77,8 +76,7 @@ def video2emoji(file_id: str, context: CallbackContext):
     return emoji
 
 
-def image2emoji(file_id: str, context: CallbackContext):
-    file_bytes = context.bot.getFile(file_id).download_as_bytearray()
+def image2emoji(file_bytes: bytes):
     image = None
 
     inp = np.asarray(bytearray(file_bytes), dtype=np.uint8)
@@ -94,14 +92,14 @@ def image2emoji(file_id: str, context: CallbackContext):
 
 
 # FIXME: auto-alt-ref makes ffmpeg read video without alpha channel which should be fixed
-def file2animated_sticker(file_id: str, context: CallbackContext,
+def file2animated_sticker(file_bytes: bytes,
                           preprocess_type: FilePreprocessType = FilePreprocessType.default,
                           video_arguments: VideoQuoteArguments = VideoQuoteArguments()) -> BytesIO:
-    file_bytes = context.bot.getFile(file_id).download_as_bytearray()
     sticker = None
     original_arguments = video_arguments
     with tempfile.NamedTemporaryFile(suffix='.mp4') as temp:
         temp.write(file_bytes)
+        temp.flush()
         t = time.time()
         cap = cv2.VideoCapture(temp.name)
 
@@ -254,16 +252,15 @@ def file2animated_sticker(file_id: str, context: CallbackContext,
     return sticker
 
 
-def file2sticker(file_id: str, context: CallbackContext,
+def file2sticker(file_bytes: bytes,
                  preprocess_type: FilePreprocessType = FilePreprocessType.default,
                  photo_arguments: PhotoQuoteArguments = PhotoQuoteArguments()) -> BytesIO:
     print(photo_arguments.speech_bubble)
-    file_bytes = context.bot.getFile(file_id).download_as_bytearray()
     image = None
     if preprocess_type == FilePreprocessType.video_thumb:
-        file_bytes = context.bot.getFile(file_id).download_as_bytearray()
         with tempfile.NamedTemporaryFile() as temp:
             temp.write(file_bytes)
+            temp.flush()
 
             cap = cv2.VideoCapture(temp.name)
             ret, image = cap.read()
@@ -303,6 +300,16 @@ def file2sticker(file_id: str, context: CallbackContext,
     return sticker
 
 
+def _textsize(text, font):
+    """Pillow 9 textsize metrics, including the vertical offset above glyphs."""
+    if "\n" in text:
+        lines = text.split("\n")
+        line_spacing = _textsize("A", font)[1] + 4
+        return max(_textsize(line, font)[0] for line in lines), len(lines) * line_spacing - 4
+    left, top, right, bottom = font.getbbox(text)
+    return right - left, bottom
+
+
 # FIXME: simple yet buggy, would be nice to make it any smarter.
 def quote2sticker(quote, author, fg='black', font_file=None, font_size=None, width=512,
                   height=384):
@@ -327,7 +334,7 @@ def quote2sticker(quote, author, fg='black', font_file=None, font_size=None, wid
 
     sum = 0
     for letter in sentence:
-        sum += d.textsize(letter, font=quote)[0]
+        sum += _textsize(letter, quote)[0]
     average_length_of_letter = sum / len(sentence)
 
     number_of_letters_for_each_line = (width / 1.618) / average_length_of_letter
@@ -356,14 +363,22 @@ def quote2sticker(quote, author, fg='black', font_file=None, font_size=None, wid
                 fresh_sentence += letter
         incrementer += 1
 
-    dim = d.textsize(fresh_sentence, font=quote)
+    dim = _textsize(fresh_sentence, quote)
     x2 = dim[0]
     y2 = dim[1]
 
     qx = width / 2 - x2 / 2
     qy = height / 2 - y2 / 2
 
-    d.text((qx, qy), fresh_sentence, align="center", font=quote, fill=fg)
+    # Preserve Pillow 9's alignment, line spacing, and integer pixel placement.
+    # Newer Pillow versions also render fractional positions at subpixel offsets.
+    lines = fresh_sentence.split("\n")
+    line_widths = [d.textlength(line, font=quote) for line in lines]
+    max_width = max(line_widths)
+    line_spacing = _textsize("A", quote)[1] + 4
+    for index, (line, line_width) in enumerate(zip(lines, line_widths)):
+        d.text((int(qx + (max_width - line_width) / 2), int(qy + index * line_spacing)),
+               line, font=quote, fill=fg)
     sticker = BytesIO()
     img.save(sticker, 'PNG')
     sticker.seek(0)

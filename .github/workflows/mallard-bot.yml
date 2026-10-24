@@ -1,0 +1,33 @@
+name: Mallard bot
+
+on:
+  push:
+    paths:
+      - 'projects/mallard-bot/**'
+      - '.github/workflows/mallard-bot.yml'
+  pull_request:
+    paths:
+      - 'projects/mallard-bot/**'
+      - '.github/workflows/mallard-bot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build container
+        run: |
+          set -euo pipefail
+          docker build --platform linux/amd64 --tag mallard-bot:test projects/mallard-bot
+      - name: Test container
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint bash mallard-bot:test -c '
+            set -euo pipefail
+            python -m pip install --no-cache-dir pytest==9.1.1
+            python -m pip check
+            python -m pytest tests.py -q
+          '
