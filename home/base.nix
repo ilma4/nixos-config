@@ -142,7 +142,7 @@ in {
       tree
       ncdu
       btop
-      mprocs # parallel process TUI used by utils/deploy-all.sh
+      pkgs-unstable.mprocs # parallel process TUI used by utils/deploy-all.sh
       witr
 
       (pkgs.writeShellScriptBin "nix-rebuild" ''
