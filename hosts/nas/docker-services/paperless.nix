@@ -2,7 +2,7 @@
   paperlessSecretKey = "paperless/secret_key";
   paperlessApiToken = "paperless/api_token";
   valkey-version = "9-alpine";
-  paperless-version = "3.3.2";
+  paperless-version = "3.3.4";
   paperless-gpt-version = "v0.31.0";
   tika-version = "3.3.1.0";
   gotenberg-version = "8.37";
