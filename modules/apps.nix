@@ -46,6 +46,7 @@ in {
 
     firefox = {};
     vivaldi = asLinuxPackage {};
+    brave-browser = macOnlyCask {};
 
     krita = asLinuxPackage {}; # image editor
     anki = asLinuxPackage {}; # learn word app
