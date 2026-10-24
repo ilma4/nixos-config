@@ -252,7 +252,6 @@
       "inputs": {
         "nixlib": "nixlib",
         "nixpkgs": [
-          "nixos-lima",
           "nixpkgs"
         ]
       },
