@@ -10,6 +10,7 @@
     i4.raycast = {
       enable = true;
       scripts = [
+        "chrome.applescript"
         "monitor-displayport.applescript"
         "paste-from-markdown.sh"
         "builtin-mic.applescript"

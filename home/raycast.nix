@@ -95,7 +95,7 @@ in {
       };
       scripts = mkOption {
         type = types.listOf (types.enum (builtins.attrNames scriptFiles));
-        default = builtins.attrNames scriptFiles;
+        default = builtins.filter (name: name != "chrome.applescript") (builtins.attrNames scriptFiles);
         description = "Raycast AppleScript command files to install";
       };
     };
