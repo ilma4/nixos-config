@@ -15,11 +15,13 @@ final: _prev: {
 
     nativeCheckInputs = [final.curl];
 
+    # Release builds log only errors by default; task_commands asserts warnings.
+    preCheck = ''
+      export DEKIT_LOG=warn
+    '';
+
     # Upstream 0.10.2 documents std.tui members absent from the test runtime.
-    checkFlags =
-      ["--skip=help::tests::every_js_member_has_a_record"]
-      # Times out waiting for ready-command warnings in the Darwin sandbox.
-      ++ final.lib.optional final.stdenv.hostPlatform.isDarwin "--skip=commands_that_cannot_run_are_reported";
+    checkFlags = ["--skip=help::tests::every_js_member_has_a_record"];
 
     nativeInstallCheckInputs = [final.versionCheckHook];
     doInstallCheck = true;
