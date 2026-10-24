@@ -121,6 +121,7 @@
     # Common overlays
     commonOverlays = [
       inputs.rust-overlay.overlays.default
+      (import ./overlays/dekit-overlay.nix)
       (import ./overlays/monitor-input-overlay.nix)
       (import ./overlays/paperless-mcp-overlay.nix)
       (import ./overlays/prometheus-smartctl-exporter-overlay.nix)
@@ -233,7 +234,7 @@
         pkgs = (pkgsSets system).stable;
       in
         {
-          inherit (pkgs) monitor-input paperless-mcp restic-exporter;
+          inherit (pkgs) dekit monitor-input paperless-mcp restic-exporter;
         }
         // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           mallard-bot-image = (import ./projects/mallard-bot {inherit pkgs;}).image;
@@ -286,6 +287,7 @@
         };
         modules = [
           inputs.nixos-lima.nixosModules.lima
+          {nixpkgs.overlays = [(import ./overlays/dekit-overlay.nix)];}
           ./hosts/android-vm/android-vm.nix
         ];
       };

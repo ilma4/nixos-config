@@ -65,7 +65,7 @@ for index in "${!jobs[@]}"; do
     commands+=("sleep $delay && utils/deploy-all.sh --run-job $job")
 done
 
-mprocs \
+dekit mprocs \
     --names "$(IFS=,; printf '%s' "${jobs[*]}")" \
     --on-all-finished '{c: quit}' \
     "${commands[@]}"
