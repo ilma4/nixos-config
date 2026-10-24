@@ -11,12 +11,8 @@
   telegramMyIdSecret = constants.telegram.my-id-secret;
   mallardApiKeySecret = constants.telegram.mallard.api-key-secret;
 
-  src = pkgs.fetchFromGitHub {
-    owner = "ArtemKar123";
-    repo = "Mallard-bot";
-    rev = "2562a38f15adabbc2e29387590314c648bd390a1";
-    hash = "sha256-Iga6Ot38QkNdQSI/Gj/hBSax3XGA6vP41ugr/1wpYZg=";
-  };
+  # Forked from ArtemKar123/Mallard-bot at 2562a38f15adabbc2e29387590314c648bd390a1.
+  src = ../../../projects/mallard-bot;
 
   prepareVoicesScript = pkgs.writeShellScript "mallard-prepare-voices.sh" ''
     set -euo pipefail
