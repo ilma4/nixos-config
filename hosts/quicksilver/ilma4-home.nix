@@ -29,13 +29,6 @@ in {
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
 
-    sops = {
-      secrets."wg.conf" = {
-        sopsFile = ../../secrets/ru-torrent-nixos-vm-wg.conf;
-        format = "binary";
-      };
-    };
-
     services.syncthing = {
       enable = true;
     };
@@ -56,15 +49,6 @@ in {
         pkgs.writeShellScriptBin "i4-generate-password" ''
           set -euo pipefail
           exec ${bw} generate -u -l -s -n --length 30 --ambiguous
-        '')
-
-      (let
-        runQbittorrent = pkgs.writeShellScript "run-qbittorrent" (builtins.readFile ./../../scripts/run-qbittorrent.sh);
-      in
-        pkgs.writeShellScriptBin "i4-qbittorrent-start" ''
-          set -euo pipefail
-          export WG_CONFIG=${lib.escapeShellArg config.sops.secrets."wg.conf".path}
-          exec ${runQbittorrent}
         '')
     ];
 
