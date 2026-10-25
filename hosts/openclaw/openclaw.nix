@@ -1,6 +1,7 @@
 {
   inputs,
   lib,
+  pkgs,
   ...
 }: {
   imports = [
@@ -12,6 +13,7 @@
   home-manager.users.ilma4 = import ./home.nix;
   # Preserve files created before Home Manager takes ownership of the home.
   home-manager.backupFileExtension = "before-home-manager";
+  environment.systemPackages = [pkgs.nodejs];
   # Store optimisation cannot operate across the read-only host store overlay.
   nix.optimise.automatic = lib.mkForce false;
   hardware.enableAllFirmware = false;
