@@ -23,6 +23,7 @@ in {
     i4.raycast = {
       enable = true;
       scriptsPath = "Scripts";
+      scripts = lib.mkOptionDefault ["brave.applescript"];
     };
 
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
