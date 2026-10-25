@@ -20,13 +20,19 @@
       default_type application/octet-stream;
       access_log /dev/stdout;
       error_log /dev/stderr;
+      set_real_ip_from ${constants.nas.traefik-ip};
+      real_ip_header X-Real-IP;
+      # Keep access control tied to the connection peer, before real-IP rewriting.
+      geo $realip_remote_addr $allowed_peer {
+        default 0;
+        127.0.0.1 1;
+        ${constants.nas.traefik-ip} 1;
+      }
       server {
         listen 127.0.0.1:${port};
         listen ${cypht.proxyGateway}:${port};
         server_name ${cypht.host};
-        allow 127.0.0.1;
-        allow ${constants.nas.traefik-ip};
-        deny all;
+        if ($allowed_peer = 0) { return 403; }
         root /var/www;
         index index.php;
         client_max_body_size 60M;

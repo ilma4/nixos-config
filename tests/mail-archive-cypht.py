@@ -1,6 +1,6 @@
 """Smoke-test the evaluated production Compose file with disposable storage.
 
-Run as root on a Linux builder with Python/PyYAML and Podman. No ports are
+Run as root on a Linux builder with Python/PyYAML, Podman, nsenter and ip. No ports are
 published: the image runs in an isolated network namespace without upstream
 IMAP. Only the bridge listen directive is removed from the real nginx config.
 """
@@ -112,6 +112,27 @@ with tempfile.TemporaryDirectory(prefix="mail-archive-cypht-") as temporary:
         run("podman", "exec", container, "nginx", "-t")
         fpm = run("podman", "exec", container, "php-fpm", "-tt")
         assert "listen = 127.0.0.1:9000" in fpm.stdout + fpm.stderr
+        # Emulate the trusted proxy inside this container's isolated namespace.
+        proxy = re.search(r"set_real_ip_from ([0-9.]+);", nginx.read_text()).group(1)
+        pid = run("podman", "inspect", "--format", "{{.State.Pid}}", container).stdout.strip()
+        run("nsenter", "--target", pid, "--net", "ip", "address", "add", f"{proxy}/32", "dev", "lo")
+        run("podman", "exec", container, "sh", "-c",
+            "printf '%s' '<?php echo $_SERVER[\"REMOTE_ADDR\"];' > /var/www/smoke-peer.php")
+        peer_url = urllib.parse.urljoin(health[-1], "/smoke-peer.php")
+        for client in ["192.0.2.10", "192.0.2.11", "2001:db8::10"]:
+            actual = run("podman", "exec", container, "curl", "--fail", "--silent",
+                         "--interface", proxy, "--header", f"X-Real-IP: {client}", peer_url).stdout
+            assert actual == client, f"PHP must receive the original client IP: {actual!r}"
+        # Health checks must work, but loopback headers must not change identity.
+        actual = run("podman", "exec", container, "curl", "--fail", "--silent",
+                     "--header", "X-Real-IP: 192.0.2.10", peer_url).stdout
+        assert actual == "127.0.0.1", "Only the trusted proxy may supply a client IP"
+        for spoofed in ["127.0.0.1", proxy]:
+            status = run("podman", "exec", container, "curl", "--silent", "--output", "/dev/null",
+                         "--write-out", "%{http_code}", "--interface", "127.0.0.2",
+                         "--header", f"X-Real-IP: {spoofed}", peer_url).stdout
+            assert status == "403", "Untrusted peers must remain blocked even with spoofed headers"
+        print("PASS: distinct IPv4/IPv6 client IPs reach PHP, loopback ignores spoofed headers, untrusted peers blocked")
         print("PASS: SQLite startup, HTTP health, login form, rejected authentication, nginx configuration, loopback PHP-FPM")
     finally:
         logs = run("podman", "logs", container, check=False)
