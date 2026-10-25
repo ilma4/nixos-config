@@ -8,6 +8,7 @@
     inputs.home-manager.nixosModules.home-manager
     ../../modules/base.nix
     inputs.microvm.nixosModules.microvm
+    ./mail-archive.nix
   ];
 
   home-manager.users.ilma4 = import ./home.nix;
@@ -79,6 +80,8 @@
   security.rtkit.enable = false;
 
   users.users.root.initialHashedPassword = lib.mkForce "!";
+  # Stable IDs for the private mail export's host/guest identity mapping.
+  users.users.ilma4.uid = 1000;
 
   security.sudo.extraRules = [
     {

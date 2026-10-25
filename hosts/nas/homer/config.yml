@@ -86,6 +86,10 @@ services:
         icon: "fas fa-file-alt"
         subtitle: "Document management"
         url: "https://paperless.ilma4.home.arpa"
+      - name: "Mail Archive"
+        icon: "fas fa-envelope"
+        subtitle: "Cypht local webmail"
+        url: "https://cypht.ilma4.home.arpa"
   - name: "Media"
     icon: "fas fa-photo-video"
     items:

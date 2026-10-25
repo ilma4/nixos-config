@@ -31,6 +31,23 @@
     topic = "notifications";
   };
 
+  mail-archive = {
+    uid = 807;
+    gid = 807;
+    home = "/var/lib/mail-archive";
+    mailRoot = "/srv/mail";
+    index = "/var/lib/mail-index";
+    configDir = "/etc/mail-archive";
+    secretDir = "/run/secrets";
+    accounts = ["gmail" "yandex" "proton"];
+    cypht = {
+      host = "cypht.ilma4.home.arpa";
+      port = 8088;
+      proxyGateway = "10.20.0.1";
+      data = "/srv/cypht";
+    };
+  };
+
   hetzer-restic = rec {
     repo = "/home/restic";
     password-secret = "restic_password/hetzer_storage_box";

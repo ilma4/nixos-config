@@ -37,6 +37,7 @@ in {
     "${modules}/server.nix"
     ./qbittorrent-amneziavpn.nix
     ./openclaw.nix
+    ./mail-archive.nix
 
     ./docker-services/home-assistant.nix
     ./mqtt.nix

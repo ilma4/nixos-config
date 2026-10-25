@@ -55,6 +55,12 @@
   dynamicYaml = pkgs.writeText "traefik-dynamic.yaml" ''
     http:
       routers:
+        cypht:
+          rule: "Host(`${constants.mail-archive.cypht.host}`)"
+          entryPoints:
+            - websecure
+          service: cypht
+          tls: {}
         ntfy:
           rule: "Host(`${constants.ntfy.host}`)"
           entryPoints:
@@ -68,6 +74,10 @@
           service: qbittorrent
           tls: {}
       services:
+        cypht:
+          loadBalancer:
+            servers:
+              - url: "http://${constants.mail-archive.cypht.proxyGateway}:${toString constants.mail-archive.cypht.port}"
         ntfy:
           loadBalancer:
             servers:
