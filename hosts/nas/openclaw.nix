@@ -13,7 +13,13 @@
   };
 
   microvm.vms.openclaw = {
-    flake = inputs.self;
+    # Reuse the host's evaluated guest instead of re-evaluating a stored flake.
+    evaluatedConfig = inputs.self.nixosConfigurations.openclaw;
     restartIfChanged = true;
   };
+
+  # Also restart for runner-only changes, such as vCPU or memory settings.
+  systemd.services."microvm@openclaw".restartTriggers = [
+    inputs.self.nixosConfigurations.openclaw.config.microvm.declaredRunner
+  ];
 }
