@@ -36,6 +36,7 @@ in {
 
     "${modules}/server.nix"
     ./qbittorrent-amneziavpn.nix
+    ./openclaw.nix
 
     ./docker-services/home-assistant.nix
     ./mqtt.nix
@@ -51,7 +52,6 @@ in {
     ./docker-services/error-page.nix
 
     ./docker-services/mallard.nix
-    ./incus-openclaw.nix
 
     # ./docker-services/rssalchemy.nix
 
@@ -101,7 +101,7 @@ in {
 
   networking.hostName = "nas"; # Define your hostname.
 
-  # Do not let dhcpcd manage short-lived Podman/Incus virtual interfaces.
+  # Do not let dhcpcd manage virtual interfaces.
   networking.dhcpcd.allowInterfaces = ["enp2s0"];
 
   networking.nameservers = ["192.168.1.200" "1.1.1.1" "8.8.8.8"];
