@@ -34,6 +34,8 @@ in {
     };
 
     home.packages = with pkgs; [
+      (pkgs.writeShellScriptBin "openclaw-ssh" (builtins.readFile ../../scripts/openclaw-ssh.sh))
+
       lima
 
       sops # for managing secrets

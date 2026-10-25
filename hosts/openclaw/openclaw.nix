@@ -9,7 +9,7 @@
     inputs.microvm.nixosModules.microvm
   ];
 
-  i4.home-manager.enable = false;
+  home-manager.users.ilma4 = import ./home.nix;
   # Store optimisation cannot operate across the read-only host store overlay.
   nix.optimise.automatic = lib.mkForce false;
   hardware.enableAllFirmware = false;
