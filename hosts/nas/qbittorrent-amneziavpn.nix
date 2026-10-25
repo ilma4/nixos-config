@@ -52,7 +52,6 @@
     };
   };
   systemd.tmpfiles.rules = [
-    "d /mnt/hdd/torrent 0775 1000 1000 -"
     "d /mnt/ssd/torrent 0775 1000 1000 -"
   ];
 

@@ -48,12 +48,6 @@ in {
       }
       {
         proto = "virtiofs";
-        tag = "downloads";
-        source = "/mnt/hdd/torrent";
-        mountPoint = "/downloads";
-      }
-      {
-        proto = "virtiofs";
         tag = "ssd-downloads";
         source = "/mnt/ssd/torrent";
         mountPoint = "/ssd-downloads";
