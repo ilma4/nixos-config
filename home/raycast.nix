@@ -12,7 +12,6 @@ with lib; let
     # "firefox.applescript" = ./raycast-scripts/firefox.applescript;
     "nas-mount-toggle.applescript" = ./raycast-scripts/nas-mount-toggle.applescript;
     "nix-rebuild.applescript" = ./raycast-scripts/nix-rebuild.applescript;
-    "vivaldi.applescript" = ./raycast-scripts/vivaldi.applescript;
     "brave.applescript" = ./raycast-scripts/brave.applescript;
     "chrome.applescript" = ./raycast-scripts/chrome.applescript;
     "wh-1000xm5-connect.applescript" = ./raycast-scripts/wh-1000xm5-connect.applescript;
@@ -113,9 +112,6 @@ in {
         };
       })
       (filterAttrs (name: _: elem name cfg.scripts) scriptFiles)
-      // optionalAttrs (elem "vivaldi.applescript" cfg.scripts) {
-        "${cfg.scriptsPath}/icons/vivaldi.png".source = ./raycast-scripts/icons/vivaldi.png;
-      }
       // optionalAttrs (elem "brave.applescript" cfg.scripts) {
         "${cfg.scriptsPath}/icons/brave.png".source = ./raycast-scripts/icons/brave.png;
       };
