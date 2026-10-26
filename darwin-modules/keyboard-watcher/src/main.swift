@@ -23,11 +23,23 @@ private func parseUnsigned<T: FixedWidthInteger & UnsignedInteger>(
   return number
 }
 
-/// Immutable state shared by notification callbacks and background retries.
-private final class KeyboardWatcher: Sendable {
+/// Mutable state is confined to the main dispatch queue, including retries.
+private final class KeyboardWatcher: @unchecked Sendable {
   let device: [String: UInt32]
   let deviceID: String
   let mappings: [[String: Int64]]
+  private var retry: DispatchWorkItem?
+  private lazy var permissionRecovery = PermissionRecovery(
+    hasPermission: { IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted },
+    applyMappings: { [weak self] in self?.applyToConnectedDevice() },
+    log: log
+  )
+
+  var registryMatching: [String: Any] {
+    var matching = device as [String: Any]
+    matching["IOProviderClass"] = "IOHIDDevice"
+    return matching
+  }
 
   init(arguments: [String]) throws {
     guard arguments.count >= 4 else {
@@ -53,6 +65,9 @@ private final class KeyboardWatcher: Sendable {
 
   /// macOS discards mappings on disconnect; re-apply to every matching event service.
   func applyMappings(retries: Int = 25) {
+    dispatchPrecondition(condition: .onQueue(.main))
+    retry?.cancel()
+    retry = nil
     let client = IOHIDEventSystemClientCreateSimpleClient(kCFAllocatorDefault)
 
     guard let services = IOHIDEventSystemClientCopyServices(client) as? [IOHIDServiceClient] else {
@@ -67,11 +82,13 @@ private final class KeyboardWatcher: Sendable {
       }
     }
 
+    let permitted = IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
     for service in matchingServices {
       let name = IOHIDServiceClientCopyProperty(service, "Product" as CFString) as? String ?? "unknown service"
 
       if IOHIDServiceClientSetProperty(service, "UserKeyMapping" as CFString, mappings as CFArray) {
-        log("applied \(mappings.count) key remapping(s) to service \"\(name)\"")
+        let action = permitted ? "applied" : "submitted (Input Monitoring permission not granted)"
+        log("\(action) \(mappings.count) key remapping(s) to service \"\(name)\"")
       } else {
         log("error: IOHIDServiceClientSetProperty(\"UserKeyMapping\") returned false for service \"\(name)\"")
       }
@@ -82,10 +99,21 @@ private final class KeyboardWatcher: Sendable {
       log("error: no HID event service matched \(deviceID) after ~5s; remap not applied")
       return
     }
-    // Event services can appear after the IORegistry notification.
-    DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { [self] in
-      applyMappings(retries: retries - 1)
-    }
+    // Event services can appear after the IORegistry notification. Keep only
+    // one pending retry even if another notification or permission grant arrives.
+    let work = DispatchWorkItem { [weak self] in self?.applyMappings(retries: retries - 1) }
+    retry = work
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
+  }
+
+  private func applyToConnectedDevice() {
+    dispatchPrecondition(condition: .onQueue(.main))
+    retry?.cancel()
+    retry = nil
+    let service = IOServiceGetMatchingService(kIOMainPortDefault, registryMatching as CFDictionary)
+    guard service != 0 else { return }
+    IOObjectRelease(service)
+    applyMappings()
   }
 
   /// Drain the iterator to re-arm notifications, then remap any matching services.
@@ -98,7 +126,7 @@ private final class KeyboardWatcher: Sendable {
 
     guard count > 0 else { return }
     log("matching HID device connected (\(count) IORegistry node(s)); applying remap")
-    applyMappings()
+    permissionRecovery.deviceConnected()
   }
 }
 
@@ -115,13 +143,11 @@ do {
 
   IONotificationPortSetDispatchQueue(notifyPort, .main)
 
-  var matching = watcher.device as [String: Any]
-  matching["IOProviderClass"] = "IOHIDDevice"
   var iterator: io_iterator_t = 0
   let result = IOServiceAddMatchingNotification(
     notifyPort,
     kIOFirstMatchNotification,
-    matching as CFDictionary,
+    watcher.registryMatching as CFDictionary,
     { refCon, iterator in
       guard let refCon else { return }
       Unmanaged<KeyboardWatcher>.fromOpaque(refCon).takeUnretainedValue().processMatches(iterator)

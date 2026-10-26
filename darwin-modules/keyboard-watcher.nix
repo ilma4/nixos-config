@@ -38,9 +38,22 @@
         -framework IOKit \
         -framework CoreFoundation \
         -o keyboard-watcher \
-        src/main.swift
+        src/*.swift
 
       runHook postBuild
+    '';
+    doCheck = true;
+    checkPhase = ''
+      runHook preCheck
+      swiftc \
+        -swift-version "$swiftVersion" \
+        -warn-concurrency \
+        -strict-concurrency=complete \
+        -parse-as-library \
+        -o permission-recovery-tests \
+        src/PermissionRecovery.swift tests/PermissionRecoveryTests.swift
+      ./permission-recovery-tests
+      runHook postCheck
     '';
     installPhase = ''
       runHook preInstall

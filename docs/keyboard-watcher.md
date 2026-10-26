@@ -4,8 +4,10 @@ An event-driven launchd agent that re-applies a key remapping to the Logitech MX
 Keys Mini **every time it connects** — on login, after sleep, after a Bluetooth
 re-pair, or after re-plugging USB. The remapping is applied **in-process** (no
 `hidutil` subprocess): the watcher sets the same `UserKeyMapping` property that
-`hidutil property --set` writes, using IOKit directly. It needs **no Input
-Monitoring permission**, so it works as a background launchd job.
+`hidutil property --set` writes, using IOKit directly. The configured mappings
+include special characters and need **Input Monitoring permission**. If permission
+is granted after the keyboard connects, the watcher automatically re-applies the
+mappings without requiring another connection or a manual restart.
 
 ## Why
 
@@ -64,7 +66,7 @@ Swift 5 language mode for nixpkgs revisions that still package Swift 5.10.
 ### Release build (small binary / low RAM)
 
 The Nix build uses whole-module optimization because the watcher spends nearly
-all its time blocked in `CFRunLoop`:
+all its time waiting in `dispatchMain()`:
 
 - `-O` — optimized code,
 - `-whole-module-optimization` — enables cross-file optimization,
@@ -80,8 +82,8 @@ values in decimal or `0x` hex) — and:
 
 1. builds a matching dictionary `{IOProviderClass: "IOHIDDevice", VendorID,
    ProductID}` (the same thing `IOServiceMatching` + a property filter produces),
-2. creates an `IONotificationPort`, schedules its run-loop source on the current
-   `CFRunLoop`, and registers a `kIOFirstMatchNotification` via
+2. creates an `IONotificationPort`, schedules its callbacks on the main dispatch
+   queue, and registers a `kIOFirstMatchNotification` via
    `IOServiceAddMatchingNotification`,
 3. drains the returned iterator once — which both arms the notification and
    handles a keyboard that is **already connected** at startup — and drains it
@@ -89,19 +91,22 @@ values in decimal or `0x` hex) — and:
 4. on each match, creates an `IOHIDEventSystemClient`, finds every HID **event
    service** matching the vendor/product, and sets their `UserKeyMapping`
    property — the same property `hidutil property --matching … --set` writes,
-5. blocks in `CFRunLoop::run()` for the life of the process.
+5. checks Input Monitoring once per second while waiting for permission; when
+   granted, re-enumerates connected devices and re-applies the mappings,
+6. waits in `dispatchMain()` for the life of the process. Permission polling stops
+   after permission is granted; ordinary connections remain event-driven.
 
 ### Reconnect race — why the apply retries
 
 The notification fires when the keyboard's **`IOHIDDevice` IORegistry node**
 appears, but the matching **`IOHIDEventSystem` service** (what step 4 enumerates)
 is published a moment *later*. So on a fresh reconnect the first apply finds no
-matching service. When that happens the watcher retries the apply on a background
-thread (every 200 ms for ~5 s, so the run loop stays free) until the service shows
+matching service. When that happens the watcher schedules another apply on the
+main dispatch queue (every 200 ms for ~5 s, without blocking) until the service shows
 up. The already-connected-at-startup case has the service present immediately and
 applies on the first try.
 
-### Permissions — why it avoids `IOHIDManager`
+### Permissions and recovery after approval
 
 The obvious way to detect the keyboard is `IOHIDManager`, but **opening HID devices
 requires the Input Monitoring privacy permission** (`kTCCServiceListenEvent`). A
@@ -110,12 +115,25 @@ the binary's code signature — which changes on every Nix rebuild — so an
 `IOHIDManager`-based watcher fails with `kIOReturnNotPermitted` (`0xe00002e2`).
 
 Watching the **IORegistry** with `IOServiceAddMatchingNotification` only observes
-the registry; it never opens the device, so it needs no Input Monitoring. The
-remap itself **must** be applied at the HID event-system level (the
+the registry; it never opens the device, so connection detection needs no Input
+Monitoring. The remap itself **must** be applied at the HID event-system level (the
 `IOHIDServiceClient`), not on the raw `IOHIDDevice` — setting `UserKeyMapping`
 directly on the device via `IOHIDDeviceSetProperty` returns success but has no
-effect. Setting it on the service (as `hidutil` does) also needs no Input
-Monitoring. The result runs cleanly as an unattended agent.
+effect. Setting it on the service (as `hidutil` does) is subject to Input Monitoring
+checks for mappings involving alphanumeric keys or special characters. The HID
+setter can report success even when the keyboard filter rejects the remapping.
+
+Grant the watcher access in **System Settings → Privacy & Security → Input
+Monitoring**. After a connection without permission, the watcher logs that it is
+waiting and checks permission once per second, with no timeout. Granting permission
+triggers a fresh apply for the already-connected keyboard, normally within about a
+second. This permission recovery is independent of the five-second service
+publication retry window and of the earlier setter's return value. If the keyboard
+has disconnected in the meantime, recovery does nothing until it connects again.
+
+Only one permission timer runs, even after repeated connection notifications. The
+timer stops after approval and starts again if a later connection finds permission
+missing. The watcher does not request permission or show approval prompts itself.
 
 ## Configuration
 
@@ -164,3 +182,10 @@ remapping(s) to service "…"` (sometimes with a `event service not published ye
 retrying …` line in between, see the reconnect race above), and the mapping
 reappears within a few seconds. This is the gap the old one-shot `keyboard-remap`
 poll could not cover.
+
+To verify permission recovery, connect the keyboard while the watcher lacks Input
+Monitoring, wait longer than five seconds, then grant permission while leaving the
+keyboard connected. The log should show `Input Monitoring permission granted;
+retrying connected keyboard remap`, followed by the apply log. Check the mapping
+with the `hidutil` command above and confirm both remapped keys work. No reconnect
+or manual watcher restart should be necessary.
