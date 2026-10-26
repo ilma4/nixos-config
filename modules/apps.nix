@@ -79,7 +79,7 @@ in {
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
     # iterm2 = macOnlyCask {}; # managed by corporate software
-    handy = asLinuxPackage {package = pkgs-unstable.handy;}; # speech-to-text
+    # handy = asLinuxPackage {package = pkgs-unstable.handy;}; # speech-to-text
     # windows-app = macOnlyCask {}; # updated by corporate software
     # slack = macOnlyCask {}; # updated by corporate software
     raycast = macOnlyCask {}; # cmd+space : search apps and commands
