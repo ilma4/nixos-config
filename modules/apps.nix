@@ -36,6 +36,7 @@ in {
 
     zed-editor = {macName = "zed";};
     kotlin-lsp = macOnlyBrew {macName = "jetbrains/utils/kotlin-lsp";};
+    youtrack = macOnlyBrew {macName = "jetbrains/utils/youtrack";};
     vscode = {macName = "visual-studio-code";};
 
     # coding agents
