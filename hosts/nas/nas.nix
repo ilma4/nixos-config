@@ -136,7 +136,11 @@ in {
     description = "Configure SATA HDD standby timeout";
     wantedBy = ["multi-user.target"];
     script = configureHddStandbyTimeout;
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      # Reapplying hdparm -S wakes sleeping HDDs; only run once per boot.
+      RemainAfterExit = true;
+    };
   };
 
   systemd.services.hdd-standby-timeout-resume = {

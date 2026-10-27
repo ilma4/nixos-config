@@ -49,7 +49,8 @@ in {
   config = {
     systemd.services.i4-backup-monitoring = {
       description = "Inspect backup snapshots and NAS/Hetzner replication";
-      wantedBy = ["multi-user.target"];
+      # Run through the timer and relay hooks, not on every system activation:
+      # inspecting the HDD-backed repositories wakes sleeping disks.
       after = ["network-online.target" "sops-nix.service" "pushgateway.service"];
       wants = ["network-online.target" "pushgateway.service"];
       path = [pkgs.restic pkgs.systemd];
