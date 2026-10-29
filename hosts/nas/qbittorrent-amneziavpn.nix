@@ -23,8 +23,8 @@
     internalInterfaces = ["qbt-tap"];
   };
   networking.firewall.allowedTCPPorts = [8080];
-  # The TCP relay hides the original peer. Only Traefik may supply forwarded
-  # client addresses; otherwise an external client could forge the LAN bypass.
+  # The TCP relay hides the original peer. Restrict access to loopback, Traefik,
+  # and trusted Tailscale peers, which may supply forwarded client addresses.
   networking.nftables = {
     enable = true;
     tables.qbt-webui-proxy-only = {
@@ -33,6 +33,7 @@
         chain input {
           type filter hook input priority -10; policy accept;
           iifname "lo" tcp dport 8080 accept
+          iifname "tailscale0" tcp dport 8080 accept
           ip saddr ${constants.nas.traefik-ip} tcp dport 8080 accept
           tcp dport 8080 drop
         }
