@@ -39,22 +39,16 @@ Required OAuth scopes: `dns`, `devices:routes`, `policy_file`,
 `devices:core:read`. Policy writes require the device/posture scopes too.
 See the [scope reference](https://tailscale.com/docs/reference/trust-credentials).
 
-## Enable home split DNS after NAS activation
+## Home split DNS
 
-`home_dns_enabled` defaults to false because the NAS has not yet advertised the
-routes. Enabling split DNS before the routing path works would send private-domain
-DNS queries to an unreachable resolver.
+`home_dns_enabled` defaults to true in the checked-in configuration. Queries for
+`ilma4.home.arpa` use Pi-hole at `192.168.1.200`; other DNS remains unchanged.
+The NAS routing configuration has been activated, and both host routes are
+advertised and approved. No local variable file is needed to enable split DNS.
 
-1. Activate the NAS configuration separately when requested.
-2. Verify the NAS advertises both `/32` routes and that a remote Tailscale client
-   can query `192.168.1.200` over both UDP and TCP. See
-   [the service verification steps](../../docs/tailscale-services.md).
-3. Create a local `terraform.tfvars` containing `home_dns_enabled = true`.
-   Keep this setting for subsequent runs, including on any other machine.
-4. Run `terraform plan -out=changes.tfplan`. Expect one new split DNS entry:
-   `ilma4.home.arpa` -> `192.168.1.200`.
-5. Apply the saved plan and verify resolution using the client's OS resolver and
-   HTTPS access from outside the LAN.
+Verify DNS resolution using the client's OS resolver and HTTPS access from
+outside the LAN. See [the service verification steps](../../docs/tailscale-services.md).
+The NAS and its Pi-hole routing path must remain available for these queries.
 
 The two routes are approved already; no manual route approval is needed.
 The existing policy already allows the DNS/HTTPS traffic. Preserve the existing
@@ -81,14 +75,14 @@ terraform import tailscale_device_subnet_routes.nas '<NAS_NODE_ID>'
 ```
 
 Use the NAS's stable node ID from the Tailscale API, not a different device.
-If split DNS has been enabled, set `home_dns_enabled = true` first, then import:
+Split DNS is enabled by default. Import the existing entry as well:
 
 ```bash
 terraform import 'tailscale_dns_split_nameservers.home[0]' ilma4.home.arpa
 ```
 
 The resources have `prevent_destroy` to catch accidental removals, including
-omitting the DNS enablement variable. Review any replacement/destruction instead
+explicitly disabling split DNS. Review any replacement/destruction instead
 of removing that protection to bypass it.
 
 Policy edits go through Terraform. There is no separate policy-sync workflow in

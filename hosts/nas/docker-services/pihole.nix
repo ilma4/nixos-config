@@ -73,7 +73,7 @@ in {
     ];
   };
 
-  systemd.services.docker-compose-pihole = {
+  systemd.services.pihole = {
     # Pi-hole owns the destination address on its LAN interface, but the NAS
     # reaches it via the bridge. Tailscale's SNAT supplies the return path.
     postStart = ''

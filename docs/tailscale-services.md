@@ -19,9 +19,8 @@ for `192.168.1.200/32` through `10.78.0.2` after startup and removes it on shutd
 1. Deploy the NAS configuration only when activation is requested.
 2. The NAS routes `192.168.1.33/32` and `192.168.1.200/32` are already approved
    through [Terraform](../infra/tailscale/README.md).
-3. Once remote DNS connectivity is verified, enable `home_dns_enabled` in Terraform
-   and apply its plan. This adds `192.168.1.200` as a nameserver restricted to
-   `ilma4.home.arpa`, leaving global DNS unchanged.
+3. Split DNS is enabled by default in Terraform: `192.168.1.200` is the nameserver
+   restricted to `ilma4.home.arpa`, leaving global DNS unchanged.
 4. Ensure the tailnet policy allows the intended clients TCP/UDP 53 to
    `192.168.1.200` and TCP 443 to `192.168.1.33` (TCP 80 is optional for redirects).
 5. Enable Tailscale DNS on clients. Linux clients also need
@@ -41,7 +40,7 @@ host routes does not itself restrict accessible ports on those addresses.
   plain `dig` without an explicit server does not reliably test split DNS.
 - Confirm the existing certificate is presented and trusted, and other services
   work using their existing URLs.
-- Restart `docker-compose-pihole.service` and repeat the route and DNS checks.
+- Restart `pihole.service` and repeat the route and DNS checks.
 - On the home LAN with Tailscale disabled, verify DNS and HTTPS still work.
 
 Reference: https://tailscale.com/docs/features/subnet-routers
