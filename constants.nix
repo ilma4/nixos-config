@@ -73,6 +73,14 @@
   };
 
   nas = {
+    lan-ip = "192.168.1.33";
+    pihole = {
+      lan-ip = "192.168.1.200";
+      host-subnet = "10.78.0.0/30";
+      host-gateway = "10.78.0.1";
+      host-ip = "10.78.0.2";
+    };
+
     # Stable source address for the qBittorrent WebUI's trusted proxy path.
     traefik-ip = "10.20.0.2";
 
