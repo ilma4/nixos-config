@@ -17,10 +17,11 @@ for `192.168.1.200/32` through `10.78.0.2` after startup and removes it on shutd
 ## Enable after deployment
 
 1. Deploy the NAS configuration only when activation is requested.
-2. In the Tailscale admin console, approve the NAS routes
-   `192.168.1.33/32` and `192.168.1.200/32`.
-3. In DNS, add custom nameserver `192.168.1.200`, restricted to
-   `ilma4.home.arpa`. Leave global DNS overrides unchanged.
+2. The NAS routes `192.168.1.33/32` and `192.168.1.200/32` are already approved
+   through [Terraform](../infra/tailscale/README.md).
+3. Once remote DNS connectivity is verified, enable `home_dns_enabled` in Terraform
+   and apply its plan. This adds `192.168.1.200` as a nameserver restricted to
+   `ilma4.home.arpa`, leaving global DNS unchanged.
 4. Ensure the tailnet policy allows the intended clients TCP/UDP 53 to
    `192.168.1.200` and TCP 443 to `192.168.1.33` (TCP 80 is optional for redirects).
 5. Enable Tailscale DNS on clients. Linux clients also need
