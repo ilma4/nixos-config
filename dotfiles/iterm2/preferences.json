@@ -706,7 +706,7 @@
       "Character Encoding": 4,
       "Close Sessions On End": true,
       "Columns": 80,
-      "Command": "/bin/zsh",
+      "Command": "@HOME@/.nix-profile/bin/zsh",
       "Cursor Color": {
         "Alpha Component": 1.0,
         "Blue Component": 0.0,
@@ -766,7 +766,7 @@
         "Green Component": 1.0,
         "Red Component": 1.0
       },
-      "Custom Command": "No",
+      "Custom Command": "Custom Shell",
       "Custom Directory": "Recycle",
       "Default Bookmark": "No",
       "Description": "Default",
@@ -1286,7 +1286,7 @@
       "Character Encoding": 4,
       "Close Sessions On End": true,
       "Columns": 80,
-      "Command": "",
+      "Command": "@HOME@/.nix-profile/bin/zsh",
       "Cursor Color": {
         "Alpha Component": 1.0,
         "Blue Component": 0.0,
@@ -1346,7 +1346,7 @@
         "Green Component": 1.0,
         "Red Component": 1.0
       },
-      "Custom Command": "No",
+      "Custom Command": "Custom Shell",
       "Custom Directory": "Recycle",
       "Default Bookmark": "No",
       "Description": "Default",
@@ -1854,7 +1854,7 @@
       "Character Encoding": 4,
       "Close Sessions On End": true,
       "Columns": 80,
-      "Command": "/bin/zsh",
+      "Command": "@HOME@/.nix-profile/bin/zsh",
       "Cursor Color": {
         "Alpha Component": 1.0,
         "Blue Component": 0.0,
@@ -1914,7 +1914,7 @@
         "Green Component": 1.0,
         "Red Component": 1.0
       },
-      "Custom Command": "No",
+      "Custom Command": "Custom Shell",
       "Custom Directory": "No",
       "Custom Tab Title": "Quick Terminal",
       "Custom Window Title": "Quick Terminal",
