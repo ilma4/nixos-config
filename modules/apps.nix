@@ -69,6 +69,7 @@ in {
     macfuse = macOnlyCask {}; # FUSE for macOS, uses kernel extension
 
     displayplacer = macOnlyBrew {}; # cli to configure display resolution
+    "incoai/tap/splash" = macOnlyBrew {}; # LLM inference engine, optimized for smaller models
     shottr = macOnlyCask {};
 
     kde-connect = macOnlyCask {};
