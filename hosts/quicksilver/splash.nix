@@ -2,59 +2,56 @@
   config,
   pkgs,
   pkgs-unstable,
+  lib,
+  osConfig,
   ...
 }: let
   modelsDirectory = "/Volumes/Extra/llama-cpp";
+  homebrewPrefix = osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix);
   volumeWatcher = pkgs.swiftPackages.stdenv.mkDerivation {
-    pname = "llama-volume-watch";
+    pname = "model-volume-watch";
     version = "0.1.0";
     dontUnpack = true;
     dontConfigure = true;
     nativeBuildInputs = [pkgs.swift];
     buildPhase = ''
       runHook preBuild
-      swiftc -swift-version 5 -O -o llama-volume-watch ${./llama-volume-watch.swift}
+      swiftc -swift-version 5 -O -o model-volume-watch ${./model-volume-watch.swift}
       runHook postBuild
     '';
     installPhase = ''
       runHook preInstall
-      install -Dm755 llama-volume-watch "$out/bin/llama-volume-watch"
+      install -Dm755 model-volume-watch "$out/bin/model-volume-watch"
       runHook postInstall
     '';
   };
 in {
+  # Retain the CLI for the independently installed run-llama-server.sh command.
   home.packages = [pkgs-unstable.llama-cpp];
 
   # Imported only by ilma4-home.nix: this runs in ilma4's login session.
   # KeepAlive alone cannot stop a running job when a volume disappears.
-  launchd.agents.llama-cpp = {
+  launchd.agents.splash = {
     enable = true;
     config = {
-      # Keep unrelated models in the user's default cache out of this router.
-      EnvironmentVariables.LLAMA_CACHE = "${modelsDirectory}/.cache/llama.cpp";
+      EnvironmentVariables.SPLASH_BIN = "${homebrewPrefix}/bin/splash";
       ProgramArguments = [
-        "${volumeWatcher}/bin/llama-volume-watch"
+        "${volumeWatcher}/bin/model-volume-watch"
         "/Volumes/Extra"
         modelsDirectory
-        "${pkgs-unstable.llama-cpp}/bin/llama-server"
-        "--host"
-        "0.0.0.0"
-        "--port"
-        "8080"
-        "--models-dir"
-        modelsDirectory
-        "--models-preset"
-        "${modelsDirectory}/models.ini"
-        "--models-max"
-        "1"
+        "${pkgs.llama-swap}/bin/llama-swap"
+        "-config"
+        "${modelsDirectory}/splash.yaml"
+        "-listen"
+        "0.0.0.0:8080"
       ];
       RunAtLoad = true;
       StartOnMount = true;
       KeepAlive.SuccessfulExit = false;
       ThrottleInterval = 10;
       ExitTimeOut = 20;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/llama-cpp.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/llama-cpp.log";
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/splash.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/splash.log";
     };
   };
 }

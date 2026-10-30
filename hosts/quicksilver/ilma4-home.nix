@@ -13,7 +13,7 @@ in {
 
     ./common-home.nix
     ../../modules/sops.nix
-    ./llama.nix
+    ./splash.nix
   ];
 
   config = {

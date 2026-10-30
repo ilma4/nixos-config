@@ -6,7 +6,7 @@ func checked(_ result: Int32, error: Int32 = errno) throws -> Int32 {
 
 func run(_ args: [String]) throws -> Int32 {
     guard args.count >= 4 else {
-        fputs("Usage: llama-volume-watch VOLUME MODELS_DIRECTORY COMMAND [ARGUMENTS...]\n", stderr); return 1
+        fputs("Usage: model-volume-watch VOLUME MODELS_DIRECTORY COMMAND [ARGUMENTS...]\n", stderr); return 1
     }
     let isMounted = { FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil)?
         .contains(URL(fileURLWithPath: args[1])) == true }
@@ -40,9 +40,9 @@ func run(_ args: [String]) throws -> Int32 {
         kill(-pid, SIGKILL)
         process.waitUntilExit()
     }
-    print("llama-server started (pid \(pid))"); fflush(stdout)
+    print("Model service started (pid \(pid))"); fflush(stdout)
     let filters = try watch((pid, EVFILT_PROC, NOTE_EXIT))
-    if filters.contains(EVFILT_VNODE) { print("Model volume unmounted; stopping llama-server") }
+    if filters.contains(EVFILT_VNODE) { print("Model volume unmounted; stopping Model service") }
     return filters == [EVFILT_PROC] ? 1 : 0
 }
-do { exit(try run(CommandLine.arguments)) } catch { fputs("llama-volume-watch: \(error)\n", stderr); exit(1) }
+do { exit(try run(CommandLine.arguments)) } catch { fputs("model-volume-watch: \(error)\n", stderr); exit(1) }
