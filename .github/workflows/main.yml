@@ -1,17 +1,22 @@
+name: Check flake
+
 on:
   pull_request:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Check flake
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Check Nix flake inputs
-        uses: DeterminateSystems/flake-checker-action@main # This action
+        uses: DeterminateSystems/flake-checker-action@v14
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
-      - name: Build default package
-        run: nix flake check
+      - name: Check all flake systems
+        run: ./utils/flake-check.sh
