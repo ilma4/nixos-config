@@ -26,6 +26,7 @@ in {
 
   image = pkgs.dockerTools.buildLayeredImage {
     name = "localhost/mallard-bot";
+    compressor = "zstd"; # zstd defaults to compression level 3.
     contents = [
       python
       pkgs.ffmpeg-headless
