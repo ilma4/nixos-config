@@ -30,16 +30,35 @@ in {
   launchd.agents.splash = {
     enable = true;
     config = {
-      EnvironmentVariables.SPLASH_BIN = "${homebrewPrefix}/bin/splash";
       ProgramArguments = [
         "${volumeWatcher}/bin/model-volume-watch"
         "/Volumes/Extra"
         modelsDirectory
-        "${pkgs.llama-swap}/bin/llama-swap"
-        "-config"
-        "${modelsDirectory}/splash.yaml"
-        "-listen"
-        "0.0.0.0:8080"
+        "${homebrewPrefix}/bin/splash"
+        "serve"
+        "--model"
+        "unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL"
+        "--model-dir"
+        "${modelsDirectory}/models/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_XL.gguf"
+        "--mmproj"
+        "${modelsDirectory}/models/Qwen3.8-27B/mmproj-F16.gguf"
+        "--draft-model"
+        "${modelsDirectory}/models/drafts/Qwen3.8-27B-DFlash2"
+        "--offline"
+        "--host"
+        "0.0.0.0"
+        "--port"
+        "8080"
+        "--kv-format"
+        "bf16"
+        "--max-context"
+        "65536"
+        "--idle-release"
+        "off"
+        "--served-model-name"
+        "Qwen3.8"
+        "--served-model-name"
+        "Qwen3.8-27B-UD-Q4_K_XL"
       ];
       RunAtLoad = true;
       StartOnMount = true;
