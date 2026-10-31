@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  pkgs-unstable,
   lib,
   osConfig,
   ...
@@ -26,9 +25,6 @@
     '';
   };
 in {
-  # Retain the CLI for the independently installed run-llama-server.sh command.
-  home.packages = [pkgs-unstable.llama-cpp];
-
   # Imported only by ilma4-home.nix: this runs in ilma4's login session.
   # KeepAlive alone cannot stop a running job when a volume disappears.
   launchd.agents.splash = {

@@ -53,7 +53,6 @@ in {
   config = lib.mkIf cfg.enable {
     i4.codex.enable = lib.mkDefault true; #
 
-    # home.file.".pi/agent/models.json".source = ../hosts/quicksilver/pi/models.json;
     home.file.".pi/agent/extensions/notify-finish.ts".source = ../dotfiles/pi/extensions/notify-finish.ts;
     home.file.".pi/agent/extensions/compaction-count.ts".source = ../dotfiles/pi/extensions/compaction-count.ts;
     home.file.".pi/agent/extensions/codex-limit-autocontinue.ts".source = ../dotfiles/pi/extensions/codex-limit-autocontinue.ts;
