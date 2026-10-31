@@ -1,6 +1,5 @@
 {
   pkgs,
-  inputs,
   constants,
 }: let
   inherit (pkgs) lib;
@@ -52,12 +51,11 @@ in
   pkgs.testers.runNixOSTest {
     name = "mail-archive";
     node.specialArgs = {inherit constants;};
-    nodes.archive = {config, ...}: {
-      imports = [../modules/mail-archive.nix inputs.microvm.nixosModules.host];
-      environment.systemPackages = [pkgs.python3 pkgs.openssh pkgs.sshpass];
+    nodes.archive = {...}: {
+      imports = [../modules/mail-archive.nix];
+      environment.systemPackages = [pkgs.python3];
       virtualisation.memorySize = 3072;
       virtualisation.cores = 2;
-      microvm.autostart = lib.mkForce [];
       systemd.timers.mail-archive-index.enable = false;
       i4.mailArchive.passwordFile = "/run/archive-test-users";
       environment.etc."mail-archive/mbsyncrc".text = lib.mkForce (lib.replaceStrings
@@ -76,58 +74,32 @@ in
         "d /var/lib/upstream 0700 mailstore mailstore -"
         "d /var/lib/fixture-imap 0700 root root -"
       ];
-      microvm.vms.reader.config = {
-        imports = [inputs.microvm.nixosModules.microvm ../hosts/openclaw/mail-archive.nix];
-        _module.args.constants = constants;
-        networking.hostName = "reader";
-        networking.useDHCP = true;
-        users.users.ilma4 = {
-          isNormalUser = true;
-          uid = 1000;
-        };
-        # Test-only password, never part of either real host's configuration.
-        users.users.root.initialPassword = "fixture";
-        services.openssh = {
-          enable = true;
-          settings = {
-            PermitRootLogin = "yes";
-            PasswordAuthentication = true;
+      containers.reader = {
+        autoStart = false;
+        ephemeral = true;
+        privateNetwork = true;
+        # Isolate root's capabilities while keeping the bind mounts' host IDs.
+        privateUsers = "identity";
+        bindMounts = lib.genAttrs [constants.mail-archive.mailRoot constants.mail-archive.index] (path: {
+          hostPath = path;
+          isReadOnly = true;
+        });
+        config = {
+          networking.hostName = "reader";
+          # Bind mounts retain host ownership; UID translation remains specific
+          # to the production VM's virtiofs exports.
+          users.groups.mailstore.gid = constants.mail-archive.gid;
+          users.users.ilma4 = {
+            isSystemUser = true;
+            uid = constants.mail-archive.uid;
+            group = "mailstore";
           };
+          environment.systemPackages = [pkgs.notmuch];
+          environment.etc."mail-archive/notmuch-config".text = archiveFiles.notmuchConfig;
+          system.stateVersion = "26.05";
         };
-        microvm = {
-          hypervisor = "qemu";
-          cpu = "max";
-          vcpu = 1;
-          mem = 512;
-          writableStoreOverlay = "/nix/.rw-store";
-          interfaces = [
-            {
-              type = "user";
-              id = "eth0";
-              mac = "02:00:00:00:00:01";
-            }
-          ];
-          forwardPorts = [
-            {
-              host.address = "127.0.0.1";
-              host.port = 2222;
-              guest.port = 22;
-            }
-          ];
-          shares = [
-            {
-              proto = "virtiofs";
-              tag = "ro-store";
-              source = "/nix/store";
-              mountPoint = "/nix/.ro-store";
-              readOnly = true;
-            }
-          ];
-        };
-        system.stateVersion = "26.05";
       };
-      systemd.services."microvm@reader".wantedBy = lib.mkForce [];
-      systemd.services."microvm-virtiofsd@reader" = {
+      systemd.services."container@reader" = {
         after = ["mail-archive-index.service"];
         requires = ["mail-archive-index.service"];
       };

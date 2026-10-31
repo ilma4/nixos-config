@@ -264,7 +264,6 @@
 
     checks.x86_64-linux.mail-archive = import ./tests/mail-archive.nix {
       pkgs = (pkgsSets systems.x86-linux).stable;
-      inherit inputs;
       constants = import ./constants.nix;
     };
 

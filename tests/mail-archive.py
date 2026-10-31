@@ -61,16 +61,18 @@ put("/run/secrets/mail-yandex", "fixture")
 archive.succeed("systemctl reset-failed mail-archive-sync; systemctl start mail-archive-sync")
 assert archive.succeed("sudo -u mailstore notmuch --config=/etc/mail-archive/notmuch-config count '*'").strip() == "3"
 
-with subtest("guest reads private messages and attachments but cannot write"):
-    archive.succeed("systemctl start microvm@reader")
-    ssh = "sshpass -p fixture ssh -p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 root@127.0.0.1 "
-    archive.wait_until_succeeds(ssh + "true", timeout=300)
+with subtest("container reads private messages and attachments but cannot write"):
+    archive.succeed("systemctl start container@reader")
+    # Start commands through the container's systemd so they inherit its
+    # capability limits; nsenter would retain the host root's capabilities.
+    enter = "systemd-run --machine=reader --pipe --wait --collect --quiet -- /bin/sh -lc "
+    archive.wait_until_succeeds(enter + shlex.quote("systemctl is-system-running --wait"))
 
     def guest(command, fails=False):
-        return (archive.fail if fails else archive.succeed)(ssh + shlex.quote(command))
+        return (archive.fail if fails else archive.succeed)(enter + shlex.quote(command))
 
-    assert guest("stat -c '%u:%g:%a' /srv/mail").strip() == "1000:100:700"
-    assert guest("stat -c '%u:%g:%a' /var/lib/mail-index").strip() == "1000:100:700"
+    assert guest("stat -c '%u:%g:%a' /srv/mail").strip() == "807:807:700"
+    assert guest("stat -c '%u:%g:%a' /var/lib/mail-index").strip() == "807:807:700"
     query = "notmuch --config=/etc/mail-archive/notmuch-config"
     raw = guest("su -s /bin/sh ilma4 -c " + shlex.quote(query + " search --format=json '*'"))
     assert len(json.loads(raw)) == 3
