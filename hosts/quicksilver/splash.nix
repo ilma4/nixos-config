@@ -54,7 +54,7 @@ in {
         "--max-context"
         "65536"
         "--idle-release"
-        "off"
+        "10m"
         "--served-model-name"
         "Qwen3.8"
         "--served-model-name"
