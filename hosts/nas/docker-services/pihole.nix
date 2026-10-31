@@ -68,7 +68,9 @@ in {
   services.tailscale = {
     useRoutingFeatures = "server";
     extraSetFlags = [
-      "--advertise-routes=${constants.nas.lan-ip}/32,${cfg.lan-ip}/32"
+      # Less specific than the home LAN /24 so local clients use the LAN.
+      # The tailnet policy restricts this route to the NAS and Pi-hole.
+      "--advertise-routes=192.168.0.0/23"
       "--snat-subnet-routes=true"
     ];
   };

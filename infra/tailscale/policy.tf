@@ -1,4 +1,4 @@
-# The complete pre-existing policy, including tag ownership, is preserved.
+# Manage the complete policy, including subnet access and tag ownership.
 resource "tailscale_acl" "policy" {
   acl = file("${path.module}/policy.hujson")
 

@@ -1,4 +1,4 @@
-// Example/default ACLs for unrestricted connections.
+// Preserve device connectivity while limiting access through the NAS subnet route.
 {
 	// Declare static groups of users. Use autogroups for all users or users with a specific role.
 	// "groups": {
@@ -13,9 +13,10 @@
 	// Define access control lists for users, groups, autogroups, tags,
 	// Tailscale IP addresses, and subnet ranges.
 	"acls": [
-		// Allow all connections.
-		// Comment this section out if you want to define specific restrictions.
-		{"action": "accept", "src": ["*"], "dst": ["*:*"]},
+		// All Tailscale devices, including tagged devices, remain reachable.
+		{"action": "accept", "src": ["*"], "dst": ["100.64.0.0/10:*", "fd7a:115c:a1e0::/48:*"]},
+		// The /23 is only a routing fallback; expose the same two LAN hosts.
+		{"action": "accept", "src": ["*"], "dst": ["192.168.1.33:*", "192.168.1.200:*"]},
 		{"action": "accept", "src": ["*"], "dst": ["tag:hoopsnake:22"]},
 		// {"action": "reject", "src": ["*"], "dst": ["tag:hoopsnake:*"]},
 
@@ -48,12 +49,12 @@
 	// 	],
 	// },
 
-	// Test access rules every time they're saved.
-	// "tests": [
-	//  	{
-	//  		"src": "alice@example.com",
-	//  		"accept": ["tag:example"],
-	//  		"deny": ["100.101.102.103:443"],
-	//  	},
-	// ],
+	// Tailscale checks these assertions when planning/applying policy changes.
+	"tests": [
+		{
+			"src": "ilya.malakhov4@gmail.com",
+			"accept": ["192.168.1.33:443", "192.168.1.33:8080", "192.168.1.200:53", "100.83.71.113:22", "tag:hoopsnake:22"],
+			"deny": ["192.168.0.1:443", "192.168.1.1:80", "192.168.1.105:443"],
+		},
+	],
 }

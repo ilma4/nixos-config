@@ -1,9 +1,11 @@
 # Tailscale configuration
 
 Terraform manages the complete policy in `policy.hujson`, the provider-supported
-settings in `settings.tf`, MagicDNS, search domains, and the NAS's two approved
-host routes. The policy was exported from the existing tailnet, including its
-existing allow-all rule and `tag:hoopsnake` ownership; no access rules were changed.
+settings in `settings.tf`, MagicDNS, search domains, and the NAS's approved
+`192.168.0.0/23` route. The policy preserves `tag:hoopsnake` ownership and
+connectivity between Tailscale devices over IPv4 and IPv6. Subnet access is
+limited to the NAS (`192.168.1.33`) and Pi-hole (`192.168.1.200`), keeping the
+broader route from exposing additional LAN hosts.
 
 Initial adoption imported all five existing resources before applying. The only
 live changes were approving `192.168.1.33/32` and `192.168.1.200/32` on the NAS,
@@ -43,16 +45,25 @@ See the [scope reference](https://tailscale.com/docs/reference/trust-credentials
 
 `home_dns_enabled` defaults to true in the checked-in configuration. Queries for
 `ilma4.home.arpa` use Pi-hole at `192.168.1.200`; other DNS remains unchanged.
-The NAS routing configuration has been activated, and both host routes are
-advertised and approved. No local variable file is needed to enable split DNS.
+No local variable file is needed to enable split DNS.
+
+The `/23` replaces the initially deployed two `/32` routes so the home LAN's
+more specific `/24` takes precedence locally. This migration requires both a
+Terraform apply and a NAS deployment; editing these files does not change live
+routing. Apply Terraform first to restrict access and replace the approvals,
+then deploy the NAS to advertise the new route. Use a direct LAN connection
+because remote DNS/HTTPS may be interrupted between these steps. Withdraw both
+old `/32` routes; leaving either advertised and approved defeats LAN priority.
 
 Verify DNS resolution using the client's OS resolver and HTTPS access from
 outside the LAN. See [the service verification steps](../../docs/tailscale-services.md).
 The NAS and its Pi-hole routing path must remain available for these queries.
 
-The two routes are approved already; no manual route approval is needed.
-The existing policy already allows the DNS/HTTPS traffic. Preserve the existing
-certificate trust on each client. Linux clients must accept subnet routes.
+Terraform manages route approval and permits DNS/HTTPS to the two LAN hosts.
+Embedded policy tests check those allowances and deny access to other LAN hosts.
+Preserve the existing certificate trust on each client. Linux clients must accept
+subnet routes. A remote network also using `192.168.1.0/24` will prefer its own
+LAN too; overlapping networks require a separate addressing solution.
 
 ## State and recovery
 
