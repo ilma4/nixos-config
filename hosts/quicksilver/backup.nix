@@ -47,6 +47,8 @@
 
     "/Users/ilma4/.lima" # lima vms
 
+    "/Users/ilma4/Library/Mobile Documents/com~apple~CloudDocs" # icloud
+
     # Electron caches(?)
     "/Users/ilma4/Library/Application Support/*/Cache"
     "/Users/ilma4/Library/Application Support/*/Code Cache"
