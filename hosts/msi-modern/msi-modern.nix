@@ -87,6 +87,15 @@
     extraSetFlags = ["--accept-routes=true"];
   };
 
+  # Linux looks up Tailscale's routing table before the main table, even when
+  # the LAN has a more specific route. Prefer a connected LAN route, while
+  # falling back to Tailscale when away from home (ignore the default route).
+  networking.localCommands = ''
+    set -euo pipefail
+    ip -4 rule del priority 5000 to 192.168.1.0/24 lookup main suppress_prefixlength 0 2>/dev/null || true
+    ip -4 rule add priority 5000 to 192.168.1.0/24 lookup main suppress_prefixlength 0
+  '';
+
   # Prometheus node exporter: monitoring over Tailscale
   services.prometheus.exporters.node = {
     enable = true;
