@@ -17,6 +17,7 @@
     ./llama.nix
     ./disable-wifi-when-ethernet-connected.nix
     ./adb.nix
+    ./samba.nix
   ];
 
   disko.devices.disk.main = {
