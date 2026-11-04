@@ -46,7 +46,6 @@ in {
     # cherry-studio = {}; # tool for LLMs
 
     firefox = {};
-    vivaldi = asLinuxPackage {};
     brave-browser = macOnlyCask {};
 
     krita = asLinuxPackage {}; # image editor
