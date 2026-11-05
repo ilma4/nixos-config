@@ -18,6 +18,7 @@
     ./disable-wifi-when-ethernet-connected.nix
     ./adb.nix
     ./samba.nix
+    ./jellyfin.nix
   ];
 
   disko.devices.disk.main = {
