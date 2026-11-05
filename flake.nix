@@ -239,6 +239,9 @@
         }
         // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           mallard-bot-image = (import ./projects/mallard-bot {inherit pkgs;}).image;
+        }
+        // pkgs.lib.optionalAttrs (system == systems.x86-linux) {
+          troubleshooting-iso = self.nixosConfigurations.troubleshooting.config.system.build.isoImage;
         };
     }) (builtins.attrValues systems));
 
@@ -269,6 +272,13 @@
 
     # NixOS Configurations
     nixosConfigurations = {
+      # Keep the live image independent of the services and secrets in modules/base.nix.
+      troubleshooting = builders.nixos {
+        system = systems.x86-linux;
+        specialArgs = {constants = import ./constants.nix;};
+        modules = [./hosts/troubleshooting/iso.nix];
+      };
+
       nas = mkNixosSystem {
         system = systems.x86-linux;
         module = ./hosts/nas/nas.nix;
