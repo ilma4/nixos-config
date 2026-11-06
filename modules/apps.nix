@@ -86,7 +86,6 @@ in {
     caffeine = macOnlyCask {};
     monitorcontrol = macOnlyCask {}; # control external monitor brightness
     "nikitabobko/tap/aerospace" = macOnlyCask {}; # tiling window manager
-    marta = macOnlyCask {}; # file manager
     jordanbaird-ice = macOnlyCask {}; # edit menu bar
     skim = macOnlyCask {}; # pdf viewer
     linearmouse = macOnlyCask {};
