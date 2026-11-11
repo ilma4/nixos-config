@@ -1,5 +1,6 @@
 {
   config,
+  constants,
   lib,
   pkgs,
   inputs,
@@ -7,6 +8,7 @@
 }: let
   # Secretive SSH agent socket (replaces the Bitwarden agent)
   secretiveSocket = "${config.home.homeDirectory}/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh";
+  mkResticWrapper = import ../../modules/backup/mk-restic-wrapper.nix {inherit lib pkgs;};
 in {
   imports = [
     inputs.sops-nix-darwin.homeManagerModules.sops
@@ -21,6 +23,7 @@ in {
     i4.personal.enable = true;
     i4.coding-agents.enable = false;
     i4.sops.enable = true;
+    sops.secrets.${constants.hetzer-restic.password-secret} = {};
     i4.raycast = {
       enable = true;
       scriptsPath = "Scripts";
@@ -35,6 +38,12 @@ in {
     };
 
     home.packages = with pkgs; [
+      (mkResticWrapper "storage-box" {
+        location = "sftp:storageBox:${constants.hetzer-restic.repo}";
+        passwordFile = config.sops.secrets.${constants.hetzer-restic.password-secret}.path;
+        extraResticArgs = ["--compression" "max"];
+      })
+
       (pkgs.writeShellScriptBin "openclaw-ssh" (builtins.readFile ../../scripts/openclaw-ssh.sh))
 
       lima

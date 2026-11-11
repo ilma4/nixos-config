@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  inherit (lib) all attrNames escapeShellArgs length mapAttrsToList mkIf unique;
+  inherit (lib) all attrNames length mapAttrsToList mkIf unique;
 
   cfg = config.i4.backup;
 
@@ -20,29 +20,7 @@
   hasLocalRemoteRepo = builtins.elem "local" remoteRepoNames;
   wrapperNamesAreUnique = length generatedWrapperNames == length (unique generatedWrapperNames);
 
-  mkWrapper = name: repo: let
-    wrapperName = mkWrapperName name;
-    resticArgs = ["${lib.getExe pkgs.restic}" "--repo" repo.location "--password-file" repo.passwordFile] ++ repo.extraResticArgs;
-    wrapper = pkgs.writeShellScriptBin wrapperName ''
-      set -euo pipefail
-
-      exec ${escapeShellArgs resticArgs} "''$@"
-    '';
-    zshCompletion = pkgs.writeTextFile {
-      name = "${wrapperName}-zsh-completion";
-      destination = "/share/zsh/site-functions/_${wrapperName}";
-      text = ''
-        #compdef ${wrapperName}
-
-        source ${pkgs.restic}/share/zsh/site-functions/_restic
-        _restic "$@"
-      '';
-    };
-  in
-    pkgs.symlinkJoin {
-      name = wrapperName;
-      paths = [wrapper zshCompletion];
-    };
+  mkWrapper = import ./mk-restic-wrapper.nix {inherit lib pkgs;};
 in {
   config = mkIf cfg.enable {
     assertions = [
