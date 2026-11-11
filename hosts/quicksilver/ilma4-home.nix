@@ -60,7 +60,8 @@ in {
         IdentityAgent = secretiveSocket;
       };
       "hetzer-storage" = {
-        header = "Host u478838.your-storagebox.de";
+        header = "Host storageBox u478838.your-storagebox.de";
+        HostName = "u478838.your-storagebox.de";
         Port = 23;
         IdentityFile = "~/.ssh/jb-mac-to-hetzer-storage";
         User = "u478838";
