@@ -128,7 +128,7 @@ in {
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
       ;
 
-    home.shellAliases = lib.mkIf pkgs.stdenv.isDarwin {
+    home.shellAliases = lib.mkIf (pkgs.stdenv.isDarwin && config.i4.coding-agents.enable) {
       claude = "$HOME/.local/bin/claude --dangerously-skip-permissions";
     };
 

@@ -19,6 +19,7 @@ in {
   config = {
     home.username = "ilma4";
     i4.personal.enable = true;
+    i4.coding-agents.enable = false;
     i4.sops.enable = true;
     i4.raycast = {
       enable = true;
