@@ -71,6 +71,13 @@ in {
   i4.initrd-ssh.enable = true;
   i4.deploy.enable = true;
 
+  # Advertise the NAS on its LAN, without reflecting mDNS through VM and
+  # container interfaces. Thread discovery uses OTBR's enp2s0 backbone.
+  services.avahi = {
+    allowInterfaces = ["enp2s0"];
+    reflector = lib.mkForce false;
+  };
+
   # TPM2 is enrolled separately with systemd-cryptenroll, bound to PCR 7.
   # Keep the existing LUKS passphrase slot for console/initrd SSH fallback.
   boot.initrd.systemd.tpm2.enable = true;
