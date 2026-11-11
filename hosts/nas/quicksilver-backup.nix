@@ -128,6 +128,13 @@
     }
     extraConfig;
 in {
+  home-manager.users.${backupUser}.home.packages = [
+    ((import ../../modules/backup/mk-restic-wrapper.nix {inherit lib pkgs;}) "storage-box" {
+      inherit (hetzerRepo) location passwordFile;
+      extraResticArgs = ["--compression" "max"] ++ hetzerRepo.extraArgs;
+    })
+  ];
+
   i4.backup.monitoring.repositories =
     builtins.mapAttrs (_: repo: {
       source = "quicksilver";
