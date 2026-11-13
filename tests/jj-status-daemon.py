@@ -223,22 +223,30 @@ class JJStatusTest(unittest.TestCase):
         # A deep bookmark expands once, then fits the remembered search window.
         for _ in range(34):
             self.jj('new')
-        refresh('old', 2)
+        warm = refresh('old', 2)
         refresh('old', 1)
-        # Crossing the next window boundary expands again, without stale status.
-        for _ in range(30):
-            self.jj('new')
-        refresh('old', 2)
-        warm = refresh('old', 1)
-        # A fresh worker reaches the same distant bookmark with two expansions
-        # (16 -> 64 -> 256). No upstream query is needed without a tracked remote.
+        # A cold visit now covers this distance in its first snapshot query.
         calls.write_text('')
         cold = subprocess.run([str(daemon())],
                               input=request(self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}, path=path),
                               env=self.env, capture_output=True, check=True)
         self.assertEqual(cold.stderr, b'')
         self.assertEqual(cold.stdout, b'1:' + '\x1f'.join(warm).encode() + b'\n')
-        self.assertEqual(len(calls.read_text().splitlines()), 3)
+        self.assertEqual(len(calls.read_text().splitlines()), 1)
+        # Crossing the next window boundary expands again, without stale status.
+        for _ in range(30):
+            self.jj('new')
+        refresh('old', 2)
+        warm = refresh('old', 1)
+        # A fresh worker reaches the same distant bookmark with one expansion
+        # (64 -> 256). No upstream query is needed without a tracked remote.
+        calls.write_text('')
+        cold = subprocess.run([str(daemon())],
+                              input=request(self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}, path=path),
+                              env=self.env, capture_output=True, check=True)
+        self.assertEqual(cold.stderr, b'')
+        self.assertEqual(cold.stdout, b'1:' + '\x1f'.join(warm).encode() + b'\n')
+        self.assertEqual(len(calls.read_text().splitlines()), 2)
         # A new closer bookmark invalidates the hint and triggers a fresh query.
         self.jj('bookmark', 'create', 'new')
         refresh('new', 2)

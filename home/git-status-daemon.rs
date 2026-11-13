@@ -152,7 +152,10 @@ impl Request<'_> {
         );
         // Reuse the successful search size as well as the name. Deep bookmarks
         // should not require the same sequence of expanding queries every time.
-        let mut depth = bookmark_hint.as_ref().map_or(16, |hint| hint.depth);
+        // Spend a larger first window on cold visits to avoid an extra process
+        // for moderately distant bookmarks. Successful searches still shrink
+        // warm queries to the smallest power of two (minimum 16) below.
+        let mut depth = bookmark_hint.as_ref().map_or(64, |hint| hint.depth);
         let window = format!("ancestors(@, {depth}) & (bookmarks():: | @)");
         let predicted = bookmark_hint
             .as_ref()

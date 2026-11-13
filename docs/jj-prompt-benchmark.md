@@ -347,3 +347,48 @@ Matched workers, paired drivers (`cold.py` and `tracked.py`) and raw measurement
 (`cold.json`, `tracked.json`, `regression.json`) are in `/tmp/jj-prompt-compact`.
 Run the drivers from this checkout with `DYLD_USE_CLOSURES=0 python3` followed by
 their path; the same loader override is applied to both measured workers.
+
+## Wider first ancestry window
+
+Cold visits now start with 64 ancestry generations instead of 16. Successful
+searches still shrink the remembered window to the next power of two, with a
+minimum of 16. This saves a JJ launch at moderate bookmark distances while
+preserving the existing warm query sizes and fresh status data.
+
+Measured 2026-11-13 with matched Rust 1.99.1 workers, edition 2021, optimization
+level 3 and stripped symbols. Synthetic linear histories contain ten files and
+an untracked remote bookmark. Five warmup pairs precede 30 randomized paired
+samples at each distance. Each sample starts a fresh worker and ends at its first
+response, excluding shutdown. Every reply was byte-identical.
+
+| Bookmark distance | Before median / p95 (ms) | After median / p95 (ms) |
+| --- | ---: | ---: |
+| 1 commit | 49.23 / 56.87 | 49.28 / 51.83 |
+| 17 commits | 84.40 / 89.08 | 47.69 / 51.48 |
+| 65 commits | 124.28 / 158.77 | 89.48 / 115.80 |
+| 257 commits | 180.71 / 268.21 | 146.85 / 186.03 |
+
+Median cold refresh latency improves by **43.5%** at 17 commits and **28.0%** at
+65 commits. The one-commit case is unchanged. A wider first window can visit
+more nodes in broad merge graphs; these linear fixtures do not establish a
+speedup for every topology. These measurements describe asynchronous status
+availability, not typing latency.
+
+The same paired procedure with a tracked upstream measured 124.49 to 84.48 ms
+median at 17 commits and 169.51 to 130.38 ms at 65 commits. At one commit the
+median was 87.11 to 88.85 ms (p95 108.84 to 114.47 ms).
+
+Thirty paired warm requests per non-repository, small clean Git and checkout
+fixture also returned identical bytes. Warm checkout medians were 42.47 to
+41.74 ms; small clean Git medians were 48.15 to 48.45 ms. The Git implementation
+is unchanged.
+
+All 40 integration tests pass against the Nix-built worker and compiled client,
+including actual Powerlevel10k rendering. The counting-wrapper test verifies
+that a cold visit at 35 commits needs one query and at 65 commits needs two.
+The generated Quicksilver `.zshrc` builds and passes syntax checking; Rust
+formatting and `./utils/flake-check.sh` pass. Configuration was not activated.
+
+Matched binaries, paired drivers (`cold.py`, `tracked.py`) and raw measurements
+are saved in `/tmp/jj-prompt-cold-window`. Run the drivers from this checkout
+with `DYLD_USE_CLOSURES=0 python3` followed by their path.
