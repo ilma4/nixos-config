@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   pkgs,
   ...
@@ -19,6 +20,11 @@
     ./adb.nix
     ./jellyfin.nix
   ];
+
+  # The in-tree msi_ec driver rejects this laptop's 14D3EMS1.116 firmware.
+  # The packaged driver supports it and exposes battery charge thresholds.
+  boot.extraModulePackages = [config.boot.kernelPackages.msi-ec];
+  boot.kernelModules = ["msi-ec"];
 
   disko.devices.disk.main = {
     type = "disk";
