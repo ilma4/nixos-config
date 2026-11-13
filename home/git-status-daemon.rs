@@ -242,7 +242,9 @@ impl Request<'_> {
                 {
                     break;
                 }
-                depth = depth.checked_mul(2)?;
+                // Expand faster on misses to reduce process launches for distant
+                // bookmarks. Successful searches still shrink to a power of two.
+                depth = depth.checked_mul(4)?;
             }
         }
         let mut ahead = 0;

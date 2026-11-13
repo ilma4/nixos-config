@@ -255,3 +255,52 @@ All 39 integration tests pass against the Nix-built worker and compiled client,
 including actual Powerlevel10k rendering. The generated Quicksilver `.zshrc`
 builds and passes syntax checking; Rust formatting and `./utils/flake-check.sh`
 pass. Configuration was not activated.
+
+## Faster expansion on ancestry misses
+
+An unsuccessful bookmark search now quadruples its ancestry window instead of
+doubling it. Successful searches still shrink the remembered window to the next
+power of two, with a minimum of 16. This reduces JJ launches on cold visits and
+after moving far from the previous bookmark; ordinary warm refreshes retain
+their existing one-query plan.
+
+Measured 2026-11-13 with both workers compiled using Rust 1.95.0 and identical
+optimization flags. Synthetic linear histories have ten files and a tracked
+remote bookmark. Each sample starts a fresh worker and measures time through its
+first response, excluding shutdown. Five warmup pairs precede 30 randomized
+paired samples per distance. Every paired reply was byte-identical.
+
+| Bookmark distance | Before median / p95 (ms) | After median / p95 (ms) | JJ launches before / after |
+| --- | ---: | ---: | ---: |
+| 1 commit | 87.33 / 91.73 | 85.97 / 93.16 | 2 / 2 |
+| 65 commits | 204.31 / 223.43 | 167.27 / 176.19 | 5 / 4 |
+| 257 commits | 313.26 / 353.25 | 230.38 / 248.85 | 7 / 5 |
+
+At 257 commits, median first-response latency improves by **26.5%**. Larger
+windows can inspect more graph nodes per miss; these linear-history results do
+not establish a speedup for every merge topology. This measures asynchronous
+status availability, not typing latency.
+
+Twenty-five randomized paired requests each for non-repository, small clean Git
+and this checkout also returned identical bytes. The checkout's warm median
+stayed essentially unchanged (40.75 to 40.98 ms); raw samples are in
+`/tmp/jj-prompt-window/regression.json`.
+
+All 39 integration tests pass against the Nix-built worker and compiled client,
+including actual Powerlevel10k rendering. The counting-wrapper test verifies a
+cold search at 65 commits, warm refreshes, window shrinking, bookmark deletion,
+edits and repository changes. The generated Quicksilver `.zshrc` builds and
+passes syntax checking; Rust formatting and `./utils/flake-check.sh` pass.
+Configuration was not activated.
+
+Matched binaries, the paired cold-start driver (`cold.py`) and raw measurements
+(`cold.json`) are saved in `/tmp/jj-prompt-window`. The driver compares `before`
+and `after` binaries in that directory. Run it from this checkout:
+
+```bash
+set -euo pipefail
+DYLD_USE_CLOSURES=0 python3 /tmp/jj-prompt-window/cold.py
+```
+
+The loader override was used for both workers after macOS stalled test binaries
+in `_dyld_start`; it is confined to verification and is not configured in Zsh.
