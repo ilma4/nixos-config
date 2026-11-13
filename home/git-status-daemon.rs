@@ -166,7 +166,14 @@ impl Request<'_> {
             );
             format!("({window}) | ({})", query.revision)
         } else {
-            window
+            // Discover tracked names on cold visits so an untracked bookmark
+            // doesn't need a second process just to report zero divergence.
+            // Only names are reused below; remote targets and counts stay fresh.
+            // The colocated Git ref (@git) is not an upstream remote.
+            template = format!(
+                r#"if(self.contained_in("{window}"), {template}) ++ remote_bookmarks.filter(|b| b.tracked() && b.remote() != "git").map(|b| concat("R|", b.name().escape_json(), "\n")).join("")"#
+            );
+            format!("({window}) | tracked_remote_bookmarks()")
         };
         let initial = self.jj_output(&revision, &template, true)?;
         let initial = str::from_utf8(&initial).ok()?;
@@ -193,7 +200,11 @@ impl Request<'_> {
                 };
                 let nodes: std::collections::HashMap<_, _> = graph
                     .lines()
-                    .filter(|line| !line.starts_with("M|") && !line.starts_with("D|"))
+                    .filter(|line| {
+                        !line.starts_with("M|")
+                            && !line.starts_with("D|")
+                            && !line.starts_with("R|")
+                    })
                     .filter_map(|line| {
                         let mut parts = line.splitn(3, '|');
                         Some((parts.next()?, (parts.next()?, parts.next()?)))
@@ -252,7 +263,12 @@ impl Request<'_> {
         if bookmark {
             if bookmark_hint.as_ref().map(|hint| &hint.label) == Some(&label) {
                 (ahead, behind) = JjUpstreamQuery::counts(initial);
-            } else {
+            } else if predicted.is_some()
+                || initial.lines().any(|line| {
+                    line.strip_prefix("R|\"").and_then(|s| s.strip_suffix('"'))
+                        == Some(label.as_str())
+                })
+            {
                 let query = JjUpstreamQuery::new(&label, fields[0]);
                 if let Some(counts) = self.jj_output(&query.revision, &query.template, false) {
                     (ahead, behind) = JjUpstreamQuery::counts(str::from_utf8(&counts).ok()?);

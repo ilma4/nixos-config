@@ -117,6 +117,23 @@ class JJStatusTest(unittest.TestCase):
         self.jj('bookmark', 'untrack', 'main@origin')
         self.assertEqual(self.status()[7:], ['0', '0'])
 
+    def test_cold_upstream_outside_ancestry(self):
+        self.jj('bookmark', 'create', 'main')
+        base = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
+        self.jj('new')
+        self.jj('new')
+        remote = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
+        self.jj('new', 'main')
+        subprocess.run(['git', '-C', str(self.repo), 'update-ref',
+                        'refs/remotes/origin/main', remote], check=True)
+        self.jj('git', 'import')
+        self.jj('bookmark', 'track', 'main@origin')
+        self.jj('bookmark', 'set', 'main', '-r', base, '--allow-backwards')
+        cold = self.status()
+        self.assertEqual(cold[1], 'main')
+        self.assertEqual(cold[7:], ['1', '2'])
+        self.assertEqual(self.status(), cold)
+
     def test_multiple_remote_targets_and_origin_preference(self):
         self.jj('bookmark', 'create', 'main')
         base = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
@@ -168,7 +185,13 @@ class JJStatusTest(unittest.TestCase):
 
     def test_warm_refresh_uses_one_query_and_revalidates_hint(self):
         self.jj('bookmark', 'create', 'old')
+        base = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
         self.jj('new')
+        # A tracked remote with another name must not trigger the cold fallback.
+        subprocess.run(['git', '-C', str(self.repo), 'update-ref',
+                        'refs/remotes/origin/unrelated', base], check=True)
+        self.jj('git', 'import')
+        self.jj('bookmark', 'track', 'unrelated@origin')
         wrapper_dir = self.root / 'bin'
         wrapper_dir.mkdir()
         calls = self.root / 'calls'
@@ -186,8 +209,17 @@ class JJStatusTest(unittest.TestCase):
             self.assertEqual(len(calls.read_text().splitlines()), expected_calls)
             return state
 
-        refresh('old', 2)
         refresh('old', 1)
+        refresh('old', 1)
+        # Tracking added after a cold untracked result is visible immediately.
+        subprocess.run(['git', '-C', str(self.repo), 'update-ref',
+                        'refs/remotes/origin/old', base], check=True)
+        self.jj('git', 'import')
+        self.jj('bookmark', 'track', 'old@origin')
+        self.assertEqual(refresh('old', 1)[7:], ['1', '0'])
+        self.jj('bookmark', 'untrack', 'old@origin')
+        self.assertEqual(refresh('old', 1)[7:], ['0', '0'])
+        self.jj('bookmark', 'delete', 'unrelated')
         # A deep bookmark expands once, then fits the remembered search window.
         for _ in range(34):
             self.jj('new')
@@ -199,14 +231,14 @@ class JJStatusTest(unittest.TestCase):
         refresh('old', 2)
         warm = refresh('old', 1)
         # A fresh worker reaches the same distant bookmark with two expansions
-        # (16 -> 64 -> 256), followed by the upstream query.
+        # (16 -> 64 -> 256). No upstream query is needed without a tracked remote.
         calls.write_text('')
         cold = subprocess.run([str(daemon())],
                               input=request(self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}, path=path),
                               env=self.env, capture_output=True, check=True)
         self.assertEqual(cold.stderr, b'')
         self.assertEqual(cold.stdout, b'1:' + '\x1f'.join(warm).encode() + b'\n')
-        self.assertEqual(len(calls.read_text().splitlines()), 4)
+        self.assertEqual(len(calls.read_text().splitlines()), 3)
         # A new closer bookmark invalidates the hint and triggers a fresh query.
         self.jj('bookmark', 'create', 'new')
         refresh('new', 2)
@@ -220,7 +252,7 @@ class JJStatusTest(unittest.TestCase):
         other = self.root / 'other'
         self.jj('git', 'init', '--colocate', str(other), cwd=self.root)
         self.jj('bookmark', 'create', 'other', cwd=other)
-        refresh('other', 2, other)
+        refresh('other', 1, other)
         refresh('other', 1, other)
         child = self.repo / 'child'
         child.mkdir()

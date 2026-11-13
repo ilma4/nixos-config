@@ -304,3 +304,46 @@ DYLD_USE_CLOSURES=0 python3 /tmp/jj-prompt-window/cold.py
 
 The loader override was used for both workers after macOS stalled test binaries
 in `_dyld_start`; it is confined to verification and is not configured in Zsh.
+
+## Skip upstream queries for cold untracked bookmarks
+
+The initial cold query now includes tracked remote bookmark names. If the closest
+local bookmark has no matching tracked remote, the worker can return zero
+divergence without another JJ process. The colocated `@git` ref is excluded.
+Remote commits are excluded from the ancestry graph used to choose the label.
+Warm refreshes retain their existing query; adding or removing tracking is
+visible on the next refresh. Cold tracked bookmarks still use the upstream query.
+
+Measured 2026-11-13 with matched Rust 1.99.1 workers, edition 2021, optimization
+level 3 and stripped symbols. Each sample starts a fresh worker; timings end at
+the first response, excluding shutdown. Fixtures contain ten files, an untracked
+`origin/main` ref, and a local `main` bookmark. Five warmup pairs precede 30
+randomized paired samples per distance. Every response is byte-identical.
+
+| Bookmark distance | Before median / p95 (ms) | After median / p95 (ms) | JJ launches before / after |
+| --- | ---: | ---: | ---: |
+| 1 commit | 85.24 / 95.82 | 48.29 / 56.18 | 2 / 1 |
+| 65 commits | 162.72 / 168.91 | 124.41 / 129.87 | 4 / 3 |
+
+Median first-response latency improves by **43.3%** for the shallow case and
+**23.5%** at 65 commits. A tracked shallow bookmark is essentially unchanged:
+87.46 to 86.98 ms median (93.00 to 91.12 ms p95). Enumerating tracked names may
+cost more in repositories with many remote bookmarks; these fixtures do not
+measure that workload.
+
+Twenty-five randomized paired warm requests per non-repository, small clean Git
+and checkout fixture also return identical bytes. Medians are 10.93 to 11.03 ms,
+41.27 to 41.66 ms, and 40.11 to 40.53 ms respectively. The Git code is unchanged.
+These measurements describe asynchronous status availability.
+
+The Nix-built worker and compiled client pass all 40 integration tests, including
+actual Powerlevel10k rendering. Coverage includes unrelated tracked names,
+tracking added after an untracked response, escaped names, and cold divergent
+upstreams outside the working copy's ancestry. The generated Quicksilver `.zshrc`
+builds and passes syntax checking; Rust formatting and `./utils/flake-check.sh`
+pass. Configuration was not activated.
+
+Matched workers, paired drivers (`cold.py` and `tracked.py`) and raw measurements
+(`cold.json`, `tracked.json`, `regression.json`) are in `/tmp/jj-prompt-compact`.
+Run the drivers from this checkout with `DYLD_USE_CLOSURES=0 python3` followed by
+their path; the same loader override is applied to both measured workers.
