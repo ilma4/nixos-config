@@ -207,12 +207,22 @@ class JJStatusTest(unittest.TestCase):
         # Snapshot new edits even when the predicted bookmark still matches.
         (self.repo / 'file').write_text('new\n')
         self.assertEqual(refresh('old', 1)[3:7], ['1', '0', '0', '0'])
-        # A hint from another repository is never accepted without verification.
+        # Each repository keeps its own plan, including across subdirectories.
         other = self.root / 'other'
         self.jj('git', 'init', '--colocate', str(other), cwd=self.root)
         self.jj('bookmark', 'create', 'other', cwd=other)
         refresh('other', 2, other)
         refresh('other', 1, other)
+        child = self.repo / 'child'
+        child.mkdir()
+        refresh('old', 1, child)
+        refresh('other', 1, other)
+        refresh('old', 1)
+        # Revalidate a cached plan after a bookmark changes while we are away.
+        refresh('other', 1, other)
+        self.jj('bookmark', 'create', 'closer')
+        refresh('closer', 2)
+        self.jj('bookmark', 'delete', 'closer')
         refresh('old', 5)
         self.jj('bookmark', 'delete', 'old')
         fallback = self.jj('log', '-G', '-r', '@', '-T', 'change_id.short(8)')

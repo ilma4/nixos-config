@@ -212,3 +212,46 @@ GIT_STATUS_DAEMON=/tmp/jj-prompt-depth/after \
   python3 tests/benchmark-jj-status-daemon.py \
   --tracked-remote --depth 65 --samples 40
 ```
+
+## Preserve query plans across repository changes
+
+The worker now retains bookmark names and ancestry window sizes for the 32 most
+recently used JJ repository roots. Subdirectories share their repository's plan.
+Returning to a previously visited repository can therefore use one snapshotting
+query instead of restarting the ancestry search and upstream lookup. Names,
+changes, conflicts and divergence are still recomputed on every request; cached
+plans are verified against the fresh graph. First visits and evicted repositories
+use the normal cold lookup.
+
+Measured 2026-11-13 with both workers compiled using Rust 1.95.0, edition 2021,
+optimization level 3 and stripped symbols. One persistent worker per version
+alternates between two synthetic repositories with different tracked bookmark
+names, one 65 commits behind its working copy and the other one commit behind.
+After ten warmup pairs, 40 pairs were measured in randomized worker order. Every
+reply was byte-identical. These timings measure asynchronous refresh availability.
+
+| Returning to repository | Before median / p95 (ms) | After median / p95 (ms) |
+| --- | ---: | ---: |
+| Bookmark 65 commits back | 180.46 / 225.52 | 39.33 / 45.48 |
+| Bookmark 1 commit back | 70.51 / 79.89 | 36.85 / 42.63 |
+
+The deep case improves by **78.2%**, reducing five JJ processes to one on return.
+The shallow case improves by **47.7%**, reducing two processes to one. This targets
+repository switching; refreshes that stay in one repository already use one query.
+
+The counting-wrapper integration test covers returning through a subdirectory,
+alternating repositories, and invalidating a cached plan when a bookmark changed
+while visiting another repository. Matched binaries, the paired benchmark driver
+(`switching.py`) and raw measurements (`switching.json`) are saved in
+`/tmp/jj-prompt-query`.
+
+Twenty-five randomized paired requests per non-repository, small clean Git,
+large dirty Git and checkout fixture also returned identical bytes. Staying in
+this checkout was essentially unchanged: 38.23 to 38.47 ms median. Git medians
+were 10.85 to 11.07 ms outside a repository, 41.58 to 41.73 ms for small clean Git,
+and 418.73 to 395.77 ms for large dirty Git. Raw samples are in `regression.json`.
+
+All 39 integration tests pass against the Nix-built worker and compiled client,
+including actual Powerlevel10k rendering. The generated Quicksilver `.zshrc`
+builds and passes syntax checking; Rust formatting and `./utils/flake-check.sh`
+pass. Configuration was not activated.

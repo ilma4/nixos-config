@@ -96,21 +96,21 @@ impl Request<'_> {
         bytes
     }
 
-    fn is_jj(&self) -> bool {
+    fn jj_root(&self) -> Option<PathBuf> {
         if self
             .git_env
             .iter()
             .any(|[n, _]| n == b"GIT_DIR" || n == b"GIT_WORK_TREE")
         {
-            return false;
+            return None;
         }
         let mut dir = PathBuf::from(self.dir);
         loop {
             if dir.join(".jj").is_dir() {
-                return true;
+                return Some(dir);
             }
             if dir.join(".git").exists() || !dir.pop() {
-                return false;
+                return None;
             }
         }
     }
@@ -394,7 +394,9 @@ fn run() -> io::Result<()> {
     let mut fields: [_; 4] = Default::default();
     let mut git_env: Vec<[Vec<u8>; 2]> = Vec::new();
     let mut buffers = Default::default();
-    let mut jj_bookmark_hint = None;
+    // Keep query plans for recently visited repositories, shared by their
+    // subdirectories. Every plan is still verified against freshly queried data.
+    let mut jj_bookmark_hints: Vec<(PathBuf, Option<JjBookmarkHint>)> = Vec::new();
     loop {
         read_fields(&mut input, &mut fields)?;
         let [id, dir, path, count] = &fields;
@@ -414,8 +416,19 @@ fn run() -> io::Result<()> {
         result.clone_from(id);
         result.push(b':');
         let start = result.len();
-        let status = if request.is_jj() {
-            request.jj_status(&mut result, &mut jj_bookmark_hint)
+        let status = if let Some(root) = request.jj_root() {
+            let mut entry = jj_bookmark_hints
+                .iter()
+                .position(|(dir, _)| dir == &root)
+                .map(|index| jj_bookmark_hints.remove(index))
+                .unwrap_or((root, None));
+            let status = request.jj_status(&mut result, &mut entry.1);
+            // Bound memory in long-lived shells, evicting the least recently used.
+            if jj_bookmark_hints.len() == 32 {
+                jj_bookmark_hints.remove(0);
+            }
+            jj_bookmark_hints.push(entry);
+            status
         } else {
             request.status(&mut result, &mut buffers)
         };
