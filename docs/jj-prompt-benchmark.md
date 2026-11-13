@@ -168,3 +168,47 @@ GIT_STATUS_DAEMON=/tmp/jj-prompt-next/after \
   --baseline /tmp/jj-prompt-next/before --baseline-raw \
   --samples 50 --startup-samples 5 --case checkout
 ```
+
+## Adaptive ancestry windows
+
+The worker now remembers the successful ancestry window alongside the bookmark
+name. Previously, a bookmark beyond the first 16 generations required repeated
+window expansion on every refresh, even when its name was already known. Warm
+refreshes now start with enough generations to find that bookmark in one query.
+The window rounds up to a power of two, with a minimum of 16, and shrinks after
+finding a closer bookmark. Names, file status and upstream counts are still
+recomputed and verified on every request.
+
+Measured 2026-11-13 using matched compiler/optimization flags, ten warmups and 40
+randomized paired requests per case. Synthetic fixtures contain ten files and a
+tracked remote bookmark. Every paired reply was byte-identical.
+
+| Bookmark distance | Before median / p95 (ms) | After median / p95 (ms) |
+| --- | ---: | ---: |
+| 1 commit | 39.91 / 42.83 | 38.52 / 43.37 |
+| 18 commits | 79.80 / 86.62 | 42.21 / 46.56 |
+| 65 commits | 170.70 / 180.23 | 45.78 / 49.78 |
+
+At 65 commits, median asynchronous refresh latency improved by **73.2%**.
+This checkout's shallow bookmark case stayed essentially unchanged: 43.46 to
+43.52 ms median (48.72 to 50.85 ms p95). This change targets deep bookmark searches;
+the Git implementation is unchanged. Cold searches still expand as needed.
+
+The counting-wrapper integration test covers expansion beyond 16 and 64
+generations, one-process subsequent refreshes, shrinking after a closer bookmark,
+deleting that bookmark, snapshotting edits and switching repositories.
+All 39 integration tests pass against the Nix-built worker and compiled client,
+including actual Powerlevel10k rendering. The generated Quicksilver `.zshrc`
+builds and passes syntax checking; `./utils/flake-check.sh` passes.
+Configuration was not activated.
+
+Matched binaries, the paired benchmark driver and raw samples are saved in
+`/tmp/jj-prompt-depth`. The existing standalone benchmark now accepts `--depth`
+to reproduce distant-bookmark fixtures:
+
+```bash
+set -euo pipefail
+GIT_STATUS_DAEMON=/tmp/jj-prompt-depth/after \
+  python3 tests/benchmark-jj-status-daemon.py \
+  --tracked-remote --depth 65 --samples 40
+```

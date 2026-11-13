@@ -31,6 +31,11 @@ struct JjUpstreamQuery {
     template: String,
 }
 
+struct JjBookmarkHint {
+    label: String,
+    depth: u64,
+}
+
 impl JjUpstreamQuery {
     fn new(label: &str, current: &str) -> Self {
         // Labels already carry JSON escaping, which also quotes revset strings.
@@ -133,7 +138,11 @@ impl Request<'_> {
         output.status.success().then_some(output.stdout)
     }
 
-    fn jj_status(&self, result: &mut Vec<u8>, bookmark_hint: &mut Option<String>) -> Option<()> {
+    fn jj_status(
+        &self,
+        result: &mut Vec<u8>,
+        bookmark_hint: &mut Option<JjBookmarkHint>,
+    ) -> Option<()> {
         // Names are escaped before entering the line-oriented wire protocol.
         const GRAPH: &str = r#"concat(commit_id, "|", parents.map(|p| p.commit_id()).join(" "), "|", local_bookmarks.map(|b| b.name().escape_json()).join("\t"), "\n")"#;
         // Snapshot once and return metadata plus the first ancestry window together.
@@ -141,20 +150,23 @@ impl Request<'_> {
         let mut template = format!(
             r#"if(current_working_copy, concat("M|", commit_id, "|", change_id.short(8), "|", self.contained_in("bookmarks()::"), "|", diff.files().map(|f| f.status_char()).join(""), "|", conflicted_files.len(), "\n")) ++ {GRAPH}"#
         );
-        const WINDOW: &str = "ancestors(@, 16) & (bookmarks():: | @)";
+        // Reuse the successful search size as well as the name. Deep bookmarks
+        // should not require the same sequence of expanding queries every time.
+        let mut depth = bookmark_hint.as_ref().map_or(16, |hint| hint.depth);
+        let window = format!("ancestors(@, {depth}) & (bookmarks():: | @)");
         let predicted = bookmark_hint
-            .as_deref()
-            .map(|label| JjUpstreamQuery::new(label, "@"));
+            .as_ref()
+            .map(|hint| JjUpstreamQuery::new(&hint.label, "@"));
         let revision = if let Some(query) = &predicted {
             // Cache only the query plan. All status is recomputed after snapshotting,
             // and the hint is verified by the fresh closest-bookmark search below.
             template = format!(
-                r#"if(self.contained_in("{WINDOW}"), {template}) ++ {}"#,
+                r#"if(self.contained_in("{window}"), {template}) ++ {}"#,
                 query.template
             );
-            format!("({WINDOW}) | ({})", query.revision)
+            format!("({window}) | ({})", query.revision)
         } else {
-            WINDOW.to_owned()
+            window
         };
         let initial = self.jj_output(&revision, &template, true)?;
         let initial = str::from_utf8(&initial).ok()?;
@@ -166,10 +178,10 @@ impl Request<'_> {
         let mut label = fields[1].to_owned();
         let mut bookmark = false;
         if fields[2] == "true" {
-            let mut depth = 16u64;
+            let initial_depth = depth;
             loop {
                 let expanded;
-                let graph = if depth == 16 {
+                let graph = if depth == initial_depth {
                     initial
                 } else {
                     expanded = self.jj_output(
@@ -190,6 +202,7 @@ impl Request<'_> {
                 let mut frontier = vec![fields[0]];
                 let mut visited = std::collections::HashSet::new();
                 let mut found = None;
+                let mut generations = 1u64;
                 while !frontier.is_empty() {
                     let mut names = Vec::new();
                     let mut next = Vec::new();
@@ -212,10 +225,14 @@ impl Request<'_> {
                         break;
                     }
                     frontier = next;
+                    generations = generations.checked_add(1)?;
                 }
                 if let Some(name) = found {
                     label = name;
                     bookmark = true;
+                    // Shrink again after moving nearer a bookmark or changing
+                    // repositories, retaining headroom for ordinary jj new steps.
+                    depth = generations.checked_next_power_of_two()?.max(16);
                     break;
                 }
                 // Bookmarks can disappear concurrently; terminate once the graph is complete.
@@ -231,7 +248,7 @@ impl Request<'_> {
         let mut ahead = 0;
         let mut behind = 0;
         if bookmark {
-            if bookmark_hint.as_deref() == Some(&label) {
+            if bookmark_hint.as_ref().map(|hint| &hint.label) == Some(&label) {
                 (ahead, behind) = JjUpstreamQuery::counts(initial);
             } else {
                 let query = JjUpstreamQuery::new(&label, fields[0]);
@@ -240,7 +257,10 @@ impl Request<'_> {
                 }
             }
         }
-        *bookmark_hint = bookmark.then(|| label.clone());
+        *bookmark_hint = bookmark.then(|| JjBookmarkHint {
+            label: label.clone(),
+            depth,
+        });
         let mut counts = [0u64; 3];
         for status in fields[3].bytes() {
             match status {

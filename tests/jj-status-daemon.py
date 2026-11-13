@@ -188,12 +188,22 @@ class JJStatusTest(unittest.TestCase):
 
         refresh('old', 2)
         refresh('old', 1)
+        # A deep bookmark expands once, then fits the remembered search window.
+        for _ in range(34):
+            self.jj('new')
+        refresh('old', 3)
+        refresh('old', 1)
+        # Crossing the next window boundary expands again, without stale status.
+        for _ in range(30):
+            self.jj('new')
+        refresh('old', 2)
+        refresh('old', 1)
         # A new closer bookmark invalidates the hint and triggers a fresh query.
         self.jj('bookmark', 'create', 'new')
         refresh('new', 2)
         refresh('new', 1)
         self.jj('bookmark', 'delete', 'new')
-        refresh('old', 2)
+        refresh('old', 5)
         # Snapshot new edits even when the predicted bookmark still matches.
         (self.repo / 'file').write_text('new\n')
         self.assertEqual(refresh('old', 1)[3:7], ['1', '0', '0', '0'])
@@ -203,7 +213,7 @@ class JJStatusTest(unittest.TestCase):
         self.jj('bookmark', 'create', 'other', cwd=other)
         refresh('other', 2, other)
         refresh('other', 1, other)
-        refresh('old', 2)
+        refresh('old', 5)
         self.jj('bookmark', 'delete', 'old')
         fallback = self.jj('log', '-G', '-r', '@', '-T', 'change_id.short(8)')
         refresh(fallback, 1)
