@@ -122,7 +122,7 @@ def main():
     parser.add_argument("--samples", default=100, type=int)
     parser.add_argument("--startup-samples", default=30, type=int)
     parser.add_argument("--case", action="append", choices=(
-        "non_repo", "small_clean_10_files", "checkout", "large_clean_5000_files",
+        "non_repo", "small_clean_10_files", "small_deep_git", "checkout", "large_clean_5000_files",
         "large_dirty_5000_modified_200_untracked"),
         help="Measure only selected cases (repeat to select several).")
     args = parser.parse_args()
@@ -142,7 +142,9 @@ def main():
         small, large = tmp / "small", tmp / "large"
         init(small, 10)
         init(large, 5000)
-        cases = {"non_repo": tmp, "small_clean_10_files": small,
+        deep = small.joinpath(*["child"] * 20)
+        deep.mkdir(parents=True)
+        cases = {"non_repo": tmp, "small_clean_10_files": small, "small_deep_git": deep,
                  "checkout": root, "large_clean_5000_files": large}
         for name, repo in cases.items():
             if args.case and name not in args.case:

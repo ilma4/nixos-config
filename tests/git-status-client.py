@@ -34,7 +34,7 @@ class GitStatusClientTest(unittest.TestCase):
         subprocess.run(["git", "-C", str(self.repo), "add", "tracked"], check=True)
         subprocess.run(["git", "-C", str(self.repo), "commit", "-qm", "initial"], check=True)
 
-    def start_shell(self, separate_job=False):
+    def start_shell(self, separate_job=False, theme=None):
         zdot = self.root / "zdot"
         zdot.mkdir()
         client = CLIENT
@@ -48,8 +48,11 @@ class GitStatusClientTest(unittest.TestCase):
             f"source {shlex.quote(str(client))} {shlex.quote(str(daemon()))}\n"
             "setopt prompt_subst\n"
             "PROMPT='I4_STATUS:${PWD:t}:${_I4_GIT_STATUS_READY}:"
-            "${_I4_GIT_STATUS_FAILED}:${VCS_STATUS_LOCAL_BRANCH}> '\n"
+            "${_I4_GIT_STATUS_FAILED}:${VCS_STATUS_LOCAL_BRANCH}:${_I4_STATUS_BACKEND}:${_I4_JJ_LABEL}:${_I4_JJ_ADDED}:${_I4_JJ_MODIFIED}:${_I4_JJ_DELETED}> '\n"
         )
+        if theme:
+            with zdot.joinpath(".zshrc").open('a') as rc:
+                rc.write(f"source {shlex.quote(theme)}\nsource {shlex.quote(str(ROOT / 'dotfiles/p10k.zsh'))}\n")
         master, slave = pty.openpty()
         process = subprocess.Popen(
             ["zsh", "-i"], cwd=self.repo,
@@ -123,6 +126,48 @@ class GitStatusClientTest(unittest.TestCase):
         os.write(master, b"print -r -- worker:$_I4_GIT_STATUS_PID\n")
         output = self.read_until(master, b"worker:0\r", b"I4_STATUS:child:0:1:main")
         self.assertNotIn(b"git status daemon (PID", output)
+
+    @unittest.skipUnless(os.environ.get('I4_TEST_P10K_THEME'), 'Set I4_TEST_P10K_THEME for actual theme rendering')
+    def test_actual_jj_theme_rendering(self):
+        subprocess.run(['jj', 'git', 'init', '--colocate', str(self.repo)], check=True, capture_output=True)
+        subprocess.run(['jj', '-R', str(self.repo), 'bookmark', 'create', 'prompt-test'], check=True, capture_output=True)
+        (self.repo / 'new-file').write_text('new\n')
+        master = self.start_shell(theme=os.environ['I4_TEST_P10K_THEME'])
+        self.read_until(master, b'jj:prompt-test', b'+1')
+
+    def test_jj_divergence_rendering(self):
+        result = subprocess.run(['zsh', '-fc', r'''
+            source "$1"
+            function p10k() { print -r -- "$@" }
+            _I4_GIT_STATUS_READY=1 _I4_STATUS_BACKEND=jj _I4_JJ_LABEL=main
+            _I4_JJ_AHEAD=3 _I4_JJ_BEHIND=2
+            prompt_git_status
+            _I4_JJ_AHEAD=0 _I4_JJ_BEHIND=0
+            prompt_git_status
+        ''', 'zsh', str(ROOT / 'dotfiles/p10k.zsh')], check=True, capture_output=True)
+        first, second = result.stdout.decode().splitlines()
+        self.assertIn('⇡3', first)
+        self.assertIn('⇣2', first)
+        self.assertNotIn('⇡', second)
+        self.assertNotIn('⇣', second)
+
+    def test_jj_refresh_and_git_transition(self):
+        subprocess.run(['jj', 'git', 'init', '--colocate', str(self.repo)], check=True,
+                       capture_output=True)
+        subprocess.run(['jj', '-R', str(self.repo), 'bookmark', 'create', 'prompt-test'],
+                       check=True, capture_output=True)
+        master = self.start_shell()
+        self.read_until(master, b':jj:prompt-test:0:0:0>')
+        (self.repo / 'new-file').write_text('new\n')
+        os.write(master, b'\n')
+        self.read_until(master, b':jj:prompt-test:1:0:0>')
+        nested = self.repo / 'git-only'
+        nested.mkdir()
+        subprocess.run(['git', 'init', '-q', '-b', 'nested', str(nested)], check=True)
+        os.write(master, b'cd git-only\n')
+        self.read_until(master, b'I4_STATUS:git-only:1:0:nested:git:')
+        os.write(master, b'cd ..\n')
+        self.read_until(master, b':jj:prompt-test:')
 
     def test_request_preserves_bytes_and_multibyte_option(self):
         value = bytes(range(1, 256)) + "é😀".encode()

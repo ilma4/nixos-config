@@ -50,6 +50,160 @@ impl Request<'_> {
         bytes
     }
 
+    fn is_jj(&self) -> bool {
+        if self
+            .git_env
+            .iter()
+            .any(|[n, _]| n == b"GIT_DIR" || n == b"GIT_WORK_TREE")
+        {
+            return false;
+        }
+        let mut dir = PathBuf::from(self.dir);
+        loop {
+            if dir.join(".jj").is_dir() {
+                return true;
+            }
+            if dir.join(".git").exists() || !dir.pop() {
+                return false;
+            }
+        }
+    }
+
+    fn jj_output(&self, revision: &str, template: &str, snapshot: bool) -> Option<Vec<u8>> {
+        let mut command = Command::new("jj");
+        command
+            .current_dir(self.dir)
+            .args(["--color=never", "--no-pager"])
+            .stdin(Stdio::null())
+            .stderr(Stdio::null())
+            .envs(self.path.map(|p| ("PATH", p)));
+        command.envs(
+            self.git_env
+                .iter()
+                .map(|[n, v]| (OsStr::from_bytes(n), OsStr::from_bytes(v))),
+        );
+        if !snapshot {
+            command.arg("--ignore-working-copy");
+        }
+        let output = command
+            .args(["log", "--no-graph", "-r", revision, "-T", template])
+            .output()
+            .ok()?;
+        output.status.success().then_some(output.stdout)
+    }
+
+    fn jj_status(&self, result: &mut Vec<u8>) -> Option<()> {
+        // Names are escaped before entering the line-oriented wire protocol.
+        const GRAPH: &str = r#"concat(commit_id, "|", parents.map(|p| p.commit_id()).join(" "), "|", local_bookmarks.map(|b| b.name().escape_json()).join("\t"), "\n")"#;
+        let metadata = self.jj_output("@", r#"concat(commit_id, "\n", change_id.short(8), "\n", self.contained_in("bookmarks()::"), "\n", diff.files().map(|f| f.status_char()).join(""), "\n", conflicted_files.len(), "\n")"#, true)?;
+        let metadata = str::from_utf8(&metadata).ok()?;
+        let fields: Vec<_> = metadata.split('\n').collect();
+        if fields.len() < 5 {
+            return None;
+        }
+        let mut label = fields[1].to_owned();
+        let mut bookmark = false;
+        if fields[2] == "true" {
+            let mut depth = 16u64;
+            loop {
+                let graph =
+                    self.jj_output(&format!("ancestors({}, {depth})", fields[0]), GRAPH, false)?;
+                let graph = str::from_utf8(&graph).ok()?;
+                let nodes: std::collections::HashMap<_, _> = graph
+                    .lines()
+                    .filter_map(|line| {
+                        let mut parts = line.splitn(3, '|');
+                        Some((parts.next()?, (parts.next()?, parts.next()?)))
+                    })
+                    .collect();
+                let mut frontier = vec![fields[0]];
+                let mut visited = std::collections::HashSet::new();
+                let mut found = None;
+                while !frontier.is_empty() {
+                    let mut names = Vec::new();
+                    let mut next = Vec::new();
+                    for id in frontier {
+                        if !visited.insert(id) {
+                            continue;
+                        }
+                        if let Some((parents, bookmarks)) = nodes.get(id) {
+                            names.extend(bookmarks.split('\t').filter(|n| !n.is_empty()));
+                            next.extend(parents.split_whitespace());
+                        }
+                    }
+                    if let Some(name) = names.into_iter().min() {
+                        found = Some(
+                            name.strip_prefix('"')
+                                .and_then(|s| s.strip_suffix('"'))
+                                .unwrap_or(name)
+                                .to_owned(),
+                        );
+                        break;
+                    }
+                    frontier = next;
+                }
+                if let Some(name) = found {
+                    label = name;
+                    bookmark = true;
+                    break;
+                }
+                // Bookmarks can disappear concurrently; terminate once the graph is complete.
+                if nodes
+                    .values()
+                    .all(|(p, _)| p.split_whitespace().all(|id| nodes.contains_key(id)))
+                {
+                    break;
+                }
+                depth = depth.checked_mul(2)?;
+            }
+        }
+        let mut ahead = 0;
+        let mut behind = 0;
+        if bookmark {
+            // Prefer origin. With multiple other upstream targets there is no single comparison.
+            let revision = format!(
+                "coalesce(tracked_remote_bookmarks(exact:\"{label}\", remote=exact:\"origin\"), tracked_remote_bookmarks(exact:\"{label}\"))"
+            );
+            if let Some(targets) = self.jj_output(&revision, "commit_id ++ \"\\n\"", false) {
+                if let Ok(targets) = str::from_utf8(&targets) {
+                    let targets: Vec<_> = targets.lines().collect();
+                    if let [target] = targets.as_slice() {
+                        let current = fields[0];
+                        let revision = format!("({target}..{current}) | ({current}..{target})");
+                        let template =
+                            format!("if(self.contained_in(\"::{current}\"), \"A\", \"B\")");
+                        if let Some(counts) = self.jj_output(&revision, &template, false) {
+                            ahead = counts.iter().filter(|&&c| c == b'A').count();
+                            behind = counts.iter().filter(|&&c| c == b'B').count();
+                        }
+                    }
+                }
+            }
+        }
+        let mut counts = [0u64; 3];
+        for status in fields[3].bytes() {
+            match status {
+                b'A' => counts[0] += 1,
+                b'D' => counts[2] += 1,
+                _ => counts[1] += 1,
+            }
+        }
+        write!(
+            result,
+            "jj\x1f{}\x1f{}\x1f{}\x1f{}\x1f{}\x1f{}\x1f{}\x1f{}",
+            label,
+            fields[1],
+            counts[0],
+            counts[1],
+            counts[2],
+            number(fields[4].as_bytes()),
+            ahead,
+            behind
+        )
+        .ok()?;
+        Some(())
+    }
+
     fn status(&self, result: &mut Vec<u8>, buffers: &mut [Vec<u8>; 4]) -> Option<()> {
         buffers.iter_mut().for_each(Vec::clear);
         let [buffer, branch, upstream, oid] = buffers;
@@ -147,7 +301,9 @@ fn number(bytes: &[u8]) -> u64 {
 fn run() -> io::Result<()> {
     // Drop inherited Git overrides once; each request supplies its own.
     env::vars_os()
-        .filter(|(name, _)| name.as_bytes().starts_with(b"GIT_"))
+        .filter(|(name, _)| {
+            name.as_bytes().starts_with(b"GIT_") || name.as_bytes().starts_with(b"JJ_")
+        })
         .for_each(|(name, _)| env::remove_var(name));
     let inherited_path = env::var_os("PATH");
     let mut input = io::stdin().lock();
@@ -163,7 +319,7 @@ fn run() -> io::Result<()> {
         git_env.resize_with(number(count) as usize, Default::default);
         for pair in &mut git_env {
             read_fields(&mut input, pair)?;
-            if !pair[0].starts_with(b"GIT_") {
+            if !pair[0].starts_with(b"GIT_") && !pair[0].starts_with(b"JJ_") {
                 std::process::exit(1);
             }
         }
@@ -175,7 +331,15 @@ fn run() -> io::Result<()> {
         };
         result.clone_from(id);
         result.push(b':');
-        let _ = request.status(&mut result, &mut buffers);
+        let start = result.len();
+        let status = if request.is_jj() {
+            request.jj_status(&mut result)
+        } else {
+            request.status(&mut result, &mut buffers)
+        };
+        if status.is_none() {
+            result.truncate(start);
+        }
         result.push(b'\n');
         output.write_all(&result)?;
         output.flush()?;

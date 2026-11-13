@@ -40,7 +40,7 @@ function _i4_git_status_send() {
   setopt local_options no_multibyte
   local name git_env
   local -i count=0  # Avoid reparsing the count for each exported variable.
-  for name in ${(k)parameters[(I)GIT_*]}; do
+  for name in ${(k)parameters[(I)(GIT_*|JJ_*)]}; do
     [[ ${(tP)name} == *export* ]] || continue
     git_env+="${#name}"$'\n'"$name${(P)#name}"$'\n'"${(P)name}"
     (( ++count ))
@@ -71,7 +71,13 @@ function _i4_git_status_response() {
     [[ $response == $_I4_GIT_STATUS_OUTPUT ]] && return 0
     _I4_GIT_STATUS_OUTPUT=$response _I4_GIT_STATUS_READY=0
     local -a fields=("${(@ps:\x1f:)response}")
-    if (( $#fields == 12 )); then
+    typeset -g _I4_STATUS_BACKEND=
+    if (( $#fields == 9 )) && [[ $fields[1] == jj && $fields[4] == <-> && $fields[5] == <-> && $fields[6] == <-> && $fields[7] == <-> && $fields[8] == <-> && $fields[9] == <-> ]]; then
+      typeset -g _I4_STATUS_BACKEND=jj _I4_JJ_LABEL=$fields[2]
+      typeset -gi _I4_JJ_ADDED=$fields[4] _I4_JJ_MODIFIED=$fields[5] _I4_JJ_DELETED=$fields[6] _I4_JJ_CONFLICTS=$fields[7] _I4_JJ_AHEAD=$fields[8] _I4_JJ_BEHIND=$fields[9]
+      _I4_GIT_STATUS_READY=1
+    elif (( $#fields == 12 )); then
+      _I4_STATUS_BACKEND=git
       typeset -g VCS_STATUS_RESULT=ok-async VCS_STATUS_WORKDIR=$PWD VCS_STATUS_REMOTE_URL= \
         VCS_STATUS_LOCAL_BRANCH=$fields[1] VCS_STATUS_REMOTE_BRANCH=$fields[2] \
         VCS_STATUS_ACTION=$fields[3] VCS_STATUS_TAG=$fields[11] VCS_STATUS_COMMIT=$fields[12]
@@ -108,7 +114,7 @@ function _i4_git_status_stop() {
   kill -CONT $pid 2>/dev/null
 }
 
-if (( $+commands[git] )); then
+if (( $+commands[git] || $+commands[jj] )); then
   _i4_git_status_start
   add-zsh-hook precmd _i4_git_status_precmd
   add-zsh-hook zshexit _i4_git_status_stop

@@ -301,7 +301,19 @@
   typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=178
 
   function prompt_git_status() {
-    (( _I4_GIT_STATUS_READY )) && [[ $PWD != $~POWERLEVEL9K_VCS_DISABLED_WORKDIR_PATTERN ]] && _p9k_vcs_render
+    (( _I4_GIT_STATUS_READY )) && [[ $PWD != $~POWERLEVEL9K_VCS_DISABLED_WORKDIR_PATTERN ]] || return
+    if [[ $_I4_STATUS_BACKEND == jj ]]; then
+      local content="%F{76}jj:${_I4_JJ_LABEL//\%/%%}"
+      (( _I4_JJ_BEHIND )) && content+=" %F{76}⇣$_I4_JJ_BEHIND"
+      (( _I4_JJ_AHEAD )) && content+=" %F{76}⇡$_I4_JJ_AHEAD"
+      (( _I4_JJ_ADDED )) && content+=" %F{178}+$_I4_JJ_ADDED"
+      (( _I4_JJ_MODIFIED )) && content+=" %F{178}!$_I4_JJ_MODIFIED"
+      (( _I4_JJ_DELETED )) && content+=" %F{178}-$_I4_JJ_DELETED"
+      (( _I4_JJ_CONFLICTS )) && content+=" %F{196}~$_I4_JJ_CONFLICTS"
+      p10k segment -f 76 -t "$content"
+    else
+      _p9k_vcs_render
+    fi
   }
 
   # Previous Powerlevel10k vcs/gitstatusd settings remain here for reference.
