@@ -26,6 +26,22 @@
   boot.extraModulePackages = [config.boot.kernelPackages.msi-ec];
   boot.kernelModules = ["msi-ec"];
 
+  systemd.services.battery-charge-limit = {
+    description = "Limit battery charging to 80%";
+    wantedBy = ["multi-user.target"];
+    requires = ["systemd-modules-load.service"];
+    after = ["systemd-modules-load.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    # MSI firmware fixes the start threshold at 10% below the end threshold.
+    script = ''
+      set -euo pipefail
+      echo 80 > /sys/class/power_supply/BAT1/charge_control_end_threshold
+    '';
+  };
+
   disko.devices.disk.main = {
     type = "disk";
     device = "/dev/disk/by-path/pci-0000:01:00.0-nvme-1";
