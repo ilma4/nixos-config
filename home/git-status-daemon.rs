@@ -26,6 +26,47 @@ struct Request<'a> {
     git_env: &'a [[Vec<u8>; 2]], // Name/value pairs from reusable request buffers.
 }
 
+struct JjUpstreamQuery {
+    revision: String,
+    template: String,
+}
+
+impl JjUpstreamQuery {
+    fn new(label: &str, current: &str) -> Self {
+        // Labels already carry JSON escaping, which also quotes revset strings.
+        // Prefer origin; multiple distinct other targets suppress both arrows.
+        let targets = format!(
+            "coalesce(tracked_remote_bookmarks(exact:\"{label}\", remote=exact:\"origin\"), tracked_remote_bookmarks(exact:\"{label}\"))"
+        );
+        // No upstream means comparing the working copy to itself, not all history.
+        let comparison = format!("coalesce({targets}, {current})");
+        let revision =
+            format!("({targets}) | (({comparison})..{current}) | ({current}..({comparison}))");
+        let targets = targets.replace('\\', "\\\\").replace('"', "\\\"");
+        let upstream = comparison.replace('\\', "\\\\").replace('"', "\\\"");
+        let template = format!(
+            r#"concat("D|", if(self.contained_in("{targets}"), "T"), if(self.contained_in("({upstream})..{current}"), "A"), if(self.contained_in("{current}..({upstream})"), "B"), "\n")"#
+        );
+        Self { revision, template }
+    }
+
+    fn counts(output: &str) -> (usize, usize) {
+        let markers: Vec<_> = output
+            .lines()
+            .filter_map(|line| line.strip_prefix("D|"))
+            .flat_map(str::bytes)
+            .collect();
+        if markers.iter().filter(|&&c| c == b'T').count() == 1 {
+            (
+                markers.iter().filter(|&&c| c == b'A').count(),
+                markers.iter().filter(|&&c| c == b'B').count(),
+            )
+        } else {
+            (0, 0)
+        }
+    }
+}
+
 impl Request<'_> {
     fn command(&self, args: &[impl AsRef<OsStr>], status: bool) -> Command {
         let mut command = Command::new("git");
@@ -92,15 +133,30 @@ impl Request<'_> {
         output.status.success().then_some(output.stdout)
     }
 
-    fn jj_status(&self, result: &mut Vec<u8>) -> Option<()> {
+    fn jj_status(&self, result: &mut Vec<u8>, bookmark_hint: &mut Option<String>) -> Option<()> {
         // Names are escaped before entering the line-oriented wire protocol.
         const GRAPH: &str = r#"concat(commit_id, "|", parents.map(|p| p.commit_id()).join(" "), "|", local_bookmarks.map(|b| b.name().escape_json()).join("\t"), "\n")"#;
         // Snapshot once and return metadata plus the first ancestry window together.
         // Without an ancestral bookmark, only @ is needed for the change-ID fallback.
-        let template = format!(
+        let mut template = format!(
             r#"if(current_working_copy, concat("M|", commit_id, "|", change_id.short(8), "|", self.contained_in("bookmarks()::"), "|", diff.files().map(|f| f.status_char()).join(""), "|", conflicted_files.len(), "\n")) ++ {GRAPH}"#
         );
-        let initial = self.jj_output("ancestors(@, 16) & (bookmarks():: | @)", &template, true)?;
+        const WINDOW: &str = "ancestors(@, 16) & (bookmarks():: | @)";
+        let predicted = bookmark_hint
+            .as_deref()
+            .map(|label| JjUpstreamQuery::new(label, "@"));
+        let revision = if let Some(query) = &predicted {
+            // Cache only the query plan. All status is recomputed after snapshotting,
+            // and the hint is verified by the fresh closest-bookmark search below.
+            template = format!(
+                r#"if(self.contained_in("{WINDOW}"), {template}) ++ {}"#,
+                query.template
+            );
+            format!("({WINDOW}) | ({})", query.revision)
+        } else {
+            WINDOW.to_owned()
+        };
+        let initial = self.jj_output(&revision, &template, true)?;
         let initial = str::from_utf8(&initial).ok()?;
         let metadata = initial.lines().find_map(|line| line.strip_prefix("M|"))?;
         let fields: Vec<_> = metadata.split('|').collect();
@@ -125,7 +181,7 @@ impl Request<'_> {
                 };
                 let nodes: std::collections::HashMap<_, _> = graph
                     .lines()
-                    .filter(|line| !line.starts_with("M|"))
+                    .filter(|line| !line.starts_with("M|") && !line.starts_with("D|"))
                     .filter_map(|line| {
                         let mut parts = line.splitn(3, '|');
                         Some((parts.next()?, (parts.next()?, parts.next()?)))
@@ -175,29 +231,16 @@ impl Request<'_> {
         let mut ahead = 0;
         let mut behind = 0;
         if bookmark {
-            // Prefer origin. With multiple other upstream targets there is no single comparison.
-            let revision = format!(
-                "coalesce(tracked_remote_bookmarks(exact:\"{label}\", remote=exact:\"origin\"), tracked_remote_bookmarks(exact:\"{label}\"))"
-            );
-            // Include target markers in the divergence query so a separate target lookup
-            // is unnecessary. Multiple distinct targets still suppress both arrows.
-            let current = fields[0];
-            // With no upstream, compare @ to itself rather than walking its entire history.
-            let comparison = format!("coalesce({revision}, {current})");
-            let targets = revision.replace('\\', "\\\\").replace('"', "\\\"");
-            let upstream = comparison.replace('\\', "\\\\").replace('"', "\\\"");
-            let template = format!(
-                r#"concat(if(self.contained_in("{targets}"), "T"), if(self.contained_in("({upstream})..{current}"), "A"), if(self.contained_in("{current}..({upstream})"), "B"))"#
-            );
-            let revision =
-                format!("({revision}) | (({comparison})..{current}) | ({current}..({comparison}))");
-            if let Some(counts) = self.jj_output(&revision, &template, false) {
-                if counts.iter().filter(|&&c| c == b'T').count() == 1 {
-                    ahead = counts.iter().filter(|&&c| c == b'A').count();
-                    behind = counts.iter().filter(|&&c| c == b'B').count();
+            if bookmark_hint.as_deref() == Some(&label) {
+                (ahead, behind) = JjUpstreamQuery::counts(initial);
+            } else {
+                let query = JjUpstreamQuery::new(&label, fields[0]);
+                if let Some(counts) = self.jj_output(&query.revision, &query.template, false) {
+                    (ahead, behind) = JjUpstreamQuery::counts(str::from_utf8(&counts).ok()?);
                 }
             }
         }
+        *bookmark_hint = bookmark.then(|| label.clone());
         let mut counts = [0u64; 3];
         for status in fields[3].bytes() {
             match status {
@@ -331,6 +374,7 @@ fn run() -> io::Result<()> {
     let mut fields: [_; 4] = Default::default();
     let mut git_env: Vec<[Vec<u8>; 2]> = Vec::new();
     let mut buffers = Default::default();
+    let mut jj_bookmark_hint = None;
     loop {
         read_fields(&mut input, &mut fields)?;
         let [id, dir, path, count] = &fields;
@@ -351,7 +395,7 @@ fn run() -> io::Result<()> {
         result.push(b':');
         let start = result.len();
         let status = if request.is_jj() {
-            request.jj_status(&mut result)
+            request.jj_status(&mut result, &mut jj_bookmark_hint)
         } else {
             request.status(&mut result, &mut buffers)
         };

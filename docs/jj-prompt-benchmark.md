@@ -127,3 +127,44 @@ GIT_STATUS_DAEMON=/tmp/jj-prompt-optimization/after \
   --baseline /tmp/jj-prompt-optimization/before --baseline-raw \
   --samples 50 --startup-samples 5 --case checkout
 ```
+
+## One-process warm refreshes
+
+The worker now remembers the previous closest bookmark's escaped name as a query
+hint. It includes that bookmark's upstream comparison in the next snapshotting
+query, then verifies the name using the fresh ancestry graph. When the name still
+matches, metadata, file counts, conflicts and divergence all come from one JJ
+process. No status results are cached. A cold refresh or a changed closest
+bookmark still uses two queries; deep ancestry searches can require more.
+
+Measured 2026-11-13 in this checkout using matched compiler/optimization flags,
+ten warmups and 50 randomized paired requests. Every reply was byte-identical.
+These timings measure asynchronous status availability, not typing latency.
+
+| Case | Before median / p95 (ms) | After median / p95 (ms) |
+| --- | ---: | ---: |
+| Checkout, tracked bookmark | 100.46 / 119.82 | 52.65 / 63.65 |
+
+Median refresh time improved by **47.6%**. First-response timings (five per worker)
+and raw samples are included in `/tmp/jj-prompt-next/checkout.json`. Ordinary Git
+requests are unchanged; 25 randomized paired requests per non-repository, small
+clean Git, and large dirty Git fixture also returned identical bytes.
+
+All 39 integration tests pass against the Nix-built worker and compiled client,
+including actual Powerlevel10k rendering. JJ tests now keep workers alive across
+refreshes, exercising snapshotting edits, remote target changes, bookmark changes,
+escaped names, merges, deep ancestry and repository changes. A counting wrapper
+checks that warm refreshes launch one JJ process and changed bookmarks trigger
+the fallback. An additional 19 status comparisons across nine JJ tests matched
+the previous worker. The generated Quicksilver `.zshrc` builds and passes syntax
+checking; `./utils/flake-check.sh` passes. Configuration was not activated.
+
+Matched-compiler binaries and raw measurements are in `/tmp/jj-prompt-next`:
+
+```bash
+set -euo pipefail
+GIT_STATUS_DAEMON=/tmp/jj-prompt-next/after \
+  python3 tests/benchmark-git-status-daemon.py \
+  --baseline /tmp/jj-prompt-next/before --baseline-raw \
+  --samples 50 --startup-samples 5 --case checkout
+```

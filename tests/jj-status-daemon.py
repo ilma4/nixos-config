@@ -2,6 +2,8 @@
 import json
 import os
 from pathlib import Path
+import shlex
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -17,17 +19,30 @@ class JJStatusTest(unittest.TestCase):
         self.env = {**os.environ, 'JJ_CONFIG': str(self.root / 'config.toml')}
         (self.root / 'config.toml').write_text('[user]\nname="Prompt"\nemail="prompt@example.invalid"\n[signing]\nbehavior="drop"\n')
         self.jj('git', 'init', '--colocate', str(self.repo), cwd=self.root)
+        # Real shells keep one worker across edits, bookmark changes and chdir.
+        self.worker = subprocess.Popen([str(daemon())], env=self.env,
+                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+        self.addCleanup(self.stop_worker)
+
+    def stop_worker(self):
+        self.worker.stdin.close()
+        self.worker.wait(timeout=10)
+        self.assertEqual(self.worker.stderr.read(), b'')
+        self.worker.stdout.close()
+        self.worker.stderr.close()
+        self.assertEqual(self.worker.returncode, 0)
 
     def jj(self, *args, cwd=None):
         return subprocess.run(['jj', '--color=never', *args], cwd=cwd or self.repo,
                               env=self.env, capture_output=True, check=True).stdout.decode().strip()
 
-    def status(self, directory=None):
-        reply = subprocess.run([str(daemon())], input=request(directory or self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}),
-                               env=self.env, capture_output=True, check=True)
-        self.assertEqual(reply.stderr, b'')
-        fields = reply.stdout.removeprefix(b'1:').rstrip(b'\n').decode().split('\x1f')
-        self.assertEqual(fields[0], 'jj', reply.stdout)
+    def status(self, directory=None, path=None):
+        self.worker.stdin.write(request(directory or self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}, path=path))
+        self.worker.stdin.flush()
+        reply = self.worker.stdout.readline()
+        fields = reply.removeprefix(b'1:').rstrip(b'\n').decode().split('\x1f')
+        self.assertEqual(fields[0], 'jj', reply)
         self.assertEqual(len(fields), 9)
         return fields
 
@@ -70,6 +85,7 @@ class JJStatusTest(unittest.TestCase):
         state = self.status()
         self.assertEqual(state[1], 'left')
         self.assertEqual(state[6], '1')
+        self.assertEqual(self.status(), state)
 
     def test_upstream_divergence_includes_working_copy(self):
         # Keep @ editable when the test introduces a remote bookmark on it.
@@ -136,6 +152,7 @@ class JJStatusTest(unittest.TestCase):
         state = self.status()
         self.assertEqual(state[1], 'topic\\"quoted|%')
         self.assertEqual(state[7:], ['1', '0'])
+        self.assertEqual(self.status(), state)
 
     def test_missing_jj_recovers_in_same_worker(self):
         payload = request(self.repo, path='/missing') + request(self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}, seq='2')
@@ -147,6 +164,50 @@ class JJStatusTest(unittest.TestCase):
         for _ in range(18):
             self.jj('new')
         self.assertEqual(self.status()[1], 'distant')
+        self.assertEqual(self.status()[1], 'distant')
+
+    def test_warm_refresh_uses_one_query_and_revalidates_hint(self):
+        self.jj('bookmark', 'create', 'old')
+        self.jj('new')
+        wrapper_dir = self.root / 'bin'
+        wrapper_dir.mkdir()
+        calls = self.root / 'calls'
+        wrapper = wrapper_dir / 'jj'
+        wrapper.write_text('#!/usr/bin/env bash\nset -euo pipefail\n'
+                           f'printf "call\\n" >> {shlex.quote(str(calls))}\n'
+                           f'exec {shlex.quote(shutil.which("jj"))} "$@"\n')
+        wrapper.chmod(0o755)
+        path = str(wrapper_dir) + os.pathsep + os.environ['PATH']
+
+        def refresh(label, expected_calls, directory=None):
+            calls.write_text('')
+            state = self.status(directory, path=path)
+            self.assertEqual(state[1], label)
+            self.assertEqual(len(calls.read_text().splitlines()), expected_calls)
+            return state
+
+        refresh('old', 2)
+        refresh('old', 1)
+        # A new closer bookmark invalidates the hint and triggers a fresh query.
+        self.jj('bookmark', 'create', 'new')
+        refresh('new', 2)
+        refresh('new', 1)
+        self.jj('bookmark', 'delete', 'new')
+        refresh('old', 2)
+        # Snapshot new edits even when the predicted bookmark still matches.
+        (self.repo / 'file').write_text('new\n')
+        self.assertEqual(refresh('old', 1)[3:7], ['1', '0', '0', '0'])
+        # A hint from another repository is never accepted without verification.
+        other = self.root / 'other'
+        self.jj('git', 'init', '--colocate', str(other), cwd=self.root)
+        self.jj('bookmark', 'create', 'other', cwd=other)
+        refresh('other', 2, other)
+        refresh('other', 1, other)
+        refresh('old', 2)
+        self.jj('bookmark', 'delete', 'old')
+        fallback = self.jj('log', '-G', '-r', '@', '-T', 'change_id.short(8)')
+        refresh(fallback, 1)
+        refresh(fallback, 1)
 
     def test_nested_git_boundary_and_explicit_override(self):
         nested = self.repo / 'nested'
