@@ -95,9 +95,15 @@ impl Request<'_> {
     fn jj_status(&self, result: &mut Vec<u8>) -> Option<()> {
         // Names are escaped before entering the line-oriented wire protocol.
         const GRAPH: &str = r#"concat(commit_id, "|", parents.map(|p| p.commit_id()).join(" "), "|", local_bookmarks.map(|b| b.name().escape_json()).join("\t"), "\n")"#;
-        let metadata = self.jj_output("@", r#"concat(commit_id, "\n", change_id.short(8), "\n", self.contained_in("bookmarks()::"), "\n", diff.files().map(|f| f.status_char()).join(""), "\n", conflicted_files.len(), "\n")"#, true)?;
-        let metadata = str::from_utf8(&metadata).ok()?;
-        let fields: Vec<_> = metadata.split('\n').collect();
+        // Snapshot once and return metadata plus the first ancestry window together.
+        // Without an ancestral bookmark, only @ is needed for the change-ID fallback.
+        let template = format!(
+            r#"if(current_working_copy, concat("M|", commit_id, "|", change_id.short(8), "|", self.contained_in("bookmarks()::"), "|", diff.files().map(|f| f.status_char()).join(""), "|", conflicted_files.len(), "\n")) ++ {GRAPH}"#
+        );
+        let initial = self.jj_output("ancestors(@, 16) & (bookmarks():: | @)", &template, true)?;
+        let initial = str::from_utf8(&initial).ok()?;
+        let metadata = initial.lines().find_map(|line| line.strip_prefix("M|"))?;
+        let fields: Vec<_> = metadata.split('|').collect();
         if fields.len() < 5 {
             return None;
         }
@@ -106,11 +112,20 @@ impl Request<'_> {
         if fields[2] == "true" {
             let mut depth = 16u64;
             loop {
-                let graph =
-                    self.jj_output(&format!("ancestors({}, {depth})", fields[0]), GRAPH, false)?;
-                let graph = str::from_utf8(&graph).ok()?;
+                let expanded;
+                let graph = if depth == 16 {
+                    initial
+                } else {
+                    expanded = self.jj_output(
+                        &format!("ancestors({}, {depth})", fields[0]),
+                        GRAPH,
+                        false,
+                    )?;
+                    str::from_utf8(&expanded).ok()?
+                };
                 let nodes: std::collections::HashMap<_, _> = graph
                     .lines()
+                    .filter(|line| !line.starts_with("M|"))
                     .filter_map(|line| {
                         let mut parts = line.splitn(3, '|');
                         Some((parts.next()?, (parts.next()?, parts.next()?)))
@@ -164,19 +179,22 @@ impl Request<'_> {
             let revision = format!(
                 "coalesce(tracked_remote_bookmarks(exact:\"{label}\", remote=exact:\"origin\"), tracked_remote_bookmarks(exact:\"{label}\"))"
             );
-            if let Some(targets) = self.jj_output(&revision, "commit_id ++ \"\\n\"", false) {
-                if let Ok(targets) = str::from_utf8(&targets) {
-                    let targets: Vec<_> = targets.lines().collect();
-                    if let [target] = targets.as_slice() {
-                        let current = fields[0];
-                        let revision = format!("({target}..{current}) | ({current}..{target})");
-                        let template =
-                            format!("if(self.contained_in(\"::{current}\"), \"A\", \"B\")");
-                        if let Some(counts) = self.jj_output(&revision, &template, false) {
-                            ahead = counts.iter().filter(|&&c| c == b'A').count();
-                            behind = counts.iter().filter(|&&c| c == b'B').count();
-                        }
-                    }
+            // Include target markers in the divergence query so a separate target lookup
+            // is unnecessary. Multiple distinct targets still suppress both arrows.
+            let current = fields[0];
+            // With no upstream, compare @ to itself rather than walking its entire history.
+            let comparison = format!("coalesce({revision}, {current})");
+            let targets = revision.replace('\\', "\\\\").replace('"', "\\\"");
+            let upstream = comparison.replace('\\', "\\\\").replace('"', "\\\"");
+            let template = format!(
+                r#"concat(if(self.contained_in("{targets}"), "T"), if(self.contained_in("({upstream})..{current}"), "A"), if(self.contained_in("{current}..({upstream})"), "B"))"#
+            );
+            let revision =
+                format!("({revision}) | (({comparison})..{current}) | ({current}..({comparison}))");
+            if let Some(counts) = self.jj_output(&revision, &template, false) {
+                if counts.iter().filter(|&&c| c == b'T').count() == 1 {
+                    ahead = counts.iter().filter(|&&c| c == b'A').count();
+                    behind = counts.iter().filter(|&&c| c == b'B').count();
                 }
             }
         }

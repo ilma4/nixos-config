@@ -77,3 +77,53 @@ Tracked-remote measurements (30 requests per case, ten warmups):
 | 5000_files_dirty | 156.12 / 164.71 |
 
 Raw samples: `/tmp/jj-ahead-benchmark.json` and `/tmp/jj-ahead-tracked-benchmark.json`.
+
+## Refresh query optimization
+
+The optimized worker combines working-copy metadata and the first 16-generation
+ancestry window in one snapshotting query. A second query returns upstream target
+markers and ahead/behind counts together. A typical tracked-bookmark refresh now
+starts two JJ processes instead of four. Deeper bookmark searches still expand
+the ancestry window as needed. With no upstream, the divergence query compares
+`@` to itself, avoiding a traversal of the entire history.
+
+Measured 2026-11-13 with before/after workers compiled using the same Rust compiler
+and optimization flags. Synthetic tracked-remote fixtures use ten warmups and 40
+samples per case; before and after are separate runs, so their comparison also
+includes run-to-run variation. These timings measure asynchronous status refresh,
+not shell startup or typing latency.
+
+| Tracked-remote case | Before median / p95 (ms) | After median / p95 (ms) |
+| --- | ---: | ---: |
+| 10 files, clean | 143.24 / 147.90 | 72.56 / 80.44 |
+| 10 files, dirty | 139.06 / 146.16 | 75.42 / 81.12 |
+| 5000 files, clean | 151.82 / 176.13 | 83.08 / 88.87 |
+| 5000 files, dirty | 146.19 / 154.22 | 88.37 / 97.60 |
+
+In this checkout, 50 randomized paired requests returned identical status bytes.
+With matched compilers, median refresh time fell from **167.01 to 85.66 ms**
+(48.7%); p95 fell from 192.90 to 105.76 ms. Ten warmups and five first-response
+samples per worker were also collected.
+
+Thirty randomized paired requests for each ordinary Git fixture returned identical
+bytes before and after. Median times were 14.16 to 14.45 ms outside a repository,
+42.86 to 43.40 ms for ten clean files, and 264.60 to 262.80 ms for 5000 modified
+files plus 200 untracked files. The Git implementation is unchanged.
+
+All 38 integration tests pass against the Nix-built worker and compiled client,
+including actual Powerlevel10k rendering, escaped bookmark names, shared and
+ambiguous remote targets, origin preference, snapshotting edits, merges, and deep
+bookmark lookup. The generated Quicksilver `.zshrc` builds and passes syntax
+checking, and `./utils/flake-check.sh` passes. No configuration activation was run.
+
+Raw measurements and matched-compiler binaries are in
+`/tmp/jj-prompt-optimization`. To reproduce the paired checkout comparison with
+saved before/after binaries:
+
+```bash
+set -euo pipefail
+GIT_STATUS_DAEMON=/tmp/jj-prompt-optimization/after \
+  python3 tests/benchmark-git-status-daemon.py \
+  --baseline /tmp/jj-prompt-optimization/before --baseline-raw \
+  --samples 50 --startup-samples 5 --case checkout
+```

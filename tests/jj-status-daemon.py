@@ -1,4 +1,5 @@
 """JJ backend integration tests against real temporary repositories."""
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -99,6 +100,42 @@ class JJStatusTest(unittest.TestCase):
         self.assertEqual(self.status()[7:], ['0', '1'])
         self.jj('bookmark', 'untrack', 'main@origin')
         self.assertEqual(self.status()[7:], ['0', '0'])
+
+    def test_multiple_remote_targets_and_origin_preference(self):
+        self.jj('bookmark', 'create', 'main')
+        base = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
+        self.jj('new')
+        tip = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
+        self.jj('new')
+
+        def track(remote, target):
+            subprocess.run(['git', '-C', str(self.repo), 'update-ref',
+                            f'refs/remotes/{remote}/main', target], check=True)
+            self.jj('git', 'import')
+            self.jj('bookmark', 'track', f'main@{remote}')
+
+        track('first', base)
+        track('second', base)
+        self.assertEqual(self.status()[7:], ['2', '0'])
+        track('second', tip)
+        self.assertEqual(self.status()[7:], ['0', '0'])
+        track('origin', base)
+        self.assertEqual(self.status()[7:], ['2', '0'])
+
+    def test_escaped_bookmark_with_upstream(self):
+        with (self.root / 'config.toml').open('a') as config:
+            config.write('[revset-aliases]\n"immutable_heads()"="none()"\n')
+        name = 'topic"quoted|%'
+        self.jj('bookmark', 'create', json.dumps(name))
+        base = self.jj('log', '-G', '-r', '@', '-T', 'commit_id')
+        subprocess.run(['git', '-C', str(self.repo), 'update-ref',
+                        f'refs/remotes/origin/{name}', base], check=True)
+        self.jj('git', 'import')
+        self.jj('bookmark', 'track', f'{json.dumps(name)}@origin')
+        self.jj('new')
+        state = self.status()
+        self.assertEqual(state[1], 'topic\\"quoted|%')
+        self.assertEqual(state[7:], ['1', '0'])
 
     def test_missing_jj_recovers_in_same_worker(self):
         payload = request(self.repo, path='/missing') + request(self.repo, {'JJ_CONFIG': self.env['JJ_CONFIG']}, seq='2')
