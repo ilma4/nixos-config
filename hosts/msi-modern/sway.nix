@@ -94,6 +94,47 @@ in {
 
   services.swayosd.enable = true;
 
+  # Match the monitor description rather than a connector that changes with docks.
+  # Try 120 Hz first, retaining 4K at 60 Hz for lower-bandwidth connections.
+  services.kanshi = {
+    enable = true;
+    settings =
+      map (refresh: {
+        profile = {
+          name = "dell-u2725qe-${refresh}";
+          outputs = [
+            {
+              criteria = "*Dell*U2725QE*";
+              status = "enable";
+              mode = "3840x2160@${refresh}Hz";
+              scale = 2.0;
+              position = "0,0";
+            }
+            {
+              criteria = "eDP-1";
+              status = "disable";
+            }
+          ];
+        };
+      }) ["120" "60"]
+      ++ [
+        {
+          profile = {
+            name = "internal";
+            outputs = [
+              {
+                criteria = "eDP-1";
+                status = "enable";
+                mode = "1920x1080@60Hz";
+                scale = 1.0;
+                position = "0,0";
+              }
+            ];
+          };
+        }
+      ];
+  };
+
   wayland.windowManager.sway.enable = true;
 
   wayland.windowManager.sway.config = {
@@ -115,11 +156,6 @@ in {
         scale = "1.0";
         adaptive_sync = "on";
         position = "0 0";
-      };
-      "Dell Inc. DELL U2720Q 23TXZ83" = {
-        scale = "2.0";
-        adaptive_sync = "on";
-        position = "0 -1080";
       };
     };
 

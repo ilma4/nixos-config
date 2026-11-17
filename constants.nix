@@ -6,6 +6,9 @@
 
     # Bitwarden 'main-key'
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdYWQA91YiviGcsXEVUf4/dbAU2So1AAa1qU6ZFlx7A"
+
+    # msi-modern TPM2 (non-exportable private key)
+    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL4EoXWJenESigTmlsiCIn61fwYYWhacbGAz90vicEVPMsvNejXHqWyEHiyqI7TF8tArAQBRGSMmg2KBjzaK7rg= ilma4@msi-modern TPM2"
   ];
   github-pub-keys = [
     # quicksilver secretive 'github-key'

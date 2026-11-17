@@ -157,6 +157,12 @@
   networking.networkmanager.enable = true;
   users.users.ilma4.extraGroups = ["networkmanager"];
 
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
+  services.blueman.enable = true;
+
   # Select internationalisation properties.
   # i18n.defaultLocale = "en_US.UTF-8";
   # console = {
