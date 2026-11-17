@@ -19,6 +19,7 @@ in {
           FTLCONF_dns_listeningMode: "all"
           FTLCONF_misc_dnsmasq_lines: |-
             address=/ilma4.home.arpa/${constants.nas.lan-ip}
+            host-record=${constants.nas.obsidian-webdav.host},${constants.nas.lan-ip}
             address=/news.ycombinator.com/0.0.0.0
             address=/habr.com/0.0.0.0
             address=/www.phoronix.com/0.0.0.0

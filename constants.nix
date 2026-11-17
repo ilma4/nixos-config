@@ -84,8 +84,12 @@
       host-ip = "10.78.0.2";
     };
 
-    # Stable source address for the qBittorrent WebUI's trusted proxy path.
+    reverse-proxy-gateway = "10.20.0.1";
     traefik-ip = "10.20.0.2";
+    obsidian-webdav = {
+      host = "nas.tail09544e.ts.net";
+      port = 8686;
+    };
 
     # for personal backups
     restic-ilma4 = rec {

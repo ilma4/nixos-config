@@ -13,7 +13,8 @@
   certsDir = "/var/lib/nginx-reverse-proxy/certs";
   privateDir = "/var/lib/nginx-reverse-proxy/private";
   reverseProxySubnet = "10.20.0.0/24";
-  reverseProxyGateway = "10.20.0.1";
+  reverseProxyGateway = constants.nas.reverse-proxy-gateway;
+  obsidian = constants.nas.obsidian-webdav;
 
   genScript = pkgs.writeShellScript "traefik-rp-gen-certs.sh" ''
     set -euo pipefail
@@ -73,6 +74,22 @@
             - websecure
           service: qbittorrent
           tls: {}
+        obsidian-webdav:
+          rule: "Host(`${obsidian.host}`)"
+          entryPoints:
+            - websecure
+          middlewares:
+            - obsidian-webdav-clients
+          service: obsidian-webdav
+          tls:
+            certResolver: tailscale
+      middlewares:
+        obsidian-webdav-clients:
+          ipAllowList:
+            sourceRange:
+              - "192.168.1.0/24"
+              - "100.64.0.0/10"
+              - "fd7a:115c:a1e0::/48"
       services:
         cypht:
           loadBalancer:
@@ -86,6 +103,10 @@
           loadBalancer:
             servers:
               - url: "http://${reverseProxyGateway}:8080"
+        obsidian-webdav:
+          loadBalancer:
+            servers:
+              - url: "http://${reverseProxyGateway}:${toString obsidian.port}"
 
     tls:
       certificates:
@@ -104,12 +125,14 @@
           - "--providers.docker=true"
           - "--providers.docker.exposedbydefault=false"
           - "--providers.file.filename=/etc/traefik/dynamic.yaml"
+          - "--certificatesresolvers.tailscale.tailscale=true"
           - "--entrypoints.web.address=:80"
           - "--entrypoints.websecure.address=:443"
           - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
           - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
         volumes:
           - /run/podman/podman.sock:/var/run/docker.sock:ro
+          - /run/tailscale:/var/run/tailscale:ro
           - ${dynamicYaml}:/etc/traefik/dynamic.yaml:ro
           - ${certsDir}:/certs:ro
           - ${privateDir}:/private:ro
@@ -158,6 +181,12 @@ in {
       };
 
       systemd.services.docker-compose-reverse_proxy.restartTriggers = [genScript];
+      # Keep Traefik's directory bind mount valid when tailscaled recreates its socket.
+      systemd.services.tailscaled.serviceConfig.RuntimeDirectoryPreserve = "yes";
+      systemd.services.reverse_proxy = {
+        after = ["tailscaled.service"];
+        wants = ["tailscaled.service"];
+      };
 
       dockerCompose."reverse_proxy" = {
         composeText = composeYaml;

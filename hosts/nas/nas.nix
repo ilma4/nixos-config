@@ -38,6 +38,7 @@ in {
     ./qbittorrent-amneziavpn.nix
     ./openclaw.nix
     ./mail-archive.nix
+    ./obsidian-webdav.nix
 
     ./docker-services/home-assistant.nix
     ./mqtt.nix
