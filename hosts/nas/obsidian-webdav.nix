@@ -57,6 +57,12 @@ in {
         iifname "podman*" ip saddr ${constants.nas.traefik-ip} ip daddr ${gateway} tcp dport ${toString port} accept
         tcp dport ${toString port} drop
       }
+      chain postrouting {
+        type filter hook postrouting priority srcnat - 5; policy accept;
+        # Podman DNAT forwards HTTPS to Traefik. Clear Tailscale's subnet-router
+        # mark for this path so its masquerade rule preserves the peer address.
+        iifname "tailscale0" ip saddr 100.64.0.0/10 ip daddr ${constants.nas.traefik-ip} tcp dport 443 ct status dnat meta mark set meta mark & 0xff00ffff
+      }
     '';
   };
 }

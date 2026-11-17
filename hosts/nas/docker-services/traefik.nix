@@ -186,6 +186,19 @@ in {
       systemd.services.reverse_proxy = {
         after = ["tailscaled.service"];
         wants = ["tailscaled.service"];
+        preStart = ''
+          set -euo pipefail
+          # Wait for the tailnet to advertise certificate domains after the daemon starts.
+          for attempt in {1..30}; do
+            if ${config.services.tailscale.package}/bin/tailscale status --json --peers=false \
+              | ${pkgs.jq}/bin/jq --exit-status --arg domain '${obsidian.host}' \
+                '.BackendState == "Running" and ((.CertDomains // []) | index($domain) != null)' >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Tailscale did not advertise the Obsidian certificate domain before Traefik startup." >&2
+        '';
       };
 
       dockerCompose."reverse_proxy" = {
