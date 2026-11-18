@@ -3,6 +3,11 @@
 `wildcard-ec.crt` — when present, the **public** self-signed `*.ilma4.home.arpa` certificate Traefik
 serves on the NAS (`hosts/nas/docker-services/traefik.nix`). No private key, safe to commit.
 
+Quicksilver and MSI Modern trust this certificate through
+`security.pki.certificateFiles`.
+MSI Modern also imports it into the user's NSS database for Brave and other
+Chromium-based applications during Home Manager activation.
+
 Consumed by `home/ha-mcp.nix` so the `ha-mcp` server can verify HTTPS to
 `https://home-assistant.ilma4.home.arpa` (ha-mcp has no TLS-verify-off option, so the cert must be
 trusted in-process).

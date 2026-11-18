@@ -103,6 +103,9 @@
   i4.initrd-ssh.enable = true;
   i4.deploy.enable = true;
 
+  # Trust the NAS reverse proxy's self-signed homelab certificate.
+  security.pki.certificateFiles = [../../certs/wildcard-ec.crt];
+
   # Reach the NAS HTTPS proxy and Pi-hole through advertised host routes.
   services.tailscale = {
     useRoutingFeatures = "client";
