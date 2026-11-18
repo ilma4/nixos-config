@@ -1,7 +1,9 @@
 {
   config,
   inputs,
+  lib,
   pkgs,
+  pkgs-unstable,
   ...
 }: {
   imports = let
@@ -12,6 +14,7 @@
     inputs.disko.nixosModules.disko
 
     "${modules}/sops.nix"
+    "${modules}/apps.nix"
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -196,7 +199,13 @@
   # Enable touchpad support.
   services.libinput.enable = true;
 
-  programs.firefox.enable = true;
+  i4.apps.enable = true;
+
+  # The migrated mail profile was last opened with Thunderbird 159.
+  programs.thunderbird.package =
+    if lib.versionAtLeast pkgs.thunderbird.version "159.0"
+    then pkgs.thunderbird
+    else pkgs-unstable.thunderbird;
 
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).

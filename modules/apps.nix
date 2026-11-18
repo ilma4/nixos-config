@@ -28,13 +28,13 @@ in {
     thunderbird = linuxOnlyProgram {}; # installed on mac using corporate thing
     obs-studio = {macName = "obs";};
 
-    mpv = linuxOnlyProgram {}; # cli video player for linux. Use iina on mac
+    mpv = asLinuxPackage {macInstallation = null;}; # cli video player for linux. Use iina on mac
     iina = macOnlyCask {}; # good video play for mac with HDR support
 
     obsidian = asLinuxPackage {};
-    todoist-electron = {macName = "todoist-app";};
+    todoist-electron = asLinuxPackage {macName = "todoist-app";};
 
-    zed-editor = {macName = "zed";};
+    zed-editor = asLinuxPackage {macName = "zed";};
     # kotlin-lsp = macOnlyBrew {macName = "jetbrains/utils/kotlin-lsp";};
     youtrack = macOnlyBrew {macName = "jetbrains/utils/youtrack";};
     vscode = {macName = "visual-studio-code";};
@@ -52,7 +52,7 @@ in {
     anki = asLinuxPackage {}; # learn word app
     calibre = asLinuxPackage {}; # book managment app
 
-    telegram-desktop = {};
+    telegram-desktop = asLinuxPackage {};
 
     discord = asLinuxPackage {macInstallation = null;};
     steam = {macInstallation = null;};
