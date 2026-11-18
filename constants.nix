@@ -86,9 +86,10 @@
 
     reverse-proxy-gateway = "10.20.0.1";
     traefik-ip = "10.20.0.2";
-    obsidian-webdav = {
+    obsidian-livesync = {
       host = "nas.tail09544e.ts.net";
-      port = 8686;
+      ip = "10.20.0.3";
+      port = 5984;
     };
 
     # for personal backups

@@ -14,7 +14,7 @@
   privateDir = "/var/lib/nginx-reverse-proxy/private";
   reverseProxySubnet = "10.20.0.0/24";
   reverseProxyGateway = constants.nas.reverse-proxy-gateway;
-  obsidian = constants.nas.obsidian-webdav;
+  obsidian = constants.nas.obsidian-livesync;
 
   genScript = pkgs.writeShellScript "traefik-rp-gen-certs.sh" ''
     set -euo pipefail
@@ -74,17 +74,17 @@
             - websecure
           service: qbittorrent
           tls: {}
-        obsidian-webdav:
+        obsidian-livesync:
           rule: "Host(`${obsidian.host}`)"
           entryPoints:
             - websecure
           middlewares:
-            - obsidian-webdav-clients
-          service: obsidian-webdav
+            - obsidian-livesync-clients
+          service: obsidian-livesync
           tls:
             certResolver: tailscale
       middlewares:
-        obsidian-webdav-clients:
+        obsidian-livesync-clients:
           ipAllowList:
             sourceRange:
               - "192.168.1.0/24"
@@ -103,10 +103,10 @@
           loadBalancer:
             servers:
               - url: "http://${reverseProxyGateway}:8080"
-        obsidian-webdav:
+        obsidian-livesync:
           loadBalancer:
             servers:
-              - url: "http://${reverseProxyGateway}:${toString obsidian.port}"
+              - url: "http://${obsidian.ip}:${toString obsidian.port}"
 
     tls:
       certificates:
