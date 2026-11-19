@@ -175,26 +175,10 @@ in {
     lib.mkForce config.launchd.daemons.prometheus-node-exporter.script;
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
-  # VPN to access homelab
-  services.tailscale.enable = true;
-  # nix-darwin has no extraSetFlags option. Apply the preference at startup,
-  # retrying until tailscaled is available; tailscaled persists it thereafter.
-  launchd.daemons.tailscale-accept-routes = {
-    script = ''
-      set -euo pipefail
-      exec ${config.services.tailscale.package}/bin/tailscale set --accept-routes=true
-    '';
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive.SuccessfulExit = false;
-      ThrottleInterval = 10;
-      ProcessType = "Background";
-    };
-  };
 
   # SSH access from the iOS key only, for the primary user.
   services.openssh = {
-    enable = true;
+    enable = false;
     extraConfig = ''
       PasswordAuthentication no
       KbdInteractiveAuthentication no
