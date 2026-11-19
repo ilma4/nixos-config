@@ -33,10 +33,6 @@ in {
     rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
 
-    services.syncthing = {
-      enable = true;
-    };
-
     home.packages = with pkgs; [
       (mkResticWrapper "storage-box" {
         location = "sftp:storageBox:${constants.hetzer-restic.repo}";
