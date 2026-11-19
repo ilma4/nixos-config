@@ -6,9 +6,14 @@
   home.packages = [pkgs.ssh-tpm-agent];
 
   home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-tpm-agent.sock";
-  programs.ssh.settings."*" = {
-    IdentityAgent = "\${XDG_RUNTIME_DIR}/ssh-tpm-agent.sock";
-    IdentityFile = "~/.ssh/id_ecdsa_msi_tpm.pub";
+  programs.ssh.settings = {
+    "*" = {
+      IdentityAgent = "\${XDG_RUNTIME_DIR}/ssh-tpm-agent.sock";
+      IdentitiesOnly = true;
+    };
+    # IdentityFile is additive, so the general TPM key must not match GitHub.
+    "* !github.com".IdentityFile = "~/.ssh/id_ecdsa_msi_tpm.pub";
+    "github.com".IdentityFile = "~/.ssh/id_ecdsa_msi_github_tpm.pub";
   };
 
   systemd.user.sockets.ssh-tpm-agent = {
