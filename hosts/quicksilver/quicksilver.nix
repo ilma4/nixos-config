@@ -123,10 +123,8 @@ in {
 
     masApps = {
       # Xcode = 497799835;
-      Bitwarden = 1352778147;
       # WireGuard = 1451685025;
       # V2BOX = 6446814690; # VLESS, Trojan, Shadowsocks VPN client
-      AusweisApp = 948660805; # German ID card reader
       "uBlock Origin Lite" = 6745342698;
       "Dark Reader for Safari" = 1438243180;
     };

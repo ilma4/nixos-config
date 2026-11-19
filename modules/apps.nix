@@ -32,7 +32,7 @@ in {
     iina = macOnlyCask {}; # good video play for mac with HDR support
 
     obsidian = asLinuxPackage {};
-    todoist-electron = asLinuxPackage {macName = "todoist-app";};
+    todoist-electron = asLinuxPackage {macName = "todoist-app"; macInstallation = null;};
 
     zed-editor = asLinuxPackage {macName = "zed";};
     # kotlin-lsp = macOnlyBrew {macName = "jetbrains/utils/kotlin-lsp";};
@@ -46,13 +46,12 @@ in {
     # cherry-studio = {}; # tool for LLMs
 
     firefox = {};
-    brave-browser = macOnlyCask {};
 
     krita = asLinuxPackage {}; # image editor
-    anki = asLinuxPackage {}; # learn word app
-    calibre = asLinuxPackage {}; # book managment app
+    anki = asLinuxPackage {macInstallation = null;}; # learn word app
+    calibre = asLinuxPackage {macInstallation = null;}; # book managment app
 
-    telegram-desktop = asLinuxPackage {};
+    telegram-desktop = asLinuxPackage {macInstallation = null;};
 
     discord = asLinuxPackage {macInstallation = null;};
     steam = {macInstallation = null;};
@@ -61,8 +60,7 @@ in {
     dolphin-emu = asLinuxPackage {macInstallation = null;}; # Wii emulator
 
     qbittorrent = asLinuxPackage {macInstallation = null;};
-    transmission = macOnlyCask {};
-    bitwarden-cli = asLinuxPackage {macInstallation = "package";};
+    bitwarden-cli = asLinuxPackage {macInstallation = null;};
     android-file-transfer = macOnlyCask {}; # app to transfer files between android and mac via usb
     utm = macOnlyCask {}; # qemu for mac
     macfuse = macOnlyCask {}; # FUSE for macOS, uses kernel extension
@@ -71,10 +69,7 @@ in {
     "incoai/tap/splash" = macOnlyBrew {}; # LLM inference engine, optimized for smaller models
     shottr = macOnlyCask {};
 
-    kde-connect = macOnlyCask {};
-
     "1password-cli" = macOnlyCask {};
-    secretive = macOnlyCask {};
     cloudflare-warp = macOnlyCask {}; # corporate JetBrains VPN
     "zulu@21" = macOnlyCask {};
     "zulu@25" = macOnlyCask {};
@@ -90,7 +85,6 @@ in {
     skim = macOnlyCask {}; # pdf viewer
     linearmouse = macOnlyCask {};
     deskpad = macOnlyCask {};
-    easydict = macOnlyCask {};
     alt-tab = macOnlyCask {};
     blackhole-2ch = macOnlyCask {};
     # jetbrains-toolbox = macOnlyCask {};
