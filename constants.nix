@@ -15,6 +15,9 @@
     "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIpJ1f6e1rMESqF6VyzQa1NYAVFgKXV5Kx8sJbr91T5uVMo0CErJfmuYMYwENxEIXhMlqXLyqGIcN6MUl03qKzk= ilya.malakhov4@gmail.com"
 
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/LF/1Qn7CPiHRcfdo532DOb22vG66YGhYHF9x1Fph7"
+
+    # msi-modern dedicated GitHub TPM2 key (non-exportable private key)
+    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBArFXhJn2oeCuqw5m3g/Kk4Xoe4g5Hi8ZynF/qOcuUOu2dzKOTJ4W7JTURHVgrmAiuW3KmoSMlfYuM9NuKF+lCI= ilma4@msi-modern GitHub TPM2"
   ];
 
   ios-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOKaUONhI8X/55/+nNWKvFdvQlGcipI+WUGY/OuveceC ios-key";
