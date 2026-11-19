@@ -7,6 +7,7 @@
   ...
 }: let
   homebrewPrefix = config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
+  primaryUser = config.system.primaryUser;
   reverseProxyCert = ../../certs/wildcard-ec.crt;
   haveReverseProxyCert = builtins.pathExists reverseProxyCert;
 in {
@@ -15,17 +16,12 @@ in {
     ../../darwin-modules/launchd-agents.nix
     ../../darwin-modules/keyboard-watcher.nix
     ../../modules/home-manager.nix
-    ../../modules/sops.nix
     ./homebrew-auto-upgrade.nix
     ./clean-toolbox-download-cache.nix
-    ./mac-eq.nix
-    ./backup.nix
-    ./restic-full-disk-access-wrapper.nix
 
     ../../modules/apps.nix
 
     inputs.home-manager-darwin.darwinModules.home-manager
-    inputs.sops-nix-darwin.darwinModules.sops
   ];
 
   # environment.systemPackages = with pkgs; [
@@ -41,7 +37,6 @@ in {
 
       sudo nix-collect-garbage -d
       nix-collect-garbage -d
-      sudo -u malakhov nix-collect-garbage -d
     '')
   ];
   /*
@@ -63,50 +58,25 @@ in {
 
   i4.launchd-agents.enable = true;
   i4.keyboard-watcher.enable = true;
-  i4.sops.enable = true;
   i4.apps.enable = true;
-
-  # HA long-lived token, readable by the agent user.
-  sops.secrets."homeassistant/token" = {
-    owner = "ilma4";
-    mode = "0400";
-  };
 
   nix.gc.automatic = false;
 
   networking.hostName = constants.quicksilver.hostname;
 
-  users.users = {
-    ilma4 = {
-      home = "/Users/ilma4";
-      shell = pkgs.zsh;
-      openssh.authorizedKeys.keys = [constants.ios-pub-key];
-    };
-    malakhov = {
-      uid = 502;
-      description = "Ilia Malakhov";
-      home = "/Users/malakhov";
-      shell = pkgs.zsh;
-      createHome = true;
-      isHidden = false;
-      openssh.authorizedKeys.keys = [constants.ios-pub-key];
-    };
+  # macOS manages the existing login account. Don't put it in users.knownUsers.
+  users.users.${primaryUser} = {
+    home = "/Users/${primaryUser}";
+    openssh.authorizedKeys.keys = [constants.ios-pub-key];
   };
 
-  users.knownUsers = [
-    config.users.users.malakhov.name
-  ];
-
-  home-manager.users = {
-    ilma4 = import ./ilma4-home.nix;
-    malakhov = import ./malakhov-home.nix;
-  };
+  home-manager.users.${primaryUser} = import ./malakhov-home.nix;
 
   environment.shells = [pkgs.zsh];
 
   security.pam.services.sudo_local.touchIdAuth = true;
 
-  system.primaryUser = "ilma4";
+  system.primaryUser = "malakhov";
 
   # Enable certificate management
   # security.pki.enable = true;
@@ -165,7 +135,10 @@ in {
   system.activationScripts.extraActivation.text = lib.mkAfter (
     ''
       set -euo pipefail
-      /usr/bin/sudo --user=ilma4 -- ${homebrewPrefix}/bin/aerospace reload-config
+      if /usr/bin/pgrep -u ${lib.escapeShellArg primaryUser} -x AeroSpace >/dev/null; then
+        /usr/bin/sudo --user=${lib.escapeShellArg primaryUser} -- ${homebrewPrefix}/bin/aerospace reload-config \
+          || echo 'warning: AeroSpace could not reload its config' >&2
+      fi
     ''
     + lib.optionalString haveReverseProxyCert ''
       if ! /usr/bin/security verify-cert -c ${reverseProxyCert} >/dev/null 2>&1; then
@@ -221,7 +194,7 @@ in {
     };
   };
 
-  # SSH access from the iOS key only, for personal and work users.
+  # SSH access from the iOS key only, for the primary user.
   services.openssh = {
     enable = true;
     extraConfig = ''
@@ -230,7 +203,7 @@ in {
       PubkeyAuthentication yes
       AuthenticationMethods publickey
       AuthorizedKeysFile none
-      AllowUsers ilma4 malakhov
+      AllowUsers ${primaryUser}
     '';
   };
 

@@ -6,6 +6,7 @@
 }: let
   brewPrefix = config.homebrew.prefix or (lib.removeSuffix "/bin" config.homebrew.brewPrefix);
   brew = "${brewPrefix}/bin/brew";
+  logDir = "${config.users.users.${config.system.primaryUser}.home}/Library/Logs";
 in {
   config = lib.mkIf config.homebrew.enable {
     launchd.user.agents.homebrew-auto-upgrade = {
@@ -33,8 +34,8 @@ in {
         Label = "org.nixos.homebrew-auto-upgrade";
         RunAtLoad = true;
         StartInterval = 43200;
-        StandardOutPath = "/tmp/homebrew-auto-upgrade.log";
-        StandardErrorPath = "/tmp/homebrew-auto-upgrade.err.log";
+        StandardOutPath = "${logDir}/homebrew-auto-upgrade.log";
+        StandardErrorPath = "${logDir}/homebrew-auto-upgrade.err.log";
         ProcessType = "Background";
       };
     };

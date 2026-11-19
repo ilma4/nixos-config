@@ -1,3 +1,4 @@
+# Legacy personal profile; not imported by quicksilver.
 {
   config,
   constants,

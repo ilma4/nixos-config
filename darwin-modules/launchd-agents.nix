@@ -3,10 +3,16 @@
   lib,
   pkgs,
   ...
-}: {
-  options.i4.launchd-agents.enable = lib.mkEnableOption "Enable launchd agents";
+}: let
+  cfg = config.i4.launchd-agents;
+  logDir = "${config.users.users.${config.system.primaryUser}.home}/Library/Logs";
+in {
+  options.i4.launchd-agents = {
+    enable = lib.mkEnableOption "Enable launchd agents";
+    enableObsidianAutoCommit = lib.mkEnableOption "automatically commit the primary user's Obsidian vault";
+  };
 
-  config = lib.mkIf config.i4.launchd-agents.enable {
+  config = lib.mkIf cfg.enable {
     launchd.user.agents.nixos-config-monthly-update = {
       path = [pkgs.coreutils pkgs.jujutsu pkgs.bun pkgs.git config.nix.package];
       script = builtins.readFile ../utils/monthly-update.sh;
@@ -20,8 +26,8 @@
           }
         ];
         ProcessType = "Background";
-        StandardOutPath = "/tmp/nixos-config-monthly-update.log";
-        StandardErrorPath = "/tmp/nixos-config-monthly-update.log";
+        StandardOutPath = "${logDir}/nixos-config-monthly-update.log";
+        StandardErrorPath = "${logDir}/nixos-config-monthly-update.log";
       };
     };
 
@@ -38,7 +44,7 @@
     };
     */
 
-    launchd.user.agents.obsidian-auto-commit = {
+    launchd.user.agents.obsidian-auto-commit = lib.mkIf cfg.enableObsidianAutoCommit {
       path = [pkgs.coreutils pkgs.git];
       serviceConfig = {
         ProgramArguments = [
@@ -85,8 +91,8 @@
             Minute = 0;
           }
         ];
-        StandardOutPath = "/tmp/obsidian-auto-commit.log";
-        StandardErrorPath = "/tmp/obsidian-auto-commit.log";
+        StandardOutPath = "${logDir}/obsidian-auto-commit.log";
+        StandardErrorPath = "${logDir}/obsidian-auto-commit.log";
       };
     };
   };

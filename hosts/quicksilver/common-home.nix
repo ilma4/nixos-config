@@ -32,9 +32,7 @@ in {
       meslo-lgs-nf # Meslo Nerd Font patched for Powerlevel10k
     ];
 
-    # Auto-attach SSH logins to the shared tmux session, matching the Linux
-    # hosts. This lives in quicksilver's common home module, so it applies to
-    # both SSH-enabled users (ilma4 and malakhov).
+    # Auto-attach SSH logins to the default tmux session, matching the Linux hosts.
     programs.zsh.initContent = lib.mkOrder 1100 ''
       if [[ -z "''${TMUX:-}" ]] && [[ -n "''${SSH_CONNECTION:-}" || -n "''${SSH_CLIENT:-}" || -n "''${SSH_TTY:-}" ]]; then
         tmux attach-session -t default || tmux new-session -s default

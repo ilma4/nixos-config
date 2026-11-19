@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   imports = [
     ./common-home.nix
     ../../modules/work.nix
@@ -35,12 +40,8 @@
       };
     };
 
-    rebuild-script = ''
-      set -euo pipefail
-
-      echo "Run darwin-rebuild for quicksilver from the ilma4 account." >&2
-      exit 1
-    '';
+    flake-source = "${config.home.homeDirectory}/.config/nixos-config";
+    rebuild-script = "sudo darwin-rebuild switch --flake ${lib.escapeShellArg "${config.flake-source}#quicksilver"}";
 
     home.packages = with pkgs; [
       blueutil # bluetooth CLI, used by the mic Raycast scripts

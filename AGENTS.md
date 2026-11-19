@@ -24,7 +24,7 @@ Configs for nixos, home-manager and nix-darwin for my devices. All configuration
 - `hosts/` - device-specific configurations
   - `hosts/quicksilver/` - macbook from jetbrains, used both as personal and work device. Runs on macOS with nix-darwin. - /nas - ugreen nassync: NAS device used as homelab. Runs on NixOS
     - `quicksilver.nix`
-    - `ilma4-home.nix`
+    - `malakhov-home.nix`
   - `hosts/nas/` - my home nas, also used as homelab. Runs on NixOS
     - `nas.nix`
     - `home.nix`
