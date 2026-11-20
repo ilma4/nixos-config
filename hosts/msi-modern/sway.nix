@@ -21,6 +21,14 @@
   foot = "${pkgs.foot}/bin/foot";
   sway-audio-idle-inhibit = "${pkgs.sway-audio-idle-inhibit}/bin/sway-audio-idle-inhibit";
 
+  screenshot = pkgs.writeShellScriptBin "screenshot" ''
+    set -euo pipefail
+    region="$(${slurp})" || exit 0
+    [[ -n "$region" ]] || exit 0
+    ${grim} -g "$region" - | ${wl-copy} --type image/png
+  '';
+  screenshotCommand = "${screenshot}/bin/screenshot";
+
   toggle-vpn =
     pkgs.writers.writePython3Bin "toggle-vpn" {}
     /*
@@ -48,11 +56,19 @@ in {
     pkgs.swayosd
     pkgs.pavucontrol
     toggle-vpn
+    screenshot
+    (pkgs.makeDesktopItem {
+      name = "screenshot";
+      desktopName = "Screenshot";
+      exec = screenshotCommand;
+      icon = "applets-screenshooter";
+    })
   ];
 
   top-commands = {
     tofi-command = "${tofi} ${tofi-flags}";
     commands = lib.mkOptionDefault {
+      Screenshot = screenshotCommand;
       lock_screen = "${swaylock} -f -c 000000";
       wg = "${toggle-vpn}/bin/toggle-vpn wg";
       jetbrainsVpn = "${toggle-vpn}/bin/toggle-vpn JetBrainsVPN";
