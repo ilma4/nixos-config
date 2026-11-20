@@ -28,6 +28,19 @@
   boot.extraModulePackages = [config.boot.kernelPackages.msi-ec];
   boot.kernelModules = ["msi-ec"];
 
+  services.fwupd.daemonSettings = {
+    # Keep idle shutdown enabled even when startup exceeds fwupd's 500 ms threshold.
+    IdleInhibitStartupThreshold = 0;
+    IdleTimeout = 30;
+  };
+
+  systemd.timers.fwupd-refresh.timerConfig = {
+    # Clear the upstream hourly schedule before setting the daily one.
+    OnCalendar = ["" "*-*-* 03:00:00"];
+    RandomizedDelaySec = "0";
+    AccuracySec = "1s";
+  };
+
   systemd.services.battery-charge-limit = {
     description = "Limit battery charging to 80%";
     wantedBy = ["multi-user.target"];
