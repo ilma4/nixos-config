@@ -18,6 +18,10 @@ final: prev: {
 
       cargoHash = "sha256-iRNDHmrD592Sc/HQ7AbF1CwQlBvK/0TkrnBtkqnT1Q4=";
 
+      nativeBuildInputs = final.lib.optionals final.stdenv.isLinux [
+        final.pkg-config
+      ];
+
       # runtime dependencies
       buildInputs = final.lib.optionals final.stdenv.isLinux [
         final.systemd

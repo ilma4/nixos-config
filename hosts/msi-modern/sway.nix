@@ -28,6 +28,11 @@
     ${grim} -g "$region" - | ${wl-copy} --type image/png
   '';
   screenshotCommand = "${screenshot}/bin/screenshot";
+  hdmi = pkgs.writeShellScriptBin "hdmi" ''
+    set -euo pipefail
+    exec ${pkgs.monitor-input}/bin/monitor-input U2725QE=DP1
+  '';
+  hdmiCommand = "${hdmi}/bin/hdmi";
 in {
   home.packages = [
     pkgs.wl-clipboard
@@ -42,6 +47,14 @@ in {
       desktopName = "Screenshot";
       exec = screenshotCommand;
       icon = "applets-screenshooter";
+    })
+    hdmi
+    (pkgs.makeDesktopItem {
+      name = "hdmi";
+      desktopName = "hdmi";
+      comment = "Switch the Dell monitor from USB-C to DisplayPort";
+      exec = hdmiCommand;
+      icon = "video-display";
     })
   ];
 
@@ -58,6 +71,7 @@ in {
     tofi-command = "${tofi} ${tofi-flags}";
     commands = lib.mkOptionDefault {
       Screenshot = screenshotCommand;
+      hdmi = hdmiCommand;
       lock_screen = "${swaylock} -f -c 000000";
     };
   };

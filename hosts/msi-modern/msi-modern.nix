@@ -163,6 +163,9 @@
   networking.networkmanager.enable = true;
   users.users.ilma4.extraGroups = ["networkmanager"];
 
+  # Expose the monitor's DDC/CI bus to the local Sway session.
+  hardware.i2c.enable = true;
+
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
