@@ -13,6 +13,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    /*
     launchd.user.agents.nixos-config-monthly-update = {
       path = [pkgs.coreutils pkgs.jujutsu pkgs.bun pkgs.git config.nix.package];
       script = builtins.readFile ../utils/monthly-update.sh;
@@ -30,6 +31,7 @@ in {
         StandardErrorPath = "${logDir}/nixos-config-monthly-update.log";
       };
     };
+    */
 
     /*
     launchd.user.agents.podman-machine-autostart = {
