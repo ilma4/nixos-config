@@ -14,7 +14,6 @@
     config;
   jjUserName = lib.attrByPath ["name"] "Ilia Malakhov" gitUser;
   jjUserEmail = lib.attrByPath ["email"] "ilya.malakhov4@gmail.com" gitUser;
-  jjSigningKey = builtins.head constants.github-pub-keys;
   jjAllowedSignersFile = pkgs.writeText "jj-allowed-signers" (
     lib.concatMapStrings (key: "${jjUserEmail} ${key}\n") constants.github-pub-keys
   );
@@ -30,7 +29,7 @@
     ${jjSigningConfigPrefix}[signing]
     ${jjSigningConfigPrefix}backend = "ssh"
     ${jjSigningConfigPrefix}behavior = "drop"
-    ${jjSigningConfigPrefix}key = ${builtins.toJSON jjSigningKey}
+    ${jjSigningConfigPrefix}key = ${builtins.toJSON config.i4.dev.jjSigningKey}
     ${jjSigningConfigPrefix}backends.ssh.program = "${lib.getExe' pkgs.openssh "ssh-keygen"}"
     ${jjSigningConfigPrefix}backends.ssh.allowed-signers = "${jjAllowedSignersFile}"
   '';
@@ -62,6 +61,12 @@ in {
 
   options.i4.dev = {
     enable = lib.mkEnableOption "development tools";
+
+    jjSigningKey = lib.mkOption {
+      type = lib.types.str;
+      default = builtins.head constants.github-pub-keys;
+      description = "SSH public key to use for Jujutsu commit signing";
+    };
 
     podman = lib.mkOption {
       type = lib.types.bool;

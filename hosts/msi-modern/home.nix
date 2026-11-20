@@ -1,4 +1,5 @@
 {
+  constants,
   pkgs,
   lib,
   ...
@@ -31,6 +32,7 @@ in {
   home.username = "ilma4";
   i4.personal.enable = true;
   i4.dev.enable = true;
+  i4.dev.jjSigningKey = constants.msi-modern-github-pub-key;
 
   programs.bash.initExtra = ''
     if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then

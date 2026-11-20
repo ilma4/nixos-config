@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-jobs=(nix-rebuild nas msi-modern)
+jobs=(nix-rebuild nas)
 
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
@@ -12,7 +12,12 @@ run_job() {
     local target="$job"
     local attempt
 
-    if [[ "$job" != nix-rebuild ]] &&
+    case "$job" in
+        nix-rebuild|nas) ;;
+        *) echo "Unknown deployment job: $job" >&2; return 2 ;;
+    esac
+
+    if [[ "$job" == nas ]] &&
         ssh -o BatchMode=yes -o ConnectTimeout=3 "ilma4@$job.local" true >/dev/null 2>&1; then
         target="$job.local"
     fi
@@ -43,18 +48,19 @@ run_job() {
 }
 
 if [[ "${1:-}" == --run-job ]]; then
-    run_job "$2"
+    run_job "${2:-}"
     exit
 fi
 
-if [[ -n "$(git status --porcelain)" ]]; then
+changes=$(jj diff --summary --color never)
+if [[ -n "$changes" ]]; then
     echo "Repository has uncommitted or untracked changes:" >&2
-    git status --short >&2
+    printf '%s\n' "$changes" >&2
     exit 1
 fi
 
 jj bookmark move main --to @-
-jj git push
+jj git push --bookmark main
 sudo -v
 
 commands=()
