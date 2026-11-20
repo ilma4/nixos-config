@@ -40,6 +40,7 @@ in {
     pkgs.swayosd
     pkgs.pavucontrol
     pkgs.adwaita-icon-theme # Provides Pavucontrol's audio-device icons.
+    pkgs.networkmanagerapplet # Exposes nm-applet's tray icons to Waybar.
     pkgs.nerd-fonts.jetbrains-mono
     pkgs.font-awesome_5
     screenshot
