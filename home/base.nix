@@ -90,7 +90,7 @@ in {
           then "home-manager switch"
           else ""
         )
-        + " --flake file://${config.home.homeDirectory}/.config/nixos-config#\"$(uname -n)\"";
+        + " --flake path:${config.home.homeDirectory}/.config/nixos-config#\"$(uname -n)\"";
 
       description = "nix-rebuild script";
     };
