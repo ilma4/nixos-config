@@ -17,10 +17,10 @@
   playerctl = "${pkgs.playerctl}/bin/playerctl";
   slurp = "${pkgs.slurp}/bin/slurp";
   swayosd = "${pkgs.swayosd}/bin/swayosd-client";
-  termWithName = "${pkgs.foot}/bin/foot --app-id";
+  termWithName = "${foot} --app-id";
   tofi = "${pkgs.tofi}/bin/tofi";
   tofi-flags = "--width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
-  foot = "${pkgs.foot}/bin/foot";
+  foot = lib.getExe config.programs.foot.package;
   sway-audio-idle-inhibit = "${pkgs.sway-audio-idle-inhibit}/bin/sway-audio-idle-inhibit";
 
   screenshot = pkgs.writeShellScriptBin "screenshot" ''

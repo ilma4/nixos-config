@@ -1,5 +1,6 @@
 {
   config,
+  constants,
   inputs,
   lib,
   pkgs,
@@ -215,9 +216,16 @@
     vpl-gpu-rt
   ];
 
+  # Qt's GTK3 integration and unwrapped GTK apps need the desktop settings schema.
+  environment.sessionVariables.XDG_DATA_DIRS = [
+    (constants.gsettings-desktop-schema-data-dir pkgs.gsettings-desktop-schemas)
+  ];
+
   xdg.portal = {
     enable = true;
     wlr.enable = true;
+    extraPortals = [pkgs.darkman];
+    config.sway."org.freedesktop.impl.portal.Settings" = ["darkman" "gtk"];
   };
 
   # OBS asks for both monitors and windows. The portal skips Slurp for those

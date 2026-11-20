@@ -24,6 +24,7 @@ in {
     ../../home/personal.nix
 
     ./sway.nix
+    ./theme.nix
     ./ssh-tpm.nix
     ./homelab-trust.nix
     ./top-commands.nix

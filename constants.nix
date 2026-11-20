@@ -24,6 +24,8 @@ in {
   msi-modern-github-pub-key = msiModernGithubKey;
   msi-modern-builder-user = "nix-builder";
 
+  gsettings-desktop-schema-data-dir = package: "${package}/share/gsettings-schemas/${package.name}";
+
   ios-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOKaUONhI8X/55/+nNWKvFdvQlGcipI+WUGY/OuveceC ios-key";
 
   telegram = {
