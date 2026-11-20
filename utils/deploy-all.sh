@@ -59,8 +59,34 @@ if [[ -n "$changes" ]]; then
     exit 1
 fi
 
+jj git fetch --remote origin --branch main
+
+remote_changes=$(jj log --no-graph --color never -r '@-..main@origin' \
+    -T 'commit_id.short() ++ " " ++ description.first_line() ++ "\n"')
+if [[ -n "$remote_changes" ]]; then
+    printf 'origin/main has commits not in the deployment target (@-):\n%s\n' "$remote_changes" >&2
+    printf 'Rebase local changes onto origin/main first? [Y/n] ' >&2
+    if ! read -r answer || [[ ! "$answer" =~ ^([yY]([eE][sS])?)?$ ]]; then
+        echo 'Deployment cancelled; nothing was pushed.' >&2
+        exit 1
+    fi
+
+    jj rebase -r 'main@origin..@' --onto main@origin
+    conflicts=$(jj log --no-graph -r 'conflicts() & (main@origin..@)' -T 'commit_id')
+    if [[ -n "$conflicts" ]]; then
+        echo 'Rebase left conflicts. Resolve them before running deployment again.' >&2
+        exit 1
+    fi
+
+    remote_changes=$(jj log --no-graph -r '@-..main@origin' -T 'commit_id')
+    if [[ -n "$remote_changes" ]]; then
+        echo 'Deployment target still does not contain origin/main; nothing was pushed.' >&2
+        exit 1
+    fi
+fi
+
 jj bookmark move main --to @-
-jj git push --bookmark main
+jj git push --remote origin --bookmark main
 sudo -v
 
 commands=()
