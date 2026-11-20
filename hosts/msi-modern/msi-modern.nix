@@ -19,6 +19,7 @@
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ./oo7.nix
     ./llama.nix
     ./adb.nix
     ./jellyfin.nix
