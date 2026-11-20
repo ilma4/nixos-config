@@ -55,6 +55,7 @@ in {
     pkgs.grim
     pkgs.swayosd
     pkgs.pavucontrol
+    pkgs.nerd-fonts.jetbrains-mono
     toggle-vpn
     screenshot
     (pkgs.makeDesktopItem {
@@ -76,7 +77,11 @@ in {
   };
 
   programs.tofi.enable = true;
-  programs.foot.enable = true;
+  fonts.fontconfig.enable = true;
+  programs.foot = {
+    enable = true;
+    settings.main.font = "JetBrainsMono Nerd Font Mono:size=8";
+  };
 
   wayland.windowManager.sway.systemd.xdgAutostart = true;
 
