@@ -2,10 +2,19 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  agentSocket = "$XDG_RUNTIME_DIR/ssh-tpm-agent.sock";
+in {
   home.packages = [pkgs.ssh-tpm-agent];
 
-  home.sessionVariables.SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-tpm-agent.sock";
+  home.sessionVariables.SSH_AUTH_SOCK = agentSocket;
+  # Refresh even when Home Manager's session variables were already sourced
+  # by a parent process (for example, an existing tmux server).
+  programs.zsh.envExtra = ''
+    if [ -n "''${XDG_RUNTIME_DIR:-}" ]; then
+      export SSH_AUTH_SOCK="${agentSocket}"
+    fi
+  '';
   programs.ssh.settings = {
     "*" = {
       IdentityAgent = "\${XDG_RUNTIME_DIR}/ssh-tpm-agent.sock";

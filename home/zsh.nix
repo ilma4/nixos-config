@@ -572,10 +572,9 @@ in {
       in
         lib.mkMerge [sshTmux early normal beforeCompinit];
 
-      # Fix ssh agent forwarding when reattaching to screen from new ssh connection
+      # Keep forwarded agents reachable from tmux unless the host sets its own socket.
       profileExtra =
-        lib.mkIf (stdenv.isLinux && config.configure-ssh) # macOS works fine with ssh agent
-        
+        lib.mkIf (stdenv.isLinux && config.configure-ssh && !(config.home.sessionVariables ? SSH_AUTH_SOCK))
         ''
           if [ -n "''${SSH_AUTH_SOCK:-}" ] && [ -S "$SSH_AUTH_SOCK" ] && [ ! -h "$SSH_AUTH_SOCK" ]; then
               mkdir -p ${HOME}/.ssh
