@@ -22,6 +22,7 @@ in {
     msiModernGithubKey
   ];
   msi-modern-github-pub-key = msiModernGithubKey;
+  msi-modern-builder-user = "nix-builder";
 
   ios-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOKaUONhI8X/55/+nNWKvFdvQlGcipI+WUGY/OuveceC ios-key";
 

@@ -24,6 +24,7 @@ in {
     ./ssd.nix
     ./quicksilver-backup.nix
     ./backup-monitoring.nix
+    ./remote-builder.nix
 
     "${modules}/sops.nix"
     "${modules}/notifications.nix"

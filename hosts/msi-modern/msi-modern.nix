@@ -22,6 +22,7 @@
     ./llama.nix
     ./adb.nix
     ./jellyfin.nix
+    ./remote-builder.nix
   ];
 
   # The in-tree msi_ec driver rejects this laptop's 14D3EMS1.116 firmware.
