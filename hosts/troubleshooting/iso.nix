@@ -8,6 +8,7 @@
 }: {
   imports = [
     "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
+    ../../modules/desktop-fonts.nix
   ];
 
   networking.hostName = "troubleshooting";
@@ -130,16 +131,12 @@
     xwayland.enable = false;
     extraPackages = [pkgs.foot pkgs.wmenu];
   };
-  fonts = {
-    fontconfig.enable = true;
-    enableDefaultPackages = false;
-    packages = [pkgs.dejavu_fonts];
-  };
+  fonts.enableDefaultPackages = false;
   environment.etc."sway/config".text = ''
     set $mod Mod4
     set $term ${pkgs.foot}/bin/foot
     set $menu ${pkgs.wmenu}/bin/wmenu-run
-    font pango:DejaVu Sans Mono 10
+    font pango:DejaVu Sans 10
     output * bg #202020 solid_color
     input type:touchpad tap enabled
 

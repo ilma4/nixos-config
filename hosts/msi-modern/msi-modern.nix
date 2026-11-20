@@ -15,6 +15,7 @@
 
     "${modules}/sops.nix"
     "${modules}/apps.nix"
+    "${modules}/desktop-fonts.nix"
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix

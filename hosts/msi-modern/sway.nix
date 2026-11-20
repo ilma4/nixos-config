@@ -68,7 +68,7 @@ in {
 
     * {
       /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
-      font-family: Roboto, Helvetica, Arial, "JetBrainsMono Nerd Font", "Font Awesome 5 Free Solid", sans-serif;
+      font-family: "DejaVu Sans", "JetBrainsMono Nerd Font", "Font Awesome 5 Free Solid", sans-serif;
     }
   '';
 
@@ -269,6 +269,7 @@ in {
   ];
 
   wayland.windowManager.sway.extraConfig = ''
+    font pango:DejaVu Sans 10
     # Reloading Sway resets the outputs even when the Kanshi profile hasn't changed.
     exec_always ${pkgs.systemd}/bin/systemctl --user try-restart kanshi.service
     bindsym --inhibited Mod1+c exec ${wl-copy}
