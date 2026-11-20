@@ -6,8 +6,6 @@
 [git]
 # Keep JJ colocated with the Git repository and use Git for remote operations.
 colocate = true
-# Sign mutable commits when pushing.
-sign-on-push = true
 
 [working-copy]
 # Match Git's core.autocrlf = input.
@@ -15,6 +13,8 @@ eol-conversion = "input"
 
 [revsets]
 bookmark-advance-to = "@-"
+# Sign my unsigned commits when pushing.
+git-sign-on-push = "~signed() & mine()"
 
 [aliases]
 # Fetch one branch from the default GitHub remote.
