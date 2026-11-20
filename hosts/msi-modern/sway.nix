@@ -66,7 +66,7 @@ in {
   fonts.fontconfig.enable = true;
   programs.foot = {
     enable = true;
-    settings.main.font = "JetBrainsMono Nerd Font Mono:size=8";
+    settings.main.font = "JetBrainsMono Nerd Font Mono:size=11";
   };
 
   wayland.windowManager.sway.systemd.xdgAutostart = true;
