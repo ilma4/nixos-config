@@ -58,6 +58,10 @@ in {
     })
   ];
 
+  # Pavucontrol's "Set as default" button needs a legacy icon that Adwaita no longer provides.
+  xdg.dataFile."icons/hicolor/16x16/status/emblem-default.png".source =
+    "${pkgs.adwaita-icon-theme-legacy}/share/icons/AdwaitaLegacy/16x16/legacy/emblem-default.png";
+
   xdg.configFile."waybar/style.css".text = ''
     @import url("${pkgs.waybar}/etc/xdg/waybar/style.css");
 
