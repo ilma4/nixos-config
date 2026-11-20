@@ -94,19 +94,20 @@ in {
 
   services.swayosd.enable = true;
 
-  # Match the monitor description rather than a connector that changes with docks.
-  # Try 120 Hz first, retaining 4K at 60 Hz for lower-bandwidth connections.
-  services.kanshi = {
+  # The Dell can report both HDMI and DisplayPort at once. Kanshi needs a
+  # profile that accounts for every connected output, even disabled ones.
+  services.kanshi = let
+    dell = "Dell Inc. DELL U2725QE 7WH9B34";
+  in {
     enable = true;
     settings =
-      map (refresh: {
+      map (dock: {
         profile = {
-          name = "dell-u2725qe-${refresh}";
+          name = dock.name;
           outputs = [
             {
-              criteria = "*Dell*U2725QE*";
+              criteria = dock.criteria;
               status = "enable";
-              mode = "3840x2160@${refresh}Hz";
               scale = 2.0;
               position = "0,0";
             }
@@ -114,10 +115,43 @@ in {
               criteria = "eDP-1";
               status = "disable";
             }
-          ];
+          ] ++ dock.extraOutputs;
         };
-      }) ["120" "60"]
+      }) [
+        {
+          name = "dell-u2725qe-dual-input";
+          criteria = "HDMI-A-1";
+          extraOutputs = [
+            {
+              criteria = dell;
+              status = "disable";
+            }
+          ];
+        }
+        {
+          name = "dell-u2725qe";
+          criteria = "HDMI-A-1";
+          extraOutputs = [];
+        }
+      ]
       ++ [
+        {
+          profile = {
+            name = "internal-with-dell-displayport";
+            outputs = [
+              {
+                criteria = "eDP-1";
+                status = "enable";
+                scale = 1.0;
+                position = "0,0";
+              }
+              {
+                criteria = dell;
+                status = "disable";
+              }
+            ];
+          };
+        }
         {
           profile = {
             name = "internal";
