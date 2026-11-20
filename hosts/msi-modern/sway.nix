@@ -64,6 +64,14 @@ in {
   xdg.dataFile."icons/hicolor/scalable/actions/emblem-default-symbolic.svg".source =
     "${pkgs.adwaita-icon-theme}/share/icons/Adwaita/symbolic/actions/object-select-symbolic.svg";
 
+  # Use the CPU package sensor without relying on the boot-dependent hwmon number.
+  xdg.configFile."waybar/config.jsonc".source = pkgs.runCommand "waybar-config.jsonc" {} ''
+    substitute ${pkgs.waybar}/etc/xdg/waybar/config.jsonc "$out" \
+      --replace-fail '"temperature": {' '"temperature": {
+            "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+            "input-filename": "temp1_input",'
+  '';
+
   xdg.configFile."waybar/style.css".text = ''
     @import url("${pkgs.waybar}/etc/xdg/waybar/style.css");
 
