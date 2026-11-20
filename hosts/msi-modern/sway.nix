@@ -39,6 +39,7 @@ in {
     pkgs.grim
     pkgs.swayosd
     pkgs.pavucontrol
+    pkgs.adwaita-icon-theme # Provides Pavucontrol's audio-device icons.
     pkgs.nerd-fonts.jetbrains-mono
     pkgs.font-awesome_5
     screenshot
@@ -58,9 +59,9 @@ in {
     })
   ];
 
-  # Pavucontrol's "Set as default" button needs a legacy icon that Adwaita no longer provides.
-  xdg.dataFile."icons/hicolor/16x16/status/emblem-default.png".source =
-    "${pkgs.adwaita-icon-theme-legacy}/share/icons/AdwaitaLegacy/16x16/legacy/emblem-default.png";
+  # Pavucontrol still asks for emblem-default; use Adwaita's monochrome checkmark.
+  xdg.dataFile."icons/hicolor/scalable/actions/emblem-default-symbolic.svg".source =
+    "${pkgs.adwaita-icon-theme}/share/icons/Adwaita/symbolic/actions/object-select-symbolic.svg";
 
   xdg.configFile."waybar/style.css".text = ''
     @import url("${pkgs.waybar}/etc/xdg/waybar/style.css");
