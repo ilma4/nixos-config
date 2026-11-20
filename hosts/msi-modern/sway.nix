@@ -108,7 +108,9 @@ in {
             {
               criteria = dock.criteria;
               status = "enable";
+              mode = "3840x2160@120Hz";
               scale = 2.0;
+              adaptiveSync = true;
               position = "0,0";
             }
             {
@@ -120,7 +122,7 @@ in {
       }) [
         {
           name = "dell-u2725qe-dual-input";
-          criteria = "HDMI-A-1";
+          criteria = "DP-1";
           extraOutputs = [
             {
               criteria = dell;
@@ -130,14 +132,14 @@ in {
         }
         {
           name = "dell-u2725qe";
-          criteria = "HDMI-A-1";
+          criteria = "DP-1";
           extraOutputs = [];
         }
       ]
       ++ [
         {
           profile = {
-            name = "internal-with-dell-displayport";
+            name = "internal-with-dell-hdmi";
             outputs = [
               {
                 criteria = "eDP-1";
@@ -190,6 +192,9 @@ in {
         scale = "1.0";
         adaptive_sync = "on";
         position = "0 0";
+      };
+      "Dell Inc. DELL U2725QE 7WH9B34" = {
+        render_bit_depth = "10";
       };
     };
 
