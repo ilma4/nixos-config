@@ -4,16 +4,17 @@
   ...
 }: let
   port = 8080;
-  modelName = "gemma-4-12B-it-qat-UD-Q4_K_XL";
+  modelName = "gemma-4-E4B-it-qat-UD-Q4_K_XL";
+  modelUrl = "https://huggingface.co/unsloth/gemma-4-E4B-it-qat-GGUF/resolve/8c5a9e4fd5482e2be20fe0bf013b4c262a8f4265";
   model = pkgs.fetchurl {
     name = "${modelName}.gguf";
-    url = "https://huggingface.co/unsloth/gemma-4-12B-it-qat-GGUF/resolve/main/${modelName}.gguf?download=true";
-    hash = "sha256-kP1E4p4NfP/rD9ANxzz9q57QsOlTBuz3gh6mNMlAw3A=";
+    url = "${modelUrl}/${modelName}.gguf?download=true";
+    hash = "sha256-3w/U7gcHLGB8KaChy0+YkYQmzKEvRaJ3a91u5tCaTeM=";
   };
   mmproj = pkgs.fetchurl {
     name = "mmproj-F16.gguf";
-    url = "https://huggingface.co/unsloth/gemma-4-12B-it-qat-GGUF/resolve/main/mmproj-F16.gguf?download=true";
-    hash = "sha256-7MTpMSjag2O32/IZPquYzxFCNT9SzqoMlcCHKZeqrdM=";
+    url = "${modelUrl}/mmproj-F16.gguf?download=true";
+    hash = "sha256-aiVRWe5LAbME9jOlfwF919WmnTD/9Sq7JhS/CBPO8DQ=";
   };
 in {
   services.llama-cpp = {
