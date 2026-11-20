@@ -258,6 +258,14 @@ in {
       command = "opacity 0.8, floating enable, sticky enable, resize set 40 ppt 70 ppt, border pixel 10";
       criteria.app_id = "floating-term";
     }
+    {
+      command = "floating enable";
+      criteria = {
+        # Match Brave's extension-window format without pinning the ID or profile.
+        app_id = "^brave-[a-p]{32}-.+$";
+        title = "^Bitwarden$";
+      };
+    }
   ];
 
   wayland.windowManager.sway.extraConfig = ''
