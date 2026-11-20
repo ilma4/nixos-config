@@ -162,6 +162,15 @@
   networking.networkmanager.enable = true;
   users.users.ilma4.extraGroups = ["networkmanager"];
 
+  # Let btop read Intel i915 performance counters without relaxing perf access system-wide.
+  security.wrappers.btop = {
+    source = lib.getExe pkgs.btop;
+    owner = "root";
+    group = "wheel";
+    permissions = "u=rx,g=rx,o=";
+    capabilities = "cap_perfmon+ep";
+  };
+
   # Expose the monitor's DDC/CI bus to the local Sway session.
   hardware.i2c.enable = true;
 
