@@ -56,6 +56,7 @@ in {
     pkgs.swayosd
     pkgs.pavucontrol
     pkgs.nerd-fonts.jetbrains-mono
+    pkgs.font-awesome_5
     toggle-vpn
     screenshot
     (pkgs.makeDesktopItem {
@@ -65,6 +66,15 @@ in {
       icon = "applets-screenshooter";
     })
   ];
+
+  xdg.configFile."waybar/style.css".text = ''
+    @import url("${pkgs.waybar}/etc/xdg/waybar/style.css");
+
+    * {
+      /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
+      font-family: Roboto, Helvetica, Arial, "JetBrainsMono Nerd Font", "Font Awesome 5 Free Solid", sans-serif;
+    }
+  '';
 
   top-commands = {
     tofi-command = "${tofi} ${tofi-flags}";
