@@ -251,6 +251,8 @@ in {
   ];
 
   wayland.windowManager.sway.extraConfig = ''
+    # Reloading Sway resets the outputs even when the Kanshi profile hasn't changed.
+    exec_always ${pkgs.systemd}/bin/systemctl --user try-restart kanshi.service
     bindsym --inhibited Mod1+c exec ${wl-copy}
     bindsym --inhibited Mod1+v exec ${wl-paste}
   '';
