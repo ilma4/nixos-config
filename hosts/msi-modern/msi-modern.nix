@@ -19,7 +19,6 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./llama.nix
-    ./disable-wifi-when-ethernet-connected.nix
     ./adb.nix
     ./jellyfin.nix
   ];
