@@ -209,6 +209,11 @@ in {
         xkb_layout = "us,ru";
         xkb_options = "grp:alt_space_toggle,caps:escape,compose:ralt";
       };
+
+      "13364:2616:Keychron_Keychron_K3_Max".xkb_options =
+        "grp:alt_space_toggle,caps:escape,altwin:swap_alt_win";
+      "13364:2616:Keychron_Keychron_K3_Max_Keyboard".xkb_options =
+        "grp:alt_space_toggle,caps:escape,altwin:swap_alt_win";
     };
 
     # TODO: get rid of `env` hack
