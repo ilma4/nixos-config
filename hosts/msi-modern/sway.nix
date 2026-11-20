@@ -28,27 +28,6 @@
     ${grim} -g "$region" - | ${wl-copy} --type image/png
   '';
   screenshotCommand = "${screenshot}/bin/screenshot";
-
-  toggle-vpn =
-    pkgs.writers.writePython3Bin "toggle-vpn" {}
-    /*
-    python3
-    */
-    ''
-      import subprocess as sp
-      import sys
-
-      if len(sys.argv) < 2:
-          sys.exit(1)
-      vpn = sys.argv[1]
-      active = sp.check_output(["nmcli", "-f", "name", "con", "show", "--active"])
-      active = list(map(lambda x: x.strip(), active.decode("utf-8").split("\n")))
-      if vpn not in active:
-          sp.run(["nmcli", "connection", "up", "id", vpn])
-      else:
-          sp.run(["nmcli", "connection", "down", "id", vpn])
-      sys.exit(0)
-    '';
 in {
   home.packages = [
     pkgs.wl-clipboard
@@ -57,7 +36,6 @@ in {
     pkgs.pavucontrol
     pkgs.nerd-fonts.jetbrains-mono
     pkgs.font-awesome_5
-    toggle-vpn
     screenshot
     (pkgs.makeDesktopItem {
       name = "screenshot";
@@ -81,8 +59,6 @@ in {
     commands = lib.mkOptionDefault {
       Screenshot = screenshotCommand;
       lock_screen = "${swaylock} -f -c 000000";
-      wg = "${toggle-vpn}/bin/toggle-vpn wg";
-      jetbrainsVpn = "${toggle-vpn}/bin/toggle-vpn JetBrainsVPN";
     };
   };
 
