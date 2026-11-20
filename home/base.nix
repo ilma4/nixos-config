@@ -142,7 +142,7 @@ in {
       tree
       ncdu
       btop
-      dekit # parallel process TUI used by utils/deploy-all.sh
+      dekit
       witr
 
       (pkgs.writeShellScriptBin "nix-rebuild" ''

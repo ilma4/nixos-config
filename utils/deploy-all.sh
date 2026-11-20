@@ -47,11 +47,6 @@ run_job() {
     return "$status"
 }
 
-if [[ "${1:-}" == --run-job ]]; then
-    run_job "${2:-}"
-    exit
-fi
-
 changes=$(jj diff --summary --color never)
 if [[ -n "$changes" ]]; then
     echo "Repository has uncommitted or untracked changes:" >&2
@@ -87,19 +82,22 @@ fi
 
 jj bookmark move main --to @-
 jj git push --remote origin --bookmark main
-sudo -v
 
-commands=()
-for index in "${!jobs[@]}"; do
-    job="${jobs[$index]}"
-    # Temporary hack because the SSH agent cannot handle simultaneous requests.
-    delay=$((index * 3))
-    commands+=("sleep $delay && utils/deploy-all.sh --run-job $job")
+# Run in the caller's terminal so nix-rebuild can prompt for credentials.
+# Run one job at a time to avoid competing requests to the SSH agent.
+deploy_status=0
+for job in "${jobs[@]}"; do
+    if run_job "$job"; then
+        continue
+    else
+        status=$?
+        echo "Deployment of $job failed with status $status." >&2
+        deploy_status=$status
+    fi
 done
 
-dekit mprocs \
-    --names "$(IFS=,; printf '%s' "${jobs[*]}")" \
-    --on-all-finished '{c: quit}' \
-    "${commands[@]}"
+if ((deploy_status != 0)); then
+    exit "$deploy_status"
+fi
 
 echo "Deploy finished."
