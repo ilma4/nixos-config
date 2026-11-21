@@ -1,5 +1,13 @@
-{inputs, ...}: {
+{
+  inputs,
+  lib,
+  ...
+}: {
   imports = [inputs.microvm.nixosModules.host];
+
+  # Store optimisation replaces inodes underneath the guest's VirtioFS-backed
+  # store overlay, leaving stale file handles even for systemd's shutdown units.
+  nix.optimise.automatic = lib.mkForce false;
 
   networking.interfaces.openclaw-tap.ipv4.addresses = [
     {
