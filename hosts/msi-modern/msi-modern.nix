@@ -209,7 +209,10 @@
   # };
 
   programs.sway.enable = true;
-  hardware.graphics.extraPackages = [pkgs.intel-media-driver];
+  hardware.graphics.extraPackages = with pkgs; [
+    intel-media-driver
+    vpl-gpu-rt
+  ];
 
   xdg.portal = {
     enable = true;
