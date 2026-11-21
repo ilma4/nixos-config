@@ -1,3 +1,9 @@
+# Secure boot on msi-modern
+
+- secure boot
+- decrypt root volume with tmp2
+
+
 # extract.nix
 
 Make configs for programs available without nix (i.e. tmux config and so on).
