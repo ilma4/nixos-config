@@ -34,6 +34,14 @@ in {
   i4.dev.enable = true;
   i4.dev.jjSigningKey = constants.msi-modern-github-pub-key;
 
+  programs.zsh.initContent = lib.mkOrder 350 ''
+    # Replace the tty1 login shell before prompt setup starts the Git/JJ worker.
+    if [[ -o login && $TTY == /dev/tty1 && -z ''${SSH_CONNECTION:-} &&
+          -z ''${WAYLAND_DISPLAY:-} && -z ''${DISPLAY:-} ]]; then
+      exec sway
+    fi
+  '';
+
   programs.bash.initExtra = ''
     if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
       tmux attach-session -t default || tmux new-session -s default
