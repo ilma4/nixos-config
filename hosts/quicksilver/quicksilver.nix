@@ -63,6 +63,8 @@ in {
   nix.gc.automatic = false;
 
   networking.hostName = constants.quicksilver.hostname;
+  # macOS uses Bonjour for .local discovery instead of Avahi.
+  networking.localHostName = constants.quicksilver.hostname;
 
   # macOS manages the existing login account. Don't put it in users.knownUsers.
   users.users.${primaryUser} = {
