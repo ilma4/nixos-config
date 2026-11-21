@@ -32,8 +32,24 @@
   screenshotCommand = "${screenshot}/bin/screenshot";
   toggle-monitor = pkgs.writeShellScriptBin "toggle-monitor" ''
     set -euo pipefail
-    # monitor-input calls the Dell USB-C input (0x1b) UsbC2.
-    exec ${pkgs.monitor-input}/bin/monitor-input U2725QE=DP1,UsbC2
+    ddcutil=${lib.getExe pkgs.ddcutil}
+    monitor=(--sn 7WH9B34)
+    current="$("$ddcutil" "''${monitor[@]}" --terse getvcp 60)"
+
+    # The U2725QE reports USB-C as 0x19 and DisplayPort as 0x0f.
+    case "$current" in
+      'VCP 60 SNC x0f') next=0x19 ;;
+      'VCP 60 SNC x19'|'VCP 60 SNC x11') next=0x0f ;;
+      *) printf 'Unexpected monitor input: %s\n' "$current" >&2; exit 1 ;;
+    esac
+
+    if [[ "''${1:-}" == --dry-run ]]; then
+      printf '%s -> %s\n' "$current" "$next"
+      exit 0
+    fi
+
+    # Switching inputs can disconnect the DDC/CI path before readback.
+    exec "$ddcutil" "''${monitor[@]}" --noverify setvcp 60 "$next"
   '';
   toggleMonitorCommand = "${toggle-monitor}/bin/toggle-monitor";
 
