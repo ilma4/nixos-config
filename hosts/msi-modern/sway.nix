@@ -95,6 +95,10 @@ in {
     })
   ];
 
+  xdg.configFile."mpv/mpv.conf".text = ''
+    hwdec=vaapi
+  '';
+
   # Pavucontrol still asks for emblem-default; use Adwaita's monochrome checkmark.
   xdg.dataFile."icons/hicolor/scalable/actions/emblem-default-symbolic.svg".source =
     "${pkgs.adwaita-icon-theme}/share/icons/Adwaita/symbolic/actions/object-select-symbolic.svg";

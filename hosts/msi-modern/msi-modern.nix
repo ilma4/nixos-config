@@ -209,6 +209,7 @@
   # };
 
   programs.sway.enable = true;
+  hardware.graphics.extraPackages = [pkgs.intel-media-driver];
 
   xdg.portal = {
     enable = true;
