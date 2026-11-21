@@ -158,6 +158,9 @@
 
   networking.hostName = "msi-modern"; # Define your hostname.
 
+  # Initialize the USB-C DisplayPort output for the LUKS prompt.
+  boot.initrd.kernelModules = ["i915"];
+
   boot.initrd.availableKernelModules = [
     "xhci_pci"
 
