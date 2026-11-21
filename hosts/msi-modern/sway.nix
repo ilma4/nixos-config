@@ -107,6 +107,14 @@ in {
   };
 
   programs.tofi.enable = true;
+
+  # Tofi uses directory mtimes to invalidate its app list. Nix profile switches
+  # can change the desktop entries without changing those mtimes, so clear
+  # the app-list cache at activation and leave launch history intact.
+  home.activation.invalidateTofiDrunCache = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    run rm -f -- ${lib.escapeShellArg "${config.xdg.cacheHome}/tofi-drun"}
+  '';
+
   fonts.fontconfig.enable = true;
   programs.foot = {
     enable = true;
