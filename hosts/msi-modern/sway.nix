@@ -33,12 +33,28 @@
     exec ${pkgs.monitor-input}/bin/monitor-input U2725QE=DP1
   '';
   hdmiCommand = "${hdmi}/bin/hdmi";
+
+  # Workaround: Pavucontrol prefers full-color device icons when both variants
+  # exist. Prefer Adwaita's symbolic monitor and headphones icons when available.
+  pavucontrol = pkgs.pavucontrol.overrideAttrs (old: {
+    postPatch =
+      (old.postPatch or "")
+      + ''
+        substituteInPlace src/mainwindow.cc \
+          --replace-fail 'std::string iconName(name ? name : fallback);' 'std::string iconName(name ? name : fallback);
+            if (iconName == "video-display" || iconName == "audio-headphones") {
+                const auto symbolic = iconName + "-symbolic";
+                if (theme->has_icon(symbolic.c_str()))
+                    iconName = symbolic;
+            }'
+      '';
+  });
 in {
   home.packages = [
     pkgs.wl-clipboard
     pkgs.grim
     pkgs.swayosd
-    pkgs.pavucontrol
+    pavucontrol
     pkgs.adwaita-icon-theme # Provides Pavucontrol's audio-device icons.
     pkgs.networkmanagerapplet # Exposes nm-applet's tray icons to Waybar.
     pkgs.nerd-fonts.jetbrains-mono
