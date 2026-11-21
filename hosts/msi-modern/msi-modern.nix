@@ -196,6 +196,8 @@
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    # Disable LE so this laptop doesn't connect to my headphones while they're connected to another device.
+    settings.General.ControllerMode = "bredr";
   };
   services.blueman.enable = true;
 
