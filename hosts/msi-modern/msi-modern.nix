@@ -22,7 +22,6 @@
     ./oo7.nix
     ./llama.nix
     ./adb.nix
-    ./jellyfin.nix
     ./remote-builder.nix
     ./headphone-eq.nix
   ];
