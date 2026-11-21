@@ -67,7 +67,7 @@ in {
   # macOS manages the existing login account. Don't put it in users.knownUsers.
   users.users.${primaryUser} = {
     home = "/Users/${primaryUser}";
-    openssh.authorizedKeys.keys = [constants.ios-pub-key];
+    openssh.authorizedKeys.keys = constants.main-pub-keys ++ [constants.ios-pub-key];
   };
 
   home-manager.users.${primaryUser} = import ./malakhov-home.nix;
@@ -176,9 +176,9 @@ in {
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
 
-  # SSH access from the iOS key only, for the primary user.
+  # SSH access for the primary user using only the configured public keys.
   services.openssh = {
-    enable = false;
+    enable = true;
     extraConfig = ''
       PasswordAuthentication no
       KbdInteractiveAuthentication no
