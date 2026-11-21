@@ -307,7 +307,7 @@ in {
 
   wayland.windowManager.sway.extraConfig = ''
     font pango:DejaVu Sans 10
-    seat seat0 xcursor_theme Adwaita 32
+    seat seat0 xcursor_theme Adwaita 24
     # Reloading Sway resets the outputs even when the Kanshi profile hasn't changed.
     exec_always ${pkgs.systemd}/bin/systemctl --user try-restart kanshi.service
     bindsym --inhibited Mod1+c exec ${wl-copy}
