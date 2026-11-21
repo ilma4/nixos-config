@@ -219,6 +219,17 @@
     wlr.enable = true;
   };
 
+  # OBS asks for both monitors and windows. The portal skips Slurp for those
+  # requests, and without a menu picker OBS reports the selection as cancelled.
+  # Expose Tofi as wmenu only to this service so monitor-only requests still
+  # use Slurp's click-to-select picker by default.
+  systemd.user.services.xdg-desktop-portal-wlr.path = [
+    (pkgs.writeShellScriptBin "wmenu" ''
+      set -euo pipefail
+      exec ${lib.getExe pkgs.tofi} --prompt-text='Select a source to share: '
+    '')
+  ];
+
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
