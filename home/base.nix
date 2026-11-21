@@ -71,6 +71,12 @@ in {
       description = "Enable base configuration";
     };
 
+    i4.revision.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Include the flake revision in the home profile via i4-revision.";
+    };
+
     configure-ssh = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -119,38 +125,39 @@ in {
     # release notes.
     home.stateVersion = "24.05"; # Please read the comment before changing.
 
-    home.packages = with pkgs; [
-      osc
-      restic
-      rclone
-      rsync
+    home.packages = with pkgs;
+      [
+        osc
+        restic
+        rclone
+        rsync
 
-      patoolWithCompletions # archive universal extract utility
+        patoolWithCompletions # archive universal extract utility
 
-      curl
-      wget
+        curl
+        wget
 
-      vifm
-      unrar
-      unzip
-      zip
-      zstd
-      xz
-      gzip
-      p7zip
+        vifm
+        unrar
+        unzip
+        zip
+        zstd
+        xz
+        gzip
+        p7zip
 
-      tree
-      ncdu
-      btop
-      dekit
-      witr
+        tree
+        ncdu
+        btop
+        dekit
+        witr
 
-      (pkgs.writeShellScriptBin "nix-rebuild" ''
-        set -euo pipefail
-        ${config.rebuild-script}
-      '')
-      i4-revision-package
-    ];
+        (pkgs.writeShellScriptBin "nix-rebuild" ''
+          set -euo pipefail
+          ${config.rebuild-script}
+        '')
+      ]
+      ++ lib.optional config.i4.revision.enable i4-revision-package;
 
     programs.git = {
       enable = true;

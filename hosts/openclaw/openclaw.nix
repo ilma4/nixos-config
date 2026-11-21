@@ -12,6 +12,9 @@
   ];
 
   home-manager.users.ilma4 = import ./home.nix;
+  # The NAS restarts this VM when its closure or runner changes. Don't make
+  # either depend on the revision of unrelated files in the top-level flake.
+  system.configurationRevision = null;
   # Preserve files created before Home Manager takes ownership of the home.
   home-manager.backupFileExtension = "before-home-manager";
   environment.systemPackages = [pkgs.nodejs];

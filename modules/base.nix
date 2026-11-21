@@ -92,13 +92,13 @@ in {
       ];
     };
 
-    environment.systemPackages = [
-      (pkgs.writeShellScriptBin "i4-revision" ''
+    environment.systemPackages = lib.optional (config.system.configurationRevision != null) (
+      pkgs.writeShellScriptBin "i4-revision" ''
         set -euo pipefail
         echo '${config.system.configurationRevision}'
-      '')
-    ];
-    system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or "null";
+      ''
+    );
+    system.configurationRevision = mkDefault (inputs.self.rev or inputs.self.dirtyRev or "null");
 
     security.rtkit.enable = mkDefault (!config.boot.isContainer); # realtime privileges
 
