@@ -30,11 +30,12 @@
     ${grim} -g "$region" - | ${wl-copy} --type image/png
   '';
   screenshotCommand = "${screenshot}/bin/screenshot";
-  hdmi = pkgs.writeShellScriptBin "hdmi" ''
+  toggle-monitor = pkgs.writeShellScriptBin "toggle-monitor" ''
     set -euo pipefail
-    exec ${pkgs.monitor-input}/bin/monitor-input U2725QE=DP1
+    # monitor-input calls the Dell USB-C input (0x1b) UsbC2.
+    exec ${pkgs.monitor-input}/bin/monitor-input U2725QE=DP1,UsbC2
   '';
-  hdmiCommand = "${hdmi}/bin/hdmi";
+  toggleMonitorCommand = "${toggle-monitor}/bin/toggle-monitor";
 
   # Workaround: Pavucontrol prefers full-color device icons when both variants
   # exist. Prefer Adwaita's symbolic monitor and headphones icons when available.
@@ -68,12 +69,12 @@ in {
       exec = screenshotCommand;
       icon = "applets-screenshooter";
     })
-    hdmi
+    toggle-monitor
     (pkgs.makeDesktopItem {
-      name = "hdmi";
-      desktopName = "hdmi";
-      comment = "Switch the Dell monitor from USB-C to DisplayPort";
-      exec = hdmiCommand;
+      name = "toggle-monitor";
+      desktopName = "Toggle Monitor";
+      comment = "Switch the Dell monitor between USB-C and DisplayPort";
+      exec = toggleMonitorCommand;
       icon = "video-display";
     })
   ];
@@ -103,7 +104,7 @@ in {
     tofi-command = "${tofi} ${tofi-flags}";
     commands = lib.mkOptionDefault {
       Screenshot = screenshotCommand;
-      hdmi = hdmiCommand;
+      toggle-monitor = toggleMonitorCommand;
       lock_screen = "${swaylock} -f -c 000000";
     };
   };
