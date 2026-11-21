@@ -6,6 +6,7 @@
 }: let
   swaylock = "${pkgs.swaylock}/bin/swaylock";
   swaymsg = "${pkgs.sway}/bin/swaymsg";
+  keyboardLayouts = "us,ru";
   swappedAltWin = "grp:alt_space_toggle,caps:escape,altwin:swap_alt_win";
   waybar = "${pkgs.waybar}/bin/waybar";
   nm-applet = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator";
@@ -266,13 +267,16 @@ in {
       };
 
       "type:keyboard" = {
-        xkb_layout = "us,ru";
+        xkb_layout = keyboardLayouts;
         xkb_options = "grp:alt_space_toggle,caps:escape,compose:ralt";
       };
 
       "13364:2616:Keychron_Keychron_K3_Max".xkb_options = swappedAltWin;
       "13364:2616:Keychron_Keychron_K3_Max_Keyboard".xkb_options = swappedAltWin;
-      "13364:53296:Keychron__Keychron_Link__Keyboard".xkb_options = swappedAltWin;
+      "13364:53296:Keychron__Keychron_Link__Keyboard" = {
+        xkb_layout = keyboardLayouts;
+        xkb_options = swappedAltWin;
+      };
     };
 
     # TODO: get rid of `env` hack
