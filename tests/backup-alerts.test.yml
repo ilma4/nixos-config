@@ -73,7 +73,7 @@ tests:
   - name: Partial warning fires promptly and clears only when the latch clears
     interval: 1m
     input_series:
-      - series: 'backup_partial_unresolved{job="node-exporter",instance="quicksilver",source="quicksilver"}'
+      - series: 'backup_partial_unresolved{job="node-exporter",instance="nas",source="nas-server"}'
         values: '0 1 1 1 0'
     alert_rule_test:
       - eval_time: 0m
@@ -84,15 +84,29 @@ tests:
         exp_alerts:
           - exp_labels:
               job: node-exporter
-              instance: quicksilver
-              source: quicksilver
+              instance: nas
+              source: nas-server
               severity: warning
             exp_annotations:
-              summary: "Partial backup: quicksilver"
+              summary: "Partial backup: nas-server"
               description: "Restic returned exit code 3: some source files could not be read. This warning clears after a backup returns exit code 0. Check the backup log for unreadable paths."
       - eval_time: 4m
         alertname: ResticBackupPartial
         exp_alerts: []
+
+  - name: Missing execution status alerts for NAS only
+    interval: 1m
+    alert_rule_test:
+      - eval_time: 48h
+        alertname: BackupStatusUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: node-exporter
+              source: nas-server
+              severity: warning
+            exp_annotations:
+              summary: "Backup execution status unavailable: nas-server"
+              description: "Execution status has been missing for 48 hours; partial-backup detection is unavailable."
 
   - name: Repository inspection failure gets its own warning
     interval: 1m

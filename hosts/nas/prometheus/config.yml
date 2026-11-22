@@ -26,9 +26,6 @@ scrape_configs:
       - targets: ["127.0.0.1:9100"]
         labels:
           instance: "nas"
-      - targets: ["quicksilver.tail09544e.ts.net:9100"]
-        labels:
-          instance: "quicksilver"
       - targets: ["msi-modern.tail09544e.ts.net:9100"]
         labels:
           instance: "msi-modern"

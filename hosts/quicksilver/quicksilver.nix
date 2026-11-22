@@ -170,13 +170,6 @@ in {
   '';
   */
 
-  # Prometheus node exporter: monitoring
-  services.prometheus.exporters.node.enable = true;
-  # Execute the exporter directly instead of keeping its Bash wrapper running.
-  launchd.daemons.prometheus-node-exporter.command =
-    lib.mkForce config.launchd.daemons.prometheus-node-exporter.script;
-  users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
-
   services.tailscale.enable = true;
   # Userspace mode avoids interface binding that conflicts with WARP.
   launchd.daemons.tailscaled.command = let

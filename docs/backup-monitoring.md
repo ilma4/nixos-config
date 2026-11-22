@@ -61,12 +61,14 @@ pruning. Exit code 3 sets `backup_partial_unresolved` to 1; only exit code 0
 clears it. Other errors preserve the warning. Available partial snapshots
 continue to be copied.
 
-Status survives process and machine restarts. Node exporter reads atomic
-`.prom` files from `/Users/Shared/i4-backup-metrics` on Quicksilver and
-`/var/lib/i4-backup-metrics` on NAS. Unreadable paths remain in
-`/var/log/i4-backup.log` on the Mac and the backup journal on NAS.
+Status survives process and machine restarts. On NAS, node exporter reads
+`/var/lib/i4-backup-metrics/backup.prom`; unreadable paths are logged in the
+backup journal. Quicksilver records status locally in
+`/Users/Shared/i4-backup-metrics/backup.prom` and logs unreadable paths in
+`/var/log/i4-backup.log`. Prometheus no longer scrapes Quicksilver's execution
+status, but its snapshot and replication alerts still run on NAS.
 
-`ResticBackupPartial` has no extra alert delay. Delivery still depends on
+On NAS, `ResticBackupPartial` has no extra alert delay. Delivery still depends on
 Prometheus being able to scrape the source and on Alertmanager's grouping.
 Missing status for 48 hours and stale completion times over 48 hours have
 separate warnings. Collector silence, missing repository metrics, and

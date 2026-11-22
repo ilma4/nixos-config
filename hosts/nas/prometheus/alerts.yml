@@ -128,10 +128,7 @@ groups:
           description: "Check i4-quicksilver-backup-relay.service; it was still running at the latest collection."
 
       - alert: BackupStatusUnavailable
-        expr: |
-          absent(backup_last_attempt_timestamp_seconds{job="node-exporter",source="quicksilver"})
-          or
-          absent(backup_last_attempt_timestamp_seconds{job="node-exporter",source="nas-server"})
+        expr: absent(backup_last_attempt_timestamp_seconds{job="node-exporter",source="nas-server"})
         for: 48h
         labels:
           severity: warning
@@ -140,7 +137,7 @@ groups:
           description: "Execution status has been missing for 48 hours; partial-backup detection is unavailable."
 
       - alert: BackupStatusStale
-        expr: time() - backup_last_attempt_timestamp_seconds{job="node-exporter",source=~"quicksilver|nas-server"} > 172800
+        expr: time() - backup_last_attempt_timestamp_seconds{job="node-exporter",source="nas-server"} > 172800
         for: 5m
         labels:
           severity: warning

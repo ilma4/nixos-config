@@ -8,7 +8,7 @@
   backupHome = "/Users/ilma4";
   backupCache = "${backupHome}/Library/Caches/restic";
   backupLocalRepo = "${backupHome}/NoBackup/restic";
-  # The exporter runs as its own user and cannot traverse the private Library.
+  # Keep a local record of backup execution status even without a scraper.
   statusMetricsDirectory = "/Users/Shared/i4-backup-metrics";
   backupWakeLeadMinutes = 5;
   backupWakeWeekdays = "MTWRFSU";
@@ -170,10 +170,6 @@ in {
     };
     WorkingDirectory = backupHome;
   };
-
-  services.prometheus.exporters.node.extraFlags = [
-    "--collector.textfile.directory=${statusMetricsDirectory}"
-  ];
 
   system.activationScripts.extraActivation.text = lib.mkAfter ''
     set -euo pipefail
