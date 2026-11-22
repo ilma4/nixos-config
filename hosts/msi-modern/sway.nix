@@ -35,7 +35,7 @@
     output="$(${swaymsg} -rt get_outputs | ${lib.getExe pkgs.jq} -er '.[] | select(.active and .focused) | .name')"
 
     case "$output" in
-      eDP-*|LVDS-*|DSI-*) exec ${swayosd} --brightness "$1$2" ;;
+      eDP-*|LVDS-*|DSI-*) exec ${swayosd} --monitor "$output" --brightness "$1$2" ;;
     esac
 
     # Use the focused connector's DDC bus, even if the same monitor is
@@ -45,7 +45,23 @@
       bus="$(readlink -- "$connector/ddc")"
       bus="''${bus##*/}"
       [[ "$bus" =~ ^i2c-([0-9]+)$ ]] || continue
-      exec ${lib.getExe pkgs.ddcutil} --bus "''${BASH_REMATCH[1]}" setvcp 10 "$1" "$2"
+      ddc=(${lib.getExe pkgs.ddcutil} --bus "''${BASH_REMATCH[1]}")
+      "''${ddc[@]}" setvcp 10 "$1" "$2"
+
+      # Show the monitor's actual brightness after clamping or rounding.
+      level="$("''${ddc[@]}" --terse getvcp 10)"
+      if [[ "$level" =~ ^VCP[[:blank:]]+10[[:blank:]]+C[[:blank:]]+([0-9]+)[[:blank:]]+([0-9]+)$ ]]; then
+        current=$((10#''${BASH_REMATCH[1]}))
+        maximum=$((10#''${BASH_REMATCH[2]}))
+        if (( maximum > 0 && current <= maximum )); then
+          percent=$(((100 * current + maximum / 2) / maximum))
+          printf -v progress '%d.%02d' "$((percent / 100))" "$((percent % 100))"
+          exec ${swayosd} --monitor "$output" --custom-icon display-brightness-symbolic \
+            --custom-progress "$progress" --custom-progress-text "$percent%"
+        fi
+      fi
+      printf 'Unexpected DDC/CI brightness for %s: %s\n' "$output" "$level" >&2
+      exit 1
     done
 
     printf 'No DDC/CI bus for focused output %s\n' "$output" >&2
