@@ -84,8 +84,9 @@ quicksilver's remote SSH, test the existing iOS key with `malakhov`; the new
 configuration no longer allows SSH as `ilma4`.
 
 The new configuration does not run the old personal Restic backup, Home
-Assistant token provisioning, Obsidian auto-commit, MacEQ, or `splash` server
-under `malakhov`. After the switch, `pmset -g sched` may still show the old
+Assistant token provisioning, Obsidian auto-commit, or MacEQ under `malakhov`.
+[Splash](quicksilver-splash.md) uses model files in the new account's home.
+After the switch, `pmset -g sched` may still show the old
 3:55 a.m. repeating wake; if it is only the retired backup schedule, remove
 it with `sudo pmset repeat cancel`. Old decrypted SOPS generations can remain
 under `/run/secrets.d`; review their cleanup after securing any recovery

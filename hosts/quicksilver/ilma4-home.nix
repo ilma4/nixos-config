@@ -16,7 +16,6 @@ in {
 
     ./common-home.nix
     ../../modules/sops.nix
-    ./splash.nix
   ];
 
   config = {

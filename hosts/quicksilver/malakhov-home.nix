@@ -6,6 +6,7 @@
 }: {
   imports = [
     ./common-home.nix
+    ./splash.nix
     ../../modules/work.nix
   ];
 

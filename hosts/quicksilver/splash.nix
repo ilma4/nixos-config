@@ -1,54 +1,39 @@
 {
   config,
-  pkgs,
   lib,
   osConfig,
   ...
 }: let
-  modelsDirectory = "/Volumes/Extra/llama-cpp";
+  modelsDirectory = "${config.home.homeDirectory}/llama-cpp/models";
   homebrewPrefix = osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix);
-  volumeWatcher = pkgs.swiftPackages.stdenv.mkDerivation {
-    pname = "model-volume-watch";
-    version = "0.1.0";
-    dontUnpack = true;
-    dontConfigure = true;
-    nativeBuildInputs = [pkgs.swift];
-    buildPhase = ''
-      runHook preBuild
-      swiftc -swift-version 5 -O -o model-volume-watch ${./model-volume-watch.swift}
-      runHook postBuild
-    '';
-    installPhase = ''
-      runHook preInstall
-      install -Dm755 model-volume-watch "$out/bin/model-volume-watch"
-      runHook postInstall
-    '';
-  };
+  tailscale = lib.getExe' osConfig.services.tailscale.package "tailscale";
+  port = "8080";
+  logDirectory = "${config.home.homeDirectory}/Library/Logs";
 in {
-  # Imported only by ilma4-home.nix: this runs in ilma4's login session.
-  # KeepAlive alone cannot stop a running job when a volume disappears.
+  # Run in malakhov's login session using the existing local model files.
   launchd.agents.splash = {
     enable = true;
     config = {
       ProgramArguments = [
-        "${volumeWatcher}/bin/model-volume-watch"
-        "/Volumes/Extra"
-        modelsDirectory
         "${homebrewPrefix}/bin/splash"
         "serve"
         "--model"
         "unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL"
         "--model-dir"
-        "${modelsDirectory}/models/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_XL.gguf"
+        "${modelsDirectory}/Qwen3.8-27B/Qwen3.8-27B-UD-Q4_K_XL.gguf"
         "--mmproj"
-        "${modelsDirectory}/models/Qwen3.8-27B/mmproj-F16.gguf"
+        "${modelsDirectory}/Qwen3.8-27B/mmproj-F16.gguf"
         "--draft-model"
-        "${modelsDirectory}/models/drafts/Qwen3.8-27B-DFlash2"
+        "${modelsDirectory}/drafts/Qwen3.8-27B-DFlash2"
         "--offline"
         "--host"
-        "0.0.0.0"
+        "127.0.0.1"
         "--port"
-        "8080"
+        port
+        "--allowed-host"
+        "quicksilver"
+        "--allowed-host"
+        "quicksilver.tail09544e.ts.net"
         "--kv-format"
         "bf16"
         "--max-context"
@@ -61,12 +46,29 @@ in {
         "Qwen3.8-27B-UD-Q4_K_XL"
       ];
       RunAtLoad = true;
-      StartOnMount = true;
-      KeepAlive.SuccessfulExit = false;
-      ThrottleInterval = 10;
-      ExitTimeOut = 20;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/splash.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/splash.log";
+      KeepAlive = true;
+      ThrottleInterval = 30;
+      StandardOutPath = "${logDirectory}/splash.log";
+      StandardErrorPath = "${logDirectory}/splash.log";
+    };
+  };
+
+  # Quicksilver's userspace tailscaled has no local Tailscale interface to bind.
+  # Use foreground Serve so launchd owns the forwarder's lifetime as well.
+  launchd.agents.splash-tailscale = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        tailscale
+        "serve"
+        "--tcp=${port}"
+        "tcp://127.0.0.1:${port}"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      ThrottleInterval = 30;
+      StandardOutPath = "${logDirectory}/splash-tailscale.log";
+      StandardErrorPath = "${logDirectory}/splash-tailscale.log";
     };
   };
 }
