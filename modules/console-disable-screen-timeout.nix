@@ -59,42 +59,47 @@
     set -euo pipefail
 
     shopt -s nullglob
+    declare -A blanked_by_us=()
 
     restore_backlights() {
       local power_file
 
-      for power_file in /sys/class/backlight/*/bl_power; do
+      for power_file in "''${!blanked_by_us[@]}"; do
         if [[ -w "$power_file" ]]; then
           printf '0\n' >"$power_file" || true
         fi
+        unset 'blanked_by_us[$power_file]'
       done
     }
 
-    trap restore_backlights EXIT
+    trap 'if ${textConsoleActive}/bin/text-console-active; then restore_backlights; fi' EXIT
     trap 'exit 0' INT TERM
 
     while true; do
-      desired_power=0
+      # In graphics mode the compositor owns the outputs. In particular,
+      # i915 keeps bl_power at 4 when the compositor disables the panel.
+      if ${textConsoleActive}/bin/text-console-active; then
+        if [[ -r /sys/class/graphics/fb0/blank ]] \
+          && IFS= read -r blank_state </sys/class/graphics/fb0/blank; then
+          if [[ "$blank_state" == 4 ]]; then
+            for power_file in /sys/class/backlight/*/bl_power; do
+              [[ -w "$power_file" ]] || continue
 
-      # 4 is FB_BLANK_POWERDOWN. Do not follow stale fbcon state while a
-      # compositor owns the active VT in KD_GRAPHICS mode.
-      if [[ -r /sys/class/graphics/fb0/blank ]] \
-        && IFS= read -r blank_state </sys/class/graphics/fb0/blank \
-        && [[ "$blank_state" == 4 ]] \
-        && ${textConsoleActive}/bin/text-console-active; then
-        desired_power=4
-      fi
-
-      for power_file in /sys/class/backlight/*/bl_power; do
-        [[ -w "$power_file" ]] || continue
-
-        if IFS= read -r current_power <"$power_file" \
-          && [[ "$current_power" != "$desired_power" ]]; then
-          printf 'Synchronizing %s to framebuffer power state %s\n' \
-            "$power_file" "$desired_power" >&2
-          printf '%s\n' "$desired_power" >"$power_file"
+              if IFS= read -r current_power <"$power_file" && [[ "$current_power" != 4 ]]; then
+                printf '4\n' >"$power_file"
+                blanked_by_us["$power_file"]=1
+                printf 'Synchronizing %s to framebuffer power state 4\n' "$power_file" >&2
+              fi
+            done
+          else
+            restore_backlights
+          fi
         fi
-      done
+      elif [[ $? == 1 ]]; then
+        # A graphics VT takes over via DRM/KMS, so forget our console state.
+        # Keep it on a failed mode query, but don't write in that case either.
+        blanked_by_us=()
+      fi
 
       ${pkgs.coreutils}/bin/sleep 1
     done
@@ -135,8 +140,8 @@ in {
 
     # i915 can leave an eDP backlight on even after fbcon reaches
     # FB_BLANK_POWERDOWN. Mirror that final state to the backlight interface,
-    # and restore it as soon as fbcon wakes. Text-mode detection prevents this
-    # legacy console state from interfering with Sway or another compositor.
+    # and restore only the backlights we changed when fbcon wakes. Leave
+    # backlight control to Sway or another compositor in graphics mode.
     systemd.services.console-display-backlight-sync = {
       description = "Synchronize console powerdown with display backlights";
       wantedBy = ["multi-user.target"];
