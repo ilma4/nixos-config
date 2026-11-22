@@ -25,6 +25,16 @@
 		// {"action": "accept", "src": ["group:example"], "dst": ["tag:example:*"], "srcPosture":["posture:autoUpdateMac"]},
 	],
 
+	// Only the owner can use Tailscale SSH as malakhov on their own opted-in devices.
+	"ssh": [
+		{
+			"action": "check",
+			"src": ["ilya.malakhov4@gmail.com"],
+			"dst": ["autogroup:self"],
+			"users": ["malakhov"],
+		},
+	],
+
 	// Define postures that will be applied to all rules without any specific
 	// srcPosture definition.
 	// "defaultSrcPosture": [

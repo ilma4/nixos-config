@@ -178,8 +178,18 @@ in {
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
   services.tailscale.enable = true;
-  # Follow WARP's destination routes instead of binding to the physical default interface.
-  launchd.daemons.tailscaled.environment.TS_BIND_TO_INTERFACE_BY_ROUTE = "true";
+  # Userspace mode avoids interface binding that conflicts with WARP.
+  launchd.daemons.tailscaled.command = let
+    tailscaled = lib.getExe' config.services.tailscale.package "tailscaled";
+    settings = pkgs.writeText "quicksilver-tailscaled.json" (builtins.toJSON {
+      version = "alpha0";
+      locked = false;
+      runSSHServer = true;
+    });
+  in
+    lib.mkForce "${tailscaled} --tun=userspace-networking --config=${settings}";
+  # There is no system route to Tailscale's DNS listener in userspace mode.
+  environment.etc."resolver/ts.net".enable = false;
 
   # SSH access for the primary user using only the configured public keys.
   services.openssh = {
