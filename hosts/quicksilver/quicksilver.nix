@@ -177,6 +177,7 @@ in {
     lib.mkForce config.launchd.daemons.prometheus-node-exporter.script;
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
+  services.tailscale.enable = true;
 
   # SSH access for the primary user using only the configured public keys.
   services.openssh = {
