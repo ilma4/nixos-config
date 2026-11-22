@@ -1,0 +1,16 @@
+FROM docker.io/library/ubuntu:24.04@sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    attr bc bison bsdmainutils build-essential bzip2 ca-certificates curl file flex gawk \
+    gettext git gperf jq libhtml-parser-perl libjson-perl libncurses-dev libssl-dev \
+    libxml-libxml-perl lzip openssl patch perl protobuf-c-compiler python3 qemu-user \
+    rsync squashfs-tools subversion unzip util-linux xxd xz-utils zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -g 10001 builder && useradd -m -u 10001 -g builder builder
+# The SDK calls /sbin/depmod when it assembles the firmware filesystem.
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends kmod \
+    && test -x /sbin/depmod && rm -rf /var/lib/apt/lists/*
+COPY build.sh customize-sdk.py verify-image.py sources.tsv /opt/keenetic/
+ENV PYTHONDONTWRITEBYTECODE=1
+USER builder
+WORKDIR /home/builder

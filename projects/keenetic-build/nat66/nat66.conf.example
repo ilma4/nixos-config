@@ -1,0 +1,4 @@
+# Copy to /opt/etc/nat66.conf and set the local prefix and interface names.
+LAN_PREFIX=fd00:1234:5678::/64
+LAN=br0
+WAN=apclii0

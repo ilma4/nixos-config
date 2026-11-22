@@ -1,0 +1,5 @@
+33996f12b033cf63b7fabbbb9090b3d719e5a27745214b65909ba221084da851 KN-3012-5.01.C.8.0-2-stock.bin -
+bd44c54bedf3ad05221a709ba82b7d1b10bf7f12dd5b20f71ac454755264defa KN-1912-5.01.C.8.0-2-donor.bin https://osvault.keenetic.ru/KN-1912/5.01/KN-1912_stable_5.1.8_5.01.C.8.0-2.bin
+d3faa5dd4da8f4029c9fe5df4428b1d82cf086dd55f5036575742d8a8eaff4d5 KN-3810-5.01.C.8.0-2-donor.bin https://osvault.keenetic.ru/KN-3810/5.01/KN-3810_stable_5.1.8_5.01.C.8.0-2.bin
+2f0433fca4cd319082359515fe65a46693f858d186ea7fc931f742b77f304c43 sdk.tar.gz https://codeload.github.com/keenetic/keenetic-sdk/tar.gz/5c74fc4d907383c91e8d6af3f5d67501f7acb171
+8e6f4a907d9677b55fd452e1340a3e030a6f530b138d420c11975da33f086b1e gnulib-c99c8d491850dc3a6e0b8604a2729d8bc5c0eff1.tar.gz https://sources.cdn.openwrt.org/gnulib-c99c8d491850dc3a6e0b8604a2729d8bc5c0eff1.tar.gz

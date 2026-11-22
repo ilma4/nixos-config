@@ -1,0 +1,11 @@
+#!/bin/sh
+case "${1:-start}" in
+    stop) /opt/bin/sh /opt/etc/admin-ssh-service.sh stop ;;
+    *)
+        /opt/bin/sh /opt/etc/nat66.sh all
+        nat_status=$?
+        /opt/bin/sh /opt/etc/admin-ssh-service.sh start
+        ssh_status=$?
+        [ "$nat_status" -eq 0 ] && [ "$ssh_status" -eq 0 ]
+        ;;
+esac

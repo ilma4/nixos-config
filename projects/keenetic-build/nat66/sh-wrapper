@@ -1,0 +1,3 @@
+#!/bin/ash
+# This firmware's BusyBox includes ash but does not provide a sh applet.
+exec /bin/ash "$@"

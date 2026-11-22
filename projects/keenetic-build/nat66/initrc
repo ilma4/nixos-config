@@ -1,0 +1,3 @@
+#!/bin/sh
+# Minimal OPKG startup: no third-party daemons are needed for NAT66.
+/opt/bin/sh /opt/etc/nat66.sh all
