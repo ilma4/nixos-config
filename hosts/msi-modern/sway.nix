@@ -30,6 +30,27 @@
     ${grim} -g "$region" - | ${wl-copy} --type image/png
   '';
   screenshotCommand = "${screenshot}/bin/screenshot";
+  focusedBrightness = pkgs.writeShellScript "focused-brightness" ''
+    set -euo pipefail
+    output="$(${swaymsg} -rt get_outputs | ${lib.getExe pkgs.jq} -er '.[] | select(.active and .focused) | .name')"
+
+    case "$output" in
+      eDP-*|LVDS-*|DSI-*) exec ${swayosd} --brightness "$1$2" ;;
+    esac
+
+    # Use the focused connector's DDC bus, even if the same monitor is
+    # connected over more than one input or its bus number changes.
+    for connector in /sys/class/drm/card*-"$output"; do
+      [[ -L "$connector/ddc" && $(<"$connector/status") == connected ]] || continue
+      bus="$(readlink -- "$connector/ddc")"
+      bus="''${bus##*/}"
+      [[ "$bus" =~ ^i2c-([0-9]+)$ ]] || continue
+      exec ${lib.getExe pkgs.ddcutil} --bus "''${BASH_REMATCH[1]}" setvcp 10 "$1" "$2"
+    done
+
+    printf 'No DDC/CI bus for focused output %s\n' "$output" >&2
+    exit 1
+  '';
   toggle-monitor = pkgs.writeShellScriptBin "toggle-monitor" ''
     set -euo pipefail
     ddcutil=${lib.getExe pkgs.ddcutil}
@@ -349,8 +370,8 @@ in {
     "XF86AudioMute" = "exec ${swayosd} --output-volume mute-toggle";
     "XF86AudioMicMute" = "exec ${swayosd} --input-volume mute-toggle";
 
-    "XF86MonBrightnessDown" = "exec ${swayosd} --brightness -5";
-    "XF86MonBrightnessUp" = "exec ${swayosd} --brightness +5";
+    "XF86MonBrightnessDown" = "exec ${focusedBrightness} - 5";
+    "XF86MonBrightnessUp" = "exec ${focusedBrightness} + 5";
 
     "XF86AudioPause" = "exec ${playerctl} play-pause";
     "XF86AudioPlay" = "exec ${playerctl} play-pause";
