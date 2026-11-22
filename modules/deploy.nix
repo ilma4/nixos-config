@@ -4,21 +4,26 @@
   pkgs,
   pkgs-unstable,
   constants,
+  myLib,
   ...
 }: let
   cfg = config.i4.deploy;
+  inherit (myLib.unifiedModules) isDarwin;
   repoUrl = "https://github.com/ilma4/nixos-config";
+  rebuildCommand =
+    if isDarwin
+    then "/run/current-system/sw/bin/darwin-rebuild"
+    else "nixos-rebuild";
+  updateInputs =
+    [pkgs.coreutils pkgs-unstable.git pkgs.openssh]
+    ++ lib.optional (!isDarwin) pkgs.nixos-rebuild-ng
+    ++ [config.nix.package];
+  updateCommand = "/run/current-system/sw/bin/update-to-latest.sh";
   githubAllowedSigners = lib.concatMapStrings (key: "* " + key + "\n") constants.github-pub-keys;
   updateToLatest = pkgs.writeShellScriptBin "update-to-latest.sh" ''
     set -euo pipefail
 
-    export PATH="${lib.makeBinPath [
-      pkgs.coreutils
-      pkgs-unstable.git
-      pkgs.openssh
-      pkgs.nixos-rebuild-ng
-      config.nix.package
-    ]}:$PATH"
+    export PATH="${lib.makeBinPath updateInputs}:$PATH"
     export GIT_TERMINAL_PROMPT=0
 
     if [[ ''${EUID} -ne 0 ]]; then
@@ -27,7 +32,7 @@
     fi
 
     repo_url=${lib.escapeShellArg repoUrl}
-    host_config=${lib.escapeShellArg config.networking.hostName}
+    host_config=${lib.escapeShellArg cfg.flakeOutput}
     github_allowed_signers=${lib.escapeShellArg githubAllowedSigners}
     state_dir="/var/lib/i4-deploy"
     repo_dir="''${state_dir}/nixos-config"
@@ -79,28 +84,41 @@
     git -C "''${repo_dir}" clean -fdx
 
     echo "Switching to ''${repo_dir}#''${host_config}"
-    nixos-rebuild switch --flake "''${repo_dir}#''${host_config}"
+    ${rebuildCommand} switch --flake "''${repo_dir}#''${host_config}"
   '';
 in {
-  options.i4.deploy.enable = lib.mkEnableOption "the signed nixos-config self-update script";
-
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages = [updateToLatest];
-
-    security.sudo.extraRules = lib.mkAfter [
-      {
-        users = ["ilma4"];
-        commands = [
-          {
-            command = ''${lib.getExe updateToLatest} ""'';
-            options = ["NOPASSWD"];
-          }
-          {
-            command = ''/run/current-system/sw/bin/update-to-latest.sh ""'';
-            options = ["NOPASSWD"];
-          }
-        ];
-      }
-    ];
+  options.i4.deploy = {
+    enable = lib.mkEnableOption "the signed nixos-config self-update script";
+    flakeOutput = lib.mkOption {
+      type = lib.types.str;
+      default = config.networking.hostName;
+      description = "The flake configuration to activate.";
+    };
   };
+
+  config = lib.mkIf cfg.enable (lib.mkMerge [
+    {environment.systemPackages = [updateToLatest];}
+    (lib.optionalAttrs isDarwin {
+      security.sudo.extraConfig = ''
+        ${config.system.primaryUser} ALL=(root) NOPASSWD: ${updateCommand} ""
+      '';
+    })
+    (lib.optionalAttrs (!isDarwin) {
+      security.sudo.extraRules = lib.mkAfter [
+        {
+          users = ["ilma4"];
+          commands = [
+            {
+              command = ''${lib.getExe updateToLatest} ""'';
+              options = ["NOPASSWD"];
+            }
+            {
+              command = ''${updateCommand} ""'';
+              options = ["NOPASSWD"];
+            }
+          ];
+        }
+      ];
+    })
+  ]);
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-jobs=(nix-rebuild nas)
+jobs=(nix-rebuild nas quicksilver)
 
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
@@ -13,7 +13,7 @@ run_job() {
     local attempt
 
     case "$job" in
-        nix-rebuild|nas) ;;
+        nix-rebuild|nas|quicksilver) ;;
         *) echo "Unknown deployment job: $job" >&2; return 2 ;;
     esac
 
@@ -28,6 +28,10 @@ run_job() {
 
         if [[ "$job" == nix-rebuild ]]; then
             nix-rebuild || status=$?
+        elif [[ "$job" == quicksilver ]]; then
+            echo "Updating $job via Tailscale SSH"
+            tailscale ssh "malakhov@$target" -o BatchMode=yes \
+                'sudo -n /run/current-system/sw/bin/update-to-latest.sh' || status=$?
         else
             echo "Updating $job via $target"
             ssh -o BatchMode=yes "ilma4@$target" \

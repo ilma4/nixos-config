@@ -194,6 +194,7 @@
                 isLinux = type == "nixos" || type == "home";
               };
             in {
+              inherit (checkers) isDarwin;
               enableForConfigurations = types: configuration:
                 if builtins.any (x: checkers."${x}") types
                 then configuration

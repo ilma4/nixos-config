@@ -12,6 +12,7 @@
   haveReverseProxyCert = builtins.pathExists reverseProxyCert;
 in {
   imports = [
+    ../../modules/deploy.nix
     ../../modules/nix-settings.nix
     ../../darwin-modules/launchd-agents.nix
     ../../darwin-modules/keyboard-watcher.nix
@@ -59,6 +60,10 @@ in {
   i4.launchd-agents.enable = true;
   i4.keyboard-watcher.enable = true;
   i4.apps.enable = true;
+  i4.deploy = {
+    enable = true;
+    flakeOutput = "quicksilver";
+  };
 
   nix.gc.automatic = false;
 
