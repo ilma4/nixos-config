@@ -8,6 +8,7 @@ keys:
   - &backup-bitwarden age1j2lwuh9uk9fufuclqvperfx4p79dy7slclqh89cch4z89w670daqv9urkj
   - &quicksilver age1gyjjhhednqc6ev57rec2wk0lqg3kadgujge7lcuudezlkjq7yqys4zck7h
   - &laat age1h5uwefvz7zw4a0m9rqspsy050vzu9zcveyjysv6ujcw7dcmkk32qv9jwcf
+  - &msi-modern age15zj93l8ww6e8d8ze0l0td4echtn4t4w5582musr6k2ym8jw8dpuquj9dm4
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini|txt|bin|conf|crt|key)$
     key_groups:
@@ -15,3 +16,4 @@ creation_rules:
           - *backup-bitwarden
           - *quicksilver
           - *laat
+          - *msi-modern

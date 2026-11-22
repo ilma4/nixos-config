@@ -251,6 +251,9 @@
         pkgs = (pkgsSets system).stable;
       in {
         mallard-bot = (import ./projects/mallard-bot {inherit pkgs;}).devShell;
+        tailscale-terraform = pkgs.mkShell {
+          packages = [pkgs.terraform pkgs.sops pkgs.python3];
+        };
         default = pkgs.mkShell {
           packages = [
             pkgs.bun

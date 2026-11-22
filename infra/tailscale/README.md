@@ -18,24 +18,37 @@ remain unchanged. No other split DNS domains are managed by this configuration.
 
 ## Local use
 
-Use Terraform >= 1.5 and < 2, or a compatible OpenTofu release. Provider version
-and checksums are recorded in `.terraform.lock.hcl` for Apple Silicon and Linux
-amd64/arm64. No credentials are stored in these files.
-
-Load an OAuth client through environment variables from a private file outside
-version control, then run from this directory:
+From the repository root, enter the tool shell and store a dedicated Tailscale
+OAuth client once. The setup script prompts without echo and stores the pair
+encrypted in `secrets/example.yaml` using the repository's SOPS age key. Rerun it
+to rotate the pair. Use a Terraform OAuth client, not a device auth key or the
+Hoopsnake client.
 
 ```bash
-umask 077
-terraform init
-terraform fmt -check
-terraform validate
-terraform plan -out=changes.tfplan
-terraform apply changes.tfplan
-terraform plan -detailed-exitcode
+nix develop .#tailscale-terraform
+./scripts/tailscale-terraform/create-secrets.sh
 ```
 
-The final command should exit 0 (no changes); 2 means changes are proposed.
+If the script reports a missing or unusable age key, restore an existing identity
+that can decrypt `secrets/example.yaml` (for example, the Bitwarden backup key).
+The usual user key path is `~/.config/sops/age/keys.txt`; if your identity is
+stored elsewhere, export `SOPS_AGE_KEY_FILE` with its absolute path before running
+the scripts. Keep the key file private (`chmod 600`). A newly generated key alone
+cannot decrypt the existing file.
+
+Then run:
+
+```bash
+./infra/tailscale/terraform.sh validate  # Format and configuration checks; no credentials needed
+./infra/tailscale/terraform.sh plan      # Preview live changes without applying
+./infra/tailscale/terraform.sh deploy    # Review the new plan, then type yes to apply
+```
+
+`plan` and `deploy` need access to the SOPS age key and the existing local
+`infra/tailscale/terraform.tfstate`. They decrypt the credentials only for the
+Terraform process. The provider version and checksums are pinned in
+`.terraform.lock.hcl` for Apple Silicon and Linux amd64/arm64.
+
 Required OAuth scopes: `dns`, `devices:routes`, `policy_file`,
 `devices:posture_attributes`, and `feature_settings` with write access, plus
 `devices:core:read`. Policy writes require the device/posture scopes too.
