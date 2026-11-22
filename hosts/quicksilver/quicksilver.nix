@@ -178,6 +178,8 @@ in {
   users.users._prometheus-node-exporter.home = lib.mkForce "/private/var/lib/prometheus-node-exporter";
 
   services.tailscale.enable = true;
+  # Follow WARP's destination routes instead of binding to the physical default interface.
+  launchd.daemons.tailscaled.environment.TS_BIND_TO_INTERFACE_BY_ROUTE = "true";
 
   # SSH access for the primary user using only the configured public keys.
   services.openssh = {
