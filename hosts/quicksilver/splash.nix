@@ -2,19 +2,35 @@
   config,
   lib,
   osConfig,
+  pkgs,
   ...
 }: let
   modelsDirectory = "${config.home.homeDirectory}/llama-cpp/models";
   homebrewPrefix = osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix);
   tailscale = lib.getExe' osConfig.services.tailscale.package "tailscale";
   port = "8080";
+  allowedHostArgs = lib.concatMap (host: ["--allowed-host" host]) ["quicksilver" "quicksilver.tail09544e.ts.net"];
   logDirectory = "${config.home.homeDirectory}/Library/Logs";
+  idleProxy = pkgs.rustPlatform.buildRustPackage {
+    pname = "splash-idle-proxy";
+    version = "1.0.0";
+    src = ./splash-idle-proxy;
+    cargoLock.lockFile = ./splash-idle-proxy/Cargo.lock;
+  };
 in {
-  # Run in malakhov's login session using the existing local model files.
+  # Only the proxy stays resident in the login session. It starts Splash on
+  # demand on a private Unix socket and stops the whole engine when idle.
   launchd.agents.splash = {
     enable = true;
     config = {
       ProgramArguments = [
+        "${idleProxy}/bin/splash-idle-proxy"
+        "--listen"
+        "127.0.0.1:${port}"
+        "--idle"
+        "600"
+      ] ++ allowedHostArgs ++ [
+        "--"
         "${homebrewPrefix}/bin/splash"
         "serve"
         "--model"
@@ -26,20 +42,13 @@ in {
         "--draft-model"
         "${modelsDirectory}/drafts/Qwen3.8-27B-DFlash2"
         "--offline"
-        "--host"
-        "127.0.0.1"
-        "--port"
-        port
-        "--allowed-host"
-        "quicksilver"
-        "--allowed-host"
-        "quicksilver.tail09544e.ts.net"
+      ] ++ allowedHostArgs ++ [
         "--kv-format"
         "bf16"
         "--max-context"
         "65536"
         "--idle-release"
-        "10m"
+        "off"
         "--served-model-name"
         "Qwen3.8"
         "--served-model-name"
