@@ -202,7 +202,6 @@ in {
     window#waybar.chromium,
     window#waybar.termite {
       background-color: rgba(246, 245, 244, 0.95);
-      border-bottom-color: #c0bfbc;
       color: #241f31;
     }
 

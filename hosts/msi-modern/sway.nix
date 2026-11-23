@@ -151,6 +151,10 @@ in {
   xdg.configFile."waybar/style.css".text = ''
     @import url("${pkgs.waybar}/etc/xdg/waybar/style.css");
 
+    window#waybar {
+      border-bottom: none;
+    }
+
     * {
       /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
       font-family: "DejaVu Sans", "JetBrainsMono Nerd Font", "Font Awesome 5 Free Solid", sans-serif;
