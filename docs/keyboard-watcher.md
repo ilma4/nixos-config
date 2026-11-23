@@ -147,6 +147,19 @@ i4.keyboard-watcher.enable = true;
 The launchd agent runs with `RunAtLoad = true` and `KeepAlive = true` (long-running
 daemon, relaunched if it ever exits) and logs to `/tmp/keyboard-watcher.log`.
 
+It is declared as a **user** agent (`launchd.user.agents`), so nix-darwin installs
+the plist in `~/Library/LaunchAgents` and loads it in the logged-in user's `gui`
+domain. This is required: `launchd.agents` would put the plist in
+`/Library/LaunchAgents`, which the root activation script loads with `launchctl
+load`, registering it as a **root LaunchDaemon** in the `system` domain. A root
+process can never be granted Input Monitoring (tccd refuses to even prompt for uid
+0), so its writes are rejected and — worse — they overwrite the mapping the
+permitted user process just applied, leaving the remap silently doing nothing. The
+watcher logs a `warning: running as root` line in that situation.
+
+Agents loaded in the `system` domain by an earlier configuration are not removed by
+a later switch; see Troubleshooting.
+
 To target a different keyboard or change the mapping, edit `vendorId`/`productId`
 and the `keyMappings` list in `darwin-modules/keyboard-watcher.nix`. Find a device's
 IDs with `hidutil list`.
@@ -167,7 +180,7 @@ nix-rebuild
 After switching:
 
 ```sh
-# Should show: watching for HID device 046d:b369
+# Should show: watching for HID device 046d:b369 (pid …, uid 502)
 cat /tmp/keyboard-watcher.log
 
 # Re-power the keyboard, then confirm the mapping is live:
@@ -189,3 +202,36 @@ keyboard connected. The log should show `Input Monitoring permission granted;
 retrying connected keyboard remap`, followed by the apply log. Check the mapping
 with the `hidutil` command above and confirm both remapped keys work. No reconnect
 or manual watcher restart should be necessary.
+
+`uid 502` in the startup line (the logged-in user) is what you want. A `warning:
+running as root` line means a stale agent is loaded in launchd's `system` domain.
+
+## Troubleshooting
+
+Check which domains have the agent loaded:
+
+```sh
+launchctl print gui/$(id -u)/org.nixos.keyboard-watcher   # correct: per-user
+sudo launchctl print system/org.nixos.keyboard-watcher    # stale root daemon
+ps -eo user,pid,command | grep keyboard-watcher
+```
+
+Earlier revisions of this module used `launchd.agents`, which made the root
+activation script load the plist in the `system` domain. A `nix-rebuild` does not
+remove such leftovers, so clean them up once after upgrading:
+
+```sh
+# The correct user agent
+launchctl bootout gui/$(id -u)/org.nixos.keyboard-watcher
+
+# Leftover root daemon from the old module and the old plist it was loaded from
+sudo launchctl bootout system/org.nixos.keyboard-watcher
+sudo rm -f /Library/LaunchAgents/org.nixos.keyboard-watcher.plist
+```
+
+Then switch again so the user agent is (re)installed and loaded. If the log shows
+`submitted (Input Monitoring permission not granted)` and never `permission
+granted`, open **System Settings → Privacy & Security → Input Monitoring** and
+enable `keyboard-watcher`. Each rebuild can produce a new `/nix/store/…` path for
+the binary, and macOS keys the grant to the binary, so a grant is needed again
+whenever that path changes.

@@ -161,8 +161,17 @@ do {
   }
   defer { IOObjectRelease(iterator) }
 
-  log("watching for HID device \(watcher.deviceID)")
+  log("watching for HID device \(watcher.deviceID) (pid \(getpid()), uid \(geteuid()))")
   log("key mappings: \(CommandLine.arguments.dropFirst(3).joined(separator: ", "))")
+
+  // Input Monitoring can only be granted to the logged-in user's processes, so a
+  // root instance (e.g. a stale agent loaded in launchd's system domain) rejects
+  // every mapping *and* overwrites the mapping a permitted process applied.
+  if geteuid() == 0 {
+    log(
+      "warning: running as root; Input Monitoring cannot be granted to a root process, so the remap will be rejected — run this as the primary user's launchd agent"
+    )
+  }
 
   // Drain the initial iterator: this both arms the notification and applies
   // the remapping to a keyboard that is already connected at startup.

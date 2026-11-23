@@ -86,7 +86,15 @@ in {
     # the whole login session, including the already-connected keyboard at login.
     # Covers sleep/wake, Bluetooth re-pair and USB replug — so no separate
     # poll-at-login agent is needed.
-    launchd.agents.keyboard-watcher.serviceConfig = {
+    #
+    # This must be a *user* agent (`launchd.user.agents`, installed in
+    # ~/Library/LaunchAgents). `launchd.agents` lands in /Library/LaunchAgents and
+    # the root activation script loads it with `launchctl load`, which registers
+    # it as a root LaunchDaemon in the `system` domain. Root cannot obtain the
+    # Input Monitoring permission the remap needs (tccd refuses to prompt for
+    # uid 0), and its rejected writes clobber the mapping the permitted user
+    # process just applied — the remap then silently does nothing.
+    launchd.user.agents.keyboard-watcher.serviceConfig = {
       ProgramArguments =
         [
           (lib.getExe keyboard-watcher)
