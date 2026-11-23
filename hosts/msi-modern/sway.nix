@@ -14,7 +14,7 @@
   grim = "${pkgs.grim}/bin/grim";
   wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
   wl-paste = "${pkgs.wl-clipboard}/bin/wl-paste";
-  playerctl = "${pkgs.playerctl}/bin/playerctl";
+  playerctl = lib.getExe' config.services.playerctld.package "playerctl";
   slurp = "${pkgs.slurp}/bin/slurp";
   swayosd = "${pkgs.swayosd}/bin/swayosd-client";
   termWithName = "${foot} --app-id";
@@ -213,6 +213,10 @@ in {
 
   services.swayosd.enable = true;
 
+  services.playerctld.enable = true;
+  # Bridge Bluetooth headphone playback controls to MPRIS players via BlueZ.
+  services.mpris-proxy.enable = true;
+
   # The Dell can report both HDMI and DisplayPort at once. Kanshi needs a
   # profile that accounts for every connected output, even disabled ones.
   services.kanshi = let
@@ -367,6 +371,15 @@ in {
     exec_always ${pkgs.systemd}/bin/systemctl --user try-restart kanshi.service
     bindsym --inhibited Mod1+c exec ${wl-copy}
     bindsym --inhibited Mod1+v exec ${wl-paste}
+
+    bindsym --locked --no-repeat XF86AudioPlay exec ${playerctl} play-pause
+    bindsym --locked --no-repeat XF86AudioPause exec ${playerctl} pause
+    bindsym --locked --no-repeat XF86AudioPrev exec ${playerctl} previous
+    bindsym --locked --no-repeat XF86AudioNext exec ${playerctl} next
+    bindsym --locked --no-repeat XF86AudioStop exec ${playerctl} stop
+    bindsym --no-repeat ${modifier}+F10 exec ${playerctl} previous
+    bindsym --no-repeat ${modifier}+F11 exec ${playerctl} play-pause
+    bindsym --no-repeat ${modifier}+F12 exec ${playerctl} next
   '';
 
   wayland.windowManager.sway.config.keybindings = lib.mkOptionDefault {
@@ -385,11 +398,6 @@ in {
 
     "XF86MonBrightnessDown" = "exec ${focusedBrightness} - 5";
     "XF86MonBrightnessUp" = "exec ${focusedBrightness} + 5";
-
-    "XF86AudioPause" = "exec ${playerctl} play-pause";
-    "XF86AudioPlay" = "exec ${playerctl} play-pause";
-    "XF86AudioPrev" = "exec ${playerctl} previous";
-    "XF86AudioNext" = "exec ${playerctl} next";
 
     "Ctrl+${modifier}+h" = "move workspace to output left";
     "Ctrl+${modifier}+l" = "move workspace to output right";
