@@ -154,6 +154,25 @@ in {
     ''
   );
 
+  # Hide the Fast User Switching, Wi-Fi and battery icons in the menu bar.
+  # nix-darwin's `system.defaults.controlcenter` does not expose these modules,
+  # so set them directly: 8 = hidden, 2 = shown in the menu bar. The module
+  # values live in the per-host `ByHost` preferences domain, which is why that
+  # domain is given as a file path; the status item flags live in the regular
+  # domain.
+  system.defaults.CustomUserPreferences = {
+    "/Users/${primaryUser}/Library/Preferences/ByHost/com.apple.controlcenter" = {
+      Battery = 8;
+      UserSwitcher = 8;
+      WiFi = 8;
+    };
+    "com.apple.controlcenter" = {
+      "NSStatusItem VisibleCC Battery" = false;
+      "NSStatusItem VisibleCC UserSwitcher" = false;
+      "NSStatusItem VisibleCC WiFi" = false;
+    };
+  };
+
   /*
   environment.etc.hosts.text = lib.mkIf false ''
     ##
