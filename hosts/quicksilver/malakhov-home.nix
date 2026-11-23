@@ -27,6 +27,13 @@
       ZSH_DISABLE_COMPFIX = "true";
     };
 
+    programs.git.includes = [
+      {
+        condition = "gitdir:${config.flake-source}/.git";
+        contents.user.email = "ilya.malakhov4@gmail.com";
+      }
+    ];
+
     launchd.agents.central-proxy = {
       enable = true;
       config = {
