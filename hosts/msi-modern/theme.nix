@@ -11,6 +11,11 @@
   systemctl = "${pkgs.systemd}/bin/systemctl";
   modifier = config.wayland.windowManager.sway.config.modifier;
   darkman = lib.getExe config.services.darkman.package;
+  toggleThemeAndRefresh = pkgs.writeShellScriptBin "toggle-theme-refresh-workspaces" ''
+    set -euo pipefail
+    exec ${lib.getExe pkgs.python3} ${./theme-refresh-workspaces.py} \
+      ${lib.getExe' pkgs.sway "swaymsg"} ${darkman}
+  '';
 
   initializeMode = pkgs.writeShellScript "darkman-initialize-mode" ''
     set -euo pipefail
@@ -31,6 +36,8 @@
     exec ${lib.getExe pkgs.foot} "$@"
   '';
 in {
+  home.packages = [toggleThemeAndRefresh];
+
   programs.foot.package = pkgs.symlinkJoin {
     pname = "foot-themed";
     inherit (pkgs.foot) version meta;
@@ -190,5 +197,6 @@ in {
 
   top-commands.commands = lib.mkOptionDefault {
     "Toggle light/dark theme" = "${darkman} toggle";
+    "Toggle light/dark theme and refresh hidden workspaces" = lib.getExe toggleThemeAndRefresh;
   };
 }
