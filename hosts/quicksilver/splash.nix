@@ -9,6 +9,7 @@
   homebrewPrefix = osConfig.homebrew.prefix or (lib.removeSuffix "/bin" osConfig.homebrew.brewPrefix);
   tailscale = lib.getExe' osConfig.services.tailscale.package "tailscale";
   port = "8080";
+  tailscaleBackend = "127.0.0.1:18080";
   allowedHostArgs = lib.concatMap (host: ["--allowed-host" host]) ["quicksilver" "quicksilver.tail09544e.ts.net"];
   logDirectory = "${config.home.homeDirectory}/Library/Logs";
   idleProxy = pkgs.rustPlatform.buildRustPackage {
@@ -27,8 +28,12 @@ in {
         "${idleProxy}/bin/splash-idle-proxy"
         "--listen"
         "127.0.0.1:${port}"
+        "--proxy-protocol-listen"
+        tailscaleBackend
         "--idle"
         "600"
+        # Access and wake events go to splash.log via launchd's stderr capture.
+        "--log-requests"
       ] ++ allowedHostArgs ++ [
         "--"
         "${homebrewPrefix}/bin/splash"
@@ -64,6 +69,7 @@ in {
 
   # Quicksilver's userspace tailscaled has no local Tailscale interface to bind.
   # Use foreground Serve so launchd owns the forwarder's lifetime as well.
+  # Only the separate loopback listener accepts client addresses from Serve.
   launchd.agents.splash-tailscale = {
     enable = true;
     config = {
@@ -71,7 +77,8 @@ in {
         tailscale
         "serve"
         "--tcp=${port}"
-        "tcp://127.0.0.1:${port}"
+        "--proxy-protocol=2"
+        "tcp://${tailscaleBackend}"
       ];
       RunAtLoad = true;
       KeepAlive = true;
