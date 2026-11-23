@@ -11,10 +11,40 @@
   systemctl = "${pkgs.systemd}/bin/systemctl";
   modifier = config.wayland.windowManager.sway.config.modifier;
   darkman = lib.getExe config.services.darkman.package;
+  swaymsg = lib.getExe' pkgs.sway "swaymsg";
+  # GNOME's Adwaita pair is natively 4096x4096. Decode JPEG XL for swaybg.
+  wallpapers = pkgs.runCommand "gnome-adwaita-wallpapers" {} ''
+    set -euo pipefail
+    mkdir -p "$out"
+    src=${pkgs.gnome-backgrounds}/share/backgrounds/gnome
+    for variant in l d; do
+      ${lib.getExe' (lib.getBin pkgs.libjxl) "djxl"} \
+        --color_space=RGB_D65_SRG_Rel_SRG --bits_per_sample=8 \
+        "$src/adwaita-$variant.jxl" "$out/adwaita-$variant.png"
+    done
+  '';
+
+  setWallpaper = pkgs.writeShellScript "sway-set-theme-wallpaper" ''
+    set -euo pipefail
+    [[ -S "''${SWAYSOCK:-}" ]] || exit 0
+    mode="''${1:-}"
+    if [[ -z "$mode" ]]; then
+      # Don't activate Darkman before Sway imports the session environment.
+      ${systemctl} --user is-active --quiet darkman.service || exit 0
+      mode="$(${darkman} get)"
+    fi
+    case "$mode" in
+      light) image=${wallpapers}/adwaita-l.png ;;
+      dark) image=${wallpapers}/adwaita-d.png ;;
+      *) exit 0 ;;
+    esac
+    exec ${swaymsg} -q "output * bg \"$image\" fill"
+  '';
+
   toggleThemeAndRefresh = pkgs.writeShellScriptBin "toggle-theme-refresh-workspaces" ''
     set -euo pipefail
     exec ${lib.getExe pkgs.python3} ${./theme-refresh-workspaces.py} \
-      ${lib.getExe' pkgs.sway "swaymsg"} ${darkman}
+      ${swaymsg} ${darkman}
   '';
 
   initializeMode = pkgs.writeShellScript "darkman-initialize-mode" ''
@@ -22,6 +52,9 @@
     mode="$(${darkman} get)"
     if [[ "$mode" == null ]]; then
       ${darkman} set light
+    else
+      # Sway may have started before Darkman was ready to report its mode.
+      ${setWallpaper} "$mode" || true
     fi
   '';
 
@@ -102,6 +135,7 @@ in {
       portal = true;
     };
     scripts = {
+      wallpaper = setWallpaper;
       gtk = ''
         set -euo pipefail
         case "$1" in
@@ -191,8 +225,15 @@ in {
     Install.WantedBy = ["sway-session.target"];
   };
 
-  wayland.windowManager.sway.config.keybindings = lib.mkOptionDefault {
-    "--no-repeat ${modifier}+Shift+t" = "exec ${darkman} toggle";
+  wayland.windowManager.sway = {
+    config.output."*".bg = "${wallpapers}/adwaita-l.png fill";
+    config.keybindings = lib.mkOptionDefault {
+      "--no-repeat ${modifier}+Shift+t" = "exec ${darkman} toggle";
+    };
+    # Sway reloads its configured light fallback; restore the current mode.
+    extraConfig = ''
+      exec_always ${setWallpaper}
+    '';
   };
 
   top-commands.commands = lib.mkOptionDefault {

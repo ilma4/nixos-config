@@ -304,9 +304,6 @@ in {
     ];
 
     output = {
-      "*" = {
-        bg = "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_2048x1536.png fill";
-      };
       eDP-1 = {
         scale = "1.0";
         adaptive_sync = "on";
