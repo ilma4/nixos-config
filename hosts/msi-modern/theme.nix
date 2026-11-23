@@ -47,29 +47,31 @@ in {
     '';
   };
   programs.foot.settings.colors-light = {
-    background = "faf9f8";
-    foreground = "242424";
-    regular0 = "242424";
-    regular1 = "a31515";
-    regular2 = "136b36";
-    regular3 = "805900";
-    regular4 = "0054a6";
-    regular5 = "852482";
-    regular6 = "006168";
-    # Keep ANSI white light for uses like white-on-red ls setuid entries.
-    regular7 = "e6e6e6";
-    bright0 = "666666";
-    bright1 = "b82030";
-    bright2 = "287938";
-    bright3 = "906400";
-    bright4 = "0969b1";
-    bright5 = "9e3799";
-    bright6 = "007580";
-    bright7 = "ffffff";
-    jump-labels = "ffffff 805900";
-    search-box-match = "ffffff 805900";
-    search-box-no-match = "ffffff a31515";
-    scrollback-indicator = "ffffff 0969b1";
+    # Base16 Google Light (Seth Wright), using the tinted-foot mapping.
+    background = "ffffff";
+    foreground = "373b41";
+    regular0 = "ffffff";
+    regular1 = "cc342b";
+    regular2 = "198844";
+    regular3 = "fba922";
+    regular4 = "3971ed";
+    regular5 = "a36ac7";
+    regular6 = "4f87cf"; # Lighter ANSI cyan for symlinks in light mode.
+    regular7 = "373b41";
+    bright0 = "c5c8c6";
+    bright1 = "cc342b";
+    bright2 = "198844";
+    bright3 = "fba922";
+    bright4 = "3971ed";
+    bright5 = "a36ac7";
+    bright6 = "3971ed";
+    bright7 = "1d1f21";
+    "16" = "f96a38";
+    "17" = "3971ed";
+    "18" = "e0e0e0";
+    "19" = "c5c8c6";
+    "20" = "969896";
+    "21" = "282a2e";
 
     # Powerlevel10k uses these indexed colors on a transparent background.
     "31" = "006483";
