@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  pkgs-unstable,
   lib,
   inputs,
   constants,
@@ -162,7 +163,7 @@ in {
 
         (pkgs.writeShellScriptBin "nix-rebuild" ''
           set -euo pipefail
-          export PATH="${lib.makeBinPath [pkgs.coreutils pkgs.git pkgs.rsync]}:$PATH"
+          export PATH="${lib.makeBinPath [pkgs.coreutils config.programs.git.package pkgs.rsync]}:$PATH"
           exec ${rebuildWithSnapshot} ${lib.escapeShellArg rebuildSource} ${rebuildOutput} ${config.rebuild-script}
         '')
       ]
@@ -170,7 +171,11 @@ in {
 
     programs.git = {
       enable = true;
-      package = pkgs.git;
+      # Select Git here without changing nixpkgs' build-time dependencies.
+      package =
+        if isDarwin
+        then pkgs-unstable.git
+        else pkgs.git;
       signing = {
         format = "ssh";
         # Pass the literal public key as user.signingkey. Git only auto-detects

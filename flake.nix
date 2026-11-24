@@ -141,11 +141,9 @@
       unstable = mkPkgs nixpkgs-unstable system [];
     in {
       inherit unstable;
-      # Keep nix-darwin's own tools and other pkgs.git consumers on the
-      # same Git as Home Manager and the deployment script.
       stable =
         if isDarwin
-        then mkPkgs nixpkgs-darwin system (darwinOverlays ++ [(_: _: {inherit (unstable) git;})])
+        then mkPkgs nixpkgs-darwin system darwinOverlays
         else mkPkgs nixpkgs system commonOverlays;
     };
 

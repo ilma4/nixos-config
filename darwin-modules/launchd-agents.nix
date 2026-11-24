@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  pkgs-unstable,
   ...
 }: let
   cfg = config.i4.launchd-agents;
@@ -15,7 +16,7 @@ in {
   config = lib.mkIf cfg.enable {
     /*
     launchd.user.agents.nixos-config-monthly-update = {
-      path = [pkgs.coreutils pkgs.jujutsu pkgs.bun pkgs.git config.nix.package];
+      path = [pkgs.coreutils pkgs.jujutsu pkgs.bun pkgs-unstable.git config.nix.package];
       script = builtins.readFile ../utils/monthly-update.sh;
       serviceConfig = {
         RunAtLoad = true;
@@ -47,7 +48,7 @@ in {
     */
 
     launchd.user.agents.obsidian-auto-commit = lib.mkIf cfg.enableObsidianAutoCommit {
-      path = [pkgs.coreutils pkgs.git];
+      path = [pkgs.coreutils pkgs-unstable.git];
       serviceConfig = {
         ProgramArguments = [
           "${lib.getExe pkgs.bash}"
