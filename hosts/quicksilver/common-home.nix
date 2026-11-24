@@ -16,6 +16,7 @@ in {
     i4.fonts.enable = true;
     i4.zed.enable = true;
     i4.dev.enable = true;
+    i4.dev.androidTools = false;
     i4.dev.rustOfflineDocs = false;
     i4.neovim.enable = true;
 

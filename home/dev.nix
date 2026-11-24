@@ -68,6 +68,12 @@ in {
       description = "SSH public key to use for Jujutsu commit signing";
     };
 
+    androidTools = lib.mkOption {
+      type = lib.types.bool;
+      default = config.i4.dev.enable;
+      description = "Install Android platform tools (adb and fastboot)";
+    };
+
     podman = lib.mkOption {
       type = lib.types.bool;
       default = config.i4.dev.enable;
@@ -109,10 +115,9 @@ in {
 
           # mcp-nixos # build failure, don't use like this anyway
 
-          android-tools # adb
-
           # tex-fmt # latex formatting
         ]
+        ++ lib.optional config.i4.dev.androidTools android-tools
         ++ lib.optionals config.i4.dev.podman [
           docker # docker cli
           podman # podman cli
