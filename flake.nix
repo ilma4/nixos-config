@@ -310,7 +310,13 @@
         };
         modules = [
           inputs.nixos-lima.nixosModules.lima
-          {nixpkgs.overlays = [(import ./overlays/dekit-overlay.nix)];}
+          {
+            nixpkgs.overlays = [
+              (import ./overlays/dekit-overlay.nix)
+              # Keep Git on stable even though the VM uses unstable NixOS.
+              (_: _: {inherit ((pkgsSets systems.arm64-linux).stable) git;})
+            ];
+          }
           ./hosts/android-vm/android-vm.nix
         ];
       };

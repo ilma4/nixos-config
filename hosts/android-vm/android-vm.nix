@@ -52,7 +52,7 @@
     i4.dev = {
       enable = true;
       podman = false;
-      nix = false;
+      nix.enable = false;
       rust = false;
       zshAutoenv = false;
     };

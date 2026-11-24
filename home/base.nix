@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  pkgs-unstable,
   lib,
   inputs,
   constants,
@@ -161,7 +160,7 @@ in {
 
     programs.git = {
       enable = true;
-      package = pkgs-unstable.git;
+      package = pkgs.git;
       signing = {
         format = "ssh";
         # Pass the literal public key as user.signingkey. Git only auto-detects

@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  pkgs-unstable,
   constants,
   myLib,
   ...
@@ -15,7 +14,7 @@
     then "/run/current-system/sw/bin/darwin-rebuild"
     else "nixos-rebuild";
   updateInputs =
-    [pkgs.coreutils pkgs-unstable.git pkgs.openssh]
+    [pkgs.coreutils pkgs.git pkgs.openssh]
     ++ lib.optional (!isDarwin) pkgs.nixos-rebuild-ng
     ++ [config.nix.package];
   updateCommand = "/run/current-system/sw/bin/update-to-latest.sh";
