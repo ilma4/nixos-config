@@ -47,7 +47,8 @@
     imports = [../../home/base.nix];
 
     home.homeDirectory = lib.mkForce "/home/ilma4.guest";
-    rebuild-script = "sudo nixos-rebuild switch --flake /etc/nixos#android-vm";
+    flake-source = "/etc/nixos";
+    rebuild-flake-output = "android-vm";
 
     i4.dev = {
       enable = true;

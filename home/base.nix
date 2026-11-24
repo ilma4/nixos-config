@@ -9,6 +9,15 @@
   inherit (pkgs) stdenv;
   isDarwin = stdenv.isDarwin;
   isNixos = stdenv.isLinux && !config.targets.genericLinux.enable;
+  rebuildWithSnapshot = pkgs.writeShellScript "nix-rebuild-with-snapshot" (builtins.readFile ../scripts/nix-rebuild.sh);
+  rebuildSource =
+    if config.flake-source == null
+    then "${config.home.homeDirectory}/.config/nixos-config"
+    else config.flake-source;
+  rebuildOutput =
+    if config.rebuild-flake-output == null
+    then ''"$(uname -n)"''
+    else lib.escapeShellArg config.rebuild-flake-output;
   i4-revision-package = pkgs.writeShellScriptBin "i4-revision" ''
     set -euo pipefail
     echo '${inputs.self.rev or inputs.self.dirtyRev or "null"}'
@@ -86,23 +95,23 @@ in {
       type = lib.types.str;
       example = "nixos-rebuild switch";
       default =
-        (
-          if isDarwin
-          then "sudo darwin-rebuild switch"
-          else if isNixos
-          then "sudo nixos-rebuild switch"
-          else if stdenv.isLinux
-          then "home-manager switch"
-          else ""
-        )
-        + " --flake path:${config.home.homeDirectory}/.config/nixos-config#\"$(uname -n)\"";
+        if isDarwin
+        then "sudo darwin-rebuild switch"
+        else if isNixos
+        then "sudo nixos-rebuild switch"
+        else "home-manager switch";
+      description = "Rebuild command, without the --flake argument added by nix-rebuild.";
+    };
 
-      description = "nix-rebuild script";
+    rebuild-flake-output = lib.mkOption {
+      type = lib.types.nullOr lib.types.singleLineStr;
+      default = null;
+      description = "Flake configuration selected by nix-rebuild. Null uses the hostname.";
     };
 
     flake-source = lib.mkOption {
       type = lib.types.nullOr lib.types.singleLineStr;
-      description = "The source of the flake";
+      description = "Local flake directory used by nix-rebuild. Null uses ~/.config/nixos-config.";
       example = "/home/user/flake-directory";
       default = null;
     };
@@ -153,7 +162,8 @@ in {
 
         (pkgs.writeShellScriptBin "nix-rebuild" ''
           set -euo pipefail
-          ${config.rebuild-script}
+          export PATH="${lib.makeBinPath [pkgs.coreutils pkgs.git pkgs.rsync]}:$PATH"
+          exec ${rebuildWithSnapshot} ${lib.escapeShellArg rebuildSource} ${rebuildOutput} ${config.rebuild-script}
         '')
       ]
       ++ lib.optional config.i4.revision.enable i4-revision-package;

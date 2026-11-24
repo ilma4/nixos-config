@@ -30,8 +30,8 @@ in {
       scripts = lib.mkOptionDefault ["brave.applescript"];
     };
 
-    rebuild-script = "sudo darwin-rebuild switch --flake ${config.home.homeDirectory}/.config/nixos-config#quicksilver";
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
+    rebuild-flake-output = "quicksilver";
 
     home.packages = with pkgs; [
       (mkResticWrapper "storage-box" {

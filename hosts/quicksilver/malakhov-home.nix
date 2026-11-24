@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   pkgs,
   ...
 }: {
@@ -49,7 +48,7 @@
     };
 
     flake-source = "${config.home.homeDirectory}/.config/nixos-config";
-    rebuild-script = "sudo darwin-rebuild switch --flake ${lib.escapeShellArg "${config.flake-source}#quicksilver"}";
+    rebuild-flake-output = "quicksilver";
 
     home.packages = with pkgs; [
       blueutil # bluetooth CLI, used by the mic Raycast scripts
