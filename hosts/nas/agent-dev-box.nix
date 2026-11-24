@@ -73,6 +73,7 @@ in {
         ];
 
         i4.dev.enable = true;
+        i4.dev.nix.enable = true;
         configure-ssh = false;
 
         home.packages = with pkgs; [

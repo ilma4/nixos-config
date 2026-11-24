@@ -59,7 +59,8 @@
 
     home.file = {
       ".config/linearmouse/linearmouse.json".source = ../../dotfiles/linearmouse/linearmouse.json;
-      ".config/zed".source = ../../dotfiles/zed;
+      # ~/.config/zed is deployed by ../../home/zed.nix (it merges Nix-tooling
+      # settings only on hosts that install those tools).
 
       # This user-specific external mic script also routes headphone output.
       "Scripts/external-mic-malakhov.applescript" = {

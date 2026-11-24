@@ -21,21 +21,23 @@
         "path": "/usr/bin/env",
         "arguments": ["vscode-eslint-language-server", "--stdio"]
       }
-    },
-    "nixd": {
-      "settings": {
-        "options": {
-          "home-manager": {
-            "expr": "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.quicksilver.options.home-manager.users.type.getSubOptions []"
-          },
-          "nix-darwin": {
-            "expr": "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.quicksilver.options"
-          },
-          "nixos": {
-            "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nas.options"
-          }
-        }
-      }
     }
+    // nixd is only installed on hosts with `i4.dev.nix.enable` (see home/zed.nix),
+    // so this block is disabled by default. Uncomment it on such a host.
+    // "nixd": {
+    //   "settings": {
+    //     "options": {
+    //       "home-manager": {
+    //         "expr": "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.quicksilver.options.home-manager.users.type.getSubOptions []"
+    //       },
+    //       "nix-darwin": {
+    //         "expr": "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.quicksilver.options"
+    //       },
+    //       "nixos": {
+    //         "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nas.options"
+    //       }
+    //     }
+    //   }
+    // }
   }
 }

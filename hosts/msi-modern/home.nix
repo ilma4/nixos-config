@@ -33,6 +33,7 @@ in {
   home.username = "ilma4";
   i4.personal.enable = true;
   i4.dev.enable = true;
+  i4.dev.nix.enable = true;
   i4.dev.jjSigningKey = constants.msi-modern-github-pub-key;
 
   programs.zsh.initContent = lib.mkOrder 350 ''

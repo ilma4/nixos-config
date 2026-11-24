@@ -1,13 +1,16 @@
 {
-    "nix.enableLanguageServer": true,
-    "nix.serverPath": "nixd",
-    "nix.serverSettings": {
-        "nixd": {
-            "formatting": {
-                "command": ["alejandra"]
-            }
-        }
-    },
+    // nixd is only installed on hosts with `i4.dev.nix.enable` (see home/zed.nix
+    // and home/dev.nix), so the Nix language server is disabled by default.
+    // Uncomment these keys on a host that installs the Nix tooling.
+    // "nix.enableLanguageServer": true,
+    // "nix.serverPath": "nixd",
+    // "nix.serverSettings": {
+    //     "nixd": {
+    //         "formatting": {
+    //             "command": ["alejandra"]
+    //         }
+    //     }
+    // },
     "[nix]": {
         "editor.defaultFormatter": "jnoortheen.nix-ide",
         "editor.formatOnSave": true

@@ -74,10 +74,8 @@ in {
       description = "Install container development tools";
     };
 
-    nix = lib.mkOption {
-      type = lib.types.bool;
-      default = config.i4.dev.enable;
-      description = "Install Nix development tools";
+    nix = {
+      enable = lib.mkEnableOption "Nix development tools (nixd, nil, alejandra, sops, i4-update-host)";
     };
 
     rust = lib.mkOption {
@@ -114,21 +112,25 @@ in {
           podman # podman cli
           podman-compose # podman-compose is not bundled with podman
         ]
-        ++ lib.optionals config.i4.dev.nix [
+        # Nix tooling is opt-in: not every machine needs to edit nix code.
+        ++ lib.optionals config.i4.dev.nix.enable [
           nixd
           nil
           alejandra
           sops
+          i4UpdateHost
+        ]
+        ++ [
           gh
           nodejs
           bun
-          i4UpdateHost
           uv
         ]
         ++ lib.optional config.i4.dev.rust (pkgs.rust-bin.stable.latest.default.override {
           extensions = ["rust-src"];
         })
-        ++ lib.optional pkgs.stdenv.isDarwin pkgs.darwin.libiconv # TODO: this is a workaround I don't remember for which
+        ++ lib.optional pkgs.stdenv.isDarwin pkgs.darwin.libiconv
+      # TODO: this is a workaround I don't remember for which
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
       # (lib.mkIf isNotNixOS (pkgs.writeShellScriptBin "bazel" "exec ${pkgs.bazelisk}/bin/bazelisk \"$@\""))
       ;
