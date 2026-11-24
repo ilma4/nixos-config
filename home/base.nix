@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  pkgs-unstable,
   lib,
   inputs,
   constants,
@@ -171,11 +170,7 @@ in {
 
     programs.git = {
       enable = true;
-      # Select Git here without changing nixpkgs' build-time dependencies.
-      package =
-        if isDarwin
-        then pkgs-unstable.git
-        else pkgs.git;
+      package = import ../lib/git-package.nix {inherit pkgs inputs;};
       signing = {
         format = "ssh";
         # Pass the literal public key as user.signingkey. Git only auto-detects

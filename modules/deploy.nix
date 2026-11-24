@@ -2,7 +2,7 @@
   config,
   lib,
   pkgs,
-  pkgs-unstable,
+  inputs,
   constants,
   myLib,
   ...
@@ -14,7 +14,7 @@
     if isDarwin
     then "/run/current-system/sw/bin/darwin-rebuild"
     else "nixos-rebuild";
-  gitPackage = if isDarwin then pkgs-unstable.git else pkgs.git;
+  gitPackage = import ../lib/git-package.nix {inherit pkgs inputs;};
   updateInputs =
     [pkgs.coreutils gitPackage pkgs.openssh]
     ++ lib.optional (!isDarwin) pkgs.nixos-rebuild-ng
