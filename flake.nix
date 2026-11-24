@@ -138,12 +138,15 @@
     # Centralized package sets
     pkgsSets = system: let
       isDarwin = nixpkgs.lib.hasSuffix "darwin" system;
+      unstable = mkPkgs nixpkgs-unstable system [];
     in {
+      inherit unstable;
+      # Keep nix-darwin's own tools and other pkgs.git consumers on the
+      # same Git as Home Manager and the deployment script.
       stable =
         if isDarwin
-        then mkPkgs nixpkgs-darwin system darwinOverlays
+        then mkPkgs nixpkgs-darwin system (darwinOverlays ++ [(_: _: {inherit (unstable) git;})])
         else mkPkgs nixpkgs system commonOverlays;
-      unstable = mkPkgs nixpkgs-unstable system [];
     };
 
     # Base special arguments shared across all configurations

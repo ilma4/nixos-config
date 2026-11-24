@@ -84,6 +84,12 @@ in {
       description = "Install Rust development tools";
     };
 
+    rustOfflineDocs = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Include offline documentation in the Rust toolchain";
+    };
+
     zshAutoenv = lib.mkOption {
       type = lib.types.bool;
       default = config.i4.dev.enable;
@@ -126,9 +132,18 @@ in {
           bun
           uv
         ]
-        ++ lib.optional config.i4.dev.rust (pkgs.rust-bin.stable.latest.default.override {
-          extensions = ["rust-src"];
-        })
+        ++ lib.optional config.i4.dev.rust (let
+          toolchain = pkgs.rust-bin.stable.latest;
+          # rust-overlay can add extensions but cannot subtract a component.
+          # Derive the difference from the manifest instead of listing tools.
+          profiles = toolchain._manifest.profiles;
+        in
+          if config.i4.dev.rustOfflineDocs
+          then toolchain.default.override {extensions = ["rust-src"];}
+          else toolchain.minimal.override {
+            extensions = ["rust-src"] ++ lib.subtractLists (profiles.minimal ++ ["rust-docs"]) profiles.default;
+            enableLibsecret = pkgs.stdenv.hostPlatform.isLinux;
+          })
         ++ lib.optional pkgs.stdenv.isDarwin pkgs.darwin.libiconv
       # TODO: this is a workaround I don't remember for which
       # (lib.mkIf isNotNixOS pkgs-unstable.bazelisk)
