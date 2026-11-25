@@ -127,6 +127,16 @@ in {
     "220" = "986200";
   };
 
+  services.gammastep = {
+    enable = true;
+    # Reuse the old Berlin coordinates for local sunrise and sunset without GeoClue.
+    latitude = 52.5;
+    longitude = 13.4;
+    temperature.day = 6500;
+    temperature.night = 4000;
+    settings.general.adjustment-method = "wayland";
+  };
+
   services.darkman = {
     enable = true;
     settings = {
