@@ -129,6 +129,7 @@ in {
 
   services.gammastep = {
     enable = true;
+    tray = true;
     # Reuse the old Berlin coordinates for local sunrise and sunset without GeoClue.
     latitude = 52.5;
     longitude = 13.4;
