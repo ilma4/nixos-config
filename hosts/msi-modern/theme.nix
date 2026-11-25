@@ -134,7 +134,7 @@ in {
     latitude = 52.5;
     longitude = 13.4;
     temperature.day = 6500;
-    temperature.night = 4000;
+    temperature.night = 4500;
     settings.general.adjustment-method = "wayland";
   };
 
