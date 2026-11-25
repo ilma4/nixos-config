@@ -23,6 +23,12 @@
   foot = lib.getExe config.programs.foot.package;
   sway-audio-idle-inhibit = "${pkgs.sway-audio-idle-inhibit}/bin/sway-audio-idle-inhibit";
 
+  reloadWaybar = pkgs.writeShellScriptBin "reload-waybar" ''
+    set -euo pipefail
+    exec ${lib.getExe' pkgs.procps "pkill"} --signal USR2 --euid "$EUID" --exact '(waybar|\.waybar-wrapped)'
+  '';
+  reloadWaybarCommand = lib.getExe reloadWaybar;
+
   screenshot = pkgs.writeShellScriptBin "screenshot" ''
     set -euo pipefail
     region="$(${slurp})" || exit 0
@@ -116,6 +122,13 @@ in {
     pkgs.nerd-fonts.jetbrains-mono
     pkgs.font-awesome_5
     screenshot
+    reloadWaybar
+    (pkgs.makeDesktopItem {
+      name = "reload-waybar";
+      desktopName = "Reload Waybar";
+      exec = reloadWaybarCommand;
+      icon = "view-refresh";
+    })
     (pkgs.makeDesktopItem {
       name = "screenshot";
       desktopName = "Screenshot";
@@ -165,6 +178,7 @@ in {
     tofi-command = "${tofi} ${tofi-flags}";
     commands = lib.mkOptionDefault {
       Screenshot = screenshotCommand;
+      "Reload Waybar" = reloadWaybarCommand;
       toggle-monitor = toggleMonitorCommand;
       lock_screen = "${swaylock} -f -c 000000";
     };
