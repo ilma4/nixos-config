@@ -19,6 +19,7 @@ in {
     ../../modules/home-manager.nix
     ./homebrew-auto-upgrade.nix
     ./clean-toolbox-download-cache.nix
+    ./keep-awake-on-ac.nix
 
     ../../modules/apps.nix
 
