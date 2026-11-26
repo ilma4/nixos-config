@@ -12,7 +12,9 @@
     dontConfigure = true;
     buildPhase = ''
       runHook preBuild
-      swiftc -O -framework IOKit "$src" -o keep-awake-on-ac
+      swiftc -O -framework IOKit \
+        -import-objc-header ${./keep-awake-on-ac-bridging.h} \
+        "$src" -o keep-awake-on-ac
       runHook postBuild
     '';
     installPhase = ''
