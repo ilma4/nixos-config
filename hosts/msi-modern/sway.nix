@@ -57,6 +57,26 @@
     on-scroll-down = cycle "previous";
   };
 
+  # Waybar's built-in calendar only supports single-month and full-year views.
+  waybarCalendarBin = let
+    glibLibDir = "${lib.getLib pkgs.glib}/lib";
+  in pkgs.writers.writeRustBin "waybar-calendar" {
+    rustcArgs = [
+      "--edition=2021"
+      "-C"
+      "opt-level=2"
+      "-L"
+      "native=${glibLibDir}"
+      "-C"
+      "link-arg=-Wl,-rpath,${glibLibDir}"
+    ];
+  } (builtins.readFile ./waybar-calendar.rs);
+  waybarDate = {
+    exec = lib.getExe' waybarCalendarBin "waybar-calendar";
+    interval = 60;
+    return-type = "json";
+  };
+
   screenshot = pkgs.writeShellScriptBin "screenshot" ''
     set -euo pipefail
     region="$(${slurp})" || exit 0
@@ -187,8 +207,16 @@ in {
       --replace-fail '"network",' '"custom/system-stats",' \
       --replace-fail '        "cpu",
             "memory",' "" \
+      --replace-fail '"clock",' '"custom/date",
+            "clock#time",' \
+      --replace-fail '"clock": {
+            // "timezone": "America/New_York",
+            "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+            "format-alt": "{:%Y-%m-%d}"
+        },' '"clock#time": {"format": "{:%H:%M}", "tooltip": false},' \
       --replace-fail '// Modules configuration' ${lib.escapeShellArg ''
       // Modules configuration
+      "custom/date": ${builtins.toJSON waybarDate},
       "custom/system-stats": ${builtins.toJSON waybarStats},''} \
       --replace-fail '"temperature": {' '"temperature": {
             "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
@@ -200,6 +228,12 @@ in {
 
     window#waybar {
       border-bottom: none;
+    }
+
+    #custom-date {
+      padding: 0 10px;
+      color: #ffffff;
+      background-color: #64727d;
     }
 
     #custom-system-stats {
