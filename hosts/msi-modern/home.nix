@@ -45,6 +45,7 @@
   # environment.
   home.packages = with pkgs; [
     brave
+    libreoffice
 
     (writers.writePython3Bin "set-power" {
       doCheck = false; # disable PEP style checks
