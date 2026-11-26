@@ -130,6 +130,6 @@ if __name__ == "__main__":
             subprocess.run([DARKMAN, "toggle"], check=True, timeout=5)
             refresh()
     except KeyboardInterrupt:
-        sys.exit("toggle-theme-refresh-workspaces: interrupted")
+        sys.exit("toggle-theme: interrupted")
     except (OSError, RuntimeError, subprocess.SubprocessError) as error:
-        sys.exit(f"toggle-theme-refresh-workspaces: {error}")
+        sys.exit(f"toggle-theme: {error}")

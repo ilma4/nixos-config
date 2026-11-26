@@ -41,7 +41,7 @@
     exec ${swaymsg} -q "output * bg \"$image\" fill"
   '';
 
-  toggleThemeAndRefresh = pkgs.writeShellScriptBin "toggle-theme-refresh-workspaces" ''
+  toggleTheme = pkgs.writeShellScriptBin "toggle-theme" ''
     set -euo pipefail
     exec ${lib.getExe pkgs.python3} ${./theme-refresh-workspaces.py} \
       ${swaymsg} ${darkman}
@@ -69,7 +69,7 @@
     exec ${lib.getExe pkgs.foot} "$@"
   '';
 in {
-  home.packages = [toggleThemeAndRefresh];
+  home.packages = [toggleTheme];
 
   programs.foot.package = pkgs.symlinkJoin {
     pname = "foot-themed";
@@ -238,7 +238,7 @@ in {
   wayland.windowManager.sway = {
     config.output."*".bg = "${wallpapers}/adwaita-l.png fill";
     config.keybindings = lib.mkOptionDefault {
-      "--no-repeat ${modifier}+Shift+t" = "exec ${darkman} toggle";
+      "--no-repeat ${modifier}+Shift+t" = "exec ${lib.getExe toggleTheme}";
     };
     # Sway reloads its configured light fallback; restore the current mode.
     extraConfig = ''
@@ -247,7 +247,6 @@ in {
   };
 
   top-commands.commands = lib.mkOptionDefault {
-    "Toggle light/dark theme" = "${darkman} toggle";
-    "Toggle light/dark theme and refresh hidden workspaces" = lib.getExe toggleThemeAndRefresh;
+    "Toggle light/dark theme" = lib.getExe toggleTheme;
   };
 }
