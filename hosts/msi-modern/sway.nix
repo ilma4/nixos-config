@@ -279,7 +279,15 @@ in {
 
   wayland.windowManager.sway.systemd.xdgAutostart = true;
 
-  services.swayidle = {
+  services.swayidle = let
+    suspend = "${lib.getExe' pkgs.systemd "systemctl"} suspend";
+    suspendOnBattery = pkgs.writeShellScript "suspend-on-battery" ''
+      set -euo pipefail
+      if read -r online < /sys/class/power_supply/ADP1/online && [[ "$online" == 0 ]]; then
+        exec ${suspend}
+      fi
+    '';
+  in {
     enable = true;
     timeouts = [
       {
@@ -288,8 +296,13 @@ in {
       }
       {
         timeout = 600;
-        command = "${swaymsg} \"output * power off\";  systemctl suspend";
+        command = "${swaymsg} \"output * power off\"; ${suspendOnBattery}";
         resumeCommand = "${swaymsg} \"output * power on\"";
+      }
+      {
+        # Also covers unplugging after the battery timeout has already passed.
+        timeout = 3600;
+        command = suspend;
       }
     ];
     events = {
