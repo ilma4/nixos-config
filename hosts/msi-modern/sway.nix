@@ -31,6 +31,32 @@
   '';
   reloadWaybarCommand = lib.getExe reloadWaybar;
 
+  waybarStatsBin = pkgs.runCommandCC "waybar-system-stats" {
+    nativeBuildInputs = [pkgs.rustc];
+    NMCLI = lib.getExe' pkgs.networkmanager "nmcli";
+    WAYBAR_STATS_TIMEOUT = lib.getExe' pkgs.coreutils "timeout";
+  } ''
+    set -euo pipefail
+    mkdir -p "$out/bin"
+    rustc --edition=2021 -C opt-level=2 -C strip=symbols \
+      ${./waybar-system-stats.rs} -o "$out/bin/waybar-system-stats"
+  '';
+  waybarStats = let
+    signal = 8;
+    command = lib.getExe' waybarStatsBin "waybar-system-stats";
+    cycle = direction: "${command} ${direction} && ${lib.getExe' pkgs.procps "pkill"} --signal RTMIN+${toString signal} --require-handler --euid \"$USER\" --exact '(waybar|\\.waybar-wrapped)'";
+  in {
+    inherit signal;
+    exec = command;
+    interval = 3;
+    return-type = "json";
+    escape = true;
+    exec-on-event = false;
+    on-click = cycle "next";
+    on-scroll-up = cycle "next";
+    on-scroll-down = cycle "previous";
+  };
+
   screenshot = pkgs.writeShellScriptBin "screenshot" ''
     set -euo pipefail
     region="$(${slurp})" || exit 0
@@ -155,9 +181,15 @@ in {
   xdg.dataFile."icons/hicolor/scalable/actions/emblem-default-symbolic.svg".source =
     "${pkgs.adwaita-icon-theme}/share/icons/Adwaita/symbolic/actions/object-select-symbolic.svg";
 
-  # Use the CPU package sensor without relying on the boot-dependent hwmon number.
+  # Keep the CPU package sensor independent of the boot-dependent hwmon number.
   xdg.configFile."waybar/config.jsonc".source = pkgs.runCommand "waybar-config.jsonc" {} ''
     substitute ${pkgs.waybar}/etc/xdg/waybar/config.jsonc "$out" \
+      --replace-fail '"network",' '"custom/system-stats",' \
+      --replace-fail '        "cpu",
+            "memory",' "" \
+      --replace-fail '// Modules configuration' ${lib.escapeShellArg ''
+      // Modules configuration
+      "custom/system-stats": ${builtins.toJSON waybarStats},''} \
       --replace-fail '"temperature": {' '"temperature": {
             "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
             "input-filename": "temp1_input",'
@@ -169,6 +201,16 @@ in {
     window#waybar {
       border-bottom: none;
     }
+
+    #custom-system-stats {
+      padding: 0 10px;
+      color: #ffffff;
+      background-color: #2980b9;
+    }
+
+    #custom-system-stats.disconnected { background-color: #f53c3c; }
+    #custom-system-stats.cpu { background-color: #2ecc71; color: #000000; }
+    #custom-system-stats.ram { background-color: #9b59b6; }
 
     * {
       /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
