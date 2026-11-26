@@ -5,6 +5,8 @@
   ...
 }: let
   swaylock = "${pkgs.swaylock}/bin/swaylock";
+  # Keep the inhibitor alive until the foreground locker exits on unlock.
+  lockScreen = "${lib.getExe' pkgs.systemd "systemd-inhibit"} --what=sleep --mode=block --who='Lock screen' --why='Keep Sway awake while manually locked' ${swaylock} -c 000000";
   swaymsg = "${pkgs.sway}/bin/swaymsg";
   keyboardLayouts = "us,ru";
   swappedAltWin = "grp:alt_space_toggle,caps:escape,altwin:swap_alt_win";
@@ -180,7 +182,7 @@ in {
       Screenshot = screenshotCommand;
       "Reload Waybar" = reloadWaybarCommand;
       toggle-monitor = toggleMonitorCommand;
-      lock_screen = "${swaylock} -f -c 000000";
+      "Lock screen" = lockScreen;
     };
   };
 
