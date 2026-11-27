@@ -255,6 +255,7 @@
   services.libinput.enable = true;
 
   i4.apps.enable = true;
+  i4.apps.apps.zed-editor.enable = false; # Use Home Manager's wrapped Zed.
 
   # The migrated mail profile was last opened with Thunderbird 159.
   programs.thunderbird.package =
