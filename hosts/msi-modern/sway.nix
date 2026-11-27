@@ -25,6 +25,34 @@
   foot = lib.getExe config.programs.foot.package;
   bluetoothManager = "${termWithName} bluetui --title=Bluetooth ${lib.getExe pkgs.bluetui}";
   sway-audio-idle-inhibit = "${pkgs.sway-audio-idle-inhibit}/bin/sway-audio-idle-inhibit";
+  systemctl = "${lib.getExe' pkgs.systemd "systemctl"} --user";
+  nightLightUnit = "wlsunset.service";
+  nightLightControl = pkgs.writeShellScript "waybar-night-light" ''
+    set -euo pipefail
+    case "$1" in
+      status)
+        if ${systemctl} is-active --quiet ${nightLightUnit}; then
+          printf '%s\n' '{"text":"󰖔","tooltip":"Night light: scheduled · click to disable"}'
+        else
+          printf '%s\n' '{"text":"󰖨","tooltip":"Night light: off · click to enable schedule"}'
+        fi
+        ;;
+      toggle)
+        if ${systemctl} is-active --quiet ${nightLightUnit}; then
+          exec ${systemctl} stop ${nightLightUnit}
+        else
+          exec ${systemctl} start ${nightLightUnit}
+        fi
+        ;;
+    esac
+  '';
+  waybarNightLight = {
+    exec = "${nightLightControl} status";
+    on-click = "${nightLightControl} toggle";
+    interval = 30;
+    exec-on-event = true;
+    return-type = "json";
+  };
 
   reloadWaybar = pkgs.writeShellScriptBin "reload-waybar" ''
     set -euo pipefail
@@ -221,7 +249,8 @@ in {
       --replace-fail '        "cpu",
             "memory",' "" \
       --replace-fail '"tray",' '"bluetooth",
-        "tray",' \
+            "custom/night-light",
+            "tray",' \
       --replace-fail '"clock",' '"custom/date",
             "clock#time",' \
       --replace-fail '"clock": {
@@ -233,6 +262,7 @@ in {
       // Modules configuration
       "bluetooth": ${builtins.toJSON waybarBluetooth},
       "custom/date": ${builtins.toJSON waybarDate},
+      "custom/night-light": ${builtins.toJSON waybarNightLight},
       "custom/system-stats": ${builtins.toJSON waybarStats},''} \
       --replace-fail '"temperature": {' '"temperature": {
             "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
@@ -262,7 +292,7 @@ in {
     #custom-system-stats.cpu { background-color: #2ecc71; color: #000000; }
     #custom-system-stats.ram { background-color: #9b59b6; }
 
-    #bluetooth { padding: 0 8px; }
+    #bluetooth, #custom-night-light { padding: 0 8px; }
 
     * {
       /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
@@ -423,6 +453,20 @@ in {
   };
 
   wayland.windowManager.sway.enable = true;
+
+  systemd.user.services.wlsunset = {
+    Unit = {
+      Description = "Scheduled Wayland night light";
+      PartOf = ["sway-session.target"];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
+    };
+    Service = {
+      Type = "exec";
+      # Keep the existing Berlin sunrise/sunset schedule without GeoClue.
+      ExecStart = "${lib.getExe pkgs.wlsunset} -l 52.5 -L 13.4 -T 6500 -t 4500";
+    };
+    Install.WantedBy = ["sway-session.target"];
+  };
 
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
