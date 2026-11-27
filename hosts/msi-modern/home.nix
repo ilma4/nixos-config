@@ -26,6 +26,7 @@
     # Replace the tty1 login shell before prompt setup starts the Git/JJ worker.
     if [[ -o login && $TTY == /dev/tty1 && -z ''${SSH_CONNECTION:-} &&
           -z ''${WAYLAND_DISPLAY:-} && -z ''${DISPLAY:-} ]]; then
+      export WLR_RENDERER=vulkan
       exec sway
     fi
   '';

@@ -8,6 +8,7 @@
   # Keep the inhibitor alive until the foreground locker exits on unlock.
   lockScreen = "${lib.getExe' pkgs.systemd "systemd-inhibit"} --what=sleep --mode=block --who='Lock screen' --why='Keep Sway awake while manually locked' ${swaylock} -c 000000";
   swaymsg = "${pkgs.sway}/bin/swaymsg";
+  dell = "Dell Inc. DELL U2725QE 7WH9B34";
   keyboardLayouts = "us,ru";
   swappedAltWin = "grp:alt_space_toggle,caps:escape,altwin:swap_alt_win";
   waybar = "${pkgs.waybar}/bin/waybar";
@@ -51,6 +52,45 @@
     on-click = "${nightLightControl} toggle";
     interval = 30;
     exec-on-event = true;
+    return-type = "json";
+  };
+
+  hdrControl = let
+    jq = lib.getExe pkgs.jq;
+  in pkgs.writeShellScript "waybar-hdr" ''
+    set -euo pipefail
+    # Match the monitor by EDID, but toggle only its active connector.
+    output="$(${swaymsg} -rt get_outputs | ${jq} -c --arg dell ${lib.escapeShellArg dell} '
+      first(.[] | select(.active and ([.make, .model, .serial] | join(" ")) == $dell)) // empty
+    ')"
+    if [[ -z "$output" ]]; then
+      [[ "$1" != status ]] || printf '%s\n' '{"text":""}'
+      exit 0
+    fi
+
+    case "$1" in
+      status)
+        ${jq} -c '
+          if .hdr then {text: "HDR on", tooltip: "Dell HDR is on · click to turn off"}
+          elif .features.hdr then {text: "HDR off", tooltip: "Dell HDR is off · click to turn on"}
+          else {text: "HDR n/a", tooltip: "HDR is not supported by the current output and renderer"}
+          end
+        ' <<< "$output"
+        ;;
+      toggle)
+        if ${jq} -e '.features.hdr' <<< "$output" >/dev/null; then
+          connector="$(${jq} -r '.name' <<< "$output")"
+          exec ${swaymsg} -q "output \"$connector\" hdr toggle"
+        fi
+        ;;
+    esac
+  '';
+  waybarHdr = {
+    exec = "${hdrControl} status";
+    on-click = "${hdrControl} toggle";
+    interval = 2;
+    exec-on-event = true;
+    hide-empty-text = true;
     return-type = "json";
   };
 
@@ -250,6 +290,7 @@ in {
             "memory",' "" \
       --replace-fail '"tray",' '"bluetooth",
             "custom/night-light",
+            "custom/hdr",
             "tray",' \
       --replace-fail '"clock",' '"custom/date",
             "clock#time",' \
@@ -262,6 +303,7 @@ in {
       // Modules configuration
       "bluetooth": ${builtins.toJSON waybarBluetooth},
       "custom/date": ${builtins.toJSON waybarDate},
+      "custom/hdr": ${builtins.toJSON waybarHdr},
       "custom/night-light": ${builtins.toJSON waybarNightLight},
       "custom/system-stats": ${builtins.toJSON waybarStats},''} \
       --replace-fail '"temperature": {' '"temperature": {
@@ -292,7 +334,7 @@ in {
     #custom-system-stats.cpu { background-color: #2ecc71; color: #000000; }
     #custom-system-stats.ram { background-color: #9b59b6; }
 
-    #bluetooth, #custom-night-light { padding: 0 8px; }
+    #bluetooth, #custom-night-light, #custom-hdr { padding: 0 8px; }
 
     * {
       /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
@@ -377,9 +419,7 @@ in {
 
   # The Dell can report both HDMI and DisplayPort at once. Kanshi needs a
   # profile that accounts for every connected output, even disabled ones.
-  services.kanshi = let
-    dell = "Dell Inc. DELL U2725QE 7WH9B34";
-  in {
+  services.kanshi = {
     enable = true;
     settings =
       map (dock: {
@@ -485,7 +525,8 @@ in {
         adaptive_sync = "on";
         position = "0 0";
       };
-      "Dell Inc. DELL U2725QE 7WH9B34" = {
+      ${dell} = {
+        hdr = "off";
         render_bit_depth = "10";
       };
     };
