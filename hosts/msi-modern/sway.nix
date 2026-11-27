@@ -23,6 +23,7 @@
   tofi = "${pkgs.tofi}/bin/tofi";
   tofi-flags = "--width 800 --height 700  --font ${pkgs.jetbrains-mono}/share/fonts/TTF/JetBrainsMono-Light.ttf";
   foot = lib.getExe config.programs.foot.package;
+  bluetoothManager = "${termWithName} bluetui --title=Bluetooth ${lib.getExe pkgs.bluetui}";
   sway-audio-idle-inhibit = "${pkgs.sway-audio-idle-inhibit}/bin/sway-audio-idle-inhibit";
 
   reloadWaybar = pkgs.writeShellScriptBin "reload-waybar" ''
@@ -75,6 +76,18 @@
     exec = lib.getExe' waybarCalendarBin "waybar-calendar";
     interval = 60;
     return-type = "json";
+  };
+  waybarBluetooth = {
+    format = "";
+    format-connected = "󰂱";
+    format-off = "󰂲";
+    format-disabled = "󰂲";
+    format-no-controller = "";
+    tooltip-format = "Bluetooth: {status}";
+    tooltip-format-on = "Bluetooth on · no devices connected";
+    tooltip-format-connected = "Bluetooth connected\n{device_enumerate}";
+    tooltip-format-enumerate-connected = "{device_alias}";
+    on-click = bluetoothManager;
   };
 
   screenshot = pkgs.writeShellScriptBin "screenshot" ''
@@ -207,6 +220,8 @@ in {
       --replace-fail '"network",' '"custom/system-stats",' \
       --replace-fail '        "cpu",
             "memory",' "" \
+      --replace-fail '"tray",' '"bluetooth",
+        "tray",' \
       --replace-fail '"clock",' '"custom/date",
             "clock#time",' \
       --replace-fail '"clock": {
@@ -216,6 +231,7 @@ in {
         },' '"clock#time": {"format": "{:%H:%M}", "tooltip": false},' \
       --replace-fail '// Modules configuration' ${lib.escapeShellArg ''
       // Modules configuration
+      "bluetooth": ${builtins.toJSON waybarBluetooth},
       "custom/date": ${builtins.toJSON waybarDate},
       "custom/system-stats": ${builtins.toJSON waybarStats},''} \
       --replace-fail '"temperature": {' '"temperature": {
@@ -246,6 +262,8 @@ in {
     #custom-system-stats.cpu { background-color: #2ecc71; color: #000000; }
     #custom-system-stats.ram { background-color: #9b59b6; }
 
+    #bluetooth { padding: 0 8px; }
+
     * {
       /* The stock config uses both Nerd Fonts and Font Awesome 5 glyphs. */
       font-family: "DejaVu Sans", "JetBrainsMono Nerd Font", "Font Awesome 5 Free Solid", sans-serif;
@@ -257,6 +275,7 @@ in {
     commands = lib.mkOptionDefault {
       Screenshot = screenshotCommand;
       "Reload Waybar" = reloadWaybarCommand;
+      Bluetooth = bluetoothManager;
       toggle-monitor = toggleMonitorCommand;
       "Lock screen" = lockScreen;
     };
@@ -462,6 +481,10 @@ in {
     {
       command = "opacity 0.8, floating enable, sticky enable, resize set 40 ppt 70 ppt, border pixel 10";
       criteria.app_id = "floating-term";
+    }
+    {
+      command = "floating enable, resize set 60 ppt 60 ppt, move position center";
+      criteria.app_id = "^bluetui$";
     }
     {
       command = "floating enable";
