@@ -81,12 +81,13 @@
       if nixToolsEnabled
       then lib.recursiveUpdate baseSettings nixToolingSettings
       else baseSettings;
+    withOverrides = lib.recursiveUpdate merged cfg.extraSettings;
     # Plain `//` (not recursiveUpdate) so removed keys really disappear.
     autoInstallExtensions =
       lib.filterAttrs (name: _: !builtins.elem name blacklistedExtensions)
-      (merged.auto_install_extensions or {});
+      (withOverrides.auto_install_extensions or {});
   in
-    merged // {auto_install_extensions = autoInstallExtensions;};
+    withOverrides // {auto_install_extensions = autoInstallExtensions;};
   # The rest of dotfiles/zed (keymap, themes, prompts) is copied verbatim.
   zedConfigDir = pkgs.runCommandLocal "zed-config" {} ''
     set -euo pipefail
@@ -99,6 +100,11 @@
 in {
   options.i4.zed = {
     enable = lib.mkEnableOption "Zed editor configuration";
+    extraSettings = lib.mkOption {
+      type = (pkgs.formats.json {}).type;
+      default = {};
+      description = "Host-specific settings to merge into Zed's settings.json.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
