@@ -9,20 +9,6 @@ in {
       "layout.spellcheckDefault" = 2;
       "spellchecker.dictionary_path" = "${hunspell}/share/hunspell";
     };
-    policies.ExtensionSettings."harper@writewithharper.com" = {
-      installation_mode = "normal_installed";
-      install_url = "https://addons.mozilla.org/firefox/downloads/latest/private-grammar-checker-harper/latest.xpi";
-    };
-  };
-
-  environment.etc."brave/policies/managed/spellcheck.json".text = builtins.toJSON {
-    SpellcheckEnabled = true;
-    SpellcheckLanguage = ["en-US" "ru"];
-    SpellCheckServiceEnabled = false;
-    ExtensionSettings."lodbfhdipoipcjmlebjbgmmgekckhpfb" = {
-      installation_mode = "normal_installed";
-      update_url = "https://clients2.google.com/service/update2/crx";
-    };
   };
 
   home-manager.users.ilma4 = {
