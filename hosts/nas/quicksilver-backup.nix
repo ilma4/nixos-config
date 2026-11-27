@@ -17,7 +17,7 @@
 
   nasToHetzerKey = constants.backup-ssh-keys.nas-to-hetzer-storage;
 
-  quicksilverResticPasswordSecret = "restic_password/quicksilver_local";
+  quicksilverResticPasswordSecret = constants.quicksilver.backup-password-secret;
   nasResticPasswordSecret = constants.nas.restic-ilma4.password-secret;
   hetzerResticPasswordSecret = constants.hetzer-restic.password-secret;
 

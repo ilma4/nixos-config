@@ -18,8 +18,8 @@
   backupWakeMinute = lib.mod backupWakeTotalMinutes 60;
   formatTwoDigits = n: lib.fixedWidthString 2 "0" (toString n);
   backupWakeTime = "${formatTwoDigits backupWakeHour}:${formatTwoDigits backupWakeMinute}:00";
-  localResticPasswordSecret = "restic_password/quicksilver_local";
-  quicksilverToNasSshKeySecret = "quicksilver-backup-key";
+  localResticPasswordSecret = constants.quicksilver.backup-password-secret;
+  quicksilverToNasSshKeySecret = constants.quicksilver.backup-private-secret;
   backupSshKey = config.sops.secrets.${quicksilverToNasSshKeySecret}.path;
   rcloneSshProgram = "${lib.getExe pkgs.openssh} -F /dev/null -i ${backupSshKey} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=${backupHome}/.ssh/known_hosts";
   nasRcloneProgram = "${rcloneSshProgram} ilma4@nas.local";

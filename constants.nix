@@ -73,7 +73,9 @@ in {
 
   quicksilver = {
     hostname = "DE-UNIT-1832";
-    # Existing key used to send Quicksilver backups to NAS.
+    # Quicksilver and msi-modern share the append-only NAS staging repository.
+    backup-password-secret = "restic_password/quicksilver_local";
+    backup-private-secret = "quicksilver-backup-key";
     backup-pub-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMvrzYraYfx9T5iQOrsU19YvfdgUCZlANxdSjJTKaRBR qucksilver-backup-key";
   };
 

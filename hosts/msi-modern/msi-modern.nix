@@ -20,6 +20,7 @@
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ./backup.nix
     ./oo7.nix
     ./llama.nix
     ./adb.nix
