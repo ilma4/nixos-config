@@ -6,19 +6,27 @@ use std::process::{Command, Stdio};
 use std::time::Duration;
 use std::{env, thread};
 
-const MODES: [&str; 3] = ["network", "cpu", "ram"];
+const MODES: [&str; 3] = ["ram", "cpu", "network"];
 const CONTROLS: &str = "Click / scroll up: next · Scroll down: previous";
 type Stats = (String, String, &'static str);
 
 fn selected_mode(step: i32) -> io::Result<&'static str> {
     let runtime_dir = env::var_os("XDG_RUNTIME_DIR")
         .ok_or_else(|| io::Error::other("XDG_RUNTIME_DIR is not set"))?;
+    // Keep the selection across Waybar reloads, but not across Sway sessions.
+    let mut state_file = std::ffi::OsString::from("waybar-system-stats");
+    if let Some(socket) = env::var_os("SWAYSOCK").map(PathBuf::from) {
+        if let Some(name) = socket.file_name() {
+            state_file.push(".");
+            state_file.push(name);
+        }
+    }
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
         .truncate(false)
-        .open(PathBuf::from(runtime_dir).join("waybar-system-stats"))?;
+        .open(PathBuf::from(runtime_dir).join(state_file))?;
 
     if step == 0 {
         file.lock_shared()?;
