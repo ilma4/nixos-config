@@ -308,7 +308,7 @@ in {
     #  /etc/profiles/per-user/ilma4/etc/profile.d/hm-session-vars.sh
     #
     home.sessionVariables = {
-      EDITOR = "nvim";
+      EDITOR = lib.mkIf config.i4.neovim.basic.enable "nvim";
     };
 
     # Let Home Manager install and manage itself.

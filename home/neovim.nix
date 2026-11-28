@@ -38,7 +38,11 @@
     vim.fn.timer_start(10000, autosave, {["repeat"] = -1})
   '';
 in {
-  config = lib.mkIf (config ? home) {
+  options.i4.neovim.basic.enable = lib.mkEnableOption "the basic Neovim configuration" // {
+    default = true;
+  };
+
+  config = lib.mkIf (config ? home && config.i4.neovim.basic.enable) {
     programs.neovim = {
       enable = true;
       withPython3 = false;

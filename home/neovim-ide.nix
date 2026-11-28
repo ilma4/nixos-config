@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  cfg = config.i4.neovim;
+  cfg = config.i4.neovim.ide;
   lazyVimPackages = with pkgs; [
     curl
     fd
@@ -16,7 +16,7 @@
     tree-sitter
   ];
 in {
-  options.i4.neovim.enable = lib.mkEnableOption "the nvim-ide command with LazyVim";
+  options.i4.neovim.ide.enable = lib.mkEnableOption "the nvim-ide command with LazyVim";
 
   config = lib.mkIf (config ? home) {
     home.packages = lib.mkIf cfg.enable [
@@ -30,7 +30,7 @@ in {
           export PATH="${lib.makeBinPath lazyVimPackages}"
         fi
 
-        exec ${config.programs.neovim.finalPackage}/bin/nvim "$@"
+        exec ${lib.getExe pkgs.neovim} "$@"
       '')
     ];
 
