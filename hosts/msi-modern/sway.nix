@@ -282,12 +282,12 @@ in {
   xdg.dataFile."icons/hicolor/scalable/actions/emblem-default-symbolic.svg".source =
     "${pkgs.adwaita-icon-theme}/share/icons/Adwaita/symbolic/actions/object-select-symbolic.svg";
 
-  # Keep the CPU package sensor independent of the boot-dependent hwmon number.
   xdg.configFile."waybar/config.jsonc".source = pkgs.runCommand "waybar-config.jsonc" {} ''
     substitute ${pkgs.waybar}/etc/xdg/waybar/config.jsonc "$out" \
       --replace-fail '"network",' '"custom/system-stats",' \
       --replace-fail '        "cpu",
             "memory",' "" \
+      --replace-fail '"temperature",' '// "temperature",' \
       --replace-fail '"tray",' '"bluetooth",
             "custom/night-light",
             "custom/hdr",
@@ -305,10 +305,12 @@ in {
       "custom/date": ${builtins.toJSON waybarDate},
       "custom/hdr": ${builtins.toJSON waybarHdr},
       "custom/night-light": ${builtins.toJSON waybarNightLight},
-      "custom/system-stats": ${builtins.toJSON waybarStats},''} \
-      --replace-fail '"temperature": {' '"temperature": {
-            "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
-            "input-filename": "temp1_input",'
+      "custom/system-stats": ${builtins.toJSON waybarStats},''}
+
+    # Keep the CPU package sensor independent of the boot-dependent hwmon number.
+    # --replace-fail '"temperature": {' '"temperature": {
+    #       "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+    #       "input-filename": "temp1_input",'
   '';
 
   xdg.configFile."waybar/style.css".text = ''
