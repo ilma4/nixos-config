@@ -10,8 +10,41 @@
   schema = "org.gnome.desktop.interface";
   systemctl = "${pkgs.systemd}/bin/systemctl";
   modifier = config.wayland.windowManager.sway.config.modifier;
-  darkman = lib.getExe config.services.darkman.package;
   swaymsg = lib.getExe' pkgs.sway "swaymsg";
+  # Darkman 2.2 can leave control.sock stale when a second instance replaces
+  # it before failing to acquire the D-Bus name. Talk to the name owner instead.
+  darkmanControl = pkgs.writeShellScript "darkman-control" ''
+    set -euo pipefail
+    name=nl.whynothugo.darkman
+    bus=(${lib.getExe' pkgs.systemd "busctl"} --user --auto-start=no --timeout=2s call
+         "$name" /nl/whynothugo/darkman org.freedesktop.DBus.Properties)
+
+    get_mode() {
+      local reply
+      reply="$("''${bus[@]}" Get ss "$name" Mode)" || return
+      case "$reply" in
+        'v s "light"') echo light ;;
+        'v s "dark"') echo dark ;;
+        'v s "null"') echo null ;;
+        *) printf 'Unexpected Darkman mode reply: %s\n' "$reply" >&2; return 1 ;;
+      esac
+    }
+
+    set_mode() {
+      "''${bus[@]}" Set ssv "$name" Mode s "$1"
+    }
+
+    case "$1" in
+      get) get_mode ;;
+      set) set_mode "$2" ;;
+      toggle)
+        mode="$(get_mode)"
+        if [[ "$mode" == light ]]; then mode=dark; else mode=light; fi
+        set_mode "$mode"
+        echo "$mode"
+        ;;
+    esac
+  '';
   # GNOME's Adwaita pair is natively 4096x4096. Decode JPEG XL for swaybg.
   wallpapers = pkgs.runCommand "gnome-adwaita-wallpapers" {} ''
     set -euo pipefail
@@ -31,7 +64,7 @@
     if [[ -z "$mode" ]]; then
       # Don't activate Darkman before Sway imports the session environment.
       ${systemctl} --user is-active --quiet darkman.service || exit 0
-      mode="$(${darkman} get)"
+      mode="$(${darkmanControl} get)"
     fi
     case "$mode" in
       light) image=${wallpapers}/adwaita-l.png ;;
@@ -44,14 +77,14 @@
   toggleTheme = pkgs.writeShellScriptBin "toggle-theme" ''
     set -euo pipefail
     exec ${lib.getExe pkgs.python3} ${./theme-refresh-workspaces.py} \
-      ${swaymsg} ${darkman}
+      ${swaymsg} ${darkmanControl}
   '';
 
   initializeMode = pkgs.writeShellScript "darkman-initialize-mode" ''
     set -euo pipefail
-    mode="$(${darkman} get)"
+    mode="$(${darkmanControl} get)"
     if [[ "$mode" == null ]]; then
-      ${darkman} set light
+      ${darkmanControl} set light
     else
       # Sway may have started before Darkman was ready to report its mode.
       ${setWallpaper} "$mode" || true
@@ -62,7 +95,7 @@
     set -euo pipefail
     # Foot's spawn-terminal action resolves `foot` on PATH.
     export PATH="''${0%/*}:$PATH"
-    mode="$(${darkman} get 2>/dev/null)" || mode=
+    mode="$(${darkmanControl} get 2>/dev/null)" || mode=
     case "$mode" in
       light|dark) set -- -o "main.initial-color-theme=$mode" "$@" ;;
     esac
@@ -70,6 +103,15 @@
   '';
 in {
   home.packages = [toggleTheme];
+
+  # Replace the upstream launcher, which still calls the socket-based CLI.
+  xdg.desktopEntries.darkman = {
+    name = "Toggle darkman";
+    genericName = "Toggle dark mode";
+    exec = "${lib.getExe toggleTheme}";
+    categories = ["Settings"];
+    settings.Keywords = "dark;light;colour-preference;theme;";
+  };
 
   programs.foot.package = pkgs.symlinkJoin {
     pname = "foot-themed";

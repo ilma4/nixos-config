@@ -9,7 +9,7 @@ import sys
 import time
 
 
-SWAYMSG, DARKMAN = sys.argv[1:]
+SWAYMSG, DARKMAN_CONTROL = sys.argv[1:]
 REDRAW_DELAY = 0.15  # Several frames at 60 Hz; apps don't acknowledge theme updates.
 
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
         lock_path = Path(os.environ["XDG_RUNTIME_DIR"]) / "msi-modern-theme-refresh.lock"
         with lock_path.open("a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            subprocess.run([DARKMAN, "toggle"], check=True, timeout=5)
+            subprocess.run([DARKMAN_CONTROL, "toggle"], check=True, timeout=5)
             refresh()
     except KeyboardInterrupt:
         sys.exit("toggle-theme: interrupted")
