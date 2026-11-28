@@ -275,7 +275,9 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nixpkgs-unstable": [
+          "nixpkgs-unstable"
+        ]
       },
       "locked": {
         "lastModified": 1795732247,
@@ -347,22 +349,6 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1795371335,
-        "narHash": "sha256-oa2P5WZer1A4wuhatl92JyHHEjrrOdIyuvTuI5LUi9Q=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "619c39f6eac5d1ed6b8f073a9414baf7034b2356",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-unstable_2": {
-      "locked": {
         "lastModified": 1795546490,
         "narHash": "sha256-fD1nLSQM8tFob51/thCOr49JIAIjoqybAY27/+hwZQI=",
         "owner": "nixos",
@@ -393,7 +379,7 @@
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",
         "nixpkgs-darwin": "nixpkgs-darwin",
-        "nixpkgs-unstable": "nixpkgs-unstable_2",
+        "nixpkgs-unstable": "nixpkgs-unstable",
         "rust-overlay": "rust-overlay",
         "rust-overlay-darwin": "rust-overlay-darwin",
         "sops-nix": "sops-nix",

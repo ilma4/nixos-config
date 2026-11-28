@@ -24,6 +24,7 @@
     nixos-lima = {
       url = "github:nixos-lima/nixos-lima";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-unstable.follows = "nixpkgs-unstable";
       inputs.nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
     };
 
